@@ -10,17 +10,14 @@ var teste =
     ee.FeatureCollection(
         [ee.Feature(
             ee.Geometry.Polygon(
-                [[[-48.127607490138814, -15.63737958425035],
-                  [-48.127607490138814, -15.756366417989419],
-                  [-47.174543525295064, -15.756366417989419],
-                  [-47.174543525295064, -15.63737958425035]]], null, false),
+                [[[-48.40089240224819, -15.49516576265547],
+                  [-48.40089240224819, -16.062105739412868],
+                  [-47.28303351552944, -16.062105739412868],
+                  [-47.28303351552944, -15.49516576265547]]], null, false),
             {
               "system:index": "0"
             })]),
-    fire_2020 = 
-    /* color: #d63000 */
-    /* shown: false */
-    ee.Geometry.Point([-57.17175748973216, -17.28603904457847]);
+    geometry = /* color: #d63000 */ee.Geometry.MultiPoint();
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 // --- 21-02-2024 // GT-Carbono - explorando landtrendr nos mosaicos landsat do mapbiomas
 // --- --- --- OPTIONS
@@ -105,7 +102,7 @@ print('mb_mosaics',mb_mosaics.limit(30));
 print(
   mb_mosaics.first().bandNames(),
   mb_mosaics.first().bandNames().map(function(str){return ee.String(str).split('_').get(0)}).distinct(),
-  // OBS: não ha ndvi, nbr ou outros indices nativos no mosaico 
+
   mb_mosaics.first().bandNames().map(function(str){return ee.String(str).split('_').slice(1)}).distinct()
   );
 
@@ -192,7 +189,7 @@ function landtrendr (_col,_years,_bands){
 }
 
   
-// --- --- --- DEVELOPMENTS
+// --- --- --- DEVELOPMENT of annual mosaics and their temporal segmentation
 var annual_mosaics = years.map(function(year){
   var start = ee.Date(''+year+'-01-01');
   var end = start.advance(1,'year');
@@ -233,4 +230,4 @@ var visParams = {
 
 Map.addLayer(annual_mosaics,visParams.median,'annual_mosaics',true);
 Map.addLayer(annual_mosaics_landtrendr,visParams.median,'annual_mosaics_landtrendr',true);
-Map.addLayer(annual_mosaics_landtrendr_rmse,{},'RMSE',true);
+Map.addLayer(annual_mosaics_landtrendr_rmse,{min:0,max:2000},'RMSE',true);
