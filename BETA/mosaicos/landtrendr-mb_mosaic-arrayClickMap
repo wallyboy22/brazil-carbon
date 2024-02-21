@@ -119,7 +119,7 @@ function landtrendr (_run_params,_years,_bands){
      }
      
       return ftv
-        .byte()
+        .int16()
         .arrayFlatten([_years]);
   });
 
@@ -176,8 +176,7 @@ var annual_mosaics = years.map(function(year){
     .filter(ee.Filter.inList('satellite',year_sat[year]))
     // .map(indexs_for_mb_mosaics)
     .median() // no caso de sobreposição de cartas entre os biomas, ou de mosaicos com mais de um ano, a redução calculando a mediana
-    .divide(100)
-    .byte()
+    .int16()
     .unmask()
     .set({
       year:year, 
@@ -200,8 +199,8 @@ var visParams = {
   },
   ndvi:{
     bands: ['ndvi_median'],
-    min: 50,
-    max:200,
+    min: 5000,
+    max:20000,
   }
 };
 
@@ -242,11 +241,19 @@ var extractTimeSeries = function(imageCollection,region) {
     hAxis: {title: 'Data'},
     vAxis: {title: 'Refletância'},
     lineWidth: 1,
-    pointSize: 3,
+    // pointSize: 3,
     legend: {
       position: 'in',
       textStyle: {fontSize: 11 }
-    } 
+    },
+    series: {
+      0: { color: '0000ff' }, 
+      1: { color: '00ff00' },
+      2: { color: 'ff0000' },  
+      3: { color: '004040' },
+      4: { color: 'aa00aa' },
+      5: { color: 'ffaa00' },
+    }
   });
   
   timeSeries.style().set({
