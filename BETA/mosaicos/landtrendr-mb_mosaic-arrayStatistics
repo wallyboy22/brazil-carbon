@@ -77,6 +77,11 @@ function landtrendr (_run_params,_years,_bands){
   // print('LTresult',LTresult)
   // destacando 
   var LTarray = LTresult.select(['LandTrendr']); // subset the LandTrendr segmentation info
+  var index = LTarray.arraySlice({
+      axis:0,
+      start:1,
+      end:2,
+    }).arrayProject([1]); //slice out the fitted values row
 
   var segmented_index = LTarray.arraySlice({
       axis:0,
@@ -90,20 +95,25 @@ function landtrendr (_run_params,_years,_bands){
       end:4,
     }).arrayProject([1]); //slice out the fitted values row
 
+  _bands[0] = 'index';
+
+  _bands[_bands.length] = 'index_segmented';
 
   _bands[_bands.length] = 'vertex';
+
   
   var list_images_multibands = _bands
     .map(function(bandname){
   
      var ftv = LTresult.select([bandname + '_fit']); // subset the bandname_fit band
      
-     if (bandname === _bands[0]){
-      // nbr_fit
-       ftv = segmented_index;
+     if (bandname === 'index'){
+       ftv = index;
+     }
+    if (bandname === 'index_segmented'){
+      ftv = segmented_index;
      }
      if (bandname === 'vertex'){
-      // nbr_fit
        ftv = vertex_landtrandr;
      }
      
@@ -201,11 +211,19 @@ Map.addLayer(annual_mosaics.select('ndvi_median'),visParams.ndvi,'ndvi annual_mo
 // --- --- for each run params thinking for landtrendr
 
 var run_params_array = [
-  ['ndvi_median',/* 'ndvi_median_dry', 'ndvi_median_wet'*/], // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
-  [2, 6, 10],         // maxSegments (Integer): Maximum number of segments to be fitted on the time series.
-  [0.25, 0.5, 0.75],  // recoveryThreshold (Float, default: 0.25): If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed.
-  [0.05, 0.25, 0.50],   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
-]; 
+  [
+    'ndvi_median',/* 'ndvi_median_dry', 'ndvi_median_wet'*/
+  ], // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
+  [
+    13
+  ], // maxSegments (Integer): Maximum number of segments to be fitted on the time series.
+  [//10,    6,    4,    2,  1 // anos
+    0.1, 0.15, 0.25,  0.5,  1 // fator
+  ], // recoveryThreshold (Float, default: 0.25): If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed.
+  [
+    0.1
+  ],   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
+];
 
 var list_of_run_params = matrix_constructor(run_params_array);
 
@@ -239,7 +257,7 @@ list_of_run_params.forEach(function(str){
       var reduce = img_year.reduceRegion({
         reducer:ee.Reducer.first(),
         geometry:feat.geometry().centroid(),
-        scale:30,
+        scale:500,
         // crs, crsTransform, bestEffort, 
         maxPixels:1e16,
         // tileScale:
@@ -252,6 +270,7 @@ list_of_run_params.forEach(function(str){
           'maxSegments':ee.Number.parse(split[1]),
           'recoveryThreshold':ee.Number.parse(split[2]),
           'pvalThreshold':ee.Number.parse(split[3]),
+          'bandname':bandname,
           'year':year,
           'ID':feat.get('Id'),
         });
@@ -263,7 +282,7 @@ list_of_run_params.forEach(function(str){
   
   tables = ee.FeatureCollection(tables).flatten();
   
-  // print(str,'tables',tables.limit(200));
+  print(str,'tables',tables.limit(200));
   
   var description = str.replace('.','_').replace('.','_').replace('.','_');
   
