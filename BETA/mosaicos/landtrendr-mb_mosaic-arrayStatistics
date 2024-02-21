@@ -230,7 +230,8 @@ var list_of_run_params = matrix_constructor(run_params_array);
 print('list_of_run_params',list_of_run_params);
 
 
-list_of_run_params.forEach(function(str){
+var final_table = ee.FeatureCollection(
+  list_of_run_params.map(function(str){
   var split = str.split('-');
   
   var bandname = split[0];
@@ -279,21 +280,35 @@ list_of_run_params.forEach(function(str){
 
   });
   // print('tables',tables);
-  
   tables = ee.FeatureCollection(tables).flatten();
-  
-  print(str,'tables',tables.limit(200));
-  
-  var description = str.replace('.','_').replace('.','_').replace('.','_');
-  
-  Export.table.toDrive({
-    collection:tables,
-    description:description,
-    folder:'GT-Carbono',
-    fileNamePrefix:description,
-    fileFormat:'csv',
-    // selectors:,
-    // maxVertices:
-  });
-});
+  return tables;
 
+  // print(str,'tables',tables.limit(200));
+  
+  // var description = str.replace('.','_').replace('.','_').replace('.','_');
+  
+  // Export.table.toDrive({
+  //   collection:tables,
+  //   description:description,
+  //   folder:'GT-Carbono',
+  //   fileNamePrefix:description,
+  //   fileFormat:'csv',
+  //   // selectors:,
+  //   // maxVertices:
+  // });
+})
+).flatten();
+
+var description = 'temporal_segmentation_analisys-v0';
+
+print('final_table',final_table.limit(200));
+
+Export.table.toDrive({
+  collection:final_table,
+  description:description,
+  folder:'GT-Carbono',
+  fileNamePrefix:description,
+  fileFormat:'csv',
+  // selectors:,
+  // maxVertices:
+});
