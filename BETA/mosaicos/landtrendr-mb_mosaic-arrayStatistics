@@ -1,14 +1,11 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
-var teste = 
-    /* color: #d63000 */
-    /* shown: false */
-    ee.FeatureCollection(
+var teste = /* color: #d63000 */ee.FeatureCollection(
         [ee.Feature(
             ee.Geometry.Polygon(
-                [[[-48.15919318349819, -15.548094016634053],
-                  [-48.15370001943569, -15.882548462941735],
-                  [-47.76093878896694, -15.87198126389295],
-                  [-47.76093878896694, -15.569261512523617]]], null, false),
+                [[[-48.31025519521694, -15.477961158790015],
+                  [-48.32398810537319, -16.073982513604047],
+                  [-47.331098701076314, -16.04758871944391],
+                  [-47.328352119045064, -15.500459198871317]]], null, false),
             {
               "system:index": "0"
             })]),
@@ -59,22 +56,15 @@ var fc = ibge_biomas;
 var mask = ee.Image().paint(fc).eq(0);
 var bounds = fc.geometry().bounds();
 
-var mb_mosaics = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2')
-    .filter(ee.Filter.eq('biome','CERRADO'))
-    .filterBounds(teste.geometry());
-print('mb_mosaics',mb_mosaics.limit(30));
-
-print(
-  mb_mosaics.first().bandNames(),
-  mb_mosaics.first().bandNames().map(function(str){return ee.String(str).split('_').get(0)}).distinct(),
-
-  mb_mosaics.first().bandNames().map(function(str){return ee.String(str).split('_').slice(1)}).distinct()
-  );
-
 var ref_data = ee.FeatureCollection('users/barbarazimbres/Buffers_afterExclusions_minusRainGaps_less300tha_NOVO2_kmeans_errors')
     .filterBounds(teste);
-print('ref_data',ref_data);
+
 Map.addLayer(ref_data,{},'ref_data');
+
+var mb_mosaics = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2')
+    .filter(ee.Filter.eq('biome','CERRADO'))
+    .filterBounds(ref_data.geometry());
+
 
 // --- --- --- MAIN FUNCTIONS
 function landtrendr (_run_params,_years,_bands){
@@ -144,7 +134,26 @@ function landtrendr (_run_params,_years,_bands){
   return {collection:col_annual_landtrandr,rmse:rmse};
 }
 
-  
+function matrix_constructor(obj) {
+  var result = [];
+
+  // Função recursiva para gerar combinações
+  function generateCombinations(index, currentCombination) {
+    if (index === obj.length) {
+      result.push(currentCombination.join('-'));
+      return;
+    }
+
+    for (var i = 0; i < obj[index].length; i++) {
+      generateCombinations(index + 1, currentCombination.concat(obj[index][i]));
+    }
+  }
+
+  generateCombinations(0, []);
+
+  return result;
+} 
+
 // --- --- --- DEVELOPMENT of annual mosaics and their temporal segmentation
 var annual_mosaics = years.map(function(year){
   var start = ee.Date(''+year+'-01-01');
@@ -196,26 +205,6 @@ var run_params_array = [
   [0.05/*, 0.1, 0.2*/],   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
 ]; 
 
-function matrix_constructor(obj) {
-  var result = [];
-
-  // Função recursiva para gerar combinações
-  function generateCombinations(index, currentCombination) {
-    if (index === obj.length) {
-      result.push(currentCombination.join('-'));
-      return;
-    }
-
-    for (var i = 0; i < obj[index].length; i++) {
-      generateCombinations(index + 1, currentCombination.concat(obj[index][i]));
-    }
-  }
-
-  generateCombinations(0, []);
-
-  return result;
-} 
-
 var list_of_run_params = matrix_constructor(run_params_array);
 
 print('list_of_run_params',list_of_run_params);
@@ -238,8 +227,10 @@ var tables = list_of_run_params.map(function(str){
   var segmenting_rmse = segmenting.rmse;
   
   
-  var table = years.map(function(year){
+  var table = ee.FeatureCollection(years.slice(-1).map(function(year){
+    
     var img_year = segmenting_collection.filter(ee.Filter.eq('year',year)).first();
+   
     return ref_data.map(function(feat){
       var reduce = img_year.reduceRegion({
         reducer:ee.Reducer.first(),
@@ -251,24 +242,26 @@ var tables = list_of_run_params.map(function(str){
       });
       
       return ee.Feature(null)
-        .set(reduce)
+        // .set(reduce)
         .set({
           'maxSegments':ee.Number.parse(split[1]),
           'recoveryThreshold':ee.Number.parse(split[2]),
           'pvalThreshold':ee.Number.parse(split[3]),
-          'year':year
+          'year':year,
+          'reduce':reduce,
+          
         });
 
-    })
+    });
     
       
-    });
-    return table;
+    }));
+  
     return ee.FeatureCollection(table).flatten();
   });
 
 print('tables',tables);
 
-tables = tables.flatten();
+tables = ee.FeatureCollection(tables).flatten();
 
-print('table',table);
+print('tables',tables.limit(200));
