@@ -12,8 +12,14 @@ var teste =
             {
               "system:index": "0"
             })]),
-    geometry = /* color: #d63000 */ee.Geometry.MultiPoint(),
-    geometry2 = /* color: #d63000 */ee.Geometry.Point([-47.82700213814179, -15.812029054018927]);
+    geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.MultiPoint(),
+    geometry2 = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Point([-47.82700213814179, -15.812029054018927]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 // --- 21-02-2024 // GT-Carbono - explorando landtrendr nos mosaicos landsat do mapbiomas
 // --- --- --- OPTIONS
@@ -247,7 +253,7 @@ var extractTimeSeries = function(imageCollection,region) {
       textStyle: {fontSize: 11 }
     },
     series: {
-      0: { color: '0000ff', lineWidth: 1.5 }, 
+      0: { color: '0000ff', lineWidth: 1.5,    lineDashStyle: [4, 4], }, 
       1: { color: '00ff00' },
       2: { color: 'ff0000' },  
       3: { color: '004040' },
