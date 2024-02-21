@@ -158,7 +158,7 @@ function landtrendr (_col,_years,_bands){
      }
      
       return ftv
-        .int16()
+        .byte()
         .arrayFlatten([_years]);
   });
 
@@ -197,7 +197,7 @@ var annual_mosaics = years.map(function(year){
     // .map(indexs_for_mb_mosaics)
     .median() // no caso de sobreposição de cartas entre os biomas, ou de mosaicos com mais de um ano, a redução calculando a mediana
     .divide(100)
-    .int16()
+    .byte()
     .unmask()
     .set({
       year:year,
@@ -246,8 +246,8 @@ var panels = years.map(function(year){
     // style:
   });
   
-  var year_mosaics = annual_mosaics.filter(ee.Filter.eq('year',year)).first().visualize(visParams.ndvi);
-  var year_mosaics_landtrendr = annual_mosaics_landtrendr.filter(ee.Filter.eq('year',year)).first().visualize(visParams.ndvi);
+  var year_mosaics = annual_mosaics.filter(ee.Filter.eq('year',year)).first();
+  var year_mosaics_landtrendr = annual_mosaics_landtrendr.filter(ee.Filter.eq('year',year)).first();
   
   [
     {
@@ -260,12 +260,35 @@ var panels = years.map(function(year){
     }
 
   ].forEach(function(map){
+    var name = map.name + '_' + year;
+    var layer = ui.Map.Layer({
+      eeObject:year_mosaics,
+      visParams:visParams.ndvi,
+      name:name,
+      shown:true,
+      opacity:1
+    });
     
-    var name = ui.Label(map.name + '_' + year);
+    var checkbox = ui.Checkbox({
+      label:name,
+      value:false,
+      onChange:function(value){
+          if (value === true){
+            Map.add(layer);
+            layer.setShown(true);
+            layer.setOpacity(1);
+          } else {
+            Map.remove(layer);
+          }
+      },
+      // disabled:,
+      // style:
+    });
+      
     var thumb = ui.Thumbnail({
-      image:map.img, 
+      image:map.img.visualize(visParams.ndvi), 
       params:{
-        dimensions:420,
+        dimensions:300,
         region:teste.geometry().bounds()
       }, 
       // onClick:,
@@ -273,7 +296,7 @@ var panels = years.map(function(year){
     });
     
   var sub_subpanel = ui.Panel({
-    widgets:[name,thumb], 
+    widgets:[checkbox,thumb], 
     layout:ui.Panel.Layout.Flow('vertical',true),
     // style:
   });
