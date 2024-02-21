@@ -1,6 +1,7 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
 var teste = 
     /* color: #d63000 */
+    /* shown: false */
     /* displayProperties: [
       {
         "type": "rectangle"
@@ -132,31 +133,38 @@ function landtrendr (_col,_years,_bands){
   // destacando 
   var LTarray = LTresult.select(['LandTrendr']); // subset the LandTrendr segmentation info
 
-  // o nbr landtrandr é o principal resultado deste processamento
-  var nbr_landtrandr = LTarray.arraySlice({
+  var segmented_index = LTarray.arraySlice({
       axis:0,
       start:2,
       end:3,
     }).arrayProject([1]); //slice out the fitted values row
 
-  // var vectors_landtrandr = LTarray.arraySlice({
-  //     axis:0,
-  //     start:3,
-  //     end:4,
-  //   }); //slice out the fitted values row
+  var vertex_landtrandr = LTarray.arraySlice({
+      axis:0,
+      start:3,
+      end:4,
+    }).arrayProject([1]); //slice out the fitted values row
 
+
+  _bands[_bands.length] = 'vertex';
   
   var list_images_multibands = _bands
     .map(function(bandname){
   
-     var ftv = LTresult.select([bandname + '_fit']).int16(); // subset the bandname_fit band
+     var ftv = LTresult.select([bandname + '_fit']); // subset the bandname_fit band
      
      if (bandname === _bands[0]){
       // nbr_fit
-       ftv = nbr_landtrandr;
+       ftv = segmented_index;
+     }
+     if (bandname === 'vertex'){
+      // nbr_fit
+       ftv = vertex_landtrandr;
      }
      
-      return ftv.arrayFlatten([_years]);
+      return ftv
+        .int16()
+        .arrayFlatten([_years]);
   });
 
   var col_annual_landtrandr = ee.ImageCollection(
@@ -178,8 +186,9 @@ function landtrendr (_col,_years,_bands){
     })
   );
   
+  var rmse = ee.Image(LTresult.select('rmse')).int16();
   
-  return col_annual_landtrandr;
+  return {collection:col_annual_landtrandr,rmse:rmse};
 }
 
   
@@ -200,13 +209,16 @@ var annual_mosaics = years.map(function(year){
     });
 });
 
-annual_mosaics = ee.ImageCollection(annual_mosaics)
-  .select(bands.median);
+annual_mosaics = ee.ImageCollection(annual_mosaics);
 
 
 print('annual_mosaics',annual_mosaics,bands.median);  
 
-var annual_mosaics_landtrendr = landtrendr(annual_mosaics,years,bands.median);
+var median_landtrendr = landtrendr(annual_mosaics.select(bands.median),years,bands.median);
+
+var annual_mosaics_landtrendr = median_landtrendr.collection;
+var annual_mosaics_landtrendr_rmse = median_landtrendr.rmse;
+
 print('annual_mosaics_landtrendr',annual_mosaics_landtrendr);
 
 
@@ -221,3 +233,4 @@ var visParams = {
 
 Map.addLayer(annual_mosaics,visParams.median,'annual_mosaics',true);
 Map.addLayer(annual_mosaics_landtrendr,visParams.median,'annual_mosaics_landtrendr',true);
+Map.addLayer(annual_mosaics_landtrendr_rmse,{},'RMSE',true);
