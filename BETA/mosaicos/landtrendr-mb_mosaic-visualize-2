@@ -1,0 +1,315 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var teste = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.FeatureCollection(
+        [ee.Feature(
+            ee.Geometry.Polygon(
+                [[[-48.15919318349819, -15.548094016634053],
+                  [-48.15370001943569, -15.882548462941735],
+                  [-47.76093878896694, -15.87198126389295],
+                  [-47.76093878896694, -15.569261512523617]]], null, false),
+            {
+              "system:index": "0"
+            })]),
+    geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.MultiPoint();
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// --- 21-02-2024 // GT-Carbono - explorando landtrendr nos mosaicos landsat do mapbiomas
+// --- --- --- OPTIONS
+var run_params = {
+  maxSegments:            6,      // maxSegments (Integer): Maximum number of segments to be fitted on the time series.
+  pvalThreshold:          0.05,   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
+  recoveryThreshold:      0.25,   // recoveryThreshold (Float, default: 0.25): If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed.
+};
+
+
+var bands = {
+  basic:[
+    'ndvi',
+    // 'blue',
+    // 'green',
+    // 'red',
+    // 'nir',
+    // 'swir1',
+    // 'swir2',
+    // 'gv',
+    // 'npv',
+    // 'soil',
+    // 'cloud',
+    // 'shade',
+    // 'npvSoil',
+    // 'gvs',
+  ],
+};
+
+bands.median = bands.basic.map(function(str){return str + "_median";}),
+bands.median_wet = bands.basic.map(function(str){return str + "_median_wet";}),
+bands.median_dry = bands.basic.map(function(str){return str + "_median_dry";}),
+bands.median_texture = bands.basic.map(function(str){return str + "_median_texture";}),
+bands.min = bands.basic.map(function(str){return str + "_min";}),
+bands.max = bands.basic.map(function(str){return str + "_max";}),
+bands.amp = bands.basic.map(function(str){return str + "_amp";}),
+bands.stdDev = bands.basic.map(function(str){return str + "_stdDev";}),
+
+// ...
+
+print(bands);
+
+
+var year_sat = {
+  1985:['l5'],  1986:['l5'],  1987:['l5'],  1988:['l5'],  1989:['l5'],
+  1990:['l5'],  1991:['l5'],  1992:['l5'],  1993:['l5'],  1994:['l5'],
+  1995:['l5'],  1996:['l5'],  1997:['l5'],  1998:['l5'],  1999:['l5'],  
+  
+  2000:['l7'],  2001:['l7'],  2002:['l7'],
+  
+  2003:['l5'],  2004:['l5'],  2005:['l5'],  2006:['l5'],  2007:['l5'],  2008:['l5'],
+  2009:['l5'],  2010:['l5'],  2011:['l5'],
+  
+  2012:['l7'],
+  
+  2013:['l8'],  2014:['l8'],  2015:['l8'],  2016:['l8'],  2017:['l8'],
+  2018:['l8'],  2019:['l8'],  2020:['l8'],  2021:['l8'],  2022:['l8'],
+  2023:['l8'],
+};
+
+var years = [
+  1985,1986,1987,1988,1989,
+  1990,1991,1992,1993,1994,
+  1995,1996,1997,1998,1999,
+  2000,2001,2002,2003,2004,
+  2005,2006,2007,2008,2009,
+  2010,2011,2012,2013,2014,
+  2015,2016,2017,2018,2019,
+  2020,2021,2022,2023,//2024,
+];
+
+
+// --- --- --- SPATAL DATA
+var ibge_biomas = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biomas_IBGE_250mil')
+  .filter(ee.Filter.eq('Bioma','Cerrado'));
+
+// universal featurecollection
+var fc = ibge_biomas;
+// var fc = teste;
+
+var mask = ee.Image().paint(fc).eq(0);
+var bounds = fc.geometry().bounds();
+
+var mb_mosaics = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2')
+    .filter(ee.Filter.eq('biome','CERRADO'))
+    .filterBounds(teste);
+print('mb_mosaics',mb_mosaics.limit(30));
+
+print(
+  mb_mosaics.first().bandNames(),
+  mb_mosaics.first().bandNames().map(function(str){return ee.String(str).split('_').get(0)}).distinct(),
+
+  mb_mosaics.first().bandNames().map(function(str){return ee.String(str).split('_').slice(1)}).distinct()
+  );
+
+// --- --- --- MAIN FUNCTIONS
+function landtrendr (_col,_years,_bands,_run_params){
+
+  //////////////////////////////////// LandTrendr
+  _run_params.timeSeries = _col;    // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
+  
+  _years = _years.map(function(year){return ''+year});
+  
+  // rodando o algoritimo de segmentação temporal
+  var LTresult = ee.Algorithms.TemporalSegmentation.LandTrendr(run_params).toFloat();
+  // print('LTresult',LTresult)
+  // destacando 
+  var LTarray = LTresult.select(['LandTrendr']); // subset the LandTrendr segmentation info
+
+  var segmented_index = LTarray.arraySlice({
+      axis:0,
+      start:2,
+      end:3,
+    }).arrayProject([1]); //slice out the fitted values row
+
+  var vertex_landtrandr = LTarray.arraySlice({
+      axis:0,
+      start:3,
+      end:4,
+    }).arrayProject([1]); //slice out the fitted values row
+
+
+  _bands[_bands.length] = 'vertex';
+  
+  var list_images_multibands = _bands
+    .map(function(bandname){
+  
+     var ftv = LTresult.select([bandname + '_fit']); // subset the bandname_fit band
+     
+     if (bandname === _bands[0]){
+      // nbr_fit
+       ftv = segmented_index;
+     }
+     if (bandname === 'vertex'){
+      // nbr_fit
+       ftv = vertex_landtrandr;
+     }
+     
+      return ftv
+        .byte()
+        .arrayFlatten([_years]);
+  });
+
+  var col_annual_landtrandr = ee.ImageCollection(
+    _years.map(function(year){
+      var start = ee.Date(''+year+'-01-01');
+      var end = start.advance(1,'year');
+      
+      var recipe = ee.Image().select();
+      
+      _bands.forEach(function(bandname,i){
+        recipe = recipe.addBands(list_images_multibands[i].select([year],[bandname]));
+      });
+      
+      return recipe.set({
+        'system:time_start':start.millis(),
+        'system:time_end':end.millis(),
+        'year':parseInt(year),
+      });
+    })
+  );
+  
+  var rmse = ee.Image(LTresult.select('rmse')).int16();
+  
+  return {collection:col_annual_landtrandr,rmse:rmse};
+}
+
+  
+// --- --- --- DEVELOPMENT of annual mosaics and their temporal segmentation
+var annual_mosaics = years.map(function(year){
+  var start = ee.Date(''+year+'-01-01');
+  var end = start.advance(1,'year');
+  return mb_mosaics
+    .filter(ee.Filter.eq('year',year))
+    .filter(ee.Filter.inList('satellite',year_sat[year]))
+    // .map(indexs_for_mb_mosaics)
+    .median() // no caso de sobreposição de cartas entre os biomas, ou de mosaicos com mais de um ano, a redução calculando a mediana
+    .divide(100)
+    .byte()
+    .unmask()
+    .set({
+      year:year,
+      'system:time_start':start.millis(),
+      'system:time_end':end.millis(),
+    });
+});
+
+annual_mosaics = ee.ImageCollection(annual_mosaics);
+
+
+print('annual_mosaics',annual_mosaics,bands.median);  
+
+var median_landtrendr = landtrendr(annual_mosaics.select(bands.median),years,bands.median,run_params);
+
+var annual_mosaics_landtrendr = median_landtrendr.collection;
+var annual_mosaics_landtrendr_rmse = median_landtrendr.rmse;
+
+print('annual_mosaics_landtrendr',annual_mosaics_landtrendr);
+
+
+// --- --- ---  PLOT
+var visParams = {
+  median:{
+    bands: ['swir1_median', 'nir_median', 'red_median'],
+    gain: [0.08, 0.06, 0.2],
+    gamma: 0.85
+  },
+  ndvi:{
+    bands: ['ndvi_median'],
+    min: 50,
+    max:200,
+  }
+};
+
+Map.addLayer(annual_mosaics.select('ndvi_median'),visParams.ndvi,'annual_mosaics',true);
+Map.addLayer(annual_mosaics_landtrendr.select('ndvi_median'),visParams.ndvi,'annual_mosaics_landtrendr',true);
+Map.addLayer(annual_mosaics_landtrendr_rmse,{min:0,max:20},'RMSE',true);
+
+
+// --- --- --- UI
+var panels = years.map(function(year){
+  var subpanel = ui.Panel({
+    //widgets, 
+    layout:ui.Panel.Layout.Flow('horizontal',true),
+    // style:
+  });
+  
+  var year_mosaics = annual_mosaics.filter(ee.Filter.eq('year',year)).first();
+  var year_mosaics_landtrendr = annual_mosaics_landtrendr.filter(ee.Filter.eq('year',year)).first();
+  
+  [
+    {
+      img:year_mosaics,
+      name:'year_mosaics'
+    },
+    {
+      img:year_mosaics_landtrendr,
+      name:'year_mosaics_landtrendr'
+    }
+
+  ].forEach(function(map){
+    var name = map.name + '_' + year;
+    var layer = ui.Map.Layer({
+      eeObject:map.img,
+      visParams:visParams.ndvi,
+      name:name,
+      shown:true,
+      opacity:1
+    });
+    
+    var checkbox = ui.Checkbox({
+      label:name,
+      value:false,
+      onChange:function(value){
+          if (value === true){
+            Map.add(layer);
+            layer.setShown(true);
+            layer.setOpacity(1);
+          } else {
+            Map.remove(layer);
+          }
+      },
+      // disabled:,
+      // style:
+    });
+      
+    var thumb = ui.Thumbnail({
+      image:map.img.visualize(visParams.ndvi), 
+      params:{
+        dimensions:300,
+        region:teste.geometry().bounds()
+      }, 
+      // onClick:,
+      style:{}
+    });
+    
+  var sub_subpanel = ui.Panel({
+    widgets:[checkbox,thumb], 
+    layout:ui.Panel.Layout.Flow('vertical',true),
+    // style:
+  });
+  
+  subpanel.add(sub_subpanel);
+
+  });
+  
+  return subpanel;
+});
+
+var panel = ui.Panel({
+  widgets:panels, 
+  layout:ui.Panel.Layout.Flow('vertical'),
+  // style:
+});
+
+
+ui.root.widgets().add(panel);
