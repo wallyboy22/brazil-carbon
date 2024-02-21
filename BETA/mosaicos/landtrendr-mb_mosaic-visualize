@@ -2,22 +2,20 @@
 var teste = 
     /* color: #d63000 */
     /* shown: false */
-    /* displayProperties: [
-      {
-        "type": "rectangle"
-      }
-    ] */
     ee.FeatureCollection(
         [ee.Feature(
             ee.Geometry.Polygon(
-                [[[-48.40089240224819, -15.49516576265547],
-                  [-48.40089240224819, -16.062105739412868],
-                  [-47.28303351552944, -16.062105739412868],
-                  [-47.28303351552944, -15.49516576265547]]], null, false),
+                [[[-48.15919318349819, -15.548094016634053],
+                  [-48.15370001943569, -15.882548462941735],
+                  [-47.76093878896694, -15.87198126389295],
+                  [-47.76093878896694, -15.569261512523617]]], null, false),
             {
               "system:index": "0"
             })]),
-    geometry = /* color: #d63000 */ee.Geometry.MultiPoint();
+    geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.MultiPoint();
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 // --- 21-02-2024 // GT-Carbono - explorando landtrendr nos mosaicos landsat do mapbiomas
 // --- --- --- OPTIONS
@@ -26,10 +24,10 @@ var bands = {
     'ndvi',
     // 'blue',
     // 'green',
-    'red',
-    'nir',
-    'swir1',
-    'swir2',
+    // 'red',
+    // 'nir',
+    // 'swir1',
+    // 'swir2',
     // 'gv',
     // 'npv',
     // 'soil',
@@ -198,7 +196,9 @@ var annual_mosaics = years.map(function(year){
     .filter(ee.Filter.inList('satellite',year_sat[year]))
     // .map(indexs_for_mb_mosaics)
     .median() // no caso de sobreposição de cartas entre os biomas, ou de mosaicos com mais de um ano, a redução calculando a mediana
+    .divide(100)
     .int16()
+    .unmask()
     .set({
       year:year,
       'system:time_start':start.millis(),
@@ -225,10 +225,71 @@ var visParams = {
     bands: ['swir1_median', 'nir_median', 'red_median'],
     gain: [0.08, 0.06, 0.2],
     gamma: 0.85
+  },
+  ndvi:{
+    bands: ['ndvi_median'],
+    min: 50,
+    max:200,
   }
 };
 
-Map.addLayer(annual_mosaics,visParams.median,'annual_mosaics',true);
-Map.addLayer(annual_mosaics_landtrendr,visParams.median,'annual_mosaics_landtrendr',true);
-Map.addLayer(annual_mosaics_landtrendr_rmse,{min:0,max:2000},'RMSE',true);
- 
+Map.addLayer(annual_mosaics.select('ndvi_median'),visParams.ndvi,'annual_mosaics',true);
+Map.addLayer(annual_mosaics_landtrendr.select('ndvi_median'),visParams.ndvi,'annual_mosaics_landtrendr',true);
+Map.addLayer(annual_mosaics_landtrendr_rmse,{min:0,max:20},'RMSE',true);
+
+
+// --- --- --- UI
+var panels = years.map(function(year){
+  var subpanel = ui.Panel({
+    //widgets, 
+    layout:ui.Panel.Layout.Flow('horizontal',true),
+    // style:
+  });
+  
+  var year_mosaics = annual_mosaics.filter(ee.Filter.eq('year',year)).first().visualize(visParams.ndvi);
+  var year_mosaics_landtrendr = annual_mosaics_landtrendr.filter(ee.Filter.eq('year',year)).first().visualize(visParams.ndvi);
+  
+  [
+    {
+      img:year_mosaics,
+      name:'year_mosaics'
+    },
+    {
+      img:year_mosaics_landtrendr,
+      name:'year_mosaics_landtrendr'
+    }
+
+  ].forEach(function(map){
+    
+    var name = ui.Label(map.name + '_' + year);
+    var thumb = ui.Thumbnail({
+      image:map.img, 
+      params:{
+        dimensions:420,
+        region:teste.geometry().bounds()
+      }, 
+      // onClick:,
+      style:{}
+    });
+    
+  var sub_subpanel = ui.Panel({
+    widgets:[name,thumb], 
+    layout:ui.Panel.Layout.Flow('vertical',true),
+    // style:
+  });
+  
+  subpanel.add(sub_subpanel);
+
+  });
+  
+  return subpanel;
+});
+
+var panel = ui.Panel({
+  widgets:panels, 
+  layout:ui.Panel.Layout.Flow('vertical'),
+  // style:
+});
+
+
+ui.root.widgets().add(panel);
