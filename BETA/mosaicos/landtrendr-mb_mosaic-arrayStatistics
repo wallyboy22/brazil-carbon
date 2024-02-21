@@ -19,39 +19,6 @@ var teste =
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 // --- 21-02-2024 // GT-Carbono - explorando landtrendr nos mosaicos landsat do mapbiomas
 // --- --- --- OPTIONS
-var bands = {
-  basic:[
-    'ndvi',
-    // 'blue',
-    // 'green',
-    // 'red',
-    // 'nir',
-    // 'swir1',
-    // 'swir2',
-    // 'gv',
-    // 'npv',
-    // 'soil',
-    // 'cloud',
-    // 'shade',
-    // 'npvSoil',
-    // 'gvs',
-  ],
-};
-
-bands.median = bands.basic.map(function(str){return str + "_median";}),
-bands.median_wet = bands.basic.map(function(str){return str + "_median_wet";}),
-bands.median_dry = bands.basic.map(function(str){return str + "_median_dry";}),
-bands.median_texture = bands.basic.map(function(str){return str + "_median_texture";}),
-bands.min = bands.basic.map(function(str){return str + "_min";}),
-bands.max = bands.basic.map(function(str){return str + "_max";}),
-bands.amp = bands.basic.map(function(str){return str + "_amp";}),
-bands.stdDev = bands.basic.map(function(str){return str + "_stdDev";}),
-
-// ...
-
-print(bands);
-
-
 var year_sat = {
   1985:['l5'],  1986:['l5'],  1987:['l5'],  1988:['l5'],  1989:['l5'],
   1990:['l5'],  1991:['l5'],  1992:['l5'],  1993:['l5'],  1994:['l5'],
@@ -94,7 +61,7 @@ var bounds = fc.geometry().bounds();
 
 var mb_mosaics = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2')
     .filter(ee.Filter.eq('biome','CERRADO'))
-    .filterBounds(teste);
+    .filterBounds(teste.geometry());
 print('mb_mosaics',mb_mosaics.limit(30));
 
 print(
@@ -104,7 +71,8 @@ print(
   mb_mosaics.first().bandNames().map(function(str){return ee.String(str).split('_').slice(1)}).distinct()
   );
 
-var ref_data = ee.FeatureCollection('users/barbarazimbres/Buffers_afterExclusions_minusRainGaps_less300tha_NOVO2_kmeans_errors');
+var ref_data = ee.FeatureCollection('users/barbarazimbres/Buffers_afterExclusions_minusRainGaps_less300tha_NOVO2_kmeans_errors')
+    .filterBounds(teste);
 print('ref_data',ref_data);
 Map.addLayer(ref_data,{},'ref_data');
 
@@ -224,8 +192,8 @@ Map.addLayer(annual_mosaics.select('ndvi_median'),visParams.ndvi,'ndvi annual_mo
 var run_params_array = [
   ['ndvi_median',/* 'ndvi_median_dry', 'ndvi_median_wet'*/], // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
   [2, 6, 10],         // maxSegments (Integer): Maximum number of segments to be fitted on the time series.
-  [0.25, 0.5, 0.75],  // recoveryThreshold (Float, default: 0.25): If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed.
-  [0.05, 0.1, 0.2],   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
+  [0.25/*, 0.5, 0.75*/],  // recoveryThreshold (Float, default: 0.25): If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed.
+  [0.05/*, 0.1, 0.2*/],   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
 ]; 
 
 function matrix_constructor(obj) {
@@ -252,7 +220,7 @@ var list_of_run_params = matrix_constructor(run_params_array);
 
 print('list_of_run_params',list_of_run_params);
 
-var table = list_of_run_params.forEach(function(str){
+var tables = list_of_run_params.map(function(str){
   var split = str.split('-');
   
   var bandname = split[0];
@@ -269,15 +237,38 @@ var table = list_of_run_params.forEach(function(str){
   var segmenting_collection = segmenting.collection;
   var segmenting_rmse = segmenting.rmse;
   
-  var vis = {
-    bands: [bandname],
-    min: 50,
-    max:200,
-  };
   
-  Map.addLayer(segmenting_collection.select(bandname),visParams.vis,'segmenting_collection ' + str,false);
-  Map.addLayer(segmenting_rmse,{min:0,max:20},'segmenting_rmse ' + str,false);
+  var table = years.map(function(year){
+    var img_year = segmenting_collection.filter(ee.Filter.eq('year',year)).first();
+    return ref_data.map(function(feat){
+      var reduce = img_year.reduceRegion({
+        reducer:ee.Reducer.first(),
+        geometry:feat.geometry().centroid(),
+        scale:500,
+        // crs, crsTransform, bestEffort, 
+        maxPixels:1e16,
+        // tileScale:
+      });
+      
+      return ee.Feature(null)
+        .set(reduce)
+        .set({
+          'maxSegments':ee.Number.parse(split[1]),
+          'recoveryThreshold':ee.Number.parse(split[2]),
+          'pvalThreshold':ee.Number.parse(split[3]),
+          'year':year
+        });
 
-});
+    })
+    
+      
+    });
+    return table;
+    return ee.FeatureCollection(table).flatten();
+  });
+
+print('tables',tables);
+
+tables = tables.flatten();
 
 print('table',table);
