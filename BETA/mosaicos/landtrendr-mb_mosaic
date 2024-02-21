@@ -181,7 +181,7 @@ function landtrendr (_col,_years,_bands){
       return recipe.set({
         'system:time_start':start.millis(),
         'system:time_end':end.millis(),
-        'year':year,
+        'year':parseInt(year),
       });
     })
   );
@@ -222,7 +222,7 @@ var annual_mosaics_landtrendr_rmse = median_landtrendr.rmse;
 print('annual_mosaics_landtrendr',annual_mosaics_landtrendr);
 
 
-// --- --- ---PLOT
+// --- --- ---  PLOT
 var visParams = {
   median:{
     bands: ['swir1_median', 'nir_median', 'red_median'],
