@@ -59,6 +59,8 @@ var bounds = fc.geometry().bounds();
 var ref_data = ee.FeatureCollection('users/barbarazimbres/Buffers_afterExclusions_minusRainGaps_less300tha_NOVO2_kmeans_errors')
     .filterBounds(teste);
 
+print('ref_data',ref_data);
+
 Map.addLayer(ref_data,{},'ref_data');
 
 var mb_mosaics = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2')
@@ -242,14 +244,13 @@ var tables = list_of_run_params.map(function(str){
       });
       
       return ee.Feature(null)
-        // .set(reduce)
+        .set(reduce)
         .set({
           'maxSegments':ee.Number.parse(split[1]),
           'recoveryThreshold':ee.Number.parse(split[2]),
           'pvalThreshold':ee.Number.parse(split[3]),
           'year':year,
-          'reduce':reduce,
-          
+          'ID':feat.get('Id'),
         });
 
     });
