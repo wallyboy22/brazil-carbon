@@ -118,6 +118,12 @@ function landtrendr (_run_params,_years,_bands){
   // destacando 
   var LTarray = LTresult.select(['LandTrendr']); // subset the LandTrendr segmentation info
 
+  var index = LTarray.arraySlice({
+      axis:0,
+      start:1,
+      end:2,
+    }).arrayProject([1]); //slice out the fitted values row
+
   var segmented_index = LTarray.arraySlice({
       axis:0,
       start:2,
@@ -130,8 +136,12 @@ function landtrendr (_run_params,_years,_bands){
       end:4,
     }).arrayProject([1]); //slice out the fitted values row
 
+  _bands[0] = 'band';
+
+  _bands[_bands.length] = 'segmented';
 
   _bands[_bands.length] = 'vertex';
+
   
   var list_images_multibands = _bands
     .map(function(bandname){
@@ -139,12 +149,16 @@ function landtrendr (_run_params,_years,_bands){
      var ftv = LTresult.select([bandname + '_fit']); // subset the bandname_fit band
      
      if (bandname === _bands[0]){
-      // nbr_fit
-       ftv = segmented_index;
+      // 
+       ftv = index;
      }
      if (bandname === 'vertex'){
       // nbr_fit
        ftv = vertex_landtrandr;
+     }
+     if (bandname === 'index_segmented'){
+      // nbr_fit
+      ftv = segmented_index;
      }
      
       return ftv
@@ -224,8 +238,7 @@ Map.addLayer(annual_mosaics.select('ndvi_median'),visParams.ndvi,'ndvi annual_mo
 var run_params_array = [
   ['ndvi_median',/* 'ndvi_median_dry', 'ndvi_median_wet'*/], // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
   [13],         // maxSegments (Integer): Maximum number of segments to be fitted on the time series.
-  [ 
-  //  1,    6,    4,    2,  1 // anos
+  [//10,    6,    4,    2,  1 // anos
     0.1, 0.15, 0.25,  0.5,  1 // fator
   ],  // recoveryThreshold (Float, default: 0.25): If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed.
   [0.1],   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
