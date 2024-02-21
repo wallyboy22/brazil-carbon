@@ -1,0 +1,440 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var teste = 
+    /* color: #d63000 */
+    /* shown: false */
+    /* displayProperties: [
+      {
+        "type": "rectangle"
+      }
+    ] */
+    ee.FeatureCollection(
+        [ee.Feature(
+            ee.Geometry.Polygon(
+                [[[-57.63490119131069, -16.634672271468176],
+                  [-57.63490119131069, -17.485398402648492],
+                  [-56.73402228506069, -17.485398402648492],
+                  [-56.73402228506069, -16.634672271468176]]], null, false),
+            {
+              "system:index": "0"
+            })]),
+    fire_2020 = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Point([-57.17175748973216, -17.28603904457847]);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// --- --- --- The script to export Landsat composings
+var version = 'annual_median';
+var bands = [
+  'nbr'/*,'blue','green'*/,'red','nir','swir1','swir2',//'gv','npv','soil','cloud','shade','npvSoil','gvs',
+];
+
+// --- --- Functions for cloud masking in Landsat images (add here new functions to cloud masking)
+
+// The original functions used in collection 2 at mapbiomas-fogo
+function corrections_LS89_col2(image) {
+  // Radiometric correction for optical bands
+  var opticalBands = image.select('SR_B.*').multiply(0.0000275).add(-0.2);
+  opticalBands = opticalBands.multiply(10000).subtract(0.0000275 * 0.2 * 1e5 * 100).round().divide(10000);
+
+  // Radiometric correction for thermal bands
+  var thermalBands = image.select('ST_B.*').multiply(0.00341802).add(149.0);
+
+  // Return the image with corrected bands
+  image = image.addBands(opticalBands, null, true).addBands(thermalBands, null, true);
+
+  // Cloud masking
+  var qa = image.select('QA_PIXEL');
+  var cloud = qa.bitwiseAnd(1 << 3).and(qa.bitwiseAnd(1 << 9)).or(qa.bitwiseAnd(1 << 4));
+  var good_pixel = qa.bitwiseAnd(1 << 6).or(qa.bitwiseAnd(1 << 7));
+
+  var radsatQA = image.select('QA_RADSAT');
+  var saturated = radsatQA.bitwiseAnd(1 << 0).or(radsatQA.bitwiseAnd(1 << 1)).or(radsatQA.bitwiseAnd(1 << 2))
+    .or(radsatQA.bitwiseAnd(1 << 3)).or(radsatQA.bitwiseAnd(1 << 4)).or(radsatQA.bitwiseAnd(1 << 5))
+    .or(radsatQA.bitwiseAnd(1 << 6));
+
+  var negative_mask = image.select(['SR_B1']).gt(0).and(
+    image.select(['SR_B2']).gt(0)).and(
+      image.select(['SR_B3']).gt(0)).and(
+        image.select(['SR_B4']).gt(0)).and(
+          image.select(['SR_B5']).gt(0)).and(
+            image.select(['SR_B7']).gt(0));
+
+  image = image
+    .updateMask(cloud.not())
+    .updateMask(good_pixel)
+    .updateMask(saturated.not())
+    .updateMask(negative_mask);
+
+  // Correction of band names to default
+  var oldBands = ['SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B6', 'SR_B7',];
+  var newBands = ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'];
+
+  image = image.select(oldBands, newBands);
+
+  return image.float();
+}
+
+function corrections_LS57_col2 (image){
+  var opticalBands = image.select('SR_B.*').multiply(0.0000275).add(-0.2);
+  var thermalBands = image.select('ST_B.*').multiply(0.00341802).add(149.0);
+  // - return 
+  
+  image = image.addBands(opticalBands, null, true)
+              .addBands(thermalBands, null, true);
+              
+  // mascara de nuvem
+  var cloudShadowBitMask = (1 << 3);
+  var cloudsBitMask = (1 << 5);
+
+  var qa = image.select('QA_PIXEL');
+  var mask = qa.bitwiseAnd(cloudShadowBitMask).eq(0)
+      .and(qa.bitwiseAnd(cloudsBitMask).eq(0));
+
+  // mascara de ruidos, saturação radiométrica
+  function bitwiseExtract(value, fromBit, toBit) {
+    if (toBit === undefined)
+      toBit = fromBit;
+    var maskSize = ee.Number(1).add(toBit).subtract(fromBit);
+    var mask = ee.Number(1).leftShift(maskSize).subtract(1);
+    return value.rightShift(fromBit).bitwiseAnd(mask);
+  }
+
+  var clear = bitwiseExtract(qa, 6); // 1 if clear
+  var water = bitwiseExtract(qa, 7); // 1 if water
+
+  var radsatQA = image.select('QA_RADSAT');
+  var band5Saturated = bitwiseExtract(radsatQA, 4); // 0 if band 5 is not saturated
+  var anySaturated = bitwiseExtract(radsatQA, 0, 6); // 0 if no bands are saturated
+
+  var mask_saturation = clear
+    .or(water)
+    .and(anySaturated.not());
+  
+  // is visible bands with negative reflectance? 
+  var negative_mask = image.select(['SR_B1']).gt(0).and(
+    image.select(['SR_B2']).gt(0)).and(
+      image.select(['SR_B3']).gt(0)).and(
+        image.select(['SR_B4']).gt(0)).and(
+          image.select(['SR_B5']).gt(0)).and(
+            image.select(['SR_B7']).gt(0));
+  
+  // - return
+  image = image
+    .updateMask(mask)
+    .updateMask(mask_saturation)
+    .updateMask(negative_mask);
+
+  var oldBands = ['SR_B1','SR_B2','SR_B3','SR_B4','SR_B5','SR_B7',];
+  var newBands = ['blue', 'green','red',  'nir',  'swir1','swir2'];
+  image = image.select(oldBands,newBands).float();
+
+  // - 
+  return image;
+
+  // - return timeFlag_landsat(image);
+}
+
+// Load the block list module for Landsat
+var blockList_landsat = require('users/geomapeamentoipam/MapBiomas__Fogo:00_Tools/module-blockList').landsat();
+
+// The function to calculate the spectral mixture
+function fractions(image) {
+  var newBands = ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'];
+
+  // Select bands and multiply by 10000
+  var imageSelected = image.select(newBands).multiply(10000);
+
+  // Atmospheric coefficients
+  var atm = [805.6, 458.1, 286.8, 168.3, 46.8, 26.6];
+
+  // Define endmembers for spectral mixture analysis
+  var GV = [119.0, 475.0, 169.0, 6250.0, 2399.0, 675.0];
+  var NPV = [1514.0, 1597.0, 1421.0, 3053.0, 7707.0, 1975.0];
+  var Soil = [1799.0, 2479.0, 3158.0, 5437.0, 7707.0, 6646.0];
+  var Cloud = [4031.0, 8714.0, 7900.0, 8989.0, 7002.0, 6607.0];
+
+  // Spectral mixture analysis
+  var sma = imageSelected.unmix([GV, NPV, Soil, Cloud])
+    .max(0)
+    .multiply(100)
+    .int16();
+
+  // Rename and add bands
+  sma = image
+    .addBands(sma.select('band_0').rename("gv"))
+    .addBands(sma.select('band_1').rename("npv"))
+    .addBands(sma.select('band_2').rename("soil"))
+    .addBands(sma.select('band_3').rename("cloud"));
+
+  // Calculate summed values
+  var summed = sma.expression('GV + NPV + SOIL + CLOUD', {
+    GV: sma.select('gv'),
+    NPV: sma.select('npv'),
+    SOIL: sma.select('soil'),
+    CLOUD: sma.select('cloud')
+  });
+
+  // Shade, GVS, NPV + Soil + Cloud
+  var shade = summed.subtract(100).abs();
+  var gvs = (sma.select(['gv']).divide(summed)).multiply(100);
+  var npvSoil = sma.select(['gv']).add(sma.select(['soil'])).add(sma.select('cloud'));
+
+  return sma
+    .addBands(shade.rename("shade"))
+    .addBands(npvSoil.rename("npvSoil"))
+    .addBands(gvs.rename("gvs"));
+}
+
+// Basic functions for Landsat images processing
+// Add band with normalized burned ratio (NBR)
+function addBand_NBR(image) {
+  var exp = '( b("nir") - b("swir2") ) / ( b("nir") + b("swir2") )';
+  var minimoNBR = image
+    .expression(exp)
+    .multiply(-1)
+    .add(1)
+    .rename("nbr");
+  return image
+    .addBands(minimoNBR);
+}
+
+// Function to clip border of images
+function clipBoard_Landsat(image) {
+  return image
+    .updateMask(ee.Image().paint(image.geometry().buffer(-3000)).eq(0));
+}
+
+var satellites = {
+  l8:{
+    address:'LANDSAT/LC08/C02/T1_L2',
+    pre_processings:function(col){
+      return col
+        .filter(ee.Filter.inList('system:index', blockList_landsat).not())
+        .map(function(image){
+          // Apply processing steps to each image in the collection
+          image = clipBoard_Landsat(image);
+          image = corrections_LS89_col2(image);
+          image = addBand_NBR(image);
+          // image = fractions(image);
+          return image.select(bands);
+        });
+      },
+  },
+  l9:{
+    address:'LANDSAT/LC09/C02/T1_L2',
+    pre_processings:function(col){
+      return col
+        .filter(ee.Filter.inList('system:index', blockList_landsat).not())
+        .map(function(image){
+        // Apply processing steps to each image in the collection
+        image = clipBoard_Landsat(image);
+        image = corrections_LS89_col2(image);
+        image = addBand_NBR(image);
+        // image = fractions(image);
+        return image.select(bands);
+      });
+    },
+  },
+  l5:{
+    address:'LANDSAT/LT05/C02/T1_L2',
+    pre_processings:function(col){
+      return col
+        .filter(ee.Filter.inList('system:index', blockList_landsat).not())
+        .map(function(image){
+        // Apply processing steps to each image in the collection
+        image = clipBoard_Landsat(image);
+        image = corrections_LS57_col2(image);
+        image = addBand_NBR(image);
+        // image = fractions(image);
+        return image.select(bands);
+      });
+    },
+  },
+  l7:{
+    address:'LANDSAT/LE07/C02/T1_L2',
+    pre_processings:function(col){
+      return col
+        .filter(ee.Filter.inList('system:index', blockList_landsat).not())
+        .map(function(image){
+        // Apply pre_processingsing steps to each image in the collection
+        image = clipBoard_Landsat(image);
+        image = corrections_LS57_col2(image);
+        image = addBand_NBR(image);
+        // image = fractions(image);
+        return image.select(bands);
+      });
+    },
+  },
+};
+
+var layers = [
+    {
+      years: [1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998],
+      constelation:['l5'],
+    },
+    {
+      years:[1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012],
+      constelation:['l5','l7']
+    },
+    {
+      years:[2013,2014,2015,2016,2017,2018,2019,2020,2021],
+      constelation:['l8','l7'],
+    },  
+    {
+      years:[2022,2023],
+      constelation:['l9','l8'],
+    }
+  ];
+
+// Load geometry and create a mask for delimited
+var biomes = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biomas_IBGE_250mil')
+  .filter(ee.Filter.eq('Bioma','Pantanal'));
+
+var geometry = teste;
+
+var mask = ee.Image().paint(geometry).eq(0);
+var bounds = geometry.geometry().bounds();
+
+function landtrendr (col,_years){
+
+  //////////////////////////////////// LandTrendr
+  var run_params = { 
+    timeSeries:             col,    // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
+    maxSegments:            6,      // maxSegments (Integer): Maximum number of segments to be fitted on the time series.
+    spikeThreshold:         0.9,    // spikeThreshold (Float, default: 0.9): Threshold for dampening the spikes (1.0 means no dampening).
+    vertexCountOvershoot:   3,      // vertexCountOvershoot (Integer, default: 3): The initial model can overshoot the maxSegments + 1 vertices by this amount. Later, it will be pruned down to maxSegments + 1.
+    preventOneYearRecovery: true,   // preventOneYearRecovery (Boolean, default: false): Prevent segments that represent one year recoveries.
+    recoveryThreshold:      0.25,   // recoveryThreshold (Float, default: 0.25): If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed.
+    pvalThreshold:          0.05,   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
+    bestModelProportion:    0.75,   // bestModelProportion (Float, default: 0.75): Allows models with more vertices to be chosen if their p-value is no more than (2 - bestModelProportion) times the p-value of the best model.
+    minObservationsNeeded:  6       // minObservationsNeeded (Integer, default: 6): Min observations needed to perform output fitting.
+  };
+
+  // rodando o algoritimo de segmentação temporal
+  var LTresult = ee.Algorithms.TemporalSegmentation.LandTrendr(run_params).toFloat();
+  print('LTresult',LTresult)
+  // destacando 
+  var LTarray = LTresult.select(['LandTrendr']); // subset the LandTrendr segmentation info
+
+  // o nbr landtrandr é o principal resultado deste processamento
+  var nbr_landtrandr = LTarray.arraySlice({
+      axis:0,
+      start:2,
+      end:3,
+    }).arrayProject([1]); //slice out the fitted values row
+
+  // var vectors_landtrandr = LTarray.arraySlice({
+  //     axis:0,
+  //     start:3,
+  //     end:4,
+  //   }); //slice out the fitted values row
+
+  
+  var list_images_multibands = bands
+    .map(function(bandname){
+  
+     var ftv = LTresult.select([bandname + '_fit']).byte(); // subset the bandname_fit band
+     
+     if (bandname === bands[0]){
+      // nbr_fit
+       ftv = nbr_landtrandr;
+     }
+     
+      return ftv.arrayFlatten([_years]);
+  });
+
+  var col_annual_landtrandr = ee.ImageCollection(
+    _years.map(function(year){
+      var start = ee.Date(''+year+'-01-01');
+      var end = start.advance(1,'year');
+      
+      var recipe = ee.Image().select();
+      
+      bands.forEach(function(bandname,i){
+        recipe = recipe.addBands(list_images_multibands[i].select([year],[bandname]));
+      });
+      
+      return recipe.set({
+        'system:time_start':start.millis(),
+        'system:time_end':end.millis(),
+        'year':year,
+      });
+    })
+  );
+  
+  
+  return col_annual_landtrandr;
+}
+
+var annual_mosaics = ee.List([]);
+var YEARS = ee.List([]);
+layers.forEach(function(obj_mosaics){
+
+  var years = obj_mosaics.years;
+  var constelation  = obj_mosaics.constelation;
+  
+// median mosaicos anuais; 
+  years.forEach(function(year){
+      var start = ee.Date(''+year+'-01-01');
+      var end = start.advance(1,'year');
+      
+      var name = version + '-' + constelation  + '-' + year;
+      
+      name = name
+        .replace(',','_')
+        .replace(',','_');
+      
+      var collection_annual = constelation.map(function(string){
+        var obj = satellites[string];
+        var col = ee.ImageCollection(obj.address)
+          .filterDate(start,end)
+          .filterBounds(bounds);
+        
+        col = obj.pre_processings(col);
+
+        return col;
+      });
+      
+      collection_annual = ee.ImageCollection(ee.FeatureCollection(collection_annual).flatten());
+      var annual_mosaic = collection_annual
+        .median()
+        // .updateMask(mask)
+        .multiply(100)
+        .int8()
+        // .select(['red','nir','swir1'])
+        .set({
+          'system:time_start':start.millis(),
+          'system:time_end':end.millis(),
+          'year':year,
+          'source':'IPAM',
+          'version':version,
+          'name':name,
+          'constelation':constelation
+        });
+        
+        annual_mosaics = annual_mosaics.add(annual_mosaic);
+        YEARS = YEARS.cat([year]);
+  });
+
+});
+print('annual_mosaics',annual_mosaics);
+print(YEARS);
+
+var years = [
+    '1985','1986','1987','1988','1989',
+    '1990','1991','1992','1993','1994',
+    '1995','1996','1997','1998','1999',
+    '2000','2001','2002','2003','2004',
+    '2005','2006','2007','2008','2009',
+    '2010','2011','2012','2013','2014',
+    '2015','2016','2017','2018','2019',
+    '2020','2021','2022','2023'
+  ];
+
+annual_mosaics = ee.ImageCollection(annual_mosaics);
+  
+var annual_mosaics_landtrendr = landtrendr(annual_mosaics,years);
+print('annual_mosaics_landtrendr',annual_mosaics_landtrendr);
+
+Map.addLayer(annual_mosaics,{bands:['swir1','nir','red'],min:3,max:40},'annual_mosaics',false);
+Map.addLayer(annual_mosaics_landtrendr,{bands:['swir1','nir','red'],min:3,max:40},'annual_mosaics_landtrendr',false);
