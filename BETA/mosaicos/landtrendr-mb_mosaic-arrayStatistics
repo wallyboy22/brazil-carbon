@@ -57,7 +57,7 @@ var mask = ee.Image().paint(fc).eq(0);
 var bounds = fc.geometry().bounds();
 
 var ref_data = ee.FeatureCollection('users/barbarazimbres/Buffers_afterExclusions_minusRainGaps_less300tha_NOVO2_kmeans_errors')
-    // .filterBounds(teste);
+    .filterBounds(teste);
 
 print('ref_data',ref_data);
 
@@ -259,11 +259,11 @@ list_of_run_params.forEach(function(str){
   );
 
   });
-  print('tables',tables);
+  // print('tables',tables);
   
   tables = ee.FeatureCollection(tables).flatten();
   
-  print(str,'tables',tables.limit(200));
+  // print(str,'tables',tables.limit(200));
   
   var description = str.replace('.','_').replace('.','_').replace('.','_');
   
