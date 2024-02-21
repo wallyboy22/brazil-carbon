@@ -219,13 +219,13 @@ Map.addLayer(annual_mosaics,visParams.median,'annual_mosaics',false);
 Map.addLayer(annual_mosaics.select('ndvi_median'),visParams.ndvi,'ndvi annual_mosaics',false);
 
 
-// --- --- --- STATISTCS for each run params thinking for landtrendr
+// --- --- for each run params thinking for landtrendr
 
 var run_params_array = [
   ['ndvi_median',/* 'ndvi_median_dry', 'ndvi_median_wet'*/], // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
   [2, 6, 10],         // maxSegments (Integer): Maximum number of segments to be fitted on the time series.
-  [0.25/*, 0.5, 0.75*/],  // recoveryThreshold (Float, default: 0.25): If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed.
-  [0.05/*, 0.1, 0.2*/],   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
+  [0.25, 0.5, 0.75],  // recoveryThreshold (Float, default: 0.25): If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed.
+  [0.05, 0.1, 0.2],   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
 ];
 
 function matrix_constructor(obj) {
