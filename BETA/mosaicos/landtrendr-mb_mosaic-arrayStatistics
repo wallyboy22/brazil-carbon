@@ -233,12 +233,13 @@ list_of_run_params.forEach(function(str){
    
   var tables = ref_data.map(function(feat){
     return ee.FeatureCollection(years.map(function(year){
-      var img_year = segmenting_collection.filter(ee.Filter.eq('year',year)).first();
+      var img_year = segmenting_collection.filter(ee.Filter.eq('year',year)).first()
+        .addBands(segmenting_rmse);
     
       var reduce = img_year.reduceRegion({
         reducer:ee.Reducer.first(),
         geometry:feat.geometry().centroid(),
-        scale:500,
+        scale:30,
         // crs, crsTransform, bestEffort, 
         maxPixels:1e16,
         // tileScale:
@@ -264,11 +265,13 @@ list_of_run_params.forEach(function(str){
   
   print(str,'tables',tables.limit(200));
   
+  var description = str.replace('.','_').replace('.','_').replace('.','_');
+  
   Export.table.toDrive({
     collection:tables,
-    description:str,
+    description:description,
     folder:'GT-Carbono',
-    fileNamePrefix:'',
+    fileNamePrefix:description,
     fileFormat:'csv',
     // selectors:,
     // maxVertices:
