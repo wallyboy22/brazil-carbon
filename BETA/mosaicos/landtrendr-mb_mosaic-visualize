@@ -262,7 +262,7 @@ var panels = years.map(function(year){
   ].forEach(function(map){
     var name = map.name + '_' + year;
     var layer = ui.Map.Layer({
-      eeObject:year_mosaics,
+      eeObject:map.img,
       visParams:visParams.ndvi,
       name:name,
       shown:true,
