@@ -19,13 +19,6 @@ var teste =
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 // --- 21-02-2024 // GT-Carbono - explorando landtrendr nos mosaicos landsat do mapbiomas
 // --- --- --- OPTIONS
-var run_params = {
-  maxSegments:            6,      // maxSegments (Integer): Maximum number of segments to be fitted on the time series.
-  pvalThreshold:          0.05,   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
-  recoveryThreshold:      0.25,   // recoveryThreshold (Float, default: 0.25): If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed.
-};
-
-
 var bands = {
   basic:[
     'ndvi',
@@ -111,16 +104,16 @@ print(
   mb_mosaics.first().bandNames().map(function(str){return ee.String(str).split('_').slice(1)}).distinct()
   );
 
-// --- --- --- MAIN FUNCTIONS
-function landtrendr (_col,_years,_bands,_run_params){
+var ref_data = ee.FeatureCollection('users/barbarazimbres/Buffers_afterExclusions_minusRainGaps_less300tha_NOVO2_kmeans_errors');
+print('ref_data',ref_data);
+Map.addLayer(ref_data,{},'ref_data');
 
-  //////////////////////////////////// LandTrendr
-  _run_params.timeSeries = _col;    // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
-  
+// --- --- --- MAIN FUNCTIONS
+function landtrendr (_run_params,_years,_bands){
   _years = _years.map(function(year){return ''+year});
   
   // rodando o algoritimo de segmentação temporal
-  var LTresult = ee.Algorithms.TemporalSegmentation.LandTrendr(run_params).toFloat();
+  var LTresult = ee.Algorithms.TemporalSegmentation.LandTrendr(_run_params).toFloat();
   // print('LTresult',LTresult)
   // destacando 
   var LTarray = LTresult.select(['LandTrendr']); // subset the LandTrendr segmentation info
@@ -206,15 +199,7 @@ var annual_mosaics = years.map(function(year){
 annual_mosaics = ee.ImageCollection(annual_mosaics);
 
 
-print('annual_mosaics',annual_mosaics,bands.median);  
-
-var median_landtrendr = landtrendr(annual_mosaics.select(bands.median),years,bands.median,run_params);
-
-var annual_mosaics_landtrendr = median_landtrendr.collection;
-var annual_mosaics_landtrendr_rmse = median_landtrendr.rmse;
-
-print('annual_mosaics_landtrendr',annual_mosaics_landtrendr);
-
+// print('annual_mosaics',annual_mosaics,bands.median);  
 
 // --- --- ---  PLOT
 var visParams = {
@@ -230,86 +215,69 @@ var visParams = {
   }
 };
 
-Map.addLayer(annual_mosaics.select('ndvi_median'),visParams.ndvi,'annual_mosaics',true);
-Map.addLayer(annual_mosaics_landtrendr.select('ndvi_median'),visParams.ndvi,'annual_mosaics_landtrendr',true);
-Map.addLayer(annual_mosaics_landtrendr_rmse,{min:0,max:20},'RMSE',true);
+Map.addLayer(annual_mosaics,visParams.median,'annual_mosaics',false);
+Map.addLayer(annual_mosaics.select('ndvi_median'),visParams.ndvi,'ndvi annual_mosaics',false);
 
 
-// --- --- --- UI
-var panels = years.map(function(year){
-  var subpanel = ui.Panel({
-    //widgets, 
-    layout:ui.Panel.Layout.Flow('horizontal',true),
-    // style:
-  });
-  
-  var year_mosaics = annual_mosaics.filter(ee.Filter.eq('year',year)).first();
-  var year_mosaics_landtrendr = annual_mosaics_landtrendr.filter(ee.Filter.eq('year',year)).first();
-  
-  [
-    {
-      img:year_mosaics,
-      name:'year_mosaics'
-    },
-    {
-      img:year_mosaics_landtrendr,
-      name:'year_mosaics_landtrendr'
+// --- --- --- STATISTCS for each run params thinking for landtrendr
+
+var run_params_array = [
+  ['ndvi_median',/* 'ndvi_median_dry', 'ndvi_median_wet'*/], // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
+  [2, 6, 10],         // maxSegments (Integer): Maximum number of segments to be fitted on the time series.
+  [0.25/*, 0.5, 0.75*/],  // recoveryThreshold (Float, default: 0.25): If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed.
+  [0.05/*, 0.1, 0.2*/],   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
+];
+
+function matrix_constructor(obj) {
+  var result = [];
+
+  // Função recursiva para gerar combinações
+  function generateCombinations(index, currentCombination) {
+    if (index === obj.length) {
+      result.push(currentCombination.join('-'));
+      return;
     }
 
-  ].forEach(function(map){
-    var name = map.name + '_' + year;
-    var layer = ui.Map.Layer({
-      eeObject:map.img,
-      visParams:visParams.ndvi,
-      name:name,
-      shown:true,
-      opacity:1
-    });
-    
-    var checkbox = ui.Checkbox({
-      label:name,
-      value:false,
-      onChange:function(value){
-          if (value === true){
-            Map.add(layer);
-            layer.setShown(true);
-            layer.setOpacity(1);
-          } else {
-            Map.remove(layer);
-          }
-      },
-      // disabled:,
-      // style:
-    });
-      
-    var thumb = ui.Thumbnail({
-      image:map.img.visualize(visParams.ndvi), 
-      params:{
-        dimensions:300,
-        region:teste.geometry().bounds()
-      }, 
-      // onClick:,
-      style:{}
-    });
-    
-  var sub_subpanel = ui.Panel({
-    widgets:[checkbox,thumb], 
-    layout:ui.Panel.Layout.Flow('vertical',true),
-    // style:
-  });
-  
-  subpanel.add(sub_subpanel);
+    for (var i = 0; i < obj[index].length; i++) {
+      generateCombinations(index + 1, currentCombination.concat(obj[index][i]));
+    }
+  }
 
-  });
+  generateCombinations(0, []);
+
+  return result;
+}
+
+var list_of_run_params = matrix_constructor(run_params_array);
+
+print('list_of_run_params',list_of_run_params);
+
+var table = list_of_run_params.forEach(function(str){
+  var split = str.split('-');
   
-  return subpanel;
+  var bandname = split[0];
+
+  var run_params = {
+    'timeSeries':annual_mosaics.select(bandname),
+    'maxSegments':ee.Number.parse(split[1]),
+    'recoveryThreshold':ee.Number.parse(split[2]),
+    'pvalThreshold':ee.Number.parse(split[3])
+  };
+
+  var segmenting = landtrendr(run_params,years,[bandname]);
+
+  var segmenting_collection = segmenting.collection;
+  var segmenting_rmse = segmenting.rmse;
+  
+  var vis = {
+    bands: [bandname],
+    min: 50,
+    max:200,
+  };
+  
+  Map.addLayer(segmenting_collection.select(bandname),visParams.vis,'segmenting_collection ' + str,false);
+  Map.addLayer(segmenting_rmse,{min:0,max:20},'segmenting_rmse ' + str,false);
+
 });
 
-var panel = ui.Panel({
-  widgets:panels, 
-  layout:ui.Panel.Layout.Flow('vertical'),
-  // style:
-});
-
-
-ui.root.widgets().add(panel);
+print('table',table);
