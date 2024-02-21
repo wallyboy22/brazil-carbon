@@ -1,5 +1,8 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
-var teste = /* color: #d63000 */ee.FeatureCollection(
+var teste = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.FeatureCollection(
         [ee.Feature(
             ee.Geometry.Polygon(
                 [[[-48.31025519521694, -15.477961158790015],
@@ -9,10 +12,8 @@ var teste = /* color: #d63000 */ee.FeatureCollection(
             {
               "system:index": "0"
             })]),
-    geometry = 
-    /* color: #d63000 */
-    /* shown: false */
-    ee.Geometry.MultiPoint();
+    geometry = /* color: #d63000 */ee.Geometry.MultiPoint(),
+    geometry2 = /* color: #d63000 */ee.Geometry.Point([-47.82700213814179, -15.812029054018927]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 // --- 21-02-2024 // GT-Carbono - explorando landtrendr nos mosaicos landsat do mapbiomas
 // --- --- --- OPTIONS
@@ -229,9 +230,35 @@ var list_of_run_params = matrix_constructor(run_params_array);
 
 print('list_of_run_params',list_of_run_params);
 
+var extractTimeSeries = function(imageCollection,region) {
+  var timeSeries = ui.Chart.image.series({
+    imageCollection: imageCollection,
+    region: region,
+    reducer: ee.Reducer.first(),
+    scale: 500,
+    xProperty: 'system:time_start'
+  }).setOptions({
+    title: 'Série Temporal',
+    hAxis: {title: 'Data'},
+    vAxis: {title: 'Refletância'},
+    lineWidth: 1,
+    pointSize: 3,
+    legend: {
+      position: 'in',
+      textStyle: {fontSize: 11 }
+    } 
+  });
+  
+  timeSeries.style().set({
+    width:'600px',
+  });
+  
+  return timeSeries;
+};
 
-var final_table = ee.FeatureCollection(
-  list_of_run_params.map(function(str){
+var col = annual_mosaics.select('ndvi_median');
+
+list_of_run_params.map(function(str){
   var split = str.split('-');
   
   var bandname = split[0];
@@ -245,70 +272,34 @@ var final_table = ee.FeatureCollection(
 
   var segmenting = landtrendr(run_params,years,[bandname]);
 
-  var segmenting_collection = segmenting.collection;
-  var segmenting_rmse = segmenting.rmse;
+  var label_name = 'r-'+split[2].replace('.','_').replace('.','_').replace('.','_');
+
+  var segmenting_collection = segmenting.collection
+    .select(['index_segmented'],[label_name]);
+
   
+  col = col.linkCollection(segmenting_collection, [label_name]);
   
-   
-  var tables = ref_data.map(function(feat){
-    return ee.FeatureCollection(years.map(function(year){
-      var img_year = segmenting_collection.filter(ee.Filter.eq('year',year)).first()
-        .addBands(segmenting_rmse);
-    
-      var reduce = img_year.reduceRegion({
-        reducer:ee.Reducer.first(),
-        geometry:feat.geometry().centroid(),
-        scale:500,
-        // crs, crsTransform, bestEffort, 
-        maxPixels:1e16,
-        // tileScale:
-      });
-
-    
-      return ee.Feature(null)
-        .set(reduce)
-        .set({
-          'maxSegments':ee.Number.parse(split[1]),
-          'recoveryThreshold':ee.Number.parse(split[2]),
-          'pvalThreshold':ee.Number.parse(split[3]),
-          'bandname':bandname,
-          'year':year,
-          'ID':feat.get('Id'),
-        });
-    })
-  );
-
-  });
-  // print('tables',tables);
-  tables = ee.FeatureCollection(tables).flatten();
-  return tables;
-
-  // print(str,'tables',tables.limit(200));
-  
-  // var description = str.replace('.','_').replace('.','_').replace('.','_');
-  
-  // Export.table.toDrive({
-  //   collection:tables,
-  //   description:description,
-  //   folder:'GT-Carbono',
-  //   fileNamePrefix:description,
-  //   fileFormat:'csv',
-  //   // selectors:,
-  //   // maxVertices:
-  // });
-})
-).flatten();
-
-var description = 'temporal_segmentation_analisys-v0';
-
-print('final_table',final_table.limit(200));
-
-Export.table.toDrive({
-  collection:final_table,
-  description:description,
-  folder:'GT-Carbono',
-  fileNamePrefix:description,
-  fileFormat:'csv',
-  // selectors:,
-  // maxVertices:
 });
+
+
+Map.addLayer(col,{},'col');
+
+
+var panel = ui.Panel({
+  // widgets:,
+  layout:ui.Panel.Layout.Flow('vertical'),
+  style:{}
+});
+
+ui.root.widgets().add(panel);
+
+Map.onClick(function(obj){
+  var point = ee.Geometry.Point([obj.lon,obj.lat]);
+  var chart = extractTimeSeries(col,point);
+  panel.add(chart);
+});
+
+// print('col',col);
+
+// print(extractTimeSeries(col,geometry2));
