@@ -247,7 +247,7 @@ var extractTimeSeries = function(imageCollection,region) {
       textStyle: {fontSize: 11 }
     },
     series: {
-      0: { color: '0000ff' }, 
+      0: { color: '0000ff', lineWidth: 1.5 }, 
       1: { color: '00ff00' },
       2: { color: 'ff0000' },  
       3: { color: '004040' },
