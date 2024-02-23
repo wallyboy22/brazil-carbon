@@ -264,6 +264,7 @@ var extractTimeSeries = function(imageCollection,region) {
   
   timeSeries.style().set({
     width:'600px',
+    stretch:'horizontal'
   });
   
   return timeSeries;
@@ -345,6 +346,14 @@ Map.onClick(function(obj){
   var chart = extractTimeSeries(col,point);
   panel.add(chart);
   
+  //////////////////////////////
+  var panel_labels = ui.Panel({
+    // widgets:,
+    layout:ui.Panel.Layout.flow('horizontal',true),
+    style:{stretch:'horizontal'}
+  });
+  panel.add(panel_labels);
+  
   var reduce_rmse = rmse_img.reduceRegion({
     reducer:ee.Reducer.first(),
     geometry:point,
@@ -358,19 +367,24 @@ Map.onClick(function(obj){
   
   var labels = reduce_rmse.keys().map(function(key){
     key = ee.String(key);
-    return key.cat(':')
-        .cat(reduce_rmse.get(key));
+    return key.cat(': ').cat(reduce_rmse.get(key));
+  });
+
+  labels.evaluate(function(list_labels){
+    list_labels.forEach(function(label){
+      label = label.replace('ndvi_median:0','RMSE: ');
+      panel_labels.add(ui.Label(label));
+    });
   });
   
-  print('labels',labels)
   
-  labels = ui.Panel({
-    widgets:labels,
-    layout:ui.Panel.Layout.flow('horizontal',true),
-    // style:
+  var line = ui.Panel({
+    // widgets:,
+    // layout:ui.Panel.Layout.flow('horizontal',true),
+    style:{stretch:'horizontal',border:'1px solid black'}
   });
-  
-  panel.add(labels);
+  panel.add(line);
+
   
 });
 
