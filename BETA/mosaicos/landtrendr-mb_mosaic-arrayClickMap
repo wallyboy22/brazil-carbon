@@ -372,7 +372,7 @@ Map.onClick(function(obj){
 
   labels.evaluate(function(list_labels){
     list_labels.forEach(function(label){
-      label = label.replace('ndvi_median:0','RMSE: ');
+      label = label.replace('ndvi_median: 0','RMSE: ');
       panel_labels.add(ui.Label(label));
     });
   });
