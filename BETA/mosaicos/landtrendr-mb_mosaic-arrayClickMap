@@ -269,7 +269,41 @@ var extractTimeSeries = function(imageCollection,region) {
   return timeSeries;
 };
 
+var extractColumnChart = function(image, region) {
+  // Extrair o histograma para o pixel específico
+  var histogram = ee.Image(image).reduceRegion({
+    reducer: ee.Reducer.histogram(image.bandNames(), 255),
+    geometry: region,
+    scale: 1
+  });
+
+  // Criar um gráfico de colunas
+  var chart = ui.Chart.image.histogram({
+    image: image,  // Converter para imagem de bytes
+    region: region,
+    scale: 500,
+    // maxBuckets: 255,
+    // minBucketWidth: 1
+  }).setOptions({
+    title: 'Histograma do Pixel',
+    hAxis: {title: 'Valor da Banda'},
+    vAxis: {title: 'Contagem'},
+    series: {
+      // 0: { color: '0000ff'}, 
+      // 1: { color: '00ff00' },
+      // 2: { color: 'ff0000' },  
+      // 3: { color: '004040' },
+      // 4: { color: 'aa00aa' },
+      // 5: { color: 'ffaa00' },
+    }
+  });
+
+  return chart;
+};
+
 var col = annual_mosaics.select('ndvi_median');
+var rmse_img = ee.Image(0).rename('ndvi_median');
+
 
 list_of_run_params.map(function(str){
   var split = str.split('-');
@@ -289,10 +323,9 @@ list_of_run_params.map(function(str){
 
   var segmenting_collection = segmenting.collection
     .select(['index_segmented'],[label_name]);
-
   
   col = col.linkCollection(segmenting_collection, [label_name]);
-  
+  rmse_img = rmse_img.addBands(segmenting.rmse.rename(label_name));
 });
 
 
@@ -311,6 +344,34 @@ Map.onClick(function(obj){
   var point = ee.Geometry.Point([obj.lon,obj.lat]);
   var chart = extractTimeSeries(col,point);
   panel.add(chart);
+  
+  var reduce_rmse = rmse_img.reduceRegion({
+    reducer:ee.Reducer.first(),
+    geometry:point,
+    scale:500,
+    // crs:,
+    // crsTransform:,
+    // bestEffort:,
+    maxPixels:1e13,
+    // tileScale:
+  });
+  
+  var labels = reduce_rmse.keys().map(function(key){
+    key = ee.String(key);
+    return key.cat(':')
+        .cat(reduce_rmse.get(key));
+  });
+  
+  print('labels',labels)
+  
+  labels = ui.Panel({
+    widgets:labels,
+    layout:ui.Panel.Layout.flow('horizontal',true),
+    // style:
+  });
+  
+  panel.add(labels);
+  
 });
 
 // print('col',col);
