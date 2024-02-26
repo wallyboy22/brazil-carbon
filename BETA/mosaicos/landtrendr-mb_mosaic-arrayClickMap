@@ -349,3 +349,201 @@ Map.onClick(function(obj){
 // print('col',col);
 
 // print(extractTimeSeries(col,geometry2));
+
+//////////////////////////////////////////////
+function trajectory (lulc,period,classes) {
+  var count = period[1] - period[0] + 1;
+
+  var bands = Array.apply(null, Array(count)).map(
+      function (_, i) {
+          return 'classification_' + (period[0] + i).toString();
+      }
+  );
+
+  var calculateNumberOfChanges = function (image) {
+    var nChanges = image.reduce(ee.Reducer.countRuns()).subtract(1);    return nChanges.rename('number_of_changes');
+  };
+  
+  var calculateNumberOfPresence = function (image) {
+    var nChanges = image.reduce(ee.Reducer.sum());    return nChanges.rename('number_of_presence');
+  };
+  
+  var calculateNumberOfClasses = function (image) {
+  
+      var nClasses = image.reduce(ee.Reducer.countDistinctNonNull());
+  
+    return nClasses.rename('number_of_classes');
+  };
+
+  // lulc images 
+  var imagePeriod = lulc.select(bands);
+
+  // number of classes
+  var nClasses = calculateNumberOfClasses(imagePeriod);
+
+  // number of changes
+  var nChanges = calculateNumberOfChanges(imagePeriod);
+
+  // stable
+  var stable = imagePeriod.select(0).multiply(nClasses.eq(1));
+
+  // Map.addLayer(stable, visParams.stable, 'Stable', false);
+  // Map.addLayer(nClasses, visParams.number_of_classes, 'Number of classes', false);
+
+  // trajectories
+  // classIds.forEach(
+  function trajectories (classList) {
+    var classIdsMask = ee.List(bands).iterate(
+        function (band, allMasks) {
+            var mask = imagePeriod.select([band])
+                .remap(classList, ee.List.repeat(1, classList.length), 0);
+
+            return ee.Image(allMasks).addBands(mask);
+        },
+        ee.Image().select()
+    );
+
+    classIdsMask = ee.Image(classIdsMask).rename(bands);
+
+    // number of presence
+    var nPresence = calculateNumberOfPresence(classIdsMask);
+
+    // nChanges in classList
+    var nChanges = calculateNumberOfChanges(classIdsMask);
+
+    // nChanges rules in the analisys
+    var nChangesEq0 = nChanges.eq(0); //  no change
+    var nChangesEq1 = nChanges.eq(1); //  1 change
+    var nChangesGt1 = nChanges.gt(1); // >1 changes
+    // var nChangesGt2 = nChanges.gt(2); // >2 changes
+
+    // lulc classIds masks for the first year and last year 
+    var t1 = classIdsMask.select(bands[0]);
+    var tn = classIdsMask.select(bands[bands.length - 1]);
+
+    // categories
+    var abAbCh0 = t1.eq(0).and(nChangesEq0);
+    var prPrCh0 = t1.eq(1).and(nChangesEq0);
+    var abPrCh1 = t1.eq(0).and(nChangesEq1).and(tn.eq(1));
+    var prAbCh1 = t1.eq(1).and(nChangesEq1).and(tn.eq(0));
+    var abPrCh2 = t1.eq(0).and(nChangesGt1).and(tn.eq(1));
+    var prAbCh2 = t1.eq(1).and(nChangesGt1).and(tn.eq(0));
+    var abAbCh1 = t1.eq(0).and(nChangesGt1).and(tn.eq(0));
+    var prPrCh1 = t1.eq(1).and(nChangesGt1).and(tn.eq(1));
+
+    // (*) the classes Ab-Ab and Pr-Pr the classes were joined
+    // var trajectories = ee.Image(0)
+    //     .where(prAbCh1, 1)  //[1] Pr-Ab Ch=1 | Loss without Alternation
+    //     .where(abPrCh1, 2)  //[2] Ab-Pr Ch=1 | Gain without Alternation
+    //     .where(prAbCh2, 3)  //[3] Pr-Ab Ch>2 | Loss with Alternation
+    //     .where(abPrCh2, 4)  //[4] Ab-Pr Ch>2 | Gain with Alternation
+    //     .where(abAbCh1, 5)  //[5] Ab-Ab Ch>1 | Stable with Alternation (Ab-Ab)
+    //     .where(prPrCh1, 5)  //[5] Pr-Pr Ch>1 | Stable with Alternation (Pr-Pr)
+    //     .where(prPrCh0, 6)  //[6] Pr-Pr Ch=0 | Stable Presence
+    //     .where(abAbCh0, 7); //[7] Ab-Ab Ch=0 | Stable Absence
+    var traject = ee.Image(0)
+        .where(prAbCh1, 1)  // [1] Presence🡪Loss🡪Absence
+        .where(abPrCh1, 2)  // [2] Absence🡪Gain🡪Presence
+        .where(prAbCh2, 3)  // [3] Presence🡪Alternation🡪Loss🡪Absence
+        .where(abPrCh2, 4)  // [4] Absence🡪Alternation🡪Gain🡪Presence
+        .where(prPrCh1, 5)  // [5] Presence🡪Alternation🡪Presence
+        .where(abAbCh1, 6)  // [6] Absence🡪Alternation🡪Absence
+        .where(prPrCh0, 7)  // [7] Presence🡪Stable🡪Presence
+        .where(abAbCh0, 8); // [8] Absence🡪Stable🡪Absence
+
+    return traject.rename('trajectories').selfMask();
+
+    // trajectoriesClassIds[classList[0]].number_of_presence = nPresence;
+    // trajectoriesClassIds[classList[0]].number_of_changes = nChanges;
+    // trajectoriesClassIds[classList[0]].trajectories = trajectories;
+}
+
+return trajectories(classes);
+// );
+// print(image)
+
+
+}
+
+///
+var mb_lulc8 = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
+var lulc_vis = {
+  palette:require('users/mapbiomas/modules:Palettes.js').get('classification8'),
+  min:0,
+  max:62,
+  bands: 'classification_2022'
+};
+
+var trajetory_vis = {
+  'min': 0,
+  'max': 8,
+  'palette': [
+      "#ffffff", //[0] Mask 
+      "#941004", //[1] Presence🡪Loss🡪Absence
+      "#020e7a", //[2] Absence🡪Gain🡪Presence
+      "#f5261b", //[3] Presence🡪Alternation🡪Loss🡪Absence
+      "#14a5e3", //[4] Absence🡪Alternation🡪Gain🡪Presence
+      "#8b8000", //[5] Presence🡪Alternation🡪Presence
+      "#ffff00", //[6] Absence🡪Alternation🡪Absence
+      "#666666", //[7] Presence🡪Stable🡪Presence
+      "#cfcfcf", //[8] Absence🡪Stable🡪Absence
+  ],
+};
+
+
+var lulc_legend = [
+      // {value:1, label:"Floresta"},
+      {value:3, label:"Formação Florestal"}, 
+      {value:4, label:"Formação Savânica"}, 
+      {value:5, label:"Mangue"}, 
+      {value:49, label:"Restinga Arborizada"}, 
+      // {value:10, label:"Formação Natural não Florestal"},
+      {value:11, label:"Campo Alagado e Área Pantanosa"}, 
+      {value:12, label:"Formação Campestre"}, 
+      {value:32, label:"Apicum"}, 
+      {value:29, label:"Afloramento Rochoso"}, 
+      {value:50, label:"Restinga Herbácea"}, 
+      {value:13, label:"Outras Formações não Florestais"}, 
+      // {value:14, label:"Agropecuária"}, 
+      {value:15, label:"Pastagem"}, 
+      // {value:18, label:"Agricultura"}, 
+      // {value:19, label:"Lavoura Temporária"}, 
+      {value:39, label:"Soja"}, 
+      {value:20, label:"Cana"}, 
+      {value:40, label:"Arroz (beta)"}, 
+      {value:62, label:"Algodão (beta)"}, 
+      {value:41, label:"Outras Lavouras Temporárias"},
+      // {value:36, label:"Lavoura Perene"}, 
+      {value:46, label:"Café"},
+      {value:47, label:"Citrus"}, 
+      {value:48, label:"Outras Lavouras Perenes"}, 
+      {value:9, label:"Silvicultura"},
+      {value:21, label:"Mosaico de Usos"}, 
+      // {value:22, label:"Área não Vegetada"}, 
+      {value:23, label:"Praia, Duna e Areal"}, 
+      {value:24, label:"Área Urbanizada"}, 
+      {value:30, label:"Mineração"}, 
+      {value:25, label:"Outras Áreas não Vegetadas"}, 
+      // {value:26, label:"Corpo D'água"}, 
+      {value:33, label:"Rio, Lago e Oceano"}, 
+      {value:31, label:"Aquicultura"}, 
+      {value:27, label:"Não observado"}, 
+    ];
+var trajetory_legend = [
+    {value:0, label: "Mask"},
+    {value:1, label: "Presence🡪Loss🡪Absence"},
+    {value:2, label: "Absence🡪Gain🡪Presence"},
+    {value:3, label: "Presence🡪Alternation🡪Loss🡪Absence"},
+    {value:4, label: "Absence🡪Alternation🡪Gain🡪Presence"},
+    {value:5, label: "Presence🡪Alternation🡪Presence"},
+    {value:6, label: "Absence🡪Alternation🡪Absence"},
+    {value:7, label: "Presence🡪Stable🡪Presence"},
+    {value:8, label: "Absence🡪Stable🡪Absence"},
+];
+
+// 'Trajetórias de classes naturais (1985 a 2021)',
+var nat_trajectory = trajectory(mb_lulc8,[1985,2021],[3,4,5,49,11,12,32,29,50,13,33]);
+
+Map.addLayer(mb_lulc8,lulc_vis,'mb_lulc8');
+Map.addLayer(nat_trajectory,trajetory_vis,'nat_trajectory');
+//
