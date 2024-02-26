@@ -63,16 +63,9 @@ var fc = ibge_biomas;
 var mask = ee.Image().paint(fc).eq(0);
 var bounds = fc.geometry().bounds();
 
-var ref_data = ee.FeatureCollection('users/barbarazimbres/Buffers_afterExclusions_minusRainGaps_less300tha_NOVO2_kmeans_errors')
-    .filterBounds(teste);
-
-print('ref_data',ref_data);
-
-Map.addLayer(ref_data,{},'ref_data');
-
-var mb_mosaics = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2')
-    .filter(ee.Filter.eq('biome','CERRADO'))
-    .filterBounds(ref_data.geometry());
+var mb_mosaics = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2');
+    // .filter(ee.Filter.eq('biome','CERRADO'))
+    // .filterBounds(bounds);
 
 
 // --- --- --- MAIN FUNCTIONS
@@ -173,68 +166,6 @@ function matrix_constructor(obj) {
   return result;
 } 
 
-// --- --- --- DEVELOPMENT of annual mosaics and their temporal segmentation
-var annual_mosaics = years.map(function(year){
-  var start = ee.Date(''+year+'-01-01');
-  var end = start.advance(1,'year');
-  return mb_mosaics
-    .filter(ee.Filter.eq('year',year))
-    .filter(ee.Filter.inList('satellite',year_sat[year]))
-    // .map(indexs_for_mb_mosaics)
-    .median() // no caso de sobreposição de cartas entre os biomas, ou de mosaicos com mais de um ano, a redução calculando a mediana
-    .int16()
-    .unmask()
-    .set({
-      year:year, 
-      'system:time_start':start.millis(),
-      'system:time_end':end.millis(),
-    });
-});
-
-annual_mosaics = ee.ImageCollection(annual_mosaics);
-
-
-// print('annual_mosaics',annual_mosaics,bands.median);  
-
-// --- --- ---  PLOT
-var visParams = {
-  median:{
-    bands: ['swir1_median', 'nir_median', 'red_median'],
-    gain: [0.08, 0.06, 0.2],
-    gamma: 0.85
-  },
-  ndvi:{
-    bands: ['ndvi_median'],
-    min: 5000,
-    max:20000,
-  }
-};
-
-Map.addLayer(annual_mosaics,visParams.median,'annual_mosaics',false);
-Map.addLayer(annual_mosaics.select('ndvi_median'),visParams.ndvi,'ndvi annual_mosaics',false);
-
-
-// --- --- for each run params thinking for landtrendr
-
-var run_params_array = [
-  [
-    'ndvi_median',/* 'ndvi_median_dry', 'ndvi_median_wet'*/
-  ], // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
-  [
-    13
-  ], // maxSegments (Integer): Maximum number of segments to be fitted on the time series.
-  [//10,    6,    4,    2,  1 // anos
-    0.1, 0.15, 0.25,  0.5,  1 // fator
-  ], // recoveryThreshold (Float, default: 0.25): If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed.
-  [
-    0.1
-  ],   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
-];
-
-var list_of_run_params = matrix_constructor(run_params_array);
-
-print('list_of_run_params',list_of_run_params);
-
 var extractTimeSeries = function(imageCollection,region) {
   var timeSeries = ui.Chart.image.series({
     imageCollection: imageCollection,
@@ -270,69 +201,25 @@ var extractTimeSeries = function(imageCollection,region) {
   return timeSeries;
 };
 
-var extractColumnChart = function(image, region) {
-  // Extrair o histograma para o pixel específico
-  var histogram = ee.Image(image).reduceRegion({
-    reducer: ee.Reducer.histogram(image.bandNames(), 255),
-    geometry: region,
-    scale: 1
-  });
 
-  // Criar um gráfico de colunas
-  var chart = ui.Chart.image.histogram({
-    image: image,  // Converter para imagem de bytes
-    region: region,
-    scale: 500,
-    // maxBuckets: 255,
-    // minBucketWidth: 1
-  }).setOptions({
-    title: 'Histograma do Pixel',
-    hAxis: {title: 'Valor da Banda'},
-    vAxis: {title: 'Contagem'},
-    series: {
-      // 0: { color: '0000ff'}, 
-      // 1: { color: '00ff00' },
-      // 2: { color: 'ff0000' },  
-      // 3: { color: '004040' },
-      // 4: { color: 'aa00aa' },
-      // 5: { color: 'ffaa00' },
-    }
-  });
+// --- --- --- DEVELOPMENT of annual mosaics and their temporal segmentation
+// print('annual_mosaics',annual_mosaics,bands.median);  
 
-  return chart;
+// --- --- ---  PLOT
+var visParams = {
+  median:{
+    bands: ['swir1_median', 'nir_median', 'red_median'],
+    gain: [0.08, 0.06, 0.2],
+    gamma: 0.85
+  },
+  ndvi:{
+    bands: ['ndvi_median'],
+    min: 5000,
+    max:20000,
+  }
 };
 
-var col = annual_mosaics.select('ndvi_median');
-var rmse_img = ee.Image(0).rename('ndvi_median');
-
-
-list_of_run_params.map(function(str){
-  var split = str.split('-');
-  
-  var bandname = split[0];
-
-  var run_params = {
-    'timeSeries':annual_mosaics.select(bandname),
-    'maxSegments':ee.Number.parse(split[1]),
-    'recoveryThreshold':ee.Number.parse(split[2]),
-    'pvalThreshold':ee.Number.parse(split[3])
-  };
-
-  var segmenting = landtrendr(run_params,years,[bandname]);
-
-  var label_name = 'r-'+split[2].replace('.','_').replace('.','_').replace('.','_');
-
-  var segmenting_collection = segmenting.collection
-    .select(['index_segmented'],[label_name]);
-  
-  col = col.linkCollection(segmenting_collection, [label_name]);
-  rmse_img = rmse_img.addBands(segmenting.rmse.rename(label_name));
-});
-
-
-Map.addLayer(col,{},'col');
-
-
+// --- --- for each run params thinking for landtrendr
 var panel = ui.Panel({
   // widgets:,
   layout:ui.Panel.Layout.Flow('vertical'),
@@ -341,8 +228,79 @@ var panel = ui.Panel({
 
 ui.root.widgets().add(panel);
 
+var run_params_array = [
+  [
+    'ndvi_median',/* 'ndvi_median_dry', 'ndvi_median_wet'*/
+  ], // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
+  [
+    13
+  ], // maxSegments (Integer): Maximum number of segments to be fitted on the time series.
+  [//10,    6,    4,    2,  1 // anos
+    0.1, 0.15, 0.25,  0.5,  1 // fator
+  ], // recoveryThreshold (Float, default: 0.25): If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed.
+  [
+    0.1
+  ],   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
+];
+
+var list_of_run_params = matrix_constructor(run_params_array);
+print('list_of_run_params',list_of_run_params);
+
+
+
 Map.onClick(function(obj){
   var point = ee.Geometry.Point([obj.lon,obj.lat]);
+
+  
+  var annual_mosaics = years.map(function(year){
+    var start = ee.Date(''+year+'-01-01');
+    var end = start.advance(1,'year');
+    return mb_mosaics
+      .filterBounds(point)
+      .filter(ee.Filter.eq('year',year))
+      .filter(ee.Filter.inList('satellite',year_sat[year]))
+      // .map(indexs_for_mb_mosaics)
+      .median() // no caso de sobreposição de cartas entre os biomas, ou de mosaicos com mais de um ano, a redução calculando a mediana
+      .int16()
+      .unmask()
+      .set({
+        year:year, 
+        'system:time_start':start.millis(),
+        'system:time_end':end.millis(),
+      });
+  });
+  
+  annual_mosaics = ee.ImageCollection(annual_mosaics);
+
+  
+  var col = annual_mosaics.select('ndvi_median');
+  var rmse_img = ee.Image(0).rename('ndvi_median');
+  list_of_run_params.map(function(str){
+    var split = str.split('-');
+    
+    var bandname = split[0];
+  
+    var run_params = {
+      'timeSeries':annual_mosaics.select(bandname),
+      'maxSegments':ee.Number.parse(split[1]),
+      'recoveryThreshold':ee.Number.parse(split[2]),
+      'pvalThreshold':ee.Number.parse(split[3])
+    };
+  
+    var segmenting = landtrendr(run_params,years,[bandname]);
+  
+    var label_name = 'r-'+split[2].replace('.','_').replace('.','_').replace('.','_');
+  
+    var segmenting_collection = segmenting.collection
+      .select(['index_segmented'],[label_name]);
+    
+    col = col.linkCollection(segmenting_collection, [label_name]);
+    rmse_img = rmse_img.addBands(segmenting.rmse.rename(label_name));
+  });
+  
+
+
+
   var chart = extractTimeSeries(col,point);
   panel.add(chart);
   
