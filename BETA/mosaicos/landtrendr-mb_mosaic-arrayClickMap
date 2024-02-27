@@ -54,7 +54,7 @@ var years = [
 
 // --- --- --- SPATAL DATA
 var ibge_biomas = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biomas_IBGE_250mil')
-  .filter(ee.Filter.eq('Bioma','Cerrado'));
+  // .filter(ee.Filter.eq('Bioma','Cerrado'));
 
 // universal featurecollection
 var fc = ibge_biomas;
