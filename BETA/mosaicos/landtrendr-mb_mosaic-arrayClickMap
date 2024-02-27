@@ -712,3 +712,20 @@ data_list.forEach(function(list){
   });
   
 });
+
+
+var boundsPanel = ui.Panel({
+  // widgets:,
+  // layout:,
+  style:{'margin':'0px','position':'bottom-right'}
+});
+Map.add(boundsPanel);
+
+Map.onChangeBounds(function(obj){
+  var pointName = (parseInt(obj.lon * 100)/100) + ', ' + (parseInt(obj.lat * 100)/100) + ', ' + obj.zoom;
+  
+    
+  boundsPanel.clear();
+  boundsPanel.add(ui.Label(pointName,{margin:'0px',fontSize:'9px',textAlign:'center',stretch:'horizontal'}));
+  
+});
