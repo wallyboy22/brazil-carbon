@@ -298,9 +298,6 @@ Map.onClick(function(obj){
     rmse_img = rmse_img.addBands(segmenting.rmse.rename(label_name));
   });
   
-
-
-
   var chart = extractTimeSeries(col,point);
   panel.add(chart);
   
@@ -335,15 +332,17 @@ Map.onClick(function(obj){
     });
   });
   
+  ////////////////////////////////////
+  panel.add(pixelHistory(point));
   
+  
+  ////////////////////////////////////
   var line = ui.Panel({
     // widgets:,
     // layout:ui.Panel.Layout.flow('horizontal',true),
     style:{stretch:'horizontal',border:'1px solid black'}
   });
   panel.add(line);
-
-  
 });
 
 // print('col',col);
@@ -467,11 +466,18 @@ return trajectories(classes);
 
 ///
 var mb_lulc8 = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
+var mb_fire2 = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas-fire-collection2-annual-burned-coverage-1').gte(1);
 var lulc_vis = {
   palette:require('users/mapbiomas/modules:Palettes.js').get('classification8'),
   min:0,
   max:62,
   bands: 'classification_2022'
+};
+var fire_vis = {
+  palette:['ffffff','800000'],
+  min:0,
+  max:1,
+  bands: 'burned_coverage_2022'
 };
 
 var trajetory_vis = {
@@ -529,6 +535,10 @@ var lulc_legend = [
       {value:31, label:"Aquicultura"}, 
       {value:27, label:"Não observado"}, 
     ];
+var fire_legend = [
+  {value:0, label:"Não observado"}, 
+  {value:1, label:"Fogo"}, 
+];
 var trajetory_legend = [
     {value:0, label: "Mask"},
     {value:1, label: "Presence🡪Loss🡪Absence"},
@@ -544,6 +554,81 @@ var trajetory_legend = [
 // 'Trajetórias de classes naturais (1985 a 2021)',
 var nat_trajectory = trajectory(mb_lulc8,[1985,2021],[3,4,5,49,11,12,32,29,50,13,33]);
 
-Map.addLayer(mb_lulc8,lulc_vis,'mb_lulc8');
-Map.addLayer(nat_trajectory,trajetory_vis,'nat_trajectory');
+Map.addLayer(mb_lulc8,lulc_vis,'mb_lulc8',false);
+Map.addLayer(mb_fire2,fire_vis,'mb_fire2',false);
+Map.addLayer(nat_trajectory,trajetory_vis,'nat_trajectory',true);
+
+function pixelHistory (point){
+  
+  var historys = ui.Panel({
+    // widgets:
+    layout:ui.Panel.Layout.flow('vertical',true),
+    style:{margin:'0px'}
+  });
+  
+  [
+    ['LULC',mb_lulc8,lulc_vis,lulc_legend,],
+    ['FIRE',mb_fire2.unmask(),fire_vis,fire_legend],
+    ['TRAJ',nat_trajectory,trajetory_vis,trajetory_legend],
+  ].forEach(function(list){
+    var name = list[0];
+    var img = list[1];
+    var vis = list[2];
+    var palette = vis.palette;
+    var legend = list[3];
+    
+    var reduce = img.reduceRegion({
+      reducer:ee.Reducer.first(),
+      geometry:point,
+      scale:30,
+      // crs:,
+      // crsTransform:,
+      // bestEffort:,
+      maxPixels:1e6,
+      // tileScale:
+    });
+
+    var listLabels = ui.Panel({
+      widgets:ui.Label(name,{margin:'0px',width:'40px'}), 
+      layout:ui.Panel.Layout.flow('horizontal',true),
+      style:{
+        margin:'0px',
+        border:'1px dashed #00000020', // solid; /* ou dashed, dotted, double, groove, ridge, inset, outset, none */
+        textAlign:'center',
+      }
+    });
+    
+    reduce.keys().evaluate(function(keys){
+      reduce.values().evaluate(function(values){
+        keys.forEach(function(key,i){
+          var value = values[i];
+
+
+          var titulo = key === 'trajectories' ? legend.filter(function(obj){return obj.value === value})[0].label : key.slice(-2);
+          // print('legend.filter(function(obj){obj.value === value})',legend.filter(function(obj){obj.value === value}));
+          var year = ui.Label(titulo,{margin:'1px 0px 1px 0px',fontSize:'9px',textAlign:'center',stretch:'horizontal'});
+          var classe = ui.Label(value,{margin:'1px 0px 1px 0px',fontSize:'9px',textAlign:'center',stretch:'horizontal',backgroundColor:palette[value]});
+  
+          var yearBox = ui.Panel({
+            widgets:[classe,year], 
+            layout:ui.Panel.Layout.flow('vertical',true),
+            style:{
+              margin:'0px 1px 0px 1px',
+              border:'1px dashed #00000020', // solid; /* ou dashed, dotted, double, groove, ridge, inset, outset, none */
+              backgroundColor:palette[value]
+            }
+          });
+  
+          
+          listLabels.add(yearBox);
+        });
+      });
+    });
+    historys.add(listLabels);
+  });
+  
+  return historys;
+}
+
+
 //
