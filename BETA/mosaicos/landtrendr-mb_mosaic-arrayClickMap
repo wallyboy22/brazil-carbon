@@ -22,6 +22,26 @@ var teste =
     ee.Geometry.Point([-47.82700213814179, -15.812029054018927]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 // --- 21-02-2024 // GT-Carbono - explorando landtrendr nos mosaicos landsat do mapbiomas
+
+var run_params_array = [
+  [
+    'ndvi_median',/* 'ndvi_median_dry', 'ndvi_median_wet'*/
+  ], // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
+  [
+    13
+  ], // maxSegments (Integer): Maximum number of segments to be fitted on the time series.
+  [//10,    6,    4,    2,  1 // anos
+    0.1, 0.15, 0.25,  0.5,  1 // fator
+  ], // recoveryThreshold (Float, default: 0.25): If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed.
+  [
+    0.1,0.05
+  ],   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
+];
+
+var list_of_run_params = matrix_constructor(run_params_array);
+print('list_of_run_params',list_of_run_params);
+
+
 // --- --- --- OPTIONS
 var year_sat = {
   1985:['l5'],  1986:['l5'],  1987:['l5'],  1988:['l5'],  1989:['l5'],
@@ -228,26 +248,6 @@ var panel = ui.Panel({
 
 ui.root.widgets().add(panel);
 
-var run_params_array = [
-  [
-    'ndvi_median',/* 'ndvi_median_dry', 'ndvi_median_wet'*/
-  ], // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
-  [
-    13
-  ], // maxSegments (Integer): Maximum number of segments to be fitted on the time series.
-  [//10,    6,    4,    2,  1 // anos
-    0.1, 0.15, 0.25,  0.5,  1 // fator
-  ], // recoveryThreshold (Float, default: 0.25): If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed.
-  [
-    0.1
-  ],   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
-];
-
-var list_of_run_params = matrix_constructor(run_params_array);
-print('list_of_run_params',list_of_run_params);
-
-
-
 Map.onClick(function(obj){
 
   var subPanel = ui.Panel({
@@ -300,7 +300,7 @@ Map.onClick(function(obj){
   
     var segmenting = landtrendr(run_params,years,[bandname]);
   
-    var label_name = 'r-'+split[2].replace('.','_').replace('.','_').replace('.','_');
+    var label_name = str.replace('.','_').replace('.','_').replace('.','_');//'r-'+split[2].replace('.','_').replace('.','_').replace('.','_');
   
     var segmenting_collection = segmenting.collection
       .select(['index_segmented'],[label_name]);
@@ -316,7 +316,7 @@ Map.onClick(function(obj){
   var panel_labels = ui.Panel({
     // widgets:,
     layout:ui.Panel.Layout.flow('horizontal',true),
-    style:{stretch:'horizontal'}
+    style:{margin:'2px',maxWidth:'600px'}
   });
   subPanel.add(panel_labels);
   
@@ -332,14 +332,13 @@ Map.onClick(function(obj){
   });
   
   var labels = reduce_rmse.keys().map(function(key){
-    key = ee.String(key);
-    return key.cat(': ').cat(reduce_rmse.get(key));
+    return ee.String(' ').cat(key).cat(': ').cat(reduce_rmse.get(key)).cat(' || ');
   });
 
   labels.evaluate(function(list_labels){
     list_labels.forEach(function(label){
-      label = label.replace('ndvi_median: 0','RMSE: ');
-      panel_labels.add(ui.Label(label));
+      label = label.replace('ndvi_median: 0 || ','RMSE: ');
+      panel_labels.add(ui.Label(label,{margin:'1px 2px 1px 2px ',fontSize:'11px'}));
     });
   });
   
