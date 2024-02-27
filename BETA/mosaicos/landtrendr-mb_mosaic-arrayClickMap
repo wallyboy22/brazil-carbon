@@ -166,7 +166,7 @@ function matrix_constructor(obj) {
   return result;
 } 
 
-var extractTimeSeries = function(imageCollection,region) {
+var extractTimeSeries = function(imageCollection,region,name) {
   var timeSeries = ui.Chart.image.series({
     imageCollection: imageCollection,
     region: region,
@@ -174,7 +174,7 @@ var extractTimeSeries = function(imageCollection,region) {
     scale: 500,
     xProperty: 'system:time_start'
   }).setOptions({
-    title: 'Série Temporal',
+    title: 'Série Temporal' + (name === undefined ? '' : (' ' + name)),
     hAxis: {title: 'Data'},
     vAxis: {title: 'Refletância'},
     lineWidth: 1,
@@ -249,9 +249,20 @@ print('list_of_run_params',list_of_run_params);
 
 
 Map.onClick(function(obj){
-  var point = ee.Geometry.Point([obj.lon,obj.lat]);
 
+  var subPanel = ui.Panel({
+    // widgets:,
+    layout:ui.Panel.Layout.Flow('vertical'),
+    style:{margin:'0px',border:'1px solid black'}
+  });
   
+  panel.insert(0,subPanel);
+
+  var point = ee.Geometry.Point([obj.lon,obj.lat]);
+  
+  points = points.merge(ee.Feature(point));
+  pointLayer.setEeObject(points);
+  // print('points',points);
   var annual_mosaics = years.map(function(year){
     var start = ee.Date(''+year+'-01-01');
     var end = start.advance(1,'year');
@@ -297,9 +308,9 @@ Map.onClick(function(obj){
     col = col.linkCollection(segmenting_collection, [label_name]);
     rmse_img = rmse_img.addBands(segmenting.rmse.rename(label_name));
   });
-  
-  var chart = extractTimeSeries(col,point);
-  panel.add(chart);
+  var pointName = (parseInt(obj.lon * 100)/100) + ', ' + (parseInt(obj.lat * 100)/100);
+  var chart = extractTimeSeries(col,point,pointName);
+  subPanel.add(chart);
   
   //////////////////////////////
   var panel_labels = ui.Panel({
@@ -307,7 +318,7 @@ Map.onClick(function(obj){
     layout:ui.Panel.Layout.flow('horizontal',true),
     style:{stretch:'horizontal'}
   });
-  panel.add(panel_labels);
+  subPanel.add(panel_labels);
   
   var reduce_rmse = rmse_img.reduceRegion({
     reducer:ee.Reducer.first(),
@@ -333,7 +344,7 @@ Map.onClick(function(obj){
   });
   
   ////////////////////////////////////
-  panel.add(pixelHistory(point));
+  subPanel.add(pixelHistory(point));
   
   
   ////////////////////////////////////
@@ -342,7 +353,7 @@ Map.onClick(function(obj){
     // layout:ui.Panel.Layout.flow('horizontal',true),
     style:{stretch:'horizontal',border:'1px solid black'}
   });
-  panel.add(line);
+  subPanel.add(line);
 });
 
 // print('col',col);
@@ -557,6 +568,10 @@ var nat_trajectory = trajectory(mb_lulc8,[1985,2021],[3,4,5,49,11,12,32,29,50,13
 Map.addLayer(mb_lulc8,lulc_vis,'mb_lulc8',false);
 Map.addLayer(mb_fire2,fire_vis,'mb_fire2',false);
 Map.addLayer(nat_trajectory,trajetory_vis,'nat_trajectory',true);
+
+var points = ee.FeatureCollection([]);
+var pointLayer = ui.Map.Layer(points,{},'points');
+Map.add(pointLayer);
 
 function pixelHistory (point){
   
