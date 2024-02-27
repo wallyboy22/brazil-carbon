@@ -566,11 +566,13 @@ function pixelHistory (point){
     style:{margin:'0px'}
   });
   
-  [
+  var data_list = [
     ['LULC',mb_lulc8,lulc_vis,lulc_legend,],
     ['FIRE',mb_fire2.unmask(),fire_vis,fire_legend],
     ['TRAJ',nat_trajectory,trajetory_vis,trajetory_legend],
-  ].forEach(function(list){
+  ];
+  
+  data_list.forEach(function(list){
     var name = list[0];
     var img = list[1];
     var vis = list[2];
@@ -608,7 +610,7 @@ function pixelHistory (point){
           // print('legend.filter(function(obj){obj.value === value})',legend.filter(function(obj){obj.value === value}));
           var year = ui.Label(titulo,{margin:'1px 0px 1px 0px',fontSize:'9px',textAlign:'center',stretch:'horizontal'});
           var classe = ui.Label(value,{margin:'1px 0px 1px 0px',fontSize:'9px',textAlign:'center',stretch:'horizontal',backgroundColor:palette[value]});
-  
+              
           var yearBox = ui.Panel({
             widgets:[classe,year], 
             layout:ui.Panel.Layout.flow('vertical',true),
@@ -630,5 +632,68 @@ function pixelHistory (point){
   return historys;
 }
 
+var panel_legend = ui.Panel({
+  // widgets:,
+  layout:ui.Panel.Layout.flow('vertical'),
+  style:{margin:'0px',maxHeight:'400px'},
+});
 
-//
+var body_legend = ui.Panel({
+  widgets:[
+    ui.Label('Legenda',{margin:'0px',fontSize:'11px',textAlign:'center',stretch:'horizontal'}),
+    panel_legend
+  ],
+  layout:ui.Panel.Layout.flow('vertical'),
+  style:{margin:'0px',position:'bottom-left'},
+});
+
+Map.add(body_legend);
+
+var data_list = [
+  ['LULC',mb_lulc8,lulc_vis,lulc_legend,],
+  ['FIRE',mb_fire2.unmask(),fire_vis,fire_legend],
+  ['TRAJ',nat_trajectory,trajetory_vis,trajetory_legend],
+];
+
+
+data_list.forEach(function(list){
+  var name = list[0];
+  // var img = list[1];
+  var vis = list[2];
+  var palette = vis.palette;
+  var legend = list[3];
+  // border:'1px dashed #00000020', // solid; /* ou dashed, dotted, double, groove, ridge, inset, outset, none */
+
+  var sub_panel = ui.Panel({
+    // widgets:,
+    layout:ui.Panel.Layout.flow('vertical'),
+    style:{margin:'0px',border:'1px dashed #00000020'},
+  });
+  
+  var button = ui.Checkbox({
+    label:name,
+    value:false,
+    onChange:function(value){
+      if(value){
+        panel_legend.insert(0,sub_panel);
+      } else {
+        panel_legend.remove(sub_panel);
+      }
+    },
+    // disabled:,
+    style:{margin:'0px',fontSize:'9px',textAlign:'center',stretch:'horizontal'}
+  });
+  body_legend.add(button);
+  legend.forEach(function(obj){
+    var box = ui.Label('◈',{color:palette[obj.value],margin:'0px',fontSize:'9px',textAlign:'center'});
+    var label = ui.Label('' + obj.value + ' - ' +obj.label,{margin:'0px',fontSize:'9px',});
+    var line = ui.Panel({
+      widgets:[box,label],
+      layout:ui.Panel.Layout.flow('horizontal'),
+      style:{margin:'0px'},
+    });
+
+    sub_panel.add(line);
+  });
+  
+});
