@@ -726,6 +726,6 @@ Map.onChangeBounds(function(obj){
   
     
   boundsPanel.clear();
-  boundsPanel.add(ui.Label(pointName,{margin:'0px',fontSize:'9px',textAlign:'center',stretch:'horizontal'}));
+  boundsPanel.add(ui.Label(pointName,{margin:'0px',fontSize:'11px',textAlign:'center',stretch:'horizontal'}));
   
 });
