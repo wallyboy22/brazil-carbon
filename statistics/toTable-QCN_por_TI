@@ -14,8 +14,9 @@ var geometry =
           [-54.74549689443569, -16.02317134559905]]], null, false),
     fire_2020 = /* color: #d63000 */ee.Geometry.Point([-57.17175748973216, -17.28603904457847]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
-// Bárbara Zimbres - IPAM (com alterações)
-// 29 de fevereiro de 2024
+// IPAM - 29 de fevereiro de 2024
+// Calculo de Carbono por Terra Indigena
+// Wallace Silva, Bárbara Zimbres e Ariane
 
 // Carrega a coleção de Features das Terras Indígenas do Brasil
 var tis_BR = ee.FeatureCollection('projects/ee-arianerodrigues/assets/tis_todas');
@@ -51,6 +52,7 @@ Map.addLayer(prodes_acum, {}, 'prodes_acum');
 /////////////
 // Carbono total descontando as áreas desmatadas
 Ctotal = Ctotal.updateMask(prodes_acum.neq(1)).updateMask(bioma_img);
+
 Map.addLayer(Ctotal, {}, "Ctotal - desmatamento");
 
 // Calcula a área de cada pixel em hectares
@@ -97,8 +99,6 @@ var C_total_TIs = tis_BR
 // Imprime as informações sobre o carbono total nos Territórios Indígenas
 print('C total TIs', C_total_TIs.limit(10));
 
-Map.addLayer(C_total_TIs,{},'C_total_TIs');
-
 // Exporta a tabela para o Google Drive
 Export.table.toDrive({
   collection: C_total_TIs,
@@ -107,3 +107,10 @@ Export.table.toDrive({
   fileNamePrefix: 'CTotal_TIs_CER',
   fileFormat: 'CSV',
 });
+
+// outros plots
+Map.addLayer(ee.Image().paint(C_total_TIs,'Toneladas de carbono'),{},'Toneladas de carbono',true);
+Map.addLayer(ee.Image().paint(C_total_TIs,'Area ha'),{},'Area ha',false);
+Map.addLayer(ee.Image().paint(C_total_TIs,'Toneladas de carbono por ha'),{},'Toneladas de carbono por ha',true);
+Map.addLayer(Ctotal,{},'C_total_TIs',true);
+
