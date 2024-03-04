@@ -105,12 +105,17 @@ var vis = {
   carbon:{
     min:30,
     max:150,
-    palette:['ffaaaa','ffff00','808040','80ff80','008000','8080ff','000080']
+    palette:['ff0000','ffaaaa','ffee27','808040','80ff80','8080ff','000080']
   },
-  area:{
-    min:30,
-    max:150,
-    palette:['000000','ffffff']
+  'Area ha':{
+    min:1200,
+    max:13500000,
+    palette:['ff0000','ffaaaa','ffee27','808040','80ff80','8080ff','000080']
+  },
+  'Toneladas de carbono':{
+    min:100000000,
+    max:1850000000,
+    palette:['ff0000','ffaaaa','ffee27','808040','80ff80','8080ff','000080']
   },
   prodes_raw:{
     min:1999,
@@ -135,8 +140,8 @@ Map.addLayer(prodes_raw, {}, 'prodes_raw',false);
 Map.addLayer(prodes_acum, vis.prodes_acum, 'prodes_acum',false);
 Map.addLayer(Ctotal, vis.carbon, "Ctotal - desmatamento",true);
 
-Map.addLayer(ee.Image().paint(C_total_TIs,'Toneladas de carbono'),vis.carbon,'Toneladas de carbono',false);
-Map.addLayer(ee.Image().paint(C_total_TIs,'Area ha'),vis.area,'Area ha',false);
+Map.addLayer(ee.Image().paint(C_total_TIs,'Toneladas de carbono'),vis['Toneladas de carbono'],'Toneladas de carbono',false);
+Map.addLayer(ee.Image().paint(C_total_TIs,'Area ha'),vis['Area ha'],'Area ha',false);
 Map.addLayer(ee.Image().paint(C_total_TIs,'Toneladas de carbono por ha'),vis.carbon,'Toneladas de carbono por ha',false);
 Map.addLayer(Ctotal.updateMask(ee.Image().paint(tis_BR).eq(0)),vis.carbon,'Carbono total em TIs',false);
 Map.addLayer(ee.Image().paint(tis_BR,'vazio',1),{},'Limite das TIs',true);
