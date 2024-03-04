@@ -34,7 +34,7 @@ var bioma_img = ee.Image().paint(biomas).eq(0);
 var bounds = biomas.geometry().bounds();
 
 // Carrega a coleção de imagens do SEEG e seleciona a banda desejada
-var Ctotal = ee.ImageCollection('projects/mapbiomas-workspace/SEEG/2022/QCN/QCN_30m_BR_v2_0_1').mosaic().select([4]);
+var Ctotal_original = ee.ImageCollection('projects/mapbiomas-workspace/SEEG/2022/QCN/QCN_30m_BR_v2_0_1').mosaic().select([4]);
 // print('Ctotal', Ctotal);
 
 // - PRODES INPE
@@ -43,7 +43,7 @@ var prodes_raw = ee.Image('projects/ipam-ccal/assets/prodes-1999_2022-raster_sta
 var prodes_acum = prodes_raw.reduce('min').rename('prodes_acumulado').unmask();
 /////////////
 // Carbono total descontando as áreas desmatadas
-Ctotal = Ctotal.updateMask(prodes_acum.neq(1)).updateMask(bioma_img);
+var Ctotal = Ctotal_original.updateMask(prodes_acum.neq(1)).updateMask(bioma_img);
 
 // Calcula a área de cada pixel em hectares
 var area = ee.Image.pixelArea().divide(10000);
@@ -130,10 +130,10 @@ var vis = {
 Map.centerObject(tis_BR, 4);
 Map.addLayer(tis_BR,{},'tis_BR',false);
 Map.addLayer(ee.Image(0), vis.background, 'background',true);
-Map.addLayer(Ctotal, vis.carbon, 'Ctotal',true,0.1);
+Map.addLayer(Ctotal_original, vis.carbon, 'Ctotal',true,0.1);
 Map.addLayer(prodes_raw, {}, 'prodes_raw',false);
 Map.addLayer(prodes_acum, vis.prodes_acum, 'prodes_acum',false);
-Map.addLayer(Ctotal, vis.carbon, "Ctotal - desmatamento",true,0.25);
+Map.addLayer(Ctotal, vis.carbon, "Ctotal - desmatamento",true);
 
 Map.addLayer(ee.Image().paint(C_total_TIs,'Toneladas de carbono'),vis.carbon,'Toneladas de carbono',false);
 Map.addLayer(ee.Image().paint(C_total_TIs,'Area ha'),vis.area,'Area ha',false);
