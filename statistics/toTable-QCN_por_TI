@@ -38,22 +38,15 @@ var bounds = biomas.geometry().bounds();
 
 // Carrega a coleção de imagens do SEEG e seleciona a banda desejada
 var Ctotal = ee.ImageCollection('projects/mapbiomas-workspace/SEEG/2022/QCN/QCN_30m_BR_v2_0_1').mosaic().select([4]);
-print('Ctotal', Ctotal);
-Map.addLayer(Ctotal, {}, 'Ctotal');
+// print('Ctotal', Ctotal);
 
 // - PRODES INPE
 // Carrega a imagem do PRODES e atualiza a máscara com base na imagem binária do bioma
 var prodes_raw = ee.Image('projects/ipam-ccal/assets/prodes-1999_2022-raster_stack').updateMask(bioma_img);
 var prodes_acum = prodes_raw.reduce('min').rename('prodes_acumulado').unmask();
-
-// Adiciona a camada do PRODES ao mapa
-Map.addLayer(prodes_acum, {}, 'prodes_acum');
-
 /////////////
 // Carbono total descontando as áreas desmatadas
 Ctotal = Ctotal.updateMask(prodes_acum.neq(1)).updateMask(bioma_img);
-
-Map.addLayer(Ctotal, {}, "Ctotal - desmatamento");
 
 // Calcula a área de cada pixel em hectares
 var area = ee.Image.pixelArea().divide(10000);
@@ -108,9 +101,39 @@ Export.table.toDrive({
   fileFormat: 'CSV',
 });
 
-// outros plots
-Map.addLayer(ee.Image().paint(C_total_TIs,'Toneladas de carbono'),{},'Toneladas de carbono',true);
-Map.addLayer(ee.Image().paint(C_total_TIs,'Area ha'),{},'Area ha',false);
-Map.addLayer(ee.Image().paint(C_total_TIs,'Toneladas de carbono por ha'),{},'Toneladas de carbono por ha',true);
-Map.addLayer(Ctotal,{},'C_total_TIs',true);
+// Principais plots
+
+// parametros de visualização
+var vis = {
+  carbon:{
+    min:30,
+    max:150,
+    palette:['80ff80','008000','cccc40','8080aa','000080']
+  },
+  area:{
+    min:30,
+    max:150,
+    palette:['000000','ffffff']
+  },
+  prodes_raw:{
+    min:1999,
+    max:2022,
+    // bands:
+  },
+  prodes_acum:{
+    min:0,
+    max:1,
+    palette:['aaaaff','800000']    
+  }
+};
+
+Map.addLayer(Ctotal, vis.carbon, 'Ctotal');
+Map.addLayer(prodes_raw, {}, 'prodes_raw');
+Map.addLayer(prodes_acum, vis.prodes_acum, 'prodes_acum');
+Map.addLayer(Ctotal, vis.carbon, "Ctotal - desmatamento");
+
+Map.addLayer(ee.Image().paint(C_total_TIs,'Toneladas de carbono'),vis.carbon,'Toneladas de carbono',true);
+Map.addLayer(ee.Image().paint(C_total_TIs,'Area ha'),vis.area,'Area ha',false);
+Map.addLayer(ee.Image().paint(C_total_TIs,'Toneladas de carbono por ha'),vis.carbon,'Toneladas de carbono por ha',true);
+Map.addLayer(Ctotal.updateMask(ee.Image().paint(tis_BR).eq(0)),vis.carbon,'C_total_TIs',true);
 
