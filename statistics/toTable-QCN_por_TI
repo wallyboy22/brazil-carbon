@@ -1,0 +1,109 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    /* displayProperties: [
+      {
+        "type": "rectangle"
+      }
+    ] */
+    ee.Geometry.Polygon(
+        [[[-57.73377814443569, -16.02317134559905],
+          [-57.73377814443569, -19.371844522396113],
+          [-54.74549689443569, -19.371844522396113],
+          [-54.74549689443569, -16.02317134559905]]], null, false),
+    fire_2020 = /* color: #d63000 */ee.Geometry.Point([-57.17175748973216, -17.28603904457847]);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// Bárbara Zimbres - IPAM (com alterações)
+// 29 de fevereiro de 2024
+
+// Carrega a coleção de Features das Terras Indígenas do Brasil
+var tis_BR = ee.FeatureCollection('projects/ee-arianerodrigues/assets/tis_todas');
+print('tis_BR', tis_BR.limit(10));
+Map.centerObject(tis_BR, 4);
+Map.addLayer(tis_BR);
+
+// Carrega a coleção de Features dos biomas do Brasil
+var biomas = ee.FeatureCollection('projects/ee-arianerodrigues/assets/biomas_250');
+
+// Filtra a FeatureCollection para um bioma específico (opcional)
+// var bioma = biomas.filter(ee.Filter.eq('Bioma', 'Cerrado'));
+
+// Cria uma imagem binária com base na geometria do bioma
+var bioma_img = ee.Image().paint(biomas).eq(0);
+
+// Obtém os limites da geometria do bioma
+var bounds = biomas.geometry().bounds();
+
+// Carrega a coleção de imagens do SEEG e seleciona a banda desejada
+var Ctotal = ee.ImageCollection('projects/mapbiomas-workspace/SEEG/2022/QCN/QCN_30m_BR_v2_0_1').mosaic().select([4]);
+print('Ctotal', Ctotal);
+Map.addLayer(Ctotal, {}, 'Ctotal');
+
+// - PRODES INPE
+// Carrega a imagem do PRODES e atualiza a máscara com base na imagem binária do bioma
+var prodes_raw = ee.Image('projects/ipam-ccal/assets/prodes-1999_2022-raster_stack').updateMask(bioma_img);
+var prodes_acum = prodes_raw.reduce('min').rename('prodes_acumulado').unmask();
+
+// Adiciona a camada do PRODES ao mapa
+Map.addLayer(prodes_acum, {}, 'prodes_acum');
+
+/////////////
+// Carbono total descontando as áreas desmatadas
+Ctotal = Ctotal.updateMask(prodes_acum.neq(1)).updateMask(bioma_img);
+Map.addLayer(Ctotal, {}, "Ctotal - desmatamento");
+
+// Calcula a área de cada pixel em hectares
+var area = ee.Image.pixelArea().divide(10000);
+
+// Calcula o carbono total e a área total para cada Território Indígena
+var C_total_TIs = tis_BR
+  .map(function (feat) {
+
+    // Obtém os limites da geometria do Território Indígena
+    var feat_bounds = feat.geometry().bounds();
+    // Obtém uma image com o poligono do Território Indígena
+    var feat_img = ee.Image().paint(feat_bounds).eq(0);
+    // Calcula o total de carbono dentro do Território Indígena
+    var C_total_TI = Ctotal
+      .multiply(area)
+      .updateMask(feat_img)
+      .reduceRegion({
+        reducer: ee.Reducer.sum(),
+        geometry: feat_bounds,
+        scale: 30,
+        maxPixels: 1e13,
+      }).getNumber('total');
+
+    // Calcula a área total do Território Indígena
+    var AREA_total_TI = area
+      .updateMask(feat_img)
+      .reduceRegion({
+        reducer: ee.Reducer.sum(),
+        geometry: feat_bounds,
+        scale: 30,
+        maxPixels: 1e13,
+      }).getNumber('area');
+
+    // Retorna a feature do Território Indígena com informações adicionais
+    return feat
+      .set({
+        'Toneladas de carbono': C_total_TI,
+        'Area ha': AREA_total_TI,
+        'Toneladas de carbono por ha':C_total_TI.divide(AREA_total_TI)
+      });
+  });
+
+// Imprime as informações sobre o carbono total nos Territórios Indígenas
+print('C total TIs', C_total_TIs.limit(10));
+
+Map.addLayer(C_total_TIs,{},'C_total_TIs');
+
+// Exporta a tabela para o Google Drive
+Export.table.toDrive({
+  collection: C_total_TIs,
+  description: 'CTotal_TIs_CER',
+  folder: 'CTotal_TIs_BR',
+  fileNamePrefix: 'CTotal_TIs_CER',
+  fileFormat: 'CSV',
+});
