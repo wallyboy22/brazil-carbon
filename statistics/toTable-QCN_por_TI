@@ -1,0 +1,148 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    /* displayProperties: [
+      {
+        "type": "rectangle"
+      }
+    ] */
+    ee.Geometry.Polygon(
+        [[[-57.73377814443569, -16.02317134559905],
+          [-57.73377814443569, -19.371844522396113],
+          [-54.74549689443569, -19.371844522396113],
+          [-54.74549689443569, -16.02317134559905]]], null, false);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// IPAM - 29 de fevereiro de 2024
+// Calculo de Carbono por Terra Indigena
+// Wallace Silva, Bárbara Zimbres e Ariane Rodrigues
+
+// Carrega a coleção de Features das Terras Indígenas do Brasil
+var tis_BR = ee.FeatureCollection('projects/ee-arianerodrigues/assets/tis_todas');
+print('tis_BR', tis_BR.limit(10));
+
+// Carrega a coleção de Features dos biomas do Brasil
+var biomas = ee.FeatureCollection('projects/ee-arianerodrigues/assets/biomas_250');
+
+// Filtra a FeatureCollection para um bioma específico (opcional)
+// var bioma = biomas.filter(ee.Filter.eq('Bioma', 'Cerrado'));
+
+// Cria uma imagem binária com base na geometria do bioma
+var bioma_img = ee.Image().paint(biomas).eq(0);
+
+// Obtém os limites da geometria do bioma
+var bounds = biomas.geometry().bounds();
+
+// Carrega a coleção de imagens do SEEG e seleciona a banda desejada
+var Ctotal_original = ee.ImageCollection('projects/mapbiomas-workspace/SEEG/2022/QCN/QCN_30m_BR_v2_0_1').mosaic().select([4]);
+// print('Ctotal', Ctotal);
+
+// - PRODES INPE
+// Carrega a imagem do PRODES e atualiza a máscara com base na imagem binária do bioma
+var prodes_raw = ee.Image('projects/ipam-ccal/assets/prodes-1999_2022-raster_stack').updateMask(bioma_img);
+var prodes_acum = prodes_raw.reduce('min').rename('prodes_acumulado').unmask();
+/////////////
+// Carbono total descontando as áreas desmatadas
+var Ctotal = Ctotal_original.updateMask(prodes_acum.neq(1)).updateMask(bioma_img);
+
+// Calcula a área de cada pixel em hectares
+var area = ee.Image.pixelArea().divide(10000);
+
+// Calcula o carbono total e a área total para cada Território Indígena
+var C_total_TIs = tis_BR
+  .map(function (feat) {
+
+    // Obtém os limites da geometria do Território Indígena
+    var feat_bounds = feat.geometry().bounds();
+    // Obtém uma image com o poligono do Território Indígena
+    var feat_img = ee.Image().paint(feat_bounds).eq(0);
+    // Calcula o total de carbono dentro do Território Indígena
+    var C_total_TI = Ctotal
+      .multiply(area)
+      .updateMask(feat_img)
+      .reduceRegion({
+        reducer: ee.Reducer.sum(),
+        geometry: feat_bounds,
+        scale: 30,
+        maxPixels: 1e13,
+      }).getNumber('total');
+
+    // Calcula a área total do Território Indígena
+    var AREA_total_TI = area
+      .updateMask(feat_img)
+      .reduceRegion({
+        reducer: ee.Reducer.sum(),
+        geometry: feat_bounds,
+        scale: 30,
+        maxPixels: 1e13,
+      }).getNumber('area');
+
+    // Retorna a feature do Território Indígena com informações adicionais
+    return feat
+      .set({
+        'Toneladas de carbono': C_total_TI,
+        'Area ha': AREA_total_TI,
+        'Toneladas de carbono por ha':C_total_TI.divide(AREA_total_TI)
+      });
+  });
+
+// Imprime as informações sobre o carbono total nos Territórios Indígenas
+print('C total TIs', C_total_TIs.limit(10));
+
+// Exporta a tabela para o Google Drive
+Export.table.toDrive({
+  collection: C_total_TIs,
+  description: 'CTotal_TIs_CER',
+  folder: 'CTotal_TIs_BR',
+  fileNamePrefix: 'CTotal_TIs_CER',
+  fileFormat: 'CSV',
+});
+
+// Principais plots
+
+// parametros de visualização
+var vis = {
+  carbon:{
+    min:30,
+    max:150,
+    palette:['ff0000','ffaaaa','ffee27','808040','80ff80','8080ff','000080']
+  },
+  'Area ha':{
+    min:1200,
+    max:13500000,
+    palette:['ff0000','ffaaaa','ffee27','808040','80ff80','8080ff','000080']
+  },
+  'Toneladas de carbono':{
+    min:100000000,
+    max:1850000000,
+    palette:['ff0000','ffaaaa','ffee27','808040','80ff80','8080ff','000080']
+  },
+  prodes_raw:{
+    min:1999,
+    max:2022,
+    // bands:
+  },
+  prodes_acum:{
+    min:0,
+    max:1,
+    palette:['aaaaff','800000']    
+  },
+  background:{
+    palette:['cccccc']    
+  }
+};
+
+// Map.centerObject(tis_BR, 4);
+Map.addLayer(tis_BR,{},'tis_BR',false);
+Map.addLayer(ee.Image(0), vis.background, 'background',true);
+Map.addLayer(Ctotal_original, vis.carbon, 'Ctotal',true,0.5);
+Map.addLayer(prodes_raw, {}, 'prodes_raw',false);
+Map.addLayer(prodes_acum, vis.prodes_acum, 'prodes_acum',false);
+Map.addLayer(Ctotal, vis.carbon, "Ctotal - desmatamento",true);
+
+Map.addLayer(ee.Image().paint(C_total_TIs,'Toneladas de carbono'),vis['Toneladas de carbono'],'Toneladas de carbono',false);
+Map.addLayer(ee.Image().paint(C_total_TIs,'Area ha'),vis['Area ha'],'Area ha',false);
+Map.addLayer(ee.Image().paint(C_total_TIs,'Toneladas de carbono por ha'),vis.carbon,'Toneladas de carbono por ha',false);
+Map.addLayer(Ctotal.updateMask(ee.Image().paint(tis_BR).eq(0)),vis.carbon,'Carbono total em TIs',false);
+Map.addLayer(ee.Image().paint(tis_BR,'vazio',1),{},'Limite das TIs',true);
+Map.addLayer(C_total_TIs,{},'C_total_TIs',false);
