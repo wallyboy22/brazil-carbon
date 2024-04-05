@@ -1,0 +1,346 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var teste = 
+    /* color: #d63000 */
+    /* shown: false */
+    /* displayProperties: [
+      {
+        "type": "rectangle"
+      }
+    ] */
+    ee.FeatureCollection(
+        [ee.Feature(
+            ee.Geometry.Polygon(
+                [[[-57.63490119131069, -16.634672271468176],
+                  [-57.63490119131069, -17.485398402648492],
+                  [-56.73402228506069, -17.485398402648492],
+                  [-56.73402228506069, -16.634672271468176]]], null, false),
+            {
+              "system:index": "0"
+            })]),
+    fire_2020 = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Point([-57.17175748973216, -17.28603904457847]);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// ABOVEGROUND BIOMASS MAP RF REGRESSION ALGORITHM
+//Variable importance test
+ 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 1 - INITIAL SETTINGS
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Output path (input a folder name in your drive folder for the output)
+var path = 'Biomass'; 
+
+//Set the study area
+var polygon = ee.FeatureCollection('users/barbarazimbres/Cerrado_buff100km');
+var cerrado = ee.FeatureCollection('users/barbarazimbres/Cerrado_2019');
+
+
+// EDIT THIS - Point to the shapefile of the training/validation dataset
+var data = ee.FeatureCollection('users/barbarazimbres/Biomass/Buffers_Biomass_04032024');
+print('Data:',data);
+Map.addLayer(data,{},'data');
+var AGB = 'ton_ha'; 
+var refyear = 'Ano'; 
+
+
+// Mapbiomas stable native vegetation mask
+// CRIAR IMAGEM COM MÁSCARAS PARA CADA CLASSE NATIVA POR ANO (BANDAS)
+var MB8 = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
+
+//O que fazer com as classes 5, 49 e 50?
+var NVmask = MB8.multiply(0)
+  .where(MB8.eq(3),1)
+  .where(MB8.eq(4),1)
+  .where(MB8.eq(11),1)
+  .where(MB8.eq(12),1)
+  .selfMask();
+
+print("NVmask",NVmask);
+Map.addLayer(NVmask,{bands:['classification_2022'],min:0,max:62},"NV");
+
+// Point at the EO datasets 
+var ALOS1 = ee.ImageCollection('projects/mapbiomas-workspace/CARBONO/CERRADO_ALOSPALSAR1') //2006 a 2020
+.map(function(img){
+  return img.set({
+    'year':ee.Number.parse(img.getString('system:index').slice(-4))
+  });
+});
+
+var ALOS2 = ee.ImageCollection('projects/mapbiomas-workspace/CARBONO/CERRADO_ALOSPALSAR2') //2015 a 2022
+.map(function(img){
+  return img.set({
+    'year':ee.Number.parse(img.getString('system:index').slice(-4))
+  });
+});
+
+var ALOS = ee.List.sequence(2007,2022,1).iterate(function(current,previous){
+  
+  var year = ee.Number(current).int();
+  var collection = ee.Algorithms.If({
+    condition:year.gte(2015),
+    trueCase:ALOS2,
+    falseCase:ALOS1
+  });
+  
+  var img = ee.ImageCollection(collection)
+    .filter(ee.Filter.eq('year',year))
+    .mosaic();
+  
+  // HH
+  var ALOSHH = img.select(0).rename('ALOSHH');
+  var ALOSHV = img.select(1).rename('ALOSHV');
+  //Calculate Radar Forest Degradation Index
+  var ALOSrfdi = img.select(0).subtract(img.select(1)).divide(img.select(0).add(img.select(1))).rename('ALOSrfdi');
+  //Calculate cross-polarized ratio
+  var ALOScpR = img.select(1).divide(img.select(0)).rename('ALOScpR');
+  //var ALOSstack = ALOSHH.addBands(ALOSHV).addBands(ALOSrfdi).addBands(ALOScpR);
+  
+  var newimg = ee.Image().select()
+    .addBands(ALOSHH)
+    .addBands(ALOSHV)
+    .addBands(ALOSrfdi)
+    .addBands(ALOScpR)
+    .set('year',year);
+  
+  return ee.List(previous).add(newimg);
+},[]);
+ALOS = ee.ImageCollection(ee.List(ALOS));
+
+Map.addLayer(ALOS.first())
+  // 'ALOSHH','ALOSHV',"ALOSrfdi","ALOScpR",
+
+
+print('ALOS',ALOS)
+var mb_mosaics = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2');
+print('mb_bands',mb_mosaics.first().bandNames());
+
+mb_mosaics = mb_mosaics.map(function(img){
+
+    var gcvi_median = img.select('nir_median').divide(img.select('green_median').subtract(1)).rename('gcvi_median');
+    var gcvi_median_dry = img.select('nir_median_dry').divide(img.select('green_median_dry').subtract(1)).rename('gcvi_median_dry');
+    var gcvi_median_wet = img.select('nir_median_wet').divide(img.select('green_median_wet').subtract(1)).rename('gcvi_median_wet');
+    
+    var sr_median = img.select('nir_median').divide(img.select('green_median')).rename('sr_median');
+    var sr_median_dry = img.select('nir_median_dry').divide(img.select('green_median_dry')).rename('sr_median_dry');
+    var sr_median_wet = img.select('nir_median_wet').divide(img.select('green_median_wet')).rename('sr_median_wet');
+    
+    var gdvi1_median = sr_median.subtract(1).divide(sr_median.add(1)).rename('gdvi1_median');
+    var gdvi1_median_dry = sr_median_dry.subtract(1).divide(sr_median_dry.add(1)).rename('gdvi1_median_dry');
+    var gdvi1_median_wet = sr_median_wet.subtract(1).divide(sr_median_wet.add(1)).rename('gdvi1_median_wet');
+    
+    var ndmi_median = img.normalizedDifference(['nir_median','swir1_median']).rename('ndmi_median');
+    var ndmi_median_dry = img.normalizedDifference(['nir_median_dry','swir1_median_dry']).rename('ndmi_median_dry');
+    var ndmi_median_wet = img.normalizedDifference(['nir_median_wet','swir1_median_wet']).rename('ndmi_median_wet');
+    
+    var tcg_median = img.expression("(-0.2941 * blue_median) - (0.243 * green_median) - (0.5424 * red_median) + (0.7276 * nir_median) + (0.0713 * swir1_median) - (0.1608 * swir2_median)",{
+      blue_median:img.select('blue_median'),
+      green_median:img.select('green_median'),
+      red_median:img.select('red_median'),
+      nir_median:img.select('nir_median'),
+      swir1_median:img.select('swir1_median'),
+      swir2_median:img.select('swir2_median'),
+      
+    }).rename('tcg_median');
+    var tcg_median_dry = img.expression("(-0.2941 * blue_median_dry) - (0.243 * green_median_dry) - (0.5424 * red_median_dry) + (0.7276 * nir_median_dry) + (0.0713 * swir1_median_dry) - (0.1608 * swir2_median_dry)",{
+      blue_median_dry:img.select('blue_median_dry'),
+      green_median_dry:img.select('green_median_dry'),
+      red_median_dry:img.select('red_median_dry'),
+      nir_median_dry:img.select('nir_median_dry'),
+      swir1_median_dry:img.select('swir1_median_dry'),
+      swir2_median_dry:img.select('swir2_median_dry'),
+      
+    }).rename('tcg_median_dry');
+    var tcg_median_wet = img.expression("(-0.2941 * blue_median_wet) - (0.243 * green_median_wet) - (0.5424 * red_median_wet) + (0.7276 * nir_median_wet) + (0.0713 * swir1_median_wet) - (0.1608 * swir2_median_wet)",{
+      blue_median_wet:img.select('blue_median_wet'),
+      green_median_wet:img.select('green_median_wet'),
+      red_median_wet:img.select('red_median_wet'),
+      nir_median_wet:img.select('nir_median_wet'),
+      swir1_median_wet:img.select('swir1_median_wet'),
+      swir2_median_wet:img.select('swir2_median_wet'),
+      
+    }).rename('tcg_median_wet');
+
+    return img
+      .addBands(gcvi_median).addBands(gcvi_median_dry).addBands(gcvi_median_wet)
+      .addBands(sr_median).addBands(sr_median_dry).addBands(sr_median_wet)
+      .addBands(gdvi1_median).addBands(gdvi1_median_dry).addBands(gdvi1_median_wet)
+      .addBands(ndmi_median).addBands(ndmi_median_dry).addBands(ndmi_median_wet)
+      .addBands(tcg_median).addBands(tcg_median_dry).addBands(tcg_median_wet);
+});
+
+
+var bands = [
+  'ALOSHH','ALOSHV',"ALOSrfdi","ALOScpR",
+
+  'blue_median',      'blue_median_dry',      'blue_median_wet',
+  'green_median',     'green_median_dry',     'green_median_wet',
+  'red_median',       'red_median_dry',       'red_median_wet',
+  'nir_median',       'nir_median_dry',       'nir_median_wet',
+  'swir1_median',     'swir1_median_dry',     'swir1_median_wet',
+  'swir2_median',     'swir2_median_dry',     'swir2_median_wet',
+  
+  'ndvi_median',      'ndvi_median_dry',      'ndvi_median_wet',
+  'ndwi_median',      'ndwi_median_dry',      'ndwi_median_wet',
+  'evi2_median',      'evi2_median_dry',      'evi2_median_wet',
+  'savi_median',      'savi_median_dry',      'savi_median_wet',
+  
+  "tcg_median",       'tcg_median_dry',       'tcg_median_wet',
+  "ndmi_median",      'ndmi_median_dry',      'ndmi_median_wet',
+  "gcvi_median",      'gcvi_median_dry',      'gcvi_median_wet',
+  "sr_median",        'sr_median_dry',        'sr_median_wet',
+  "gdvi1_median",     'gdvi1_median_dry',     'gdvi1_median_wet'
+];
+
+
+           
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 2 - SET-UP THE CLASSIFIER (input needed)
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Random Forests
+var classifier = ee.Classifier.smileRandomForest({
+  numberOfTrees: 300, //EDIT THIS - this is the most important, better 300-500
+  variablesPerSplit:null,
+  minLeafPopulation:1,
+  bagFraction: 0.5,
+  maxNodes:null,
+ // seed: 0
+  })
+.setOutputMode('REGRESSION')
+;
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 4 - PREPARATION OF DATASETS 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//!!!!!!!! VERIFICAR ESSES PREPAROS COM AS IMAGE COLLECTIONS
+
+print(data.aggregate_array('Ano').distinct().sort());
+//Extract EO signatures for training
+var out = data.map(function(feat){
+
+  var ano = feat.getNumber('Ano').int();
+  ano = ee.Algorithms.If({
+    condition:ano.lt(2007),
+    trueCase:2007,
+    falseCase:ano
+  });
+  ano = ee.Number(ano);
+  
+  var alos_year = ALOS.filter(ee.Filter.eq('year',ano)).mosaic();
+  var mb_year = mb_mosaics.filter(ee.Filter.eq('year',ano)).mosaic();
+ 
+  var img = ee.Image().select()
+    .addBands(alos_year)
+    .addBands(mb_year);
+    
+  var reduce = img.reduceRegion({
+    reducer:ee.Reducer.mean(),
+    geometry:feat.geometry(), 
+    scale:30, 
+    // crs:, crsTransform, bestEffort, 
+    maxPixels:1e13,
+    // tileScale:
+  });
+  
+  return feat.set(reduce).copyProperties(feat);
+});
+
+print(out.limit(10));
+
+//Export signature to csv for exploration (optional)
+var description = 'v000';
+var assetId = 'projects/mapbiomas-workspace/CARBONO/EO_Assignatures/';
+
+Export.table.toAsset({
+  collection:out,
+  description:description,
+  assetId:assetId + description,
+  // maxVertices:,
+  // priority:
+});
+print('out',out.limit(10));
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 5 - HISTOGRAMS & VARIABLE IMPORTANCE ANALYSIS
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+var EO_Assignatures = ee.FeatureCollection(assetId + description);
+print('EO_Assignatures',EO_Assignatures.limit(10),EO_Assignatures.aggregate_array('Veg').distinct().sort());
+
+var predictions = [
+  {values:[3,6],Veg:"forest"},
+  {values:[4],Veg:"savanna"},
+  {values:[12],Veg:"grassland"},
+];
+
+predictions.forEach(function(obj){
+  
+  var feats = EO_Assignatures.filter(ee.Filter.eq('Veg',obj.Veg))
+    .filter(ee.Filter.notNull(['ALOSHH']));
+  
+  print(obj.Veg,feats);
+  
+  var randomForestModel = classifier.train(feats, AGB, bands);
+  // print('Mode ' + obj.Veg, classifier_test.mode());
+
+  ////////////////////////
+  var dict = randomForestModel.explain();
+  print("Random Forest Explain", dict, 'Number of samples: ',feats.size());
+  
+  var error = ee.String(ee.Dictionary(dict).get('outOfBagErrorEstimate'));
+  dict = ee.Dictionary(ee.Dictionary(dict).get('importance'));
+  var keys = dict.keys().sort(dict.values()).reverse();
+  var values = dict.values(keys);
+  var rows = keys.zip(values);
+  var dict_b = {};
+  
+  rows = rows.map(function(list) {
+    return {c: ee.List(list).map(function(n) { return {v: n}; })};
+  });
+  
+  var dataTable = {
+    cols: [{id: 'band', label: 'Band', type: 'string'},
+          {id: 'importance', label: 'Importance', type: 'number'}],
+    rows: rows
+  };
+
+  ee.Dictionary(dataTable).evaluate(function(result) {
+    print('result',result)
+    var chart = ui.Chart(result)
+      .setChartType('BarChart')
+      .setOptions({
+        title: obj.Veg + ' random forest covariates importance',
+        legend: {position: 'none'},
+        hAxis: {title: 'Covariates'},
+        vAxis: {title: 'Importance'},
+        viewWindow:{
+          max:100,
+          min:0
+        }      
+      });
+      
+              
+    chart.style()
+    .set('height','256px')
+    .set('margin','0px');
+    
+    var chart_panel = ui.Panel({
+      widgets:[chart],
+      layout:ui.Panel.Layout.Flow('vertical'),
+    });
+      
+    print(chart_panel);
+    
+    print(ui.Chart(result).setChartType('Table'));
+
+    error.evaluate(function(num){
+      var error_label = ui.Label({
+        value:'Estimativa de erro: ' + (''+num).slice(0,4),
+        style:{},
+      });
+      
+      chart_panel.add(error_label);
+    });
+  });
+
+});
