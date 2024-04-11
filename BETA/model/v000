@@ -22,7 +22,7 @@ var teste =
     /* shown: false */
     ee.Geometry.Point([-57.17175748973216, -17.28603904457847]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
-// ABOVEGROUND BIOMASS MAP RF REGRESSION ALGORITHM
+// ABOVEGROUND BIOMASS MAP RF REGRESSION ALGORITHM 
 //Variable importance test
  
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
