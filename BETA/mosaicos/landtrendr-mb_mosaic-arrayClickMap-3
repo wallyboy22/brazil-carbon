@@ -47,7 +47,7 @@ var BANDS = [
 
 var run_params_array = [
   [
-    'ALOSHH','ndwi_median',/* 'ndvi_median_dry', 'ndvi_median_wet'*/
+    'ALOSHH','ALOSHV', /*'ndwi_median', 'ndvi_median_dry', 'ndvi_median_wet'*/
   ], // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
   [
     13
