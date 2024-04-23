@@ -1,0 +1,856 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var teste = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.FeatureCollection(
+        [ee.Feature(
+            ee.Geometry.Polygon(
+                [[[-48.31025519521694, -15.477961158790015],
+                  [-48.32398810537319, -16.073982513604047],
+                  [-47.331098701076314, -16.04758871944391],
+                  [-47.328352119045064, -15.500459198871317]]], null, false),
+            {
+              "system:index": "0"
+            })]),
+    geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.MultiPoint(),
+    geometry2 = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Point([-47.82700213814179, -15.812029054018927]);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// --- 27-02-2024 // GT-Carbono - explorando landtrendr nos mosaicos landsat do mapbiomas
+
+var run_params_array = [
+  [
+    'ALOSHH','ndwi_median',/* 'ndvi_median_dry', 'ndvi_median_wet'*/
+  ], // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
+  [
+    13
+  ], // maxSegments (Integer): Maximum number of segments to be fitted on the time series.
+  [//10,    6,    4,    2,  1 // anos
+    0.1, 0.15, 0.25,  0.5,  1 // fator
+  ], // recoveryThreshold (Float, default: 0.25): If a segment has a recovery rate faster than 1/recoveryThreshold (in years), then the segment is disallowed.
+  [
+    0.1,0.05
+  ],   // pvalThreshold (Float, default: 0.1): If the p-value of the fitted model exceeds this threshold, then the current model is discarded and another one is fitted using the Levenberg-Marquardt optimizer.
+];
+
+var list_of_run_params = matrix_constructor(run_params_array);
+print('list_of_run_params',list_of_run_params);
+
+// --- --- --- SPATAL DATA
+var ibge_biomas = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biomas_IBGE_250mil')
+  // .filter(ee.Filter.eq('Bioma','Cerrado'));
+
+// universal featurecollection
+var fc = ibge_biomas;
+// var fc = teste;
+
+var mask = ee.Image().paint(fc).eq(0);
+var bounds = fc.geometry().bounds();
+
+// --- --- --- MAIN FUNCTIONS
+function landtrendr (_run_params,_years,_bands){
+  _years = _years.map(function(year){return ''+year});
+  
+  // rodando o algoritimo de segmentação temporal
+  var LTresult = ee.Algorithms.TemporalSegmentation.LandTrendr(_run_params).toFloat();
+  // print('LTresult',LTresult)
+  // destacando 
+  var LTarray = LTresult.select(['LandTrendr']); // subset the LandTrendr segmentation info
+  var index = LTarray.arraySlice({
+      axis:0,
+      start:1,
+      end:2,
+    }).arrayProject([1]); //slice out the fitted values row
+
+  var segmented_index = LTarray.arraySlice({
+      axis:0,
+      start:2,
+      end:3,
+    }).arrayProject([1]); //slice out the fitted values row
+
+  var vertex_landtrandr = LTarray.arraySlice({
+      axis:0,
+      start:3,
+      end:4,
+    }).arrayProject([1]); //slice out the fitted values row
+
+  _bands[0] = 'index';
+
+  _bands[_bands.length] = 'index_segmented';
+
+  _bands[_bands.length] = 'vertex';
+
+  
+  var list_images_multibands = _bands
+    .map(function(bandname){
+  
+     var ftv = LTresult.select([bandname + '_fit']); // subset the bandname_fit band
+     
+     if (bandname === 'index'){
+       ftv = index;
+     }
+    if (bandname === 'index_segmented'){
+      ftv = segmented_index;
+     }
+     if (bandname === 'vertex'){
+       ftv = vertex_landtrandr;
+     }
+     
+      return ftv
+        .int16()
+        .arrayFlatten([_years]);
+  });
+
+  var col_annual_landtrandr = ee.ImageCollection(
+    _years.map(function(year){
+      var start = ee.Date(''+year+'-01-01');
+      var end = start.advance(1,'year');
+      
+      var recipe = ee.Image().select();
+      
+      _bands.forEach(function(bandname,i){
+        recipe = recipe.addBands(list_images_multibands[i].select([year],[bandname]));
+      });
+      
+      return recipe.set({
+        'system:time_start':start.millis(),
+        'system:time_end':end.millis(),
+        'year':parseInt(year),
+      });
+    })
+  );
+  
+  var rmse = ee.Image(LTresult.select('rmse')).int16();
+  
+  return {collection:col_annual_landtrandr,rmse:rmse};
+}
+
+function matrix_constructor(obj) {
+  var result = [];
+
+  // Função recursiva para gerar combinações
+  function generateCombinations(index, currentCombination) {
+    if (index === obj.length) {
+      result.push(currentCombination.join('-'));
+      return;
+    }
+
+    for (var i = 0; i < obj[index].length; i++) {
+      generateCombinations(index + 1, currentCombination.concat(obj[index][i]));
+    }
+  }
+
+  generateCombinations(0, []);
+
+  return result;
+} 
+
+var extractTimeSeries = function(imageCollection,region,name) {
+  var timeSeries = ui.Chart.image.series({
+    imageCollection: imageCollection,
+    region: region,
+    reducer: ee.Reducer.first(),
+    scale: 500,
+    xProperty: 'system:time_start'
+  }).setOptions({
+    title: 'Série Temporal' + (name === undefined ? '' : (' ' + name)),
+    hAxis: {title: 'Data'},
+    vAxis: {title: 'Refletância'},
+    lineWidth: 1,
+    // pointSize: 3,
+    legend: {
+      position: 'in',
+      textStyle: {fontSize: 11 }
+    },
+    series: {
+      0: { color: '0000ff', lineWidth: 1.5,    lineDashStyle: [4, 4], }, 
+      1: { color: '00ff00' },
+      2: { color: 'ff0000' },  
+      3: { color: '004040' },
+      4: { color: 'aa00aa' },
+      5: { color: 'ffaa00' },
+    }
+  });
+  
+  timeSeries.style().set({
+    width:'600px',
+    stretch:'horizontal'
+  });
+  
+  return timeSeries;
+};
+
+
+// --- --- --- DEVELOPMENT of annual mosaics and their temporal segmentation
+// print('annual_mosaics',annual_mosaics,bands.median);  
+
+// --- --- ---  PLOT
+var visParams = {
+  median:{
+    bands: ['swir1_median', 'nir_median', 'red_median'],
+    gain: [0.08, 0.06, 0.2],
+    gamma: 0.85
+  },
+  ndvi:{
+    bands: ['ndvi_median'],
+    min: 5000,
+    max:20000,
+  }
+};
+
+// --- --- for each run params thinking for landtrendr
+var panel = ui.Panel({
+  // widgets:,
+  layout:ui.Panel.Layout.Flow('vertical'),
+  style:{}
+});
+
+ui.root.widgets().add(panel);
+
+
+// Point at the EO datasets 
+var ALOS1 = ee.ImageCollection('projects/mapbiomas-workspace/CARBONO/CERRADO_ALOSPALSAR1') //2006 a 2020
+.map(function(img){
+  return img.set({
+    'year':ee.Number.parse(img.getString('system:index').slice(-4))
+  });
+});
+
+var ALOS2 = ee.ImageCollection('projects/mapbiomas-workspace/CARBONO/CERRADO_ALOSPALSAR2') //2015 a 2022
+.map(function(img){
+  return img.set({
+    'year':ee.Number.parse(img.getString('system:index').slice(-4))
+  });
+});
+
+var ALOS = ee.List.sequence(2007,2022,1).iterate(function(current,previous){
+  
+  var year = ee.Number(current).int();
+  var collection = ee.Algorithms.If({
+    condition:year.gte(2015),
+    trueCase:ALOS2,
+    falseCase:ALOS1
+  });
+  
+  var img = ee.ImageCollection(collection)
+    .filter(ee.Filter.eq('year',year))
+    .mosaic();
+  
+  // HH
+  var ALOSHH = img.select(0).rename('ALOSHH');
+  var ALOSHV = img.select(1).rename('ALOSHV');
+  //Calculate Radar Forest Degradation Index
+  var ALOSrfdi = img.select(0).subtract(img.select(1)).divide(img.select(0).add(img.select(1))).rename('ALOSrfdi');
+  //Calculate cross-polarized ratio
+  var ALOScpR = img.select(1).divide(img.select(0)).rename('ALOScpR');
+  //var ALOSstack = ALOSHH.addBands(ALOSHV).addBands(ALOSrfdi).addBands(ALOScpR);
+  
+  var newimg = ee.Image().select()
+    .addBands(ALOSHH)
+    .addBands(ALOSHV)
+    .addBands(ALOSrfdi)
+    .addBands(ALOScpR)
+    .set('year',year);
+  
+  return ee.List(previous).add(newimg);
+},[]);
+ALOS = ee.ImageCollection(ee.List(ALOS));
+
+Map.addLayer(ALOS.first())
+  // 'ALOSHH','ALOSHV',"ALOSrfdi","ALOScpR",
+
+
+print('ALOS',ALOS)
+var mb_mosaics = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2');
+print('mb_bands',mb_mosaics.first().bandNames());
+
+mb_mosaics = mb_mosaics.map(function(img){
+
+    var gcvi_median = img.select('nir_median').divide(img.select('green_median').subtract(1)).rename('gcvi_median');
+    var gcvi_median_dry = img.select('nir_median_dry').divide(img.select('green_median_dry').subtract(1)).rename('gcvi_median_dry');
+    var gcvi_median_wet = img.select('nir_median_wet').divide(img.select('green_median_wet').subtract(1)).rename('gcvi_median_wet');
+    
+    var sr_median = img.select('nir_median').divide(img.select('green_median')).rename('sr_median');
+    var sr_median_dry = img.select('nir_median_dry').divide(img.select('green_median_dry')).rename('sr_median_dry');
+    var sr_median_wet = img.select('nir_median_wet').divide(img.select('green_median_wet')).rename('sr_median_wet');
+    
+    var gdvi1_median = sr_median.subtract(1).divide(sr_median.add(1)).rename('gdvi1_median');
+    var gdvi1_median_dry = sr_median_dry.subtract(1).divide(sr_median_dry.add(1)).rename('gdvi1_median_dry');
+    var gdvi1_median_wet = sr_median_wet.subtract(1).divide(sr_median_wet.add(1)).rename('gdvi1_median_wet');
+    
+    var ndmi_median = img.normalizedDifference(['nir_median','swir1_median']).rename('ndmi_median');
+    var ndmi_median_dry = img.normalizedDifference(['nir_median_dry','swir1_median_dry']).rename('ndmi_median_dry');
+    var ndmi_median_wet = img.normalizedDifference(['nir_median_wet','swir1_median_wet']).rename('ndmi_median_wet');
+    
+    var tcg_median = img.expression("(-0.2941 * blue_median) - (0.243 * green_median) - (0.5424 * red_median) + (0.7276 * nir_median) + (0.0713 * swir1_median) - (0.1608 * swir2_median)",{
+      blue_median:img.select('blue_median'),
+      green_median:img.select('green_median'),
+      red_median:img.select('red_median'),
+      nir_median:img.select('nir_median'),
+      swir1_median:img.select('swir1_median'),
+      swir2_median:img.select('swir2_median'),
+      
+    }).rename('tcg_median');
+    var tcg_median_dry = img.expression("(-0.2941 * blue_median_dry) - (0.243 * green_median_dry) - (0.5424 * red_median_dry) + (0.7276 * nir_median_dry) + (0.0713 * swir1_median_dry) - (0.1608 * swir2_median_dry)",{
+      blue_median_dry:img.select('blue_median_dry'),
+      green_median_dry:img.select('green_median_dry'),
+      red_median_dry:img.select('red_median_dry'),
+      nir_median_dry:img.select('nir_median_dry'),
+      swir1_median_dry:img.select('swir1_median_dry'),
+      swir2_median_dry:img.select('swir2_median_dry'),
+      
+    }).rename('tcg_median_dry');
+    var tcg_median_wet = img.expression("(-0.2941 * blue_median_wet) - (0.243 * green_median_wet) - (0.5424 * red_median_wet) + (0.7276 * nir_median_wet) + (0.0713 * swir1_median_wet) - (0.1608 * swir2_median_wet)",{
+      blue_median_wet:img.select('blue_median_wet'),
+      green_median_wet:img.select('green_median_wet'),
+      red_median_wet:img.select('red_median_wet'),
+      nir_median_wet:img.select('nir_median_wet'),
+      swir1_median_wet:img.select('swir1_median_wet'),
+      swir2_median_wet:img.select('swir2_median_wet'),
+      
+    }).rename('tcg_median_wet');
+
+    return img
+      .addBands(gcvi_median).addBands(gcvi_median_dry).addBands(gcvi_median_wet)
+      .addBands(sr_median).addBands(sr_median_dry).addBands(sr_median_wet)
+      .addBands(gdvi1_median).addBands(gdvi1_median_dry).addBands(gdvi1_median_wet)
+      .addBands(ndmi_median).addBands(ndmi_median_dry).addBands(ndmi_median_wet)
+      .addBands(tcg_median).addBands(tcg_median_dry).addBands(tcg_median_wet);
+});
+
+var year_sat = {
+  1985:['l5'],  1986:['l5'],  1987:['l5'],  1988:['l5'],  1989:['l5'],
+  1990:['l5'],  1991:['l5'],  1992:['l5'],  1993:['l5'],  1994:['l5'],
+  1995:['l5'],  1996:['l5'],  1997:['l5'],  1998:['l5'],  1999:['l5'],  
+  
+  2000:['l7'],  2001:['l7'],  2002:['l7'],
+  
+  2003:['l5'],  2004:['l5'],  2005:['l5'],  2006:['l5'],  2007:['l5'],  2008:['l5'],
+  2009:['l5'],  2010:['l5'],  2011:['l5'],
+  
+  2012:['l7'],
+  
+  2013:['l8'],  2014:['l8'],  2015:['l8'],  2016:['l8'],  2017:['l8'],
+  2018:['l8'],  2019:['l8'],  2020:['l8'],  2021:['l8'],  2022:['l8'],
+  2023:['l8'],
+};
+
+var BANDS = [
+  'ALOSHH','ALOSHV',"ALOSrfdi","ALOScpR",
+
+  'blue_median',      'blue_median_dry',      'blue_median_wet',
+  'green_median',     'green_median_dry',     'green_median_wet',
+  'red_median',       'red_median_dry',       'red_median_wet',
+  'nir_median',       'nir_median_dry',       'nir_median_wet',
+  'swir1_median',     'swir1_median_dry',     'swir1_median_wet',
+  'swir2_median',     'swir2_median_dry',     'swir2_median_wet',
+  
+  'ndvi_median',      'ndvi_median_dry',      'ndvi_median_wet',
+  'ndwi_median',      'ndwi_median_dry',      'ndwi_median_wet',
+  'evi2_median',      'evi2_median_dry',      'evi2_median_wet',
+  'savi_median',      'savi_median_dry',      'savi_median_wet',
+  
+  "tcg_median",       'tcg_median_dry',       'tcg_median_wet',
+  "ndmi_median",      'ndmi_median_dry',      'ndmi_median_wet',
+  "gcvi_median",      'gcvi_median_dry',      'gcvi_median_wet',
+  "sr_median",        'sr_median_dry',        'sr_median_wet',
+  "gdvi1_median",     'gdvi1_median_dry',     'gdvi1_median_wet'
+];
+
+
+Map.onClick(function(obj){
+
+  var subPanel = ui.Panel({
+    // widgets:,
+    layout:ui.Panel.Layout.Flow('vertical'),
+    style:{margin:'0px',border:'1px solid black'}
+  });
+  
+  panel.insert(0,subPanel);
+
+  var point = ee.Geometry.Point([obj.lon,obj.lat]);
+  
+  points = points.merge(ee.Feature(point));
+  pointLayer.setEeObject(points);
+  // print('points',points);
+  var years = [2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022];
+  var annual_mosaics = years.map(function(year){
+    var start = ee.Date(''+year+'-01-01');
+    var end = start.advance(1,'year');
+    var mb_image = mb_mosaics
+      .filterBounds(point)
+      .filter(ee.Filter.eq('year',year))
+      // .map(indexs_for_mb_mosaics)
+      .median() // no caso de sobreposição de cartas entre os biomas, ou de mosaicos com mais de um ano, a redução calculando a mediana
+      .unmask()
+      .set({
+        year:year, 
+        'system:time_start':start.millis(),
+        'system:time_end':end.millis(),
+      });
+
+    var ALOS_image = ALOS
+      .filterBounds(point)
+      .filter(ee.Filter.eq('year',year))
+      // .map(indexs_for_mb_mosaics)
+      .median() // no caso de sobreposição de cartas entre os biomas, ou de mosaicos com mais de um ano, a redução calculando a mediana
+      .unmask()
+      // .multiply(1000)
+      // .int16()
+
+      
+      return mb_image.addBands(ALOS_image).select(BANDS);
+  });
+  
+  annual_mosaics = ee.ImageCollection(annual_mosaics);
+
+  
+  var col = annual_mosaics.select(run_params_array[0][0]);
+  var rmse_img = ee.Image(0).rename(run_params_array[0][0]);
+  list_of_run_params.map(function(str){
+    var split = str.split('-');
+    
+    var bandname = split[0];
+  
+    var run_params = {
+      'timeSeries':annual_mosaics.select(bandname),
+      'maxSegments':ee.Number.parse(split[1]),
+      'recoveryThreshold':ee.Number.parse(split[2]),
+      'pvalThreshold':ee.Number.parse(split[3])
+    };
+  
+    var segmenting = landtrendr(run_params,years,[bandname]);
+  
+    var label_name = str.replace('.','_').replace('.','_').replace('.','_');//'r-'+split[2].replace('.','_').replace('.','_').replace('.','_');
+  
+    var segmenting_collection = segmenting.collection
+      .select(['index_segmented'],[label_name]);
+    
+    col = col.linkCollection(segmenting_collection, [label_name]);
+    rmse_img = rmse_img.addBands(segmenting.rmse.rename(label_name));
+  });
+  var pointName = (parseInt(obj.lon * 100)/100) + ', ' + (parseInt(obj.lat * 100)/100);
+  var chart = extractTimeSeries(col,point,pointName);
+  subPanel.add(chart);
+  
+  //////////////////////////////
+  var panel_labels = ui.Panel({
+    // widgets:,
+    layout:ui.Panel.Layout.flow('horizontal',true),
+    style:{margin:'2px',maxWidth:'600px'}
+  });
+  subPanel.add(panel_labels);
+  
+  var reduce_rmse = rmse_img.reduceRegion({
+    reducer:ee.Reducer.first(),
+    geometry:point,
+    scale:500,
+    // crs:,
+    // crsTransform:,
+    // bestEffort:,
+    maxPixels:1e13,
+    // tileScale:
+  });
+  
+  var labels = reduce_rmse.keys().map(function(key){
+    return ee.String(' ').cat(key).cat(': ').cat(reduce_rmse.get(key)).cat(' || ');
+  });
+
+  labels.evaluate(function(list_labels){
+    list_labels.forEach(function(label){
+      label = label.replace(run_params_array[0][0] + ': 0 || ','RMSE: ');
+      panel_labels.add(ui.Label(label,{margin:'1px 2px 1px 2px ',fontSize:'11px'}));
+    });
+  });
+  
+  ////////////////////////////////////
+  subPanel.add(pixelHistory(point));
+  
+  
+  ////////////////////////////////////
+  var line = ui.Panel({
+    // widgets:,
+    // layout:ui.Panel.Layout.flow('horizontal',true),
+    style:{stretch:'horizontal',border:'1px solid black'}
+  });
+  subPanel.add(line);
+});
+
+// print('col',col);
+
+// print(extractTimeSeries(col,geometry2));
+
+//////////////////////////////////////////////
+function trajectory (lulc,period,classes) {
+  var count = period[1] - period[0] + 1;
+
+  var bands = Array.apply(null, Array(count)).map(
+      function (_, i) {
+          return 'classification_' + (period[0] + i).toString();
+      }
+  );
+
+  var calculateNumberOfChanges = function (image) {
+    var nChanges = image.reduce(ee.Reducer.countRuns()).subtract(1);    return nChanges.rename('number_of_changes');
+  };
+  
+  var calculateNumberOfPresence = function (image) {
+    var nChanges = image.reduce(ee.Reducer.sum());    return nChanges.rename('number_of_presence');
+  };
+  
+  var calculateNumberOfClasses = function (image) {
+  
+      var nClasses = image.reduce(ee.Reducer.countDistinctNonNull());
+  
+    return nClasses.rename('number_of_classes');
+  };
+
+  // lulc images 
+  var imagePeriod = lulc.select(bands);
+
+  // number of classes
+  var nClasses = calculateNumberOfClasses(imagePeriod);
+
+  // number of changes
+  var nChanges = calculateNumberOfChanges(imagePeriod);
+
+  // stable
+  var stable = imagePeriod.select(0).multiply(nClasses.eq(1));
+
+  // Map.addLayer(stable, visParams.stable, 'Stable', false);
+  // Map.addLayer(nClasses, visParams.number_of_classes, 'Number of classes', false);
+
+  // trajectories
+  // classIds.forEach(
+  function trajectories (classList) {
+    var classIdsMask = ee.List(bands).iterate(
+        function (band, allMasks) {
+            var mask = imagePeriod.select([band])
+                .remap(classList, ee.List.repeat(1, classList.length), 0);
+
+            return ee.Image(allMasks).addBands(mask);
+        },
+        ee.Image().select()
+    );
+
+    classIdsMask = ee.Image(classIdsMask).rename(bands);
+
+    // number of presence
+    var nPresence = calculateNumberOfPresence(classIdsMask);
+
+    // nChanges in classList
+    var nChanges = calculateNumberOfChanges(classIdsMask);
+
+    // nChanges rules in the analisys
+    var nChangesEq0 = nChanges.eq(0); //  no change
+    var nChangesEq1 = nChanges.eq(1); //  1 change
+    var nChangesGt1 = nChanges.gt(1); // >1 changes
+    // var nChangesGt2 = nChanges.gt(2); // >2 changes
+
+    // lulc classIds masks for the first year and last year 
+    var t1 = classIdsMask.select(bands[0]);
+    var tn = classIdsMask.select(bands[bands.length - 1]);
+
+    // categories
+    var abAbCh0 = t1.eq(0).and(nChangesEq0);
+    var prPrCh0 = t1.eq(1).and(nChangesEq0);
+    var abPrCh1 = t1.eq(0).and(nChangesEq1).and(tn.eq(1));
+    var prAbCh1 = t1.eq(1).and(nChangesEq1).and(tn.eq(0));
+    var abPrCh2 = t1.eq(0).and(nChangesGt1).and(tn.eq(1));
+    var prAbCh2 = t1.eq(1).and(nChangesGt1).and(tn.eq(0));
+    var abAbCh1 = t1.eq(0).and(nChangesGt1).and(tn.eq(0));
+    var prPrCh1 = t1.eq(1).and(nChangesGt1).and(tn.eq(1));
+
+    // (*) the classes Ab-Ab and Pr-Pr the classes were joined
+    // var trajectories = ee.Image(0)
+    //     .where(prAbCh1, 1)  //[1] Pr-Ab Ch=1 | Loss without Alternation
+    //     .where(abPrCh1, 2)  //[2] Ab-Pr Ch=1 | Gain without Alternation
+    //     .where(prAbCh2, 3)  //[3] Pr-Ab Ch>2 | Loss with Alternation
+    //     .where(abPrCh2, 4)  //[4] Ab-Pr Ch>2 | Gain with Alternation
+    //     .where(abAbCh1, 5)  //[5] Ab-Ab Ch>1 | Stable with Alternation (Ab-Ab)
+    //     .where(prPrCh1, 5)  //[5] Pr-Pr Ch>1 | Stable with Alternation (Pr-Pr)
+    //     .where(prPrCh0, 6)  //[6] Pr-Pr Ch=0 | Stable Presence
+    //     .where(abAbCh0, 7); //[7] Ab-Ab Ch=0 | Stable Absence
+    var traject = ee.Image(0)
+        .where(prAbCh1, 1)  // [1] Presence🡪Loss🡪Absence
+        .where(abPrCh1, 2)  // [2] Absence🡪Gain🡪Presence
+        .where(prAbCh2, 3)  // [3] Presence🡪Alternation🡪Loss🡪Absence
+        .where(abPrCh2, 4)  // [4] Absence🡪Alternation🡪Gain🡪Presence
+        .where(prPrCh1, 5)  // [5] Presence🡪Alternation🡪Presence
+        .where(abAbCh1, 6)  // [6] Absence🡪Alternation🡪Absence
+        .where(prPrCh0, 7)  // [7] Presence🡪Stable🡪Presence
+        .where(abAbCh0, 8); // [8] Absence🡪Stable🡪Absence
+
+    return traject.rename('trajectories').selfMask();
+
+    // trajectoriesClassIds[classList[0]].number_of_presence = nPresence;
+    // trajectoriesClassIds[classList[0]].number_of_changes = nChanges;
+    // trajectoriesClassIds[classList[0]].trajectories = trajectories;
+}
+
+return trajectories(classes);
+// );
+// print(image)
+
+
+}
+
+///
+var mb_lulc8 = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
+var mb_fire2 = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas-fire-collection2-annual-burned-coverage-1').gte(1);
+var lulc_vis = {
+  palette:require('users/mapbiomas/modules:Palettes.js').get('classification8'),
+  min:0,
+  max:62,
+  bands: 'classification_2022'
+};
+var fire_vis = {
+  palette:['ffffff','800000'],
+  min:0,
+  max:1,
+  bands: 'burned_coverage_2022'
+};
+
+var trajetory_vis = {
+  'min': 0,
+  'max': 8,
+  'palette': [
+      "#ffffff", //[0] Mask 
+      "#941004", //[1] Presence🡪Loss🡪Absence
+      "#020e7a", //[2] Absence🡪Gain🡪Presence
+      "#f5261b", //[3] Presence🡪Alternation🡪Loss🡪Absence
+      "#14a5e3", //[4] Absence🡪Alternation🡪Gain🡪Presence
+      "#8b8000", //[5] Presence🡪Alternation🡪Presence
+      "#ffff00", //[6] Absence🡪Alternation🡪Absence
+      "#666666", //[7] Presence🡪Stable🡪Presence
+      "#cfcfcf", //[8] Absence🡪Stable🡪Absence
+  ],
+};
+
+
+var lulc_legend = [
+      // {value:1, label:"Floresta"},
+      {value:3, label:"Formação Florestal"}, 
+      {value:4, label:"Formação Savânica"}, 
+      {value:5, label:"Mangue"}, 
+      {value:49, label:"Restinga Arborizada"}, 
+      // {value:10, label:"Formação Natural não Florestal"},
+      {value:11, label:"Campo Alagado e Área Pantanosa"}, 
+      {value:12, label:"Formação Campestre"}, 
+      {value:32, label:"Apicum"}, 
+      {value:29, label:"Afloramento Rochoso"}, 
+      {value:50, label:"Restinga Herbácea"}, 
+      {value:13, label:"Outras Formações não Florestais"}, 
+      // {value:14, label:"Agropecuária"}, 
+      {value:15, label:"Pastagem"}, 
+      // {value:18, label:"Agricultura"}, 
+      // {value:19, label:"Lavoura Temporária"}, 
+      {value:39, label:"Soja"}, 
+      {value:20, label:"Cana"}, 
+      {value:40, label:"Arroz (beta)"}, 
+      {value:62, label:"Algodão (beta)"}, 
+      {value:41, label:"Outras Lavouras Temporárias"},
+      // {value:36, label:"Lavoura Perene"}, 
+      {value:46, label:"Café"},
+      {value:47, label:"Citrus"}, 
+      {value:48, label:"Outras Lavouras Perenes"}, 
+      {value:9, label:"Silvicultura"},
+      {value:21, label:"Mosaico de Usos"}, 
+      // {value:22, label:"Área não Vegetada"}, 
+      {value:23, label:"Praia, Duna e Areal"}, 
+      {value:24, label:"Área Urbanizada"}, 
+      {value:30, label:"Mineração"}, 
+      {value:25, label:"Outras Áreas não Vegetadas"}, 
+      // {value:26, label:"Corpo D'água"}, 
+      {value:33, label:"Rio, Lago e Oceano"}, 
+      {value:31, label:"Aquicultura"}, 
+      {value:27, label:"Não observado"}, 
+    ];
+var fire_legend = [
+  {value:0, label:"Não observado"}, 
+  {value:1, label:"Fogo"}, 
+];
+var trajetory_legend = [
+    {value:0, label: "Mask"},
+    {value:1, label: "Presence🡪Loss🡪Absence"},
+    {value:2, label: "Absence🡪Gain🡪Presence"},
+    {value:3, label: "Presence🡪Alternation🡪Loss🡪Absence"},
+    {value:4, label: "Absence🡪Alternation🡪Gain🡪Presence"},
+    {value:5, label: "Presence🡪Alternation🡪Presence"},
+    {value:6, label: "Absence🡪Alternation🡪Absence"},
+    {value:7, label: "Presence🡪Stable🡪Presence"},
+    {value:8, label: "Absence🡪Stable🡪Absence"},
+];
+
+// 'Trajetórias de classes naturais (1985 a 2021)',
+var nat_trajectory = trajectory(mb_lulc8,[1985,2021],[3,4,5,49,11,12,32,29,50,13,33]);
+
+Map.addLayer(mb_lulc8,lulc_vis,'mb_lulc8',false);
+Map.addLayer(mb_fire2,fire_vis,'mb_fire2',false);
+Map.addLayer(nat_trajectory,trajetory_vis,'nat_trajectory',true);
+
+var points = ee.FeatureCollection([]);
+var pointLayer = ui.Map.Layer(points,{},'points');
+Map.add(pointLayer);
+
+function pixelHistory (point){
+  
+  var historys = ui.Panel({
+    // widgets:
+    layout:ui.Panel.Layout.flow('vertical',true),
+    style:{margin:'0px'}
+  });
+  
+  var data_list = [
+    ['LULC',mb_lulc8,lulc_vis,lulc_legend,],
+    ['FIRE',mb_fire2.unmask(),fire_vis,fire_legend],
+    ['TRAJ',nat_trajectory,trajetory_vis,trajetory_legend],
+  ];
+  
+  data_list.forEach(function(list){
+    var name = list[0];
+    var img = list[1];
+    var vis = list[2];
+    var palette = vis.palette;
+    var legend = list[3];
+    
+    var reduce = img.reduceRegion({
+      reducer:ee.Reducer.first(),
+      geometry:point,
+      scale:30,
+      // crs:,
+      // crsTransform:,
+      // bestEffort:,
+      maxPixels:1e6,
+      // tileScale:
+    });
+
+    var listLabels = ui.Panel({
+      widgets:ui.Label(name,{margin:'0px',width:'40px'}), 
+      layout:ui.Panel.Layout.flow('horizontal',true),
+      style:{
+        margin:'0px',
+        border:'1px dashed #00000020', // solid; /* ou dashed, dotted, double, groove, ridge, inset, outset, none */
+        textAlign:'center',
+      }
+    });
+    
+    reduce.keys().evaluate(function(keys){
+      reduce.values().evaluate(function(values){
+        keys.forEach(function(key,i){
+          var value = values[i];
+
+
+          var titulo = key === 'trajectories' ? legend.filter(function(obj){return obj.value === value})[0].label : key.slice(-2);
+          // print('legend.filter(function(obj){obj.value === value})',legend.filter(function(obj){obj.value === value}));
+          var year = ui.Label(titulo,{margin:'1px 0px 1px 0px',fontSize:'9px',textAlign:'center',stretch:'horizontal'});
+          var classe = ui.Label(value,{margin:'1px 0px 1px 0px',fontSize:'9px',textAlign:'center',stretch:'horizontal',backgroundColor:palette[value]});
+              
+          var yearBox = ui.Panel({
+            widgets:[classe,year], 
+            layout:ui.Panel.Layout.flow('vertical',true),
+            style:{
+              margin:'0px 1px 0px 1px',
+              border:'1px dashed #00000020', // solid; /* ou dashed, dotted, double, groove, ridge, inset, outset, none */
+              backgroundColor:palette[value]
+            }
+          });
+  
+          
+          listLabels.add(yearBox);
+        });
+      });
+    });
+    historys.add(listLabels);
+  });
+  
+  return historys;
+}
+
+var panel_legend = ui.Panel({
+  // widgets:,
+  layout:ui.Panel.Layout.flow('vertical'),
+  style:{margin:'0px',maxHeight:'400px'},
+});
+
+var body_legend = ui.Panel({
+  widgets:[
+    ui.Label('Legenda',{margin:'0px',fontSize:'11px',textAlign:'center',stretch:'horizontal'}),
+    panel_legend
+  ],
+  layout:ui.Panel.Layout.flow('vertical'),
+  style:{margin:'0px',position:'bottom-left'},
+});
+
+Map.add(body_legend);
+
+var data_list = [
+  ['LULC',mb_lulc8,lulc_vis,lulc_legend,],
+  ['FIRE',mb_fire2.unmask(),fire_vis,fire_legend],
+  ['TRAJ',nat_trajectory,trajetory_vis,trajetory_legend],
+];
+
+
+data_list.forEach(function(list){
+  var name = list[0];
+  // var img = list[1];
+  var vis = list[2];
+  var palette = vis.palette;
+  var legend = list[3];
+  // border:'1px dashed #00000020', // solid; /* ou dashed, dotted, double, groove, ridge, inset, outset, none */
+
+  var sub_panel = ui.Panel({
+    // widgets:,
+    layout:ui.Panel.Layout.flow('vertical'),
+    style:{margin:'0px',border:'1px dashed #00000020'},
+  });
+  
+  var button = ui.Checkbox({
+    label:name,
+    value:false,
+    onChange:function(value){
+      if(value){
+        panel_legend.insert(0,sub_panel);
+      } else {
+        panel_legend.remove(sub_panel);
+      }
+    },
+    // disabled:,
+    style:{margin:'0px',fontSize:'9px',textAlign:'center',stretch:'horizontal'}
+  });
+  body_legend.add(button);
+  legend.forEach(function(obj){
+    var box = ui.Label('◈',{color:palette[obj.value],margin:'0px',fontSize:'9px',textAlign:'center'});
+    var label = ui.Label('' + obj.value + ' - ' +obj.label,{margin:'0px',fontSize:'9px',});
+    var line = ui.Panel({
+      widgets:[box,label],
+      layout:ui.Panel.Layout.flow('horizontal'),
+      style:{margin:'0px'},
+    });
+
+    sub_panel.add(line);
+  });
+  
+});
+
+
+var boundsPanel = ui.Panel({
+  // widgets:,
+  // layout:,
+  style:{'margin':'0px','position':'bottom-right'}
+});
+Map.add(boundsPanel);
+
+Map.onChangeBounds(function(obj){
+  var pointName = (parseInt(obj.lon * 100)/100) + ', ' + (parseInt(obj.lat * 100)/100) + ', ' + obj.zoom;
+  
+    
+  boundsPanel.clear();
+  boundsPanel.add(ui.Label(pointName,{margin:'0px',fontSize:'11px',textAlign:'center',stretch:'horizontal'}));
+  
+});
