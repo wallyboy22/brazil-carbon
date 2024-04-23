@@ -47,7 +47,7 @@ var BANDS = [
 
 var run_params_array = [
   [
-    'ALOSHH','ALOSHV', /*'ndwi_median', 'ndvi_median_dry', 'ndvi_median_wet'*/
+    'ALOSHH',/*'ALOSHV', 'ndwi_median', 'ndvi_median_dry', 'ndvi_median_wet'*/
   ], // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
   [
     13
@@ -238,14 +238,18 @@ ui.root.widgets().add(panel);
 // Point at the EO datasets 
 var ALOS1 = ee.ImageCollection('projects/mapbiomas-workspace/CARBONO/CERRADO_ALOSPALSAR1') //2006 a 2020
 .map(function(img){
-  return img.set({
+  return img
+  .select(img.bandNames(),img.bandNames().map(function(b){return ee.String(b).slice(0,2)}))
+  .set({
     'year':ee.Number.parse(img.getString('system:index').slice(-4))
   });
 });
 
 var ALOS2 = ee.ImageCollection('projects/mapbiomas-workspace/CARBONO/CERRADO_ALOSPALSAR2') //2015 a 2022
 .map(function(img){
-  return img.set({
+  return img
+  .select(img.bandNames(),img.bandNames().map(function(b){return ee.String(b).slice(0,2)}))
+  .set({
     'year':ee.Number.parse(img.getString('system:index').slice(-4))
   });
 });
@@ -272,18 +276,27 @@ var ALOS = ee.List.sequence(2007,2022,1).iterate(function(current,previous){
   var ALOScpR = img.select(1).divide(img.select(0)).rename('ALOScpR');
   //var ALOSstack = ALOSHH.addBands(ALOSHV).addBands(ALOSrfdi).addBands(ALOScpR);
   
+  var start = ee.Date(ee.String(year).cat('-01-01'));
+  var end = start.advance(1,'year');
+  
   var newimg = ee.Image().select()
     .addBands(ALOSHH)
     .addBands(ALOSHV)
     .addBands(ALOSrfdi)
     .addBands(ALOScpR)
-    .set('year',year);
-  
+    .set('year',year)
+    .set({
+      'system:time_start':start.millis(),
+      'system:time_end':end.millis(),
+    });
+
   return ee.List(previous).add(newimg);
 },[]);
 ALOS = ee.ImageCollection(ee.List(ALOS));
 
-// Map.addLayer(ALOS.first())
+Map.addLayer(ALOS1,{},'ALOS1',false);
+Map.addLayer(ALOS2,{},'ALOS2',false);
+Map.addLayer(ALOS,{},'ALOS',false);
   // 'ALOSHH','ALOSHV',"ALOSrfdi","ALOScpR",
 
 
