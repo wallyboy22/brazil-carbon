@@ -21,7 +21,29 @@ var teste =
     /* shown: false */
     ee.Geometry.Point([-47.82700213814179, -15.812029054018927]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
-// --- 27-02-2024 // GT-Carbono - explorando landtrendr nos mosaicos landsat do mapbiomas
+// --- 23-04-2024 // GT-Carbono - explorando landtrendr nos mosaicos landsat do mapbiomas
+
+var BANDS = [
+  'ALOSHH','ALOSHV',"ALOSrfdi","ALOScpR",
+
+  'blue_median',      'blue_median_dry',      'blue_median_wet',
+  'green_median',     'green_median_dry',     'green_median_wet',
+  'red_median',       'red_median_dry',       'red_median_wet',
+  'nir_median',       'nir_median_dry',       'nir_median_wet',
+  'swir1_median',     'swir1_median_dry',     'swir1_median_wet',
+  'swir2_median',     'swir2_median_dry',     'swir2_median_wet',
+  
+  'ndvi_median',      'ndvi_median_dry',      'ndvi_median_wet',
+  'ndwi_median',      'ndwi_median_dry',      'ndwi_median_wet',
+  'evi2_median',      'evi2_median_dry',      'evi2_median_wet',
+  'savi_median',      'savi_median_dry',      'savi_median_wet',
+  
+  "tcg_median",       'tcg_median_dry',       'tcg_median_wet',
+  "ndmi_median",      'ndmi_median_dry',      'ndmi_median_wet',
+  "gcvi_median",      'gcvi_median_dry',      'gcvi_median_wet',
+  "sr_median",        'sr_median_dry',        'sr_median_wet',
+  "gdvi1_median",     'gdvi1_median_dry',     'gdvi1_median_wet'
+];
 
 var run_params_array = [
   [
@@ -261,7 +283,7 @@ var ALOS = ee.List.sequence(2007,2022,1).iterate(function(current,previous){
 },[]);
 ALOS = ee.ImageCollection(ee.List(ALOS));
 
-Map.addLayer(ALOS.first())
+// Map.addLayer(ALOS.first())
   // 'ALOSHH','ALOSHV',"ALOSrfdi","ALOScpR",
 
 
@@ -340,27 +362,8 @@ var year_sat = {
   2023:['l8'],
 };
 
-var BANDS = [
-  'ALOSHH','ALOSHV',"ALOSrfdi","ALOScpR",
 
-  'blue_median',      'blue_median_dry',      'blue_median_wet',
-  'green_median',     'green_median_dry',     'green_median_wet',
-  'red_median',       'red_median_dry',       'red_median_wet',
-  'nir_median',       'nir_median_dry',       'nir_median_wet',
-  'swir1_median',     'swir1_median_dry',     'swir1_median_wet',
-  'swir2_median',     'swir2_median_dry',     'swir2_median_wet',
-  
-  'ndvi_median',      'ndvi_median_dry',      'ndvi_median_wet',
-  'ndwi_median',      'ndwi_median_dry',      'ndwi_median_wet',
-  'evi2_median',      'evi2_median_dry',      'evi2_median_wet',
-  'savi_median',      'savi_median_dry',      'savi_median_wet',
-  
-  "tcg_median",       'tcg_median_dry',       'tcg_median_wet',
-  "ndmi_median",      'ndmi_median_dry',      'ndmi_median_wet',
-  "gcvi_median",      'gcvi_median_dry',      'gcvi_median_wet',
-  "sr_median",        'sr_median_dry',        'sr_median_wet',
-  "gdvi1_median",     'gdvi1_median_dry',     'gdvi1_median_wet'
-];
+// var BANDS = [ ... ]; variavel redeclarada no inicio do codigo, para apoiar as bandas disponiveis
 
 
 Map.onClick(function(obj){
