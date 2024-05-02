@@ -236,23 +236,12 @@ ui.root.widgets().add(panel);
 
 
 // Point at the EO datasets 
-var ALOS1 = ee.ImageCollection('projects/mapbiomas-workspace/CARBONO/CERRADO_ALOSPALSAR1') //2006 a 2020
-.map(function(img){
-  return img
-  .select(img.bandNames(),img.bandNames().map(function(b){return ee.String(b).slice(0,2)}))
-  .set({
-    'year':ee.Number.parse(img.getString('system:index').slice(-4))
-  });
-});
+var ALOS1 = ee.ImageCollection('projects/mapbiomas-workspace/CARBONO/CERRADO_ALOSPALSAR1'); //2006 a 2020
+print('ALOS1',ALOS1,ALOS1.aggregate_array('year').distinct().sort())
 
-var ALOS2 = ee.ImageCollection('projects/mapbiomas-workspace/CARBONO/CERRADO_ALOSPALSAR2') //2015 a 2022
-.map(function(img){
-  return img
-  .select(img.bandNames(),img.bandNames().map(function(b){return ee.String(b).slice(0,2)}))
-  .set({
-    'year':ee.Number.parse(img.getString('system:index').slice(-4))
-  });
-});
+var ALOS2 = ee.ImageCollection('projects/mapbiomas-workspace/CARBONO/CERRADO_ALOSPALSAR2'); //2015 a 2022
+print('ALOS2',ALOS2,ALOS2.aggregate_array('year').distinct().sort())
+
 
 var ALOS = ee.List.sequence(2007,2022,1).iterate(function(current,previous){
   
