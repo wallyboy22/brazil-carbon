@@ -1,8 +1,5 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
-var teste = 
-    /* color: #d63000 */
-    /* shown: false */
-    ee.FeatureCollection(
+var teste = /* color: #d63000 */ee.FeatureCollection(
         [ee.Feature(
             ee.Geometry.Polygon(
                 [[[-48.31025519521694, -15.477961158790015],
@@ -12,15 +9,12 @@ var teste =
             {
               "system:index": "0"
             })]),
-    geometry = 
-    /* color: #d63000 */
-    /* shown: false */
-    ee.Geometry.MultiPoint(),
-    geometry2 = 
-    /* color: #d63000 */
-    /* shown: false */
-    ee.Geometry.Point([-47.82700213814179, -15.812029054018927]);
+    geometry = /* color: #d63000 */ee.Geometry.MultiPoint(),
+    geometry2 = /* color: #d63000 */ee.Geometry.Point([-47.82700213814179, -15.812029054018927]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
+
+
+
 // --- 23-04-2024 // GT-Carbono - explorando landtrendr nos mosaicos landsat do mapbiomas
 
 var BANDS = [
@@ -367,8 +361,7 @@ var year_sat = {
 
 // var BANDS = [ ... ]; variavel redeclarada no inicio do codigo, para apoiar as bandas disponiveis
 
-
-Map.onClick(function(obj){
+function clickMap (obj){
 
   var subPanel = ui.Panel({
     // widgets:,
@@ -484,7 +477,22 @@ Map.onClick(function(obj){
     style:{stretch:'horizontal',border:'1px solid black'}
   });
   subPanel.add(line);
-});
+  
+  ///////////////////////////////////////
+  var controles = ui.Panel({
+    widgets:ui.Button({
+      label:'center point', 
+      onClick:function(){Map.centerObject(point)}
+    }),
+    // layout:ui.Panel.Layout.flow('horizontal',true),
+    style:{stretch:'horizontal',border:'1px solid black'}
+  });
+  subPanel.add(controles);
+  
+  
+} 
+
+Map.onClick(clickMap);
 
 // print('col',col);
 
@@ -853,9 +861,49 @@ Map.add(boundsPanel);
 
 Map.onChangeBounds(function(obj){
   var pointName = (parseInt(obj.lon * 100)/100) + ', ' + (parseInt(obj.lat * 100)/100) + ', ' + obj.zoom;
-  
-    
+
   boundsPanel.clear();
   boundsPanel.add(ui.Label(pointName,{margin:'0px',fontSize:'11px',textAlign:'center',stretch:'horizontal'}));
-  
+});
+
+
+
+var points_Savana = [
+  [-43.82076957778092,  -12.613540708892252],
+  [-43.812186508933266, -12.647712171975543],
+  [-45.32934207072572,  -16.923523458007573],
+  [-45.45568484416322,  -16.922866547119792],
+  [-47.43029378489244,  -13.768583130546022],
+  [-44.51459311881381,  -11.841371216882562],
+  [-44.53313254752475,  -11.881690238738468],
+];
+
+var points_Floresta = [
+  [-46.5359746509426, -4.53820373506105],
+  [-46.50981346338137, -4.605623105301132],
+  [-46.139594899902086, -4.29447410421036],
+  [-46.03009377568099, -3.672980975130919],
+  [-45.88997417632608, -3.713259889149515],
+];
+
+function insertPoints (pointsList,name){
+  var geometryLayer = ui.Map.GeometryLayer({
+    geometries:ee.Geometry.MultiPoint(pointsList),
+    name:name,
+    // color:,
+    shown:true,
+    // locked:
+  });
+}
+
+[
+  points_Savana,
+  points_Floresta
+].forEach(function(pointsList){
+  pointsList.forEach(function(coords){
+    var point = ee.Geometry.Point(coords);
+    
+    clickMap({lon:coords[0],lat:coords[1]});
+
+  });
 });
