@@ -886,16 +886,6 @@ var points_Floresta = [
   [-45.88997417632608, -3.713259889149515],
 ];
 
-function insertPoints (pointsList,name){
-  var geometryLayer = ui.Map.GeometryLayer({
-    geometries:ee.Geometry.MultiPoint(pointsList),
-    name:name,
-    // color:,
-    shown:true,
-    // locked:
-  });
-}
-
 [
   points_Savana,
   points_Floresta
