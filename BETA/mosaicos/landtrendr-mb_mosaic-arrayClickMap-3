@@ -626,6 +626,8 @@ return trajectories(classes);
 var mb_lulc8 = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
 var mb_fire = ee.Image('projects/mapbiomas-workspace/FOGO_COL3/2-Subprodutos/mapbiomas-fire-collection3-annual-burned-v1').gte(1);
 var mb_firefrequence = ee.Image('projects/mapbiomas-workspace/FOGO_COL3/2-Subprodutos/mapbiomas-fire-collection3-fire-frequency-v1').slice(0,39).divide(100).int();
+var mb_fireage = ee.Image('projects/mapbiomas-workspace/FOGO_COL2/PRODUTOS_REGIME_DO_FOGO/mapbiomas-fire-collection2-time-after-fire-v2');
+mb_fireage = ee.Image().rename('classification_1985').addBands(mb_fireage);
 print('mb_firefrequence',mb_firefrequence);
 
 var lulc_vis = {
@@ -651,6 +653,19 @@ var frequence_vis = {
   min:0,
   max:39,
   bands: 'fire_frequency_1985_2023'
+};
+var age_vis = {
+  palette:[
+    "FFFFFF","800000","850708","8B0E0F","901417","961B1E",
+    "9B2226","9F2222","A3211E","A6211A","AA2016","AE2012",
+    "B42E0F","B93C0C","BF4B08","C45905","CA6702","BF7C27",
+    "B4924D","AAA772","9FBD98","94D2BD","78C5B5","5DB9AD",
+    "41ACA6","26A09E","0A9396","0876AB","0658C0","043BD5",
+    "021DEA","0000FF","0000E6","0000CC","0000B3","000080"
+  ],
+  min:0,
+  max:37,
+  bands: 'classification_2023'
 };
 print('frequence_vis',frequence_vis);
 var trajetory_vis = {
@@ -733,6 +748,7 @@ var nat_trajectory = trajectory(mb_lulc8,[1985,2021],[3,4,5,49,11,12,32,29,50,13
 Map.addLayer(mb_lulc8,lulc_vis,'mb_lulc8',false);
 Map.addLayer(mb_fire,fire_vis,'mb_fire',false);
 Map.addLayer(mb_firefrequence,frequence_vis,'mb_firefrequence',false);
+Map.addLayer(mb_fireage,age_vis,'mb_fireage',false);
 Map.addLayer(nat_trajectory,trajetory_vis,'nat_trajectory',true);
 
 var points = ee.FeatureCollection([]);
@@ -752,6 +768,7 @@ function pixelHistory (point){
     ['LULC',mb_lulc8,lulc_vis,lulc_legend,],
     ['FIRE',mb_fire.unmask(),fire_vis,fire_legend],
     ['FFRQ',mb_firefrequence.unmask(),frequence_vis],
+    ['FAGE',mb_fireage.unmask(),age_vis],
   ];
   
   data_list.forEach(function(list){
@@ -898,12 +915,14 @@ Map.onChangeBounds(function(obj){
 
 var points_Savana = [
   [-43.82076957778092,  -12.613540708892252],
-  // [-43.812186508933266, -12.647712171975543],
-  // [-45.32934207072572,  -16.923523458007573],
-  // [-45.45568484416322,  -16.922866547119792],
-  // [-47.43029378489244,  -13.768583130546022],
-  // [-44.51459311881381,  -11.841371216882562],
-  // [-44.53313254752475,  -11.881690238738468],
+  [-43.812186508933266, -12.647712171975543],
+  [-45.32934207072572,  -16.923523458007573],
+  [-45.45568484416322,  -16.922866547119792],
+  [-47.43029378489244,  -13.768583130546022],
+  [-44.51459311881381,  -11.841371216882562],
+  [-44.53313254752475,  -11.881690238738468],
+  [-47.73, -6.1]
+
 ];
 
 var points_Floresta = [
@@ -922,7 +941,6 @@ var points_Campo = [
   [-47.58, -16.74],
   [-46.58, -6.23],
   [-46.55, -6.22],
-
 
 ];
 
