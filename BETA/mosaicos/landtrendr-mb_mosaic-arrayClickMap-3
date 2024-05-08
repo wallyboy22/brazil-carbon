@@ -1,5 +1,8 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
-var teste = /* color: #d63000 */ee.FeatureCollection(
+var teste = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.FeatureCollection(
         [ee.Feature(
             ee.Geometry.Polygon(
                 [[[-48.31025519521694, -15.477961158790015],
@@ -9,8 +12,14 @@ var teste = /* color: #d63000 */ee.FeatureCollection(
             {
               "system:index": "0"
             })]),
-    geometry = /* color: #d63000 */ee.Geometry.MultiPoint(),
-    geometry2 = /* color: #d63000 */ee.Geometry.Point([-47.82700213814179, -15.812029054018927]);
+    geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.MultiPoint(),
+    geometry2 = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Point([-47.82700213814179, -15.812029054018927]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 
 
@@ -615,7 +624,10 @@ return trajectories(classes);
 
 ///
 var mb_lulc8 = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
-var mb_fire2 = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas-fire-collection2-annual-burned-coverage-1').gte(1);
+var mb_fire = ee.Image('projects/mapbiomas-workspace/FOGO_COL3/2-Subprodutos/mapbiomas-fire-collection3-annual-burned-v1').gte(1);
+var mb_firefrequence = ee.Image('projects/mapbiomas-workspace/FOGO_COL3/2-Subprodutos/mapbiomas-fire-collection3-fire-frequency-v1').slice(0,39).divide(100).int();
+print('mb_firefrequence',mb_firefrequence);
+
 var lulc_vis = {
   palette:require('users/mapbiomas/modules:Palettes.js').get('classification8'),
   min:0,
@@ -626,9 +638,21 @@ var fire_vis = {
   palette:['ffffff','800000'],
   min:0,
   max:1,
-  bands: 'burned_coverage_2022'
+  bands: 'burned_area_2023'
 };
 
+var frequence_vis = {
+  palette:[
+    '#ffffff','#fff8d1','#fdf1b0','#fbe981','#fae258','#f9de44','#f8d71f','#f1ca1e','#e9bc1c','#e2af1a',
+    '#daa118','#d29316','#cc8715','#c57b14','#bd6c12','#b0540f','#b0540f','#a8450d','#9f360b','#992a0a',
+    '#921e08','#8c1307','#810004','#770105','#6a0306','#600407','#5a0508','#4d0709','#4d0709','#4d0709',
+    '#4d0709','#4d0709','#4d0709','#4d0709','#4d0709','#4d0709','#4d0709','#4d0709','#4d0709','#4d0709'
+  ],
+  min:0,
+  max:39,
+  bands: 'fire_frequency_1985_2023'
+};
+print('frequence_vis',frequence_vis);
 var trajetory_vis = {
   'min': 0,
   'max': 8,
@@ -688,6 +712,9 @@ var fire_legend = [
   {value:0, label:"Não observado"}, 
   {value:1, label:"Fogo"}, 
 ];
+
+var frequence_legend = frequence_vis.palette.map(function(obj,i){return {value:i,label:i}});
+
 var trajetory_legend = [
     {value:0, label: "Mask"},
     {value:1, label: "Presence🡪Loss🡪Absence"},
@@ -704,7 +731,8 @@ var trajetory_legend = [
 var nat_trajectory = trajectory(mb_lulc8,[1985,2021],[3,4,5,49,11,12,32,29,50,13,33]);
 
 Map.addLayer(mb_lulc8,lulc_vis,'mb_lulc8',false);
-Map.addLayer(mb_fire2,fire_vis,'mb_fire2',false);
+Map.addLayer(mb_fire,fire_vis,'mb_fire',false);
+Map.addLayer(mb_firefrequence,frequence_vis,'mb_firefrequence',false);
 Map.addLayer(nat_trajectory,trajetory_vis,'nat_trajectory',true);
 
 var points = ee.FeatureCollection([]);
@@ -720,9 +748,10 @@ function pixelHistory (point){
   });
   
   var data_list = [
-    ['LULC',mb_lulc8,lulc_vis,lulc_legend,],
-    ['FIRE',mb_fire2.unmask(),fire_vis,fire_legend],
     ['TRAJ',nat_trajectory,trajetory_vis,trajetory_legend],
+    ['LULC',mb_lulc8,lulc_vis,lulc_legend,],
+    ['FIRE',mb_fire.unmask(),fire_vis,fire_legend],
+    ['FFRQ',mb_firefrequence.unmask(),frequence_vis],
   ];
   
   data_list.forEach(function(list){
@@ -757,8 +786,7 @@ function pixelHistory (point){
       reduce.values().evaluate(function(values){
         keys.forEach(function(key,i){
           var value = values[i];
-
-
+  
           var titulo = key === 'trajectories' ? legend.filter(function(obj){return obj.value === value})[0].label : key.slice(-2);
           // print('legend.filter(function(obj){obj.value === value})',legend.filter(function(obj){obj.value === value}));
           var year = ui.Label(titulo,{margin:'1px 0px 1px 0px',fontSize:'9px',textAlign:'center',stretch:'horizontal'});
@@ -804,7 +832,7 @@ Map.add(body_legend);
 
 var data_list = [
   ['LULC',mb_lulc8,lulc_vis,lulc_legend,],
-  ['FIRE',mb_fire2.unmask(),fire_vis,fire_legend],
+  ['FIRE',mb_fire.unmask(),fire_vis,fire_legend],
   ['TRAJ',nat_trajectory,trajetory_vis,trajetory_legend],
 ];
 
@@ -870,25 +898,38 @@ Map.onChangeBounds(function(obj){
 
 var points_Savana = [
   [-43.82076957778092,  -12.613540708892252],
-  [-43.812186508933266, -12.647712171975543],
-  [-45.32934207072572,  -16.923523458007573],
-  [-45.45568484416322,  -16.922866547119792],
-  [-47.43029378489244,  -13.768583130546022],
-  [-44.51459311881381,  -11.841371216882562],
-  [-44.53313254752475,  -11.881690238738468],
+  // [-43.812186508933266, -12.647712171975543],
+  // [-45.32934207072572,  -16.923523458007573],
+  // [-45.45568484416322,  -16.922866547119792],
+  // [-47.43029378489244,  -13.768583130546022],
+  // [-44.51459311881381,  -11.841371216882562],
+  // [-44.53313254752475,  -11.881690238738468],
 ];
 
 var points_Floresta = [
-  [-46.5359746509426, -4.53820373506105],
-  [-46.50981346338137, -4.605623105301132],
-  [-46.139594899902086, -4.29447410421036],
-  [-46.03009377568099, -3.672980975130919],
-  [-45.88997417632608, -3.713259889149515],
+  // [-46.5359746509426, -4.53820373506105],
+  // [-46.50981346338137, -4.605623105301132],
+  // [-46.139594899902086, -4.29447410421036],
+  // [-46.03009377568099, -3.672980975130919],
+  // [-45.88997417632608, -3.713259889149515],
+  
+];
+
+var points_Campo = [
+  [-48.19, -15.26],
+  [-48.19, -15.26],
+  [-48.19, -15.26],
+  [-47.58, -16.74],
+  [-46.58, -6.23],
+  [-46.55, -6.22],
+
+
 ];
 
 [
   points_Savana,
-  points_Floresta
+  points_Floresta,
+  points_Campo
 ].forEach(function(pointsList){
   pointsList.forEach(function(coords){
     var point = ee.Geometry.Point(coords);
