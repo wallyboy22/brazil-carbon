@@ -51,12 +51,12 @@ var BANDS = [
 
 var run_params_array = [
   [
-    //'ALOSHH',
+    'ndmi_median',
     //'ALOSHV', 
     //'nir_median_dry', 
     //'ndwi_median_wet', 
     //'tcg_median', 
-    'ndmi_median',
+    //'ndmi_median_wet',
     //'red_median', 
     //'green_median', 
     //'green_median_wet',
@@ -307,21 +307,25 @@ print('mb_bands',mb_mosaics.first().bandNames());
 
 mb_mosaics = mb_mosaics.map(function(img){
 
-    var gcvi_median = img.select('nir_median').divide(img.select('green_median').subtract(1)).rename('gcvi_median');
-    var gcvi_median_dry = img.select('nir_median_dry').divide(img.select('green_median_dry').subtract(1)).rename('gcvi_median_dry');
-    var gcvi_median_wet = img.select('nir_median_wet').divide(img.select('green_median_wet').subtract(1)).rename('gcvi_median_wet');
+    var gcvi_median = img.select('nir_median').divide(img.select('green_median').subtract(1)).rename('gcvi_median').add(1).multiply(10000);
+    var gcvi_median_dry = img.select('nir_median_dry').divide(img.select('green_median_dry').subtract(1)).rename('gcvi_median_dry').add(1).multiply(10000);
+    var gcvi_median_wet = img.select('nir_median_wet').divide(img.select('green_median_wet').subtract(1)).rename('gcvi_median_wet').add(1).multiply(10000);
     
-    var sr_median = img.select('nir_median').divide(img.select('green_median')).rename('sr_median');
-    var sr_median_dry = img.select('nir_median_dry').divide(img.select('green_median_dry')).rename('sr_median_dry');
-    var sr_median_wet = img.select('nir_median_wet').divide(img.select('green_median_wet')).rename('sr_median_wet');
+    var sr_median = img.select('nir_median').divide(img.select('green_median')).rename('sr_median').add(1).multiply(10000);
+    var sr_median_dry = img.select('nir_median_dry').divide(img.select('green_median_dry')).rename('sr_median_dry').add(1).multiply(10000);
+    var sr_median_wet = img.select('nir_median_wet').divide(img.select('green_median_wet')).rename('sr_median_wet').add(1).multiply(10000);
     
-    var gdvi1_median = sr_median.subtract(1).divide(sr_median.add(1)).rename('gdvi1_median');
-    var gdvi1_median_dry = sr_median_dry.subtract(1).divide(sr_median_dry.add(1)).rename('gdvi1_median_dry');
-    var gdvi1_median_wet = sr_median_wet.subtract(1).divide(sr_median_wet.add(1)).rename('gdvi1_median_wet');
+    var gdvi1_median = sr_median.subtract(1).divide(sr_median.add(1)).rename('gdvi1_median').add(1).multiply(10000);
+    var gdvi1_median_dry = sr_median_dry.subtract(1).divide(sr_median_dry.add(1)).rename('gdvi1_median_dry').add(1).multiply(10000);
+    var gdvi1_median_wet = sr_median_wet.subtract(1).divide(sr_median_wet.add(1)).rename('gdvi1_median_wet').add(1).multiply(10000);
     
-    var ndmi_median = img.normalizedDifference(['nir_median','swir1_median']).rename('ndmi_median');
-    var ndmi_median_dry = img.normalizedDifference(['nir_median_dry','swir1_median_dry']).rename('ndmi_median_dry');
-    var ndmi_median_wet = img.normalizedDifference(['nir_median_wet','swir1_median_wet']).rename('ndmi_median_wet');
+    var ndmi_median = img.normalizedDifference(['nir_median','swir1_median']).rename('ndmi_median').add(1).multiply(10000);
+    var ndmi_median_dry = img.normalizedDifference(['nir_median_dry','swir1_median_dry']).rename('ndmi_median_dry').add(1).multiply(10000);
+    var ndmi_median_wet = img.normalizedDifference(['nir_median_wet','swir1_median_wet']).rename('ndmi_median_wet').add(1).multiply(10000);
+    
+    var nbr2_median = img.normalizedDifference(['nir_median','swir2_median']).rename('nbr2_median').add(1).multiply(10000);
+    var nbr2_median_dry = img.normalizedDifference(['nir_median_dry','swir2_median_dry']).rename('nbr2_median_dry').add(1).multiply(10000);
+    var nbr2_median_wet = img.normalizedDifference(['nir_median_wet','swir2_median_wet']).rename('nbr2_median_wet').add(1).multiply(10000);
     
     var tcg_median = img.expression("(-0.2941 * blue_median) - (0.243 * green_median) - (0.5424 * red_median) + (0.7276 * nir_median) + (0.0713 * swir1_median) - (0.1608 * swir2_median)",{
       blue_median:img.select('blue_median'),
@@ -330,8 +334,8 @@ mb_mosaics = mb_mosaics.map(function(img){
       nir_median:img.select('nir_median'),
       swir1_median:img.select('swir1_median'),
       swir2_median:img.select('swir2_median'),
-      
-    }).rename('tcg_median');
+    }).rename('tcg_median').add(1).multiply(10000);
+    
     var tcg_median_dry = img.expression("(-0.2941 * blue_median_dry) - (0.243 * green_median_dry) - (0.5424 * red_median_dry) + (0.7276 * nir_median_dry) + (0.0713 * swir1_median_dry) - (0.1608 * swir2_median_dry)",{
       blue_median_dry:img.select('blue_median_dry'),
       green_median_dry:img.select('green_median_dry'),
@@ -339,8 +343,8 @@ mb_mosaics = mb_mosaics.map(function(img){
       nir_median_dry:img.select('nir_median_dry'),
       swir1_median_dry:img.select('swir1_median_dry'),
       swir2_median_dry:img.select('swir2_median_dry'),
-      
-    }).rename('tcg_median_dry');
+    }).rename('tcg_median_dry').add(1).multiply(10000);
+    
     var tcg_median_wet = img.expression("(-0.2941 * blue_median_wet) - (0.243 * green_median_wet) - (0.5424 * red_median_wet) + (0.7276 * nir_median_wet) + (0.0713 * swir1_median_wet) - (0.1608 * swir2_median_wet)",{
       blue_median_wet:img.select('blue_median_wet'),
       green_median_wet:img.select('green_median_wet'),
@@ -348,14 +352,14 @@ mb_mosaics = mb_mosaics.map(function(img){
       nir_median_wet:img.select('nir_median_wet'),
       swir1_median_wet:img.select('swir1_median_wet'),
       swir2_median_wet:img.select('swir2_median_wet'),
-      
-    }).rename('tcg_median_wet');
+    }).rename('tcg_median_wet').add(1).multiply(10000);
 
     return img
       .addBands(gcvi_median).addBands(gcvi_median_dry).addBands(gcvi_median_wet)
       .addBands(sr_median).addBands(sr_median_dry).addBands(sr_median_wet)
       .addBands(gdvi1_median).addBands(gdvi1_median_dry).addBands(gdvi1_median_wet)
       .addBands(ndmi_median).addBands(ndmi_median_dry).addBands(ndmi_median_wet)
+      .addBands(nbr2_median).addBands(nbr2_median_dry).addBands(nbr2_median_wet)
       .addBands(tcg_median).addBands(tcg_median_dry).addBands(tcg_median_wet);
 });
 
@@ -959,9 +963,9 @@ var points_Campo = [
 ];
 
 [
-  //points_Savana,
-  points_Floresta,
-  //points_Campo
+  // points_Savana,
+  // points_Floresta,
+  points_Campo
 ].forEach(function(pointsList){
   pointsList.forEach(function(coords){
     var point = ee.Geometry.Point(coords);
