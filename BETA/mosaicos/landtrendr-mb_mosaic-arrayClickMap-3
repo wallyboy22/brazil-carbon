@@ -51,15 +51,16 @@ var BANDS = [
 
 var run_params_array = [
   [
-    'ndmi_median',
+    //'ALOSHH',
     //'ALOSHV', 
     //'nir_median_dry', 
     //'ndwi_median_wet', 
     //'tcg_median', 
-    //'ndmi_median_wet',
-    //'red_median', 
+    'red_median', 
     //'green_median', 
     //'green_median_wet',
+    //'ndmi_median_wet',
+    //'nbr2_median',
   ], // timeSeries (ImageCollection): Yearly time-series from which to extract breakpoints. The first band is usedto find breakpoints, and all subsequent bands are fitted using those breakpoints.
   [
     13
@@ -963,9 +964,9 @@ var points_Campo = [
 ];
 
 [
-  // points_Savana,
-  // points_Floresta,
-  points_Campo
+  //points_Savana,
+  points_Floresta,
+  //points_Campo
 ].forEach(function(pointsList){
   pointsList.forEach(function(coords){
     var point = ee.Geometry.Point(coords);
