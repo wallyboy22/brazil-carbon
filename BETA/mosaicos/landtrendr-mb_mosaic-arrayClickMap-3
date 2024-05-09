@@ -624,10 +624,12 @@ return trajectories(classes);
 
 ///
 var mb_lulc8 = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
-var mb_fire = ee.Image('projects/mapbiomas-workspace/FOGO_COL3/2-Subprodutos/mapbiomas-fire-collection3-annual-burned-v1').gte(1);
-var mb_firefrequence = ee.Image('projects/mapbiomas-workspace/FOGO_COL3/2-Subprodutos/mapbiomas-fire-collection3-fire-frequency-v1').slice(0,39).divide(100).int();
-var mb_fireage = ee.Image('projects/mapbiomas-workspace/FOGO_COL2/PRODUTOS_REGIME_DO_FOGO/mapbiomas-fire-collection2-time-after-fire-v2');
-mb_fireage = ee.Image().rename('classification_1985').addBands(mb_fireage);
+var mb_fire = ee.Image('projects/mapbiomas-workspace/FOGO_COL2/SUBPRODUTOS/mapbiomas-fire-collection2-annual-burned-v2');
+var mb_firefrequence = ee.Image('projects/mapbiomas-workspace/FOGO_COL2/SUBPRODUTOS/mapbiomas-fire-collection2-fire-frequency-coverage-v2').slice(0,38).divide(100).int();
+var mb_taf = ee.Image('projects/mapbiomas-workspace/FOGO_COL2/PRODUTOS_REGIME_DO_FOGO/mapbiomas-fire-collection2-time-after-fire-v2');
+mb_taf = ee.Image().rename('classification_1985').addBands(mb_taf);
+var mb_tbf = ee.Image('projects/mapbiomas-workspace/FOGO_COL2/PRODUTOS_REGIME_DO_FOGO/mapbiomas-fire-collection2-time-before-fire-v2');
+
 print('mb_firefrequence',mb_firefrequence);
 
 var lulc_vis = {
@@ -640,7 +642,7 @@ var fire_vis = {
   palette:['ffffff','800000'],
   min:0,
   max:1,
-  bands: 'burned_area_2023'
+  bands: 'burned_area_2022'
 };
 
 var frequence_vis = {
@@ -651,8 +653,8 @@ var frequence_vis = {
     '#4d0709','#4d0709','#4d0709','#4d0709','#4d0709','#4d0709','#4d0709','#4d0709','#4d0709','#4d0709'
   ],
   min:0,
-  max:39,
-  bands: 'fire_frequency_1985_2023'
+  max:38,
+  bands: 'fire_frequency_1985_2022'
 };
 var age_vis = {
   palette:[
@@ -665,7 +667,7 @@ var age_vis = {
   ],
   min:0,
   max:37,
-  bands: 'classification_2023'
+  bands: 'classification_2022'
 };
 print('frequence_vis',frequence_vis);
 var trajetory_vis = {
@@ -745,11 +747,12 @@ var trajetory_legend = [
 // 'Trajetórias de classes naturais (1985 a 2021)',
 var nat_trajectory = trajectory(mb_lulc8,[1985,2021],[3,4,5,49,11,12,32,29,50,13,33]);
 
+Map.addLayer(nat_trajectory,trajetory_vis,'nat_trajectory',true);
 Map.addLayer(mb_lulc8,lulc_vis,'mb_lulc8',false);
 Map.addLayer(mb_fire,fire_vis,'mb_fire',false);
 Map.addLayer(mb_firefrequence,frequence_vis,'mb_firefrequence',false);
-Map.addLayer(mb_fireage,age_vis,'mb_fireage',false);
-Map.addLayer(nat_trajectory,trajetory_vis,'nat_trajectory',true);
+Map.addLayer(mb_taf,age_vis,'mb_taf',false);
+// Map.addLayer(mb_tbf,age_vis,'mb_tbf',false);
 
 var points = ee.FeatureCollection([]);
 var pointLayer = ui.Map.Layer(points,{},'points');
@@ -768,7 +771,8 @@ function pixelHistory (point){
     ['LULC',mb_lulc8,lulc_vis,lulc_legend,],
     ['FIRE',mb_fire.unmask(),fire_vis,fire_legend],
     ['FFRQ',mb_firefrequence.unmask(),frequence_vis],
-    ['FAGE',mb_fireage.unmask(),age_vis],
+    ['YAF',mb_taf.unmask(),age_vis],
+    ['YBF',mb_tbf.unmask(),age_vis],
   ];
   
   data_list.forEach(function(list){
@@ -949,8 +953,8 @@ var points_Campo = [
 ];
 
 [
-  points_Savana,
-  points_Floresta,
+  // points_Savana,
+  // points_Floresta,
   points_Campo
 ].forEach(function(pointsList){
   pointsList.forEach(function(coords){
