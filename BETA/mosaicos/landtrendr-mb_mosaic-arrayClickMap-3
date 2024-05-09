@@ -43,6 +43,7 @@ var BANDS = [
   
   "tcg_median",       'tcg_median_dry',       'tcg_median_wet',
   "ndmi_median",      'ndmi_median_dry',      'ndmi_median_wet',
+  "nbr2_median",      'nbr2_median_dry',      'nbr2_median_wet',
   "gcvi_median",      'gcvi_median_dry',      'gcvi_median_wet',
   "sr_median",        'sr_median_dry',        'sr_median_wet',
   "gdvi1_median",     'gdvi1_median_dry',     'gdvi1_median_wet'
@@ -50,12 +51,12 @@ var BANDS = [
 
 var run_params_array = [
   [
-    'ALOSHH',
+    //'ALOSHH',
     //'ALOSHV', 
     //'nir_median_dry', 
     //'ndwi_median_wet', 
     //'tcg_median', 
-    //'ndmi_median_wet',
+    'ndmi_median',
     //'red_median', 
     //'green_median', 
     //'green_median_wet',
@@ -958,9 +959,9 @@ var points_Campo = [
 ];
 
 [
-  // points_Savana,
-  // points_Floresta,
-  points_Campo
+  //points_Savana,
+  points_Floresta,
+  //points_Campo
 ].forEach(function(pointsList){
   pointsList.forEach(function(coords){
     var point = ee.Geometry.Point(coords);
