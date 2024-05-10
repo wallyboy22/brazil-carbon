@@ -328,31 +328,31 @@ mb_mosaics = mb_mosaics.map(function(img){
     var nbr2_median_dry = img.normalizedDifference(['nir_median_dry','swir2_median_dry']).rename('nbr2_median_dry').add(1).multiply(10000);
     var nbr2_median_wet = img.normalizedDifference(['nir_median_wet','swir2_median_wet']).rename('nbr2_median_wet').add(1).multiply(10000);
     
-    var tcg_median = img.expression("(-0.2941 * blue_median) - (0.243 * green_median) - (0.5424 * red_median) + (0.7276 * nir_median) + (0.0713 * swir1_median) - (0.1608 * swir2_median)",{
-      blue_median:img.select('blue_median'),
-      green_median:img.select('green_median'),
-      red_median:img.select('red_median'),
-      nir_median:img.select('nir_median'),
-      swir1_median:img.select('swir1_median'),
-      swir2_median:img.select('swir2_median'),
+    var tcg_median = img.divide(10000).expression("(-0.2941 * blue_median) - (0.243 * green_median) - (0.5424 * red_median) + (0.7276 * nir_median) + (0.0713 * swir1_median) - (0.1608 * swir2_median)",{
+      blue_median:img.divide(10000).select('blue_median'),
+      green_median:img.divide(10000).select('green_median'),
+      red_median:img.divide(10000).select('red_median'),
+      nir_median:img.divide(10000).select('nir_median'),
+      swir1_median:img.divide(10000).select('swir1_median'),
+      swir2_median:img.divide(10000).select('swir2_median'),
     }).rename('tcg_median').add(1).multiply(10000);
     
-    var tcg_median_dry = img.expression("(-0.2941 * blue_median_dry) - (0.243 * green_median_dry) - (0.5424 * red_median_dry) + (0.7276 * nir_median_dry) + (0.0713 * swir1_median_dry) - (0.1608 * swir2_median_dry)",{
-      blue_median_dry:img.select('blue_median_dry'),
-      green_median_dry:img.select('green_median_dry'),
-      red_median_dry:img.select('red_median_dry'),
-      nir_median_dry:img.select('nir_median_dry'),
-      swir1_median_dry:img.select('swir1_median_dry'),
-      swir2_median_dry:img.select('swir2_median_dry'),
+    var tcg_median_dry = img.divide(10000).expression("(-0.2941 * blue_median_dry) - (0.243 * green_median_dry) - (0.5424 * red_median_dry) + (0.7276 * nir_median_dry) + (0.0713 * swir1_median_dry) - (0.1608 * swir2_median_dry)",{
+      blue_median_dry:img.divide(10000).select('blue_median_dry'),
+      green_median_dry:img.divide(10000).select('green_median_dry'),
+      red_median_dry:img.divide(10000).select('red_median_dry'),
+      nir_median_dry:img.divide(10000).select('nir_median_dry'),
+      swir1_median_dry:img.divide(10000).select('swir1_median_dry'),
+      swir2_median_dry:img.divide(10000).select('swir2_median_dry'),
     }).rename('tcg_median_dry').add(1).multiply(10000);
-    
-    var tcg_median_wet = img.expression("(-0.2941 * blue_median_wet) - (0.243 * green_median_wet) - (0.5424 * red_median_wet) + (0.7276 * nir_median_wet) + (0.0713 * swir1_median_wet) - (0.1608 * swir2_median_wet)",{
-      blue_median_wet:img.select('blue_median_wet'),
-      green_median_wet:img.select('green_median_wet'),
-      red_median_wet:img.select('red_median_wet'),
-      nir_median_wet:img.select('nir_median_wet'),
-      swir1_median_wet:img.select('swir1_median_wet'),
-      swir2_median_wet:img.select('swir2_median_wet'),
+
+  var tcg_median_wet = img.divide(10000).expression("(-0.2941 * blue_median_wet) - (0.243 * green_median_wet) - (0.5424 * red_median_wet) + (0.7276 * nir_median_wet) + (0.0713 * swir1_median_wet) - (0.1608 * swir2_median_wet)",{
+      blue_median_wet:img.divide(10000).select('blue_median_wet'),
+      green_median_wet:img.divide(10000).select('green_median_wet'),
+      red_median_wet:img.divide(10000).select('red_median_wet'),
+      nir_median_wet:img.divide(10000).select('nir_median_wet'),
+      swir1_median_wet:img.divide(10000).select('swir1_median_wet'),
+      swir2_median_wet:img.divide(10000).select('swir2_median_wet'),
     }).rename('tcg_median_wet').add(1).multiply(10000);
 
     return img
