@@ -966,8 +966,8 @@ var points_Campo = [
 ];
 
 [
-  points_Savana,
-  //points_Floresta,
+  //points_Savana,
+  points_Floresta,
   //points_Campo
 ].forEach(function(pointsList){
   pointsList.forEach(function(coords){
