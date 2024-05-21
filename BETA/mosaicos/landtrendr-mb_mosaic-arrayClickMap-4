@@ -366,6 +366,9 @@ mb_mosaics = mb_mosaics.map(function(img){
       .addBands(tcg_median).addBands(tcg_median_dry).addBands(tcg_median_wet);
 });
 
+Map.addLayer(mb_mosaics,{},'mb_mosaics',false);
+
+
 var year_sat = {
   1985:['l5'],  1986:['l5'],  1987:['l5'],  1988:['l5'],  1989:['l5'],
   1990:['l5'],  1991:['l5'],  1992:['l5'],  1993:['l5'],  1994:['l5'],
