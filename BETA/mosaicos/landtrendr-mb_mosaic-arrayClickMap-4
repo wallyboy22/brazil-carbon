@@ -306,7 +306,7 @@ Map.addLayer(ALOS,{},'ALOS',false);
 
 print('ALOS',ALOS)
 var mb_mosaics = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2');
-print('mb_bands',mb_mosaics.first().bandNames());
+print('mb_bands',mb_mosaics.limit(10),mb_mosaics.first().bandNames());
 
 mb_mosaics = mb_mosaics.map(function(img){
 
@@ -432,9 +432,14 @@ function clickMap (obj){
   pointLayer.setEeObject(points);
   // print('points',points);
   var years = [
-    1985,1986,1987,1988,1989,1990,
-    1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,
-    2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022
+    1985,1986,1987,1988,1989,
+    1990,1991,1992,1993,1994,
+    1995,1996,1997,1998,1999,
+    2000,2001,2002,2003,2004,
+    2005,2006,2007,2008,2009,
+    2010,2011,2012,2013,2014,
+    2015,2016,2017,2018,2019,
+    2020,2021,2022
     // 2023
   ];
   var annual_mosaics = years.map(function(year){
@@ -442,10 +447,8 @@ function clickMap (obj){
     var end = start.advance(1,'year');
     var mb_image = mb_mosaics
       .filterBounds(point)
-      
-      
-      
       .filter(ee.Filter.eq('year',year))
+      .filter(ee.Filter.eq('satellite',year_sat[year][0]))
       // .map(indexs_for_mb_mosaics)
       .median() // no caso de sobreposição de cartas entre os biomas, ou de mosaicos com mais de um ano, a redução calculando a mediana
       .unmask()
