@@ -364,7 +364,7 @@ mb_mosaics = mb_mosaics.map(function(img){
       .addBands(sr_median).addBands(sr_median_dry).addBands(sr_median_wet)
       .addBands(gdvi1_median).addBands(gdvi1_median_dry).addBands(gdvi1_median_wet)
       .addBands(ndmi_median).addBands(ndmi_median_dry).addBands(ndmi_median_wet)
-      .addBands(nbr2_median).addBands(nbr2_median_dry).addBands(nbr2_median_wet)
+      .addBands(nbr2_median).addBands(nbr2_median_dry).addBands(nbr2_median_wet).addBands(nbr2_amp)
       .addBands(tcg_median).addBands(tcg_median_dry).addBands(tcg_median_wet);
 });
 
