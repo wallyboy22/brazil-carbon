@@ -1014,8 +1014,8 @@ var points_Campo = [
 
 [
   //points_Savana,
-  points_Floresta,
-  //points_Campo
+  // points_Floresta,
+  points_Campo
 ].forEach(function(pointsList){
   pointsList.forEach(function(coords){
     var point = ee.Geometry.Point(coords);
