@@ -43,7 +43,7 @@ var BANDS = [
   
   "tcg_median",       'tcg_median_dry',       'tcg_median_wet',
   "ndmi_median",      'ndmi_median_dry',      'ndmi_median_wet',
-  "nbr2_median",      'nbr2_median_dry',      'nbr2_median_wet',  'nbr2_amp',
+  "nbr2_median",      'nbr2_median_dry',      'nbr2_median_wet',  /*'nbr2_amp',*/
   "gcvi_median",      'gcvi_median_dry',      'gcvi_median_wet',
   "sr_median",        'sr_median_dry',        'sr_median_wet',
   "gdvi1_median",     'gdvi1_median_dry',     'gdvi1_median_wet'
@@ -330,7 +330,7 @@ mb_mosaics = mb_mosaics.map(function(img){
     var nbr2_median_dry = img.normalizedDifference(['nir_median_dry','swir2_median_dry']).rename('nbr2_median_dry').add(1).multiply(10000);
     var nbr2_median_wet = img.normalizedDifference(['nir_median_wet','swir2_median_wet']).rename('nbr2_median_wet').add(1).multiply(10000);
 
-    var nbr2_amp = img.normalizedDifference(['nir_min','swir2_min']).add(1).multiply(10000).subtract(img.normalizedDifference(['nir_max','swir2_max']).add(1).multiply(10000)).rename('nbr2_amp');
+    // var nbr2_amp = img.normalizedDifference(['nir_min','swir2_min']).add(1).multiply(10000).subtract(img.normalizedDifference(['nir_max','swir2_max']).add(1).multiply(10000)).rename('nbr2_amp');
     
     var tcg_median = img.divide(10000).expression("(-0.2941 * blue_median) - (0.243 * green_median) - (0.5424 * red_median) + (0.7276 * nir_median) + (0.0713 * swir1_median) - (0.1608 * swir2_median)",{
       blue_median:img.divide(10000).select('blue_median'),
@@ -364,7 +364,7 @@ mb_mosaics = mb_mosaics.map(function(img){
       .addBands(sr_median).addBands(sr_median_dry).addBands(sr_median_wet)
       .addBands(gdvi1_median).addBands(gdvi1_median_dry).addBands(gdvi1_median_wet)
       .addBands(ndmi_median).addBands(ndmi_median_dry).addBands(ndmi_median_wet)
-      .addBands(nbr2_median).addBands(nbr2_median_dry).addBands(nbr2_median_wet).addBands(nbr2_amp)
+      .addBands(nbr2_median).addBands(nbr2_median_dry).addBands(nbr2_median_wet)//.addBands(nbr2_amp)
       .addBands(tcg_median).addBands(tcg_median_dry).addBands(tcg_median_wet);
 });
 
