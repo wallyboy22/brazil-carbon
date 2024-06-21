@@ -57,7 +57,7 @@ var run_params_array = [
     //'ALOScpR',
     //'nir_median_dry', 
     'ndvi_amp',
-    'ndwi_amp',
+    //'ndwi_amp',
     //'ndwi_median_wet', 
     //'tcg_median', 
     //'red_median', 
