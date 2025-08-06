@@ -21,10 +21,7 @@ var teste =
     /* shown: false */
     ee.Geometry.Point([-47.82700213814179, -15.812029054018927]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
-
-
-
-// --- 23-04-2024 // GT-Carbono - explorando landtrendr nos mosaicos landsat do mapbiomas
+// --- 06-08-2025 // GT-Carbono - explorando landtrendr nos mosaicos landsat do mapbiomas
 
 var BANDS = [
   'ALOSHH','ALOSHV',"ALOSrfdi","ALOScpR",
@@ -80,7 +77,7 @@ var list_of_run_params = matrix_constructor(run_params_array);
 print('list_of_run_params',list_of_run_params);
 
 // --- --- --- SPATAL DATA
-var ibge_biomas = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biomas_IBGE_250mil')
+var ibge_biomas = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biomas_IBGE_250mil');
   // .filter(ee.Filter.eq('Bioma','Cerrado'));
 
 // universal featurecollection
@@ -412,6 +409,7 @@ var year_sat = {
   2021:	['l8',	'l8',	'l8'],
   2022:	['l8',	'l8',	'l8'],
   2023:	['l8',	'l8',	'l8'],
+  2024:	['l8',	'l8',	'l8'],
 };
 
 
@@ -440,7 +438,7 @@ function clickMap (obj){
     2005,2006,2007,2008,2009,
     2010,2011,2012,2013,2014,
     2015,2016,2017,2018,2019,
-    2020,2021,2022
+    2020,2021,2022,2023,2024
     // 2023
   ];
   var annual_mosaics = years.map(function(year){
@@ -468,18 +466,27 @@ function clickMap (obj){
       // .multiply(1000)
       // .int16()
 
-    var false_alos = ALOS
+    var false_alos_2007 = ALOS
       .filterBounds(point)
       .filter(ee.Filter.eq('year',2007))
       .median()
       .unmask();
-    var img = year < 2007 ? mb_image.addBands(false_alos) : mb_image.addBands(ALOS_image);
+
+    var false_alos_2022 = ALOS
+      .filterBounds(point)
+      .filter(ee.Filter.eq('year',2022))
+      .median()
+      .unmask();
     
-      return img.select(BANDS);
+    // edição para compensar a ausencia de dados de alos para 2023 e 2024
+    var img = year < 2007 ? mb_image.addBands(false_alos_2007) : year > 2022 ? mb_image.addBands(false_alos_2022) : mb_image.addBands(ALOS_image);
+
+    return img.select(BANDS);
   });
   
   annual_mosaics = ee.ImageCollection(annual_mosaics);
 
+  print("annual_mosaics",annual_mosaics);
   
   var col = annual_mosaics.select(run_params_array[0][0]);
   var rmse_img = ee.Image(0).rename(run_params_array[0][0]);
@@ -506,6 +513,7 @@ function clickMap (obj){
     rmse_img = rmse_img.addBands(segmenting.rmse.rename(label_name));
   });
   var pointName = (parseInt(obj.lon * 100)/100) + ', ' + (parseInt(obj.lat * 100)/100);
+  print('col',col,'point',point,'pointName',pointName);
   var chart = extractTimeSeries(col,point,pointName);
   subPanel.add(chart);
   
@@ -687,26 +695,25 @@ return trajectories(classes);
 }
 
 ///
-var mb_lulc8 = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
-var mb_fire = ee.Image('projects/mapbiomas-workspace/FOGO_COL2/SUBPRODUTOS/mapbiomas-fire-collection2-annual-burned-v2');
-var mb_firefrequence = ee.Image('projects/mapbiomas-workspace/FOGO_COL2/SUBPRODUTOS/mapbiomas-fire-collection2-fire-frequency-coverage-v2').slice(0,38).divide(100).int();
-var mb_taf = ee.Image('projects/mapbiomas-workspace/FOGO_COL2/PRODUTOS_REGIME_DO_FOGO/mapbiomas-fire-collection2-time-after-fire-v2');
-mb_taf = ee.Image().rename('classification_1985').addBands(mb_taf);
-var mb_tbf = ee.Image('projects/mapbiomas-workspace/FOGO_COL2/PRODUTOS_REGIME_DO_FOGO/mapbiomas-fire-collection2-time-before-fire-v2');
 
-print('mb_firefrequence',mb_firefrequence);
+var mb_lulc = ee.Image('projects/mapbiomas-public/assets/brazil/lulc/collection10/mapbiomas_brazil_collection10_integration_v2'); // endereço novo
+var mb_fire = ee.Image('projects/mapbiomas-public/assets/brazil/fire/collection4/mapbiomas_fire_collection4_annual_burned_v1');
+var mb_firefrequence = ee.Image('projects/mapbiomas-public/assets/brazil/fire/collection4/mapbiomas_fire_collection4_fire_frequency_v1').slice(0,39);
+var mb_taf = ee.Image('projects/mapbiomas-public/assets/brazil/fire/collection4/mapbiomas_fire_collection4_time_after_fire_v1');
+mb_taf = ee.Image().rename('classification_1985').addBands(mb_taf);
+// var mb_tbf = ee.Image('projects/mapbiomas-workspace/FOGO_COL2/PRODUTOS_REGIME_DO_FOGO/mapbiomas-fire-collection2-time-before-fire-v2');
 
 var lulc_vis = {
-  palette:require('users/mapbiomas/modules:Palettes.js').get('classification8'),
+  palette:require('users/mapbiomas/modules:Palettes.js').get('classification9'),
   min:0,
-  max:62,
-  bands: 'classification_2022'
+  max:69,
+  bands: 'classification_2023'
 };
 var fire_vis = {
   palette:['ffffff','800000'],
   min:0,
   max:1,
-  bands: 'burned_area_2022'
+  bands: 'burned_area_2023'
 };
 
 var frequence_vis = {
@@ -730,8 +737,8 @@ var age_vis = {
     "021DEA","0000FF","0000E6","0000CC","0000B3","000080"
   ],
   min:0,
-  max:37,
-  bands: 'classification_2022'
+  max:38,
+  bands: 'classification_2023'
 };
 print('frequence_vis',frequence_vis);
 var trajetory_vis = {
@@ -783,6 +790,7 @@ var lulc_legend = [
       {value:23, label:"Praia, Duna e Areal"}, 
       {value:24, label:"Área Urbanizada"}, 
       {value:30, label:"Mineração"}, 
+      // {value:75, label:"Usinas Fotovoltaicas"}, 
       {value:25, label:"Outras Áreas não Vegetadas"}, 
       // {value:26, label:"Corpo D'água"}, 
       {value:33, label:"Rio, Lago e Oceano"}, 
@@ -809,10 +817,10 @@ var trajetory_legend = [
 ];
 
 // 'Trajetórias de classes naturais (1985 a 2021)',
-var nat_trajectory = trajectory(mb_lulc8,[1985,2021],[3,4,5,49,11,12,32,29,50,13,33]);
+var nat_trajectory = trajectory(mb_lulc,[1985,2021],[3,4,5,49,11,12,32,29,50,13,33]);
 
 Map.addLayer(nat_trajectory,trajetory_vis,'nat_trajectory',true);
-Map.addLayer(mb_lulc8,lulc_vis,'mb_lulc8',false);
+Map.addLayer(mb_lulc,lulc_vis,'mb_lulc',false);
 Map.addLayer(mb_fire,fire_vis,'mb_fire',false);
 Map.addLayer(mb_firefrequence,frequence_vis,'mb_firefrequence',false);
 Map.addLayer(mb_taf,age_vis,'mb_taf',false);
@@ -832,11 +840,11 @@ function pixelHistory (point){
   
   var data_list = [
     ['TRAJ',nat_trajectory,trajetory_vis,trajetory_legend],
-    ['LULC',mb_lulc8,lulc_vis,lulc_legend,],
+    ['LULC',mb_lulc,lulc_vis,lulc_legend,],
     ['FIRE',mb_fire.unmask(),fire_vis,fire_legend],
     ['FFRQ',mb_firefrequence.unmask(),frequence_vis],
     ['YAF',mb_taf.unmask(),age_vis],
-    ['YBF',mb_tbf.unmask(),age_vis],
+    // ['YBF',mb_tbf.unmask(),age_vis],
   ];
   
   data_list.forEach(function(list){
@@ -866,7 +874,7 @@ function pixelHistory (point){
         textAlign:'center',
       }
     });
-    
+    // print('reduce',reduce);
     reduce.keys().evaluate(function(keys){
       reduce.values().evaluate(function(values){
         keys.forEach(function(key,i){
@@ -916,7 +924,7 @@ var body_legend = ui.Panel({
 Map.add(body_legend);
 
 var data_list = [
-  ['LULC',mb_lulc8,lulc_vis,lulc_legend,],
+  ['LULC',mb_lulc,lulc_vis,lulc_legend,],
   ['FIRE',mb_fire.unmask(),fire_vis,fire_legend],
   ['TRAJ',nat_trajectory,trajetory_vis,trajetory_legend],
 ];
@@ -982,7 +990,8 @@ Map.onChangeBounds(function(obj){
 
 
 var points_Savana = [
-  [53.16111,-14.793333], //Fazenda Suri 
+  // [53.16111,-14.793333], //Fazenda Suri // essas coordenadas caem perto de Madagascar
+  [-53.16111,-14.793333], //Fazenda Suri // essas coordenadas caem perto de Madagasca, sugestão de deixar negativo a longitude
   // [-43.82076957778092,  -12.613540708892252],
   // [-43.812186508933266, -12.647712171975543],
   // [-45.32934207072572,  -16.923523458007573],
