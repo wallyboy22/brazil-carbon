@@ -687,7 +687,7 @@ return trajectories(classes);
 }
 
 ///
-var mb_lulc8 = ee.Image('projects/ee-ipam/assets/MAPBIOMAS/mapbiomas_brazil_collection10_integration_v2');
+var mb_lulc8 = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1');
 var mb_fire = ee.Image('projects/mapbiomas-workspace/FOGO_COL2/SUBPRODUTOS/mapbiomas-fire-collection2-annual-burned-v2');
 var mb_firefrequence = ee.Image('projects/mapbiomas-workspace/FOGO_COL2/SUBPRODUTOS/mapbiomas-fire-collection2-fire-frequency-coverage-v2').slice(0,38).divide(100).int();
 var mb_taf = ee.Image('projects/mapbiomas-workspace/FOGO_COL2/PRODUTOS_REGIME_DO_FOGO/mapbiomas-fire-collection2-time-after-fire-v2');
