@@ -990,8 +990,7 @@ Map.onChangeBounds(function(obj){
 
 
 var points_Savana = [
-  // [53.16111,-14.793333], //Fazenda Suri // essas coordenadas caem perto de Madagascar
-  [-53.16111,-14.793333], //Fazenda Suri // essas coordenadas caem perto de Madagasca, sugestão de deixar negativo a longitude
+  [-53.16111,-14.793333], //Fazenda Suri
   // [-43.82076957778092,  -12.613540708892252],
   // [-43.812186508933266, -12.647712171975543],
   // [-45.32934207072572,  -16.923523458007573],
