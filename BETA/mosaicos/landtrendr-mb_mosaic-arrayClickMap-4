@@ -990,7 +990,7 @@ Map.onChangeBounds(function(obj){
 
 
 var points_Savana = [
-  [-53.16111,-14.793333], //Fazenda Suri
+  //[-53.16111,-14.793333], //Fazenda Suri
   // [-43.82076957778092,  -12.613540708892252],
   // [-43.812186508933266, -12.647712171975543],
   // [-45.32934207072572,  -16.923523458007573],
@@ -1008,7 +1008,7 @@ var points_Savana_DF = [
     // [-47.92112,-15.96332], //FAL P5
     // [-47.92082,-15.96125], //FAL P6
     // [-47.91967,-15.96020], //FAL P7
-    // [-47.91460,-15.96095], //FAL P8
+     [-47.91460,-15.96095], //FAL P8
     // [-47.91197,-15.95880], //FAL P10
     // [-47.91112,-15.95743], //FAL P12
     // [-47.91065,-15.95723], //FAL P13
@@ -1066,8 +1066,8 @@ var points_Savana_DF = [
 // ];
 
 [
-  points_Savana,
-  //points_Savana_DF,
+  //points_Savana,
+  points_Savana_DF,
   //points_Floresta,
   // points_Campo
 ].forEach(function(pointsList){
