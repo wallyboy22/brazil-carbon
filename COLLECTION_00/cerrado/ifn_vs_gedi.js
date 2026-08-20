@@ -225,10 +225,10 @@ INDEX_FC.aggregate_array('table_id').distinct().sort()
           // .filter(ee.Filter.eq('leaf_off_flag',0))
           // .filter(ee.Filter.lt('landsat_water_persistence',50))
           .map(function(feature){
-            agbd    = ee.Number(feature.get('agbd'));
-            agbd_se = ee.Number(feature.get('agbd_se'));
-            rel = ee.Algorithms.If(agbd.gt(0), agbd_se.divide(agbd), ee.Number(99));
-            return f.set('rel_error', rel);
+            var agbd    = ee.Number(feature.get('agbd'));
+            var agbd_se = ee.Number(feature.get('agbd_se'));
+            var rel = ee.Algorithms.If(agbd.gt(0), agbd_se.divide(agbd), ee.Number(99));
+            return feature.set('rel_error', rel);
           })
           .filter(ee.Filter.lt('rel_error',0.5))
           .map(function(ft){
@@ -250,6 +250,8 @@ INDEX_FC.aggregate_array('table_id').distinct().sort()
       print('fcs',fcs);
       
       fcs = ee.FeatureCollection(fcs).flatten();
+
+      print('fcs',fcs.limit(2));
 
 })
 
