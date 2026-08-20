@@ -26,7 +26,7 @@ var SCALE = 30;
 var BATCH_SIZE = 1000;
 
 // PONTOS DE ENTRADA — asset FeatureCollection de pontos (ex.: 'users/voce/meus_pontos')
-var POINTS_FC = '';
+// var POINTS_FC = '';
 
 // Pasta de destino no Google Drive (descomente para ativar o Drive)
 // var EXPORT_FOLDER = 'GEE_Exports_AGC-v3';
@@ -249,7 +249,7 @@ function createSampleExports(pts, stack, total) {
     Export.table.toAsset({
       collection: sampledAll, description: 'points_samples_' + YEAR,
       assetId: assetSamp
-    }).start();
+    });
     print('  [Asset ] ' + assetSamp);
   }
 
@@ -268,7 +268,7 @@ function createSampleExports(pts, stack, total) {
       Export.table.toDrive({
         collection: sampledBatch, description: fname, folder: EXPORT_FOLDER,
         fileNamePrefix: fname, fileFormat: 'CSV'
-      }).start();
+      });
       print('  [Drive ] ' + fname + '.csv');
     }
   }

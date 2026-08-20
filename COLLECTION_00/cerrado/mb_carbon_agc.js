@@ -81,6 +81,7 @@ var ACTIVE_GRIDS = ['t0_0'];   // ou Object.keys(GRIDS) para todas
 
 // Filtros de qualidade do GEDI L4A v002 (porta exata do notebook)
 function filterGedi(fc, aoi) {
+  print('[DEBUG filterGedi] entrada:', fc.size());
   fc = fc.filter(ee.Filter.eq('l4_quality_flag', 1));
   fc = fc.filter(ee.Filter.eq('degrade_flag', 0));
   fc = fc.filter(ee.Filter.gt('agbd', 0));
@@ -94,7 +95,14 @@ function filterGedi(fc, aoi) {
   fc = fc.filter(ee.Filter.gte('sensitivity', 0.95));
   fc = fc.filter(ee.Filter.inList('beam', [0, 1, 2, 3, 5, 6, 8, 11])); // 8 beams
   fc = fc.filter(ee.Filter.lt('solar_elevation', 0));                 // apenas noturno
-  return fc.filterBounds(aoi);
+  fc = fc.filterBounds(aoi);
+  
+  // DEBUG: amostra 3 features filtradas
+  fc.limit(3).evaluate(function (sample) {
+    print('[DEBUG filterGedi] saída (size):', fc.size());
+    print('[DEBUG filterGedi] amostra 3:', sample);
+  });
+  return fc;
 }
 
 // Descobre os granules (table_id) do GEDI no AOI + janela [inicio, fim) (fim exclusivo).
@@ -107,7 +115,13 @@ function discoverGranules(aoi, start, end, callback) {
     .filter(ee.Filter.gte('time_start', t0))
     .filter(ee.Filter.lt('time_start', t1))
     .filterBounds(aoi);
+  
+  // DEBUG: inspeciona granules candidatos
   idx.aggregate_array('table_id').distinct().evaluate(function (assets) {
+    print('[DEBUG discoverGranules] granules encontrados:', assets.length);
+    if (assets.length > 0) {
+      print('[DEBUG discoverGranules] primeiros 3:', assets.slice(0, 3));
+    }
     callback({ assets: assets, n: assets.length, yearUsed: parseInt(start.slice(0, 4), 10) });
   });
 }
@@ -312,6 +326,11 @@ function onGranulesReady(gridId, grid, aoi, assets, yearUsed) {
     return filterGedi(ee.FeatureCollection(tid), aoi);
   })).flatten();
 
+  // DEBUG: inspeciona fcServer antes do size()
+  fcServer.limit(3).evaluate(function (sample) {
+    print('[DEBUG onGranulesReady] fcServer amostra 3:', sample);
+  });
+
   // EVALUATE #2 — baixa o total de pegadas filtradas
   fcServer.size().evaluate(function (total) {
     print('[OK] Pegadas filtradas (server-side): ' + total);
@@ -330,6 +349,16 @@ function runMain(gridId, grid, aoi, fcServer, yearUsed, total) {
   // Diagnóstico não-bloqueante (não atrasa a criação dos exports)
   stack.bandNames().evaluate(function (bands) {
     print('[OK] Stack de covariáveis montado (' + bands.length + ' bandas).');
+    print('[DEBUG runMain] bandas do stack:', bands);
+  });
+
+  // DEBUG: testa sampleRegions em 3 features ANTES de exportar
+  var testSample = stack.sampleRegions({
+    collection: fcServer.limit(3), properties: SAMPLE_PROPS,
+    scale: SCALE, geometries: false, tileScale: 8
+  });
+  testSample.evaluate(function (sample) {
+    print('[DEBUG runMain] sampleRegions teste (3 feats):', sample);
   });
 
   createFootprintExports(gridId, grid, fcServer, yearUsed);
@@ -370,6 +399,12 @@ function createSampleExports(gridId, grid, fcServer, stack, yearUsed, total) {
       collection: fcServer, properties: SAMPLE_PROPS,
       scale: SCALE, geometries: false, tileScale: 8
     });
+    
+    // DEBUG: inspeciona sampledAll (primeiras 3)
+    sampledAll.limit(3).evaluate(function (sample) {
+      print('[DEBUG createSampleExports] Asset sampledAll amostra 3:', sample);
+    });
+
     var assetSamp = ASSET_BASE + '/AGC_samples_' + gridId + '_' + yearUsed;
     Export.table.toAsset({
       collection: sampledAll, description: 'AGC_samples_' + gridId + '_' + yearUsed,
@@ -390,6 +425,14 @@ function createSampleExports(gridId, grid, fcServer, stack, yearUsed, total) {
         collection: fcBatch, properties: SAMPLE_PROPS,
         scale: SCALE, geometries: false, tileScale: 8
       });
+      
+      // DEBUG: primeiro batch apenas
+      if (b === 0) {
+        sampledBatch.limit(3).evaluate(function (sample) {
+          print('[DEBUG createSampleExports] Drive batch001 amostra 3:', sample);
+        });
+      }
+
       var fname = 'AGC_samples_' + gridId + '_' + yearUsed + '_batch' + pad3(b + 1);
       Export.table.toDrive({
         collection: sampledBatch, description: fname, folder: EXPORT_FOLDER,
