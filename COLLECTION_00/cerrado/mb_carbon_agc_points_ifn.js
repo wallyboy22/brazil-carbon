@@ -239,7 +239,7 @@ if (EXPORT_TO_ASSET) {
     collection: sampled,
     description: desc,
     assetId: assetId
-  }).start();
+  });
   print('[EXPORT] Asset:', assetId);
 }
 
@@ -250,7 +250,7 @@ if (EXPORT_TO_DRIVE && typeof EXPORT_FOLDER !== 'undefined') {
     folder: EXPORT_FOLDER,
     fileNamePrefix: desc,
     fileFormat: 'CSV'
-  }).start();
+  });
   print('[EXPORT] Drive:', EXPORT_FOLDER + '/' + desc + '.csv');
 }
 
