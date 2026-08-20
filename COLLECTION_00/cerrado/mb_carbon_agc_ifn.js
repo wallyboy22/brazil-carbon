@@ -14,7 +14,7 @@
 // 0. CONFIG
 // =============================================================================
 
-var YEAR = 2023;
+var YEAR = 2018;
 
 var IFN_ASSET = 'projects/ee-ipam/assets/IFN/IFN_2026_Field_Cerrado';
 
@@ -178,7 +178,7 @@ function buildCovariateStack(aoi, yearUsed) {
     .addBands(handStack)
     .addBands(climateStack)
     .addBands(mapbiomasLulc)
-    .clip(aoi);
+    .updateMask(ee.Image().paint(aoi).eq(0));
 }
 
 // =============================================================================
