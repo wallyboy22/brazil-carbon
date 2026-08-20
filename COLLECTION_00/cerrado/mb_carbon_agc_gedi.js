@@ -407,7 +407,7 @@ function createSampleExports(gridId, grid, fcServer, stack, yearUsed, total) {
     Export.table.toAsset({
       collection: sampledAll, description: 'AGC_samples_' + gridId + '_' + yearUsed,
       assetId: assetSamp
-    }).start();
+    });
     print('  [Asset ] ' + assetSamp);
   }
 
@@ -435,7 +435,7 @@ function createSampleExports(gridId, grid, fcServer, stack, yearUsed, total) {
       Export.table.toDrive({
         collection: sampledBatch, description: fname, folder: EXPORT_FOLDER,
         fileNamePrefix: fname, fileFormat: 'CSV'
-      }).start();
+      });
       print('  [Drive ] ' + fname + '.csv (offset ' + offset + ' -> ' + (offset + size) + ')');
     }
   }
