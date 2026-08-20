@@ -1,5 +1,8 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
-var POINTS_FC = /* color: #d63000 */ee.Geometry({
+var POINTS_FC = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry({
       "type": "GeometryCollection",
       "geometries": [
         {
@@ -118,7 +121,10 @@ var POINTS_FC = /* color: #d63000 */ee.Geometry({
       ],
       "coordinates": []
     }),
-    geometry = /* color: #98ff00 */ee.Geometry.MultiPoint(
+    geometry = 
+    /* color: #98ff00 */
+    /* shown: false */
+    ee.Geometry.MultiPoint(
         [[-48.7799730842424, -11.699042273926672],
          [-48.78005355051285, -11.699178851338733],
          [-48.78014474561935, -11.699310175709826],
@@ -141,7 +147,7 @@ var YEAR = 2025;
 // ── AOI a partir do FeatureCollection do IFN ────────────────────────────────
 var AOI_path = 'projects/ee-ipam/assets/IFN/IFN_2026_Field_Cerrado';
 var IFN_FC = ee.FeatureCollection(AOI_path);
-print('IFN_FC',IFN_FC.limit(10));
+print('IFN_FC',IFN_FC.limit(10),IFN_FC.aggregate_array('ano').distinct());
 Map.addLayer(ee.Image().paint(IFN_FC,'n_arv'),{min:0,max:10},'n_arv');
 
 // Bounding box do FeatureCollection (equivalente ao ee.Geometry.BBox do Python)
@@ -165,8 +171,102 @@ var SCALE = 30;
 var YEAR_USED      = YEAR;
 var USING_FALLBACK = false;
 
-var INDEX_FC = ee.FeatureCollection('LARSE/GEDI/GEDI04_A_002_INDEX');
+var INDEX_FC = ee.FeatureCollection('LARSE/GEDI/GEDI04_A_002_INDEX')
+  // .filterDate(DATE_START_STR,DATE_END_STR)
+  .filter(ee.Filter.and(
+      ee.Filter.gte('time_start', DATE_START_STR),
+      ee.Filter.lte('time_start', DATE_END_STR)
+    ))
+  .filterBounds(IFN_FC.geometry().bounds());
+  
+INDEX_FC = INDEX_FC.map(function(ft){
+  return ft.set({
+    if_ifn:ee.Image().paint(IFN_FC).eq(0).unmask().reduceRegion({
+      reducer:ee.Reducer.max(),
+      geometry:ft.geometry(), 
+      scale:100, 
+      // crs, crsTransform, bestEffort, 
+      maxPixels:1e13,
+      // tileScale:8
+    }).getNumber('constant')
+  });
+});
+
+print('INDEX_FC',INDEX_FC.limit(10),INDEX_FC.size());
+
+INDEX_FC= INDEX_FC.filter(ee.Filter.eq('if_ifn',1));
+print('INDEX_FC',INDEX_FC.limit(10),INDEX_FC.size());
+
+Map.addLayer(INDEX_FC.limit(10),{},'INDEX_FC');
+// var table = ee.FeatureCollection('LARSE/GEDI/GEDI04_A_002/GEDI04_A_2024288052305_O33070_02_T04495_02_004_01_V002')
+var table = ee.FeatureCollection('LARSE/GEDI/GEDI04_A_002/GEDI04_A_2021227193607_O15152_04_T10287_02_002_02_V002')
+Map.addLayer(table,{},'table');
+print('table',ee.FeatureCollection('LARSE/GEDI/GEDI04_A_002/GEDI04_A_2024288052305_O33070_02_T04495_02_004_01_V002').limit(10))
 print('1INDEX_FC1',INDEX_FC.limit(10))
+
+print(INDEX_FC.aggregate_array('table_id').distinct().sort().slice(0,10))
+
+INDEX_FC.aggregate_array('table_id').distinct().sort()
+.evaluate(function(list){
+  print('list',list);
+      var fcs = []; 
+      
+      list.forEach(function(str){
+        
+        fcs.push(ee.FeatureCollection(str)
+          .filter(ee.Filter.eq('l4_quality_flag',1))
+          .filter(ee.Filter.eq('degrade_flag',0))
+          .filter(ee.Filter.lt('solar_elevation',0))
+          .filter(ee.Filter.gt('agbd',0))
+          // .filter(ee.Filter.gt('beam',4))
+          .filter(ee.Filter.gte('sensitivity',95))
+          .filter(ee.Filter.gt('landsat_treecover',10))
+          // .filter(ee.Filter.gt('landsat_treecover',10))
+          // .filter(ee.Filter.eq('leaf_off_flag',0))
+          // .filter(ee.Filter.lt('landsat_water_persistence',50))
+          .map(function(feature){
+            agbd    = ee.Number(feature.get('agbd'));
+            agbd_se = ee.Number(feature.get('agbd_se'));
+            rel = ee.Algorithms.If(agbd.gt(0), agbd_se.divide(agbd), ee.Number(99));
+            return f.set('rel_error', rel);
+          })
+          .filter(ee.Filter.lt('rel_error',0.5))
+          .map(function(ft){
+            return ft.set({
+            if_ifn:ee.Image().paint(IFN_FC).eq(0).unmask().reduceRegion({
+              reducer:ee.Reducer.max(),
+              geometry:ft.geometry(), 
+              scale:100, 
+              // crs, crsTransform, bestEffort, 
+              maxPixels:1e13,
+              // tileScale:8
+            }).getNumber('constant')
+          });
+          })
+          .filter(ee.Filter.eq('if_ifn',1))
+        );
+      });
+      
+      print('fcs',fcs);
+      
+      fcs = ee.FeatureCollection(fcs).flatten();
+
+})
+
+stop
+var IFN_FC_filtred= IFN_FC.map(function(feature){
+  
+  var gedi_filter = INDEX_FC
+  
+  
+  feature = feature.set({
+    
+  })
+  
+  return feature;
+});
+
+
 function getFilteredAssets(startDate, endDate) {
   var fc = INDEX_FC
     .filter(ee.Filter.and(
