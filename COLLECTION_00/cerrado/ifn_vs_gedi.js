@@ -214,23 +214,23 @@ INDEX_FC.aggregate_array('table_id').distinct().sort()
       list.forEach(function(str){
         
         fcs.push(ee.FeatureCollection(str)
-          .filter(ee.Filter.eq('l4_quality_flag',1))
-          .filter(ee.Filter.eq('degrade_flag',0))
-          .filter(ee.Filter.lt('solar_elevation',0))
-          .filter(ee.Filter.gt('agbd',0))
-          // .filter(ee.Filter.gt('beam',4))
-          .filter(ee.Filter.gte('sensitivity',95))
-          .filter(ee.Filter.gt('landsat_treecover',10))
+          // .filter(ee.Filter.eq('l4_quality_flag',1))
+          // .filter(ee.Filter.eq('degrade_flag',0))
+          // .filter(ee.Filter.lt('solar_elevation',0))
+          // .filter(ee.Filter.gt('agbd',0))
+          // // .filter(ee.Filter.gt('beam',4))
+          // .filter(ee.Filter.gte('sensitivity',95))
           // .filter(ee.Filter.gt('landsat_treecover',10))
-          // .filter(ee.Filter.eq('leaf_off_flag',0))
-          // .filter(ee.Filter.lt('landsat_water_persistence',50))
-          .map(function(feature){
-            var agbd    = ee.Number(feature.get('agbd'));
-            var agbd_se = ee.Number(feature.get('agbd_se'));
-            var rel = ee.Algorithms.If(agbd.gt(0), agbd_se.divide(agbd), ee.Number(99));
-            return feature.set('rel_error', rel);
-          })
-          .filter(ee.Filter.lt('rel_error',0.5))
+          // // .filter(ee.Filter.gt('landsat_treecover',10))
+          // // .filter(ee.Filter.eq('leaf_off_flag',0))
+          // // .filter(ee.Filter.lt('landsat_water_persistence',50))
+          // .map(function(feature){
+          //   var agbd    = ee.Number(feature.get('agbd'));
+          //   var agbd_se = ee.Number(feature.get('agbd_se'));
+          //   var rel = ee.Algorithms.If(agbd.gt(0), agbd_se.divide(agbd), ee.Number(99));
+          //   return feature.set('rel_error', rel);
+          // })
+          // .filter(ee.Filter.lt('rel_error',0.5))
           .map(function(ft){
             return ft.set({
             if_ifn:ee.Image().paint(IFN_FC).eq(0).unmask().reduceRegion({
@@ -247,7 +247,7 @@ INDEX_FC.aggregate_array('table_id').distinct().sort()
         );
       });
       
-      print('fcs',fcs);
+      print('fcs',fcs.map(function(fc){return fc.limit(2)}));
       
       fcs = ee.FeatureCollection(fcs).flatten();
 
