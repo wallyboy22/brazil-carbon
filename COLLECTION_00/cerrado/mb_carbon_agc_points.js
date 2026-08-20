@@ -1,41 +1,15 @@
 /**
- * =============================================================================
- * PROJETO : MAPBIOMAS-CARBONO — Coleção 0 · CERRADO (amostras de pontos aleatórios)
- * VERSÃO  : v001
- * SCRIPT  : COLLECTION_00/cerrado/mb_carbon_agc_random.js
- * AMBIENTE: GEE Code Editor (code.earthengine.google.com)
- * -----------------------------------------------------------------------------
- * DESCRIÇÃO
- *   Variante AGNÓSTICA A GEDI do fluxo do Cerrado. Em vez de footprints GEDI
- *   L4A, gera pontos PSEUDOALEATÓRIOS (reprodutíveis via seed) no interior do
- *   bioma Cerrado e extrai o MESMO stack de covariáveis
- *   (HLS/PALSAR/HAND/ERA5-CWD/MapBiomas C11) nesses pontos.
+ * MAPBIOMAS-CARBONO — Coleção 0 · CERRADO · Exemplo de extração de covariáveis
+ * para pontos GENÉRICOS (não aleatórios).
+ * Dado um asset FeatureCollection de pontos (POINTS_FC), extrai o stack de
+ * covariáveis (HLS/PALSAR/HAND/ERA5-CWD/MapBiomas C11) e exporta
+ * id/lon/lat + bandas para Assets GEE (FC) e Drive (CSV). Assíncrono: os
+ * exports só são criados após baixar, via evaluate(), o total de pontos.
  *
- *   GARANTIA DE LOCALIZAÇÃO: o AOI (grid) é interseccionado com o polígono do
- *   bioma Cerrado (IBGE) ANTES de gerar os pontos — todos os lat/long caem no
- *   Cerrado. Cada ponto sai com as colunas id, lon e lat + as 36 bandas de
- *   covariáveis (a "mesma informação" do fluxo GEDI).
- *
- *   Export duplicado para Google Drive (CSV) e Assets GEE (FeatureCollection).
- *   A pasta do Drive fica COMENTADA de propósito — descomente para habilitar.
- *
- *   ASSÍNCRONO (sem getInfo): evaluate() usado apenas para diagnóstico
- *   (bandNames); a contagem de pontos é conhecida (N_POINTS).
- *
- * -----------------------------------------------------------------------------
- * COMO USAR
- *   1) Crie as pastas-pai no Assets GEE (aba Assets > NEW > Folder):
- *        MAPBIOMAS / CARBON / MAPPING / COLLECTION_00 / CERRADO_FOREST / SAMPLES
- *   2) Configure YEAR, N_POINTS e RANDOM_SEED abaixo.
- *   3) Para exportar os CSVs ao Drive, DESCOMENTE a linha do EXPORT_FOLDER.
- *   4) Run > monitore na aba TASKS.
- * -----------------------------------------------------------------------------
- * EQUIPE : MAPBIOMAS-CARBONO / IPAM Amazônia
- * PORTE  : COLLECTION_00/cerrado/mb_carbon_agc.js -> mb_carbon_agc_random.js
- * -----------------------------------------------------------------------------
- * HISTÓRICO
- *   v001 (ago/2026): variante agnóstica a GEDI — pontos aleatórios no Cerrado.
- * =============================================================================
+ * COMO USAR:
+ *   1) Aponte POINTS_FC para o seu asset FeatureCollection de pontos.
+ *   2) Opcional: descomente EXPORT_FOLDER para exportar CSV no Drive.
+ *   3) Run > monitore na aba TASKS.
  */
 
 // =============================================================================
@@ -48,81 +22,35 @@ var YEAR = 2023;
 // Escala de extração das covariáveis (m)
 var SCALE = 30;
 
-// Número de pontos aleatórios gerados por grid (todos caem no Cerrado)
-var N_POINTS = 10000;
-
-// Semente dos pontos pseudoaleatórios (reprodutibilidade entre runs)
-var RANDOM_SEED = 42;
-
-// Tamanho do batch para o export em CSV (Drive) — evita arquivo gigante
+// Tamanho do batch para o export em CSV (Drive)
 var BATCH_SIZE = 1000;
 
-// Pasta de destino no Google Drive.
-// DEIXADA COMENTADA DE PROPÓSITO — descomente para exportar os CSVs:
+// PONTOS DE ENTRADA — asset FeatureCollection de pontos (ex.: 'users/voce/meus_pontos')
+var POINTS_FC = '';
+
+// Pasta de destino no Google Drive (descomente para ativar o Drive)
 // var EXPORT_FOLDER = 'GEE_Exports_AGC-v3';
 
 // Base dos assets (pastas-pai devem existir no Assets GEE)
 var ASSET_BASE = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/CERRADO_FOREST/SAMPLES';
 
-// Toggles de DESTINO (Drive só funciona com EXPORT_FOLDER descomentado)
+// Toggles de DESTINO
 var EXPORT_TO_DRIVE = true;   // CSV no Google Drive (requer EXPORT_FOLDER)
 var EXPORT_TO_ASSET = true;   // FeatureCollection em Assets GEE
 
-// Bioma de referência (IBGE) — recorta os pontos AO Cerrado
+// Bioma (IBGE/IPAM) — camada de diagnóstico
 var BIOME_FC = 'projects/ee-ipam/assets/ORIGINAIS/IBGE/limite_biomas_IBGE_2026';
-var BIOME_PROP = 'Bioma';     // nome da propriedade do bioma (ajuste se preciso)
-var BIOME_NAME = 'CERRADO';   // valor a filtrar
+var BIOME_PROP = 'Bioma';
+var BIOME_NAME = 'Cerrado';
+
+// Propriedades preservadas nos pontos de saída (id/lon/lat + bandas do stack)
+var POINT_PROPS = ['id', 'lon', 'lat'];
 
 // =============================================================================
-// 1. REGISTRO DE GRIDS / REGIÕES
-// =============================================================================
-// Cada entrada: 'id' -> { label: 'nome', bbox: [xmin, ymin, xmax, ymax] }
-// Os pontos são gerados DENTRO de aoi ∩ Cerrado (bioma IBGE), então todo
-// ponto exportado tem lat/long no Cerrado mesmo que o bbox "vaze" um pouco.
-var GRIDS = {
-
-  // ---------------------------------------------------------------------------
-  // --- CERRADO INTERIOR: grid dedicado (GO/TO/MG) — padrão desta variante ---
-  // ---------------------------------------------------------------------------
-  'cerrado_interior': { label: 'Cerrado interior (GO/TO/MG)', bbox: [-50.0, -17.0, -45.0, -12.0] },
-
-  // ---------------------------------------------------------------------------
-  // --- OUTRAS OPÇÕES (14 tiles do Cerrado — descomente para usar) ------------
-  // ---------------------------------------------------------------------------
-  // 't0_0': { label: 'Tile 0_0 (Cerrado)', bbox: [-61.458984375, -25.2905778530068, -56.196533203125, -19.441233308006183] },
-  // 't0_1': { label: 'Tile 0_1 (Cerrado)', bbox: [-56.196533203125, -25.2905778530068, -50.93408203125, -19.441233308006183] },
-  // 't0_2': { label: 'Tile 0_2 (Cerrado)', bbox: [-50.93408203125, -25.2905778530068, -45.671630859375, -19.441233308006183] },
-  // 't0_3': { label: 'Tile 0_3 (Cerrado)', bbox: [-45.671630859375, -25.2905778530068, -40.4091796875, -19.441233308006183] },
-  // 't1_0': { label: 'Tile 1_0 (Cerrado)', bbox: [-61.458984375, -19.441233308006183, -56.196533203125, -13.591888763005564] },
-  // 't1_1': { label: 'Tile 1_1 (Cerrado)', bbox: [-56.196533203125, -19.441233308006183, -50.93408203125, -13.591888763005564] },
-  // 't1_2': { label: 'Tile 1_2 (Cerrado)', bbox: [-50.93408203125, -19.441233308006183, -45.671630859375, -13.591888763005564] },
-  // 't1_3': { label: 'Tile 1_3 (Cerrado)', bbox: [-45.671630859375, -19.441233308006183, -40.4091796875, -13.591888763005564] },
-  // 't2_0': { label: 'Tile 2_0 (Cerrado)', bbox: [-61.458984375, -13.591888763005564, -56.196533203125, -7.742544218004948] },
-  // 't2_1': { label: 'Tile 2_1 (Cerrado)', bbox: [-56.196533203125, -13.591888763005564, -50.93408203125, -7.742544218004948] },
-  // 't2_2': { label: 'Tile 2_2 (Cerrado)', bbox: [-50.93408203125, -13.591888763005564, -45.671630859375, -7.742544218004948] },
-  // 't2_3': { label: 'Tile 2_3 (Cerrado)', bbox: [-45.671630859375, -13.591888763005564, -40.4091796875, -7.742544218004948] },
-  // 't3_2': { label: 'Tile 3_2 (Cerrado)', bbox: [-50.93408203125, -7.742544218004948, -45.671630859375, -1.8931996730043288] },
-  // 't3_3': { label: 'Tile 3_3 (Cerrado)', bbox: [-45.671630859375, -7.742544218004948, -40.4091796875, -1.8931996730043288] },
-
-  // ---------------------------------------------------------------------------
-  // --- OUTRAS REGIÕES (exemplos — ajuste as coordenadas para uma nova área)
-  // ---------------------------------------------------------------------------
-  // 'maranhao': { label: 'Maranhao', bbox: [-48.75, -10.25, -41.25, -1.0] },
-};
-
-// =============================================================================
-// 2. REGIÕES ATIVAS — LOOP DE EXPORT
-// =============================================================================
-//   Só interior        ->  var ACTIVE_GRIDS = ['cerrado_interior'];
-//   Interior + tile    ->  var ACTIVE_GRIDS = ['cerrado_interior', 't0_0'];
-//   Todos              ->  var ACTIVE_GRIDS = Object.keys(GRIDS);
-var ACTIVE_GRIDS = ['cerrado_interior'];
-
-// =============================================================================
-// 3. FUNÇÕES — COVARIÁVEIS (todas server-side)
+// 1. FUNÇÕES — COVARIÁVEIS (server-side)
 // =============================================================================
 
-// --- 3a. HLS: máscara de nuvem/sombra/cirrus (Fmask) + índices espectrais ---
+// --- 1a. HLS: máscara Fmask + índices espectrais ---
 function maskHlsClouds(img) {
   var qa = img.select('Fmask');
   var clear = qa.bitwiseAnd(1 << 1).eq(0)   // bit 1 = cloud
@@ -171,13 +99,13 @@ var BAND_L = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'Fmask'];
 var BAND_S = ['B2', 'B3', 'B4', 'B8A', 'B11', 'B12', 'Fmask'];
 var BAND_NAME = ['Blue', 'Green', 'Red', 'NIR', 'SWIR1', 'SWIR2', 'Fmask'];
 
-// Monta o stack integrado de covariáveis (porta do notebook, seções 6–8).
-// HLS P10/P50/P90/AMP (24) + PALSAR-2 (4) + HAND (2) + ERA5/CWD (5) + MapBiomas (1) = 36 bandas
+// Stack integrado (36 bandas): HLS P10/P50/P90/AMP (24) + PALSAR-2 (4) + HAND (2)
+// + ERA5/CWD (5) + MapBiomas C11 (1).
 function buildCovariateStack(aoi, yearUsed) {
   var dStart = yearUsed + '-01-01';
   var dEnd = (yearUsed + 1) + '-01-01';   // fim EXCLUSIVO — filterDate é [inicio, fim)
 
-  // --- 3b. HLS: composição anual P10/P50/P90/AMP dos índices espectrais ---
+  // --- 1b. HLS: composição anual P10/P50/P90/AMP ---
   var hlsL = ee.ImageCollection('NASA/HLS/HLSL30/v002')
     .filterBounds(aoi).filterDate(dStart, dEnd)
     .select(BAND_L, BAND_NAME).map(maskHlsClouds).map(addSpectralIndices);
@@ -186,7 +114,7 @@ function buildCovariateStack(aoi, yearUsed) {
     .select(BAND_S, BAND_NAME).map(maskHlsClouds).map(addSpectralIndices);
   var hlsStack = percentileComposite(hlsL.merge(hlsS), IDX_BANDS);
 
-  // --- 3c. PALSAR-2: retroespalhamento (dB), razão HV/HH e RVI ---
+  // --- 1c. PALSAR-2: retroespalhamento (dB), razão HV/HH e RVI ---
   var palsarRaw = ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
     .filterBounds(aoi)
     .filter(ee.Filter.calendarRange(yearUsed, yearUsed, 'year'))
@@ -201,7 +129,7 @@ function buildCovariateStack(aoi, yearUsed) {
   var palsarStack = ee.Image.cat([hhDb, hvDb, ratio, rvi])
     .focal_mean(3, 'square', 'pixels');   // filtro de speckle
 
-  // --- 3d. HAND: altura em relação à drenagem + classes geomorfológicas ---
+  // --- 1d. HAND: altura em relação à drenagem + classes geomorfológicas ---
   var handCont = ee.ImageCollection('users/gena/global-hand/hand-100').mosaic().rename('HAND_m');
   var handClass = ee.Image(0)
     .where(handCont.lt(5), 1)
@@ -211,7 +139,7 @@ function buildCovariateStack(aoi, yearUsed) {
     .rename('geomorph_class');
   var handStack = handCont.addBands(handClass);
 
-  // --- 3e. ERA5-Land: CWD (atual/climatológico/3yr) + temperatura + precipitação ---
+  // --- 1e. ERA5-Land: CWD (atual/climatológico/3yr) + temperatura + precipitação ---
   var era5 = ee.ImageCollection('ECMWF/ERA5_LAND/MONTHLY_AGGR').filterBounds(aoi);
 
   function computeAnnualCWD(year) {
@@ -244,21 +172,13 @@ function buildCovariateStack(aoi, yearUsed) {
     .select('total_precipitation_sum').sum().multiply(1000).rename('Prec_mm');
   var climateStack = cwdCurr.addBands([cwdClim, cwd3yr, tMean, precAnn]);
 
-  // --- 3f. MapBiomas: classe de uso e cobertura do ano (Coleção 11, coverage v3) ---
-  // Obs.: se o asset da C11 ainda não estiver acessível no GEE, reverter p/ o
-  // fallback da C10.1 (bloco comentado logo abaixo).
+  // --- 1f. MapBiomas: classe de uso e cobertura do ano (Coleção 11) ---
   var mapbiomasLulc = ee.Image(
     'projects/mapbiomas-public/assets/brazil/lulc/collection11/'
     + 'mapbiomas_brazil_collection11_coverage_v3')
     .select('classification_' + yearUsed)
     .rename('mapbiomas_lulc')
     .toFloat();
-  // var mapbiomasLulc = ee.Image(          // FALLBACK: Coleção 10.1
-  //   'projects/mapbiomas-public/assets/brazil/lulc/collection10_1/'
-  //   + 'mapbiomas_brazil_collection10_1_coverage_v1')
-  //   .select('classification_' + yearUsed)
-  //   .rename('mapbiomas_lulc')
-  //   .toFloat();
 
   return hlsStack
     .addBands(palsarStack)
@@ -269,23 +189,16 @@ function buildCovariateStack(aoi, yearUsed) {
 }
 
 // =============================================================================
-// 4. PIPELINE — PONTOS ALEATÓRIOS NO CERRADO (sem GEDI)
+// 2. PIPELINE — ESTRATÉGIA evaluate (sem getInfo)
 // =============================================================================
-// Substitui a descoberta de granules GEDI pela geração de pontos server-side:
-//   aoi ∩ Cerrado -> randomPoints(N_POINTS, seed) -> id/lon/lat -> sampleRegions
-// O total de pontos é conhecido (N_POINTS) — não há evaluate de contagem.
-
-var POINT_PROPS = ['id', 'lon', 'lat'];
+// Exports criados após baixar, via evaluate(), o total de pontos (EVALUATE #1)
+// e o nome das bandas do stack (EVALUATE #2, diagnóstico).
 
 function pad3(n) { return ('000' + n).slice(-3); }
 
-function makeCerradoPoints(aoi) {
-  var bioma = ee.FeatureCollection(BIOME_FC)
-    .filter(ee.Filter.eq(BIOME_PROP, BIOME_NAME))
-    .geometry();
-  var aoiCerr = aoi.intersection(bioma, 1000);
-  var pts = ee.FeatureCollection.randomPoints(aoiCerr, N_POINTS, RANDOM_SEED);
-  return pts.map(function (f) {
+// Acrescenta id/lon/lat aos pontos de entrada.
+function preparePoints(fc) {
+  return fc.map(function (f) {
     var coords = f.geometry().coordinates();
     return f.set({
       id: f.get('system:index'),
@@ -295,98 +208,94 @@ function makeCerradoPoints(aoi) {
   });
 }
 
-function processRegion(gridId, grid) {
-  var aoi = ee.Geometry.BBox(grid.bbox[0], grid.bbox[1], grid.bbox[2], grid.bbox[3]);
-  print('==================== REGIAO: ' + grid.label + ' (' + gridId + ') ====================');
-  Map.addLayer(aoi, { color: 'yellow' }, grid.label + ' - AOI', false);
+function runPointsPipeline() {
+  var pts = preparePoints(ee.FeatureCollection(POINTS_FC));
+  var aoi = pts.geometry().bounds();
+  print('Pontos: ' + POINTS_FC + ' · ano: ' + YEAR);
+  Map.addLayer(aoi, { color: 'yellow' }, 'Bounding box dos pontos', false);
 
-  var pts = makeCerradoPoints(aoi);
+  // EVALUATE #1 — baixa o total de pontos antes de prosseguir
+  pts.size().evaluate(function (total) {
+    print('[OK] Total de pontos: ' + total);
+    if (total === 0) {
+      print('[ERRO] Nenhum ponto encontrado — pulando.');
+      return;
+    }
+    runMain(pts, aoi, total);
+  });
+}
+
+// FUNÇÃO PRINCIPAL — cria os exports (só depois do EVALUATE #1).
+function runMain(pts, aoi, total) {
   var stack = buildCovariateStack(aoi, YEAR);
 
-  // Diagnóstico não-bloqueante (não atrasa a criação dos exports)
+  // Diagnóstico não-bloqueante (EVALUATE #2)
   stack.bandNames().evaluate(function (bands) {
     print('[OK] Stack de covariáveis montado (' + bands.length + ' bandas).');
   });
 
-  createSampleExports(gridId, grid, pts, stack);
-  print('==================== FIM: ' + grid.label + ' ====================\n');
+  createSampleExports(pts, stack, total);
+  print('==================== FIM ====================\n');
 }
 
-// Saída — amostras com covariáveis (sampleRegions) em pontos aleatórios
-function createSampleExports(gridId, grid, pts, stack) {
-  // Asset: uma FeatureCollection única (sem batch — o toAsset lida com o volume)
+// Saída — amostras com covariáveis (sampleRegions), Asset + Drive (batches).
+function createSampleExports(pts, stack, total) {
   if (EXPORT_TO_ASSET) {
     var sampledAll = stack.sampleRegions({
       collection: pts, properties: POINT_PROPS,
       scale: SCALE, geometries: false, tileScale: 8
     });
-    var assetSamp = ASSET_BASE + '/random_samples_' + gridId + '_' + YEAR;
+    var assetSamp = ASSET_BASE + '/points_samples_' + YEAR;
     Export.table.toAsset({
-      collection: sampledAll, description: 'random_samples_' + gridId + '_' + YEAR,
+      collection: sampledAll, description: 'points_samples_' + YEAR,
       assetId: assetSamp
     }).start();
     print('  [Asset ] ' + assetSamp);
   }
 
-  // Drive: batches de BATCH_SIZE (só quando EXPORT_FOLDER estiver descomentado)
   if (EXPORT_TO_DRIVE && typeof EXPORT_FOLDER !== 'undefined') {
-    var fcList = pts.toList(N_POINTS);
-    var nBatches = Math.ceil(N_POINTS / BATCH_SIZE);
+    var fcList = pts.toList(total);
+    var nBatches = Math.ceil(total / BATCH_SIZE);
     for (var b = 0; b < nBatches; b++) {
       var offset = b * BATCH_SIZE;
-      var size = Math.min(BATCH_SIZE, N_POINTS - offset);
+      var size = Math.min(BATCH_SIZE, total - offset);
       var fcBatch = ee.FeatureCollection(fcList.slice(offset, offset + size));
       var sampledBatch = stack.sampleRegions({
         collection: fcBatch, properties: POINT_PROPS,
         scale: SCALE, geometries: false, tileScale: 8
       });
-      var fname = 'random_samples_' + gridId + '_' + YEAR + '_batch' + pad3(b + 1);
+      var fname = 'points_samples_' + YEAR + '_batch' + pad3(b + 1);
       Export.table.toDrive({
         collection: sampledBatch, description: fname, folder: EXPORT_FOLDER,
         fileNamePrefix: fname, fileFormat: 'CSV'
       }).start();
-      print('  [Drive ] ' + fname + '.csv (offset ' + offset + ' -> ' + (offset + size) + ')');
+      print('  [Drive ] ' + fname + '.csv');
     }
-  } else {
-    print('  [Drive ] desabilitado — descomente EXPORT_FOLDER para exportar os CSVs.');
   }
 }
 
 // =============================================================================
-// 5. EXECUÇÃO — LOOP SOBRE AS REGIÕES ATIVAS
+// 3. EXECUÇÃO
 // =============================================================================
 
-print('MAPBIOMAS-CARBONO · Coleção 0 · Amostras de pontos aleatórios (sem GEDI)');
-print('Grids ativos neste Run: ' + (ACTIVE_GRIDS.length ? ACTIVE_GRIDS.join(', ') : '(nenhum)'));
-print('Pontos por grid: ' + N_POINTS + ' (seed ' + RANDOM_SEED + ')');
-print('Destinos: Drive=' + EXPORT_TO_DRIVE + ' · Asset=' + EXPORT_TO_ASSET);
-print('');
+// Exemplo de geração de pontos pseudoaleatórios no Cerrado, se preferir não
+// usar um asset em POINTS_FC:
+//   var aiCerrado = ee.FeatureCollection(BIOME_FC).filter(ee.Filter.eq(BIOME_PROP, BIOME_NAME)).geometry();
+//   var pts = ee.FeatureCollection.randomPoints(aiCerrado, 10000, 42);
 
-ACTIVE_GRIDS.forEach(function (gridId) {
-  var grid = GRIDS[gridId];
-  if (!grid) {
-    print('[ERRO] Grid "' + gridId + '" não encontrado no registro GRIDS.');
-    return;
-  }
-  processRegion(gridId, grid);
-});
-
-print('\n[FIM] Script executado. Monitore as tasks na aba TASKS.');
-print('      Assets: ' + ASSET_BASE);
+if (POINTS_FC) {
+  runPointsPipeline();
+} else {
+  print('[ERRO] Defina POINTS_FC (seção 0) com o asset FeatureCollection de pontos.');
+}
 
 // =============================================================================
-// 6. LEGENDA MAPBIOMAS COL. 11 — INTELIGÊNCIA (BLOCO COPÁVEL)
+// 4. LEGENDA MAPBIOMAS COL. 11 — INTELIGÊNCIA (BLOCO COPÁVEL)
 // =============================================================================
-// Legenda oficial de uso e cobertura da Coleção 11 (níveis 1 e 2), com os
-// códigos e as cores da paleta oficial (brasil.mapbiomas.org). Inclui as
-// classes novas da C11: 7 Savana Alagada (β), 77 Formação Herbácea Arbustiva,
-// 84 Marisma (β) e 91 Parque eólico (β).
-//
-// USO:
-//   MAPBIOMAS_LEGEND    -> objeto código -> {nome, cor} (lógica/filtros)
-//   MAPBIOMAS_LEVEL1    -> resumo das 5 classes do nível 1
-//   MAPBIOMAS_VIS       -> visParams prontos (bands/min/max/palette)
-//   addMapBiomasLegend() -> legenda discreta no canto inferior esquerdo
+// Legenda oficial da Coleção 11 (paleta brasil.mapbiomas.org), incl. classes
+// novas: 7 Savana Alagada (β), 77 Formação Herbácea Arbustiva, 84 Marisma (β)
+// e 91 Parque eólico (β). MAPBIOMAS_VIS usa bands/min/max/palette; a legenda
+// discreta é adicionada por addMapBiomasLegend() (canto inferior esquerdo).
 
 var MAPBIOMAS_LEGEND = {
   3:  { nome: 'Formação Florestal',             cor: '#1f8d49' },
@@ -436,8 +345,7 @@ var MAPBIOMAS_LEVEL1 = [
   { codigo: 26, nome: "Corpo d'Água",               cor: '#2532e4' }
 ];
 
-// visParams prontos: banda 'classification', min/max cobrindo os códigos e
-// palette gerada a partir de MAPBIOMAS_LEGEND (alinhada por código, sem shift).
+// visParams prontos (bands/min/max/palette), palette alinhada por código.
 var MAPBIOMAS_VIS = (function () {
   var codes = Object.keys(MAPBIOMAS_LEGEND).map(function (k) { return parseInt(k, 10); });
   var maxCode = Math.max.apply(null, codes);
@@ -447,8 +355,6 @@ var MAPBIOMAS_VIS = (function () {
   return { bands: ['classification'], min: 0, max: maxCode, palette: palette };
 })();
 
-// Legenda discreta no canto inferior esquerdo.
-// Regras: margin/padding 0px, font-size 12px, max-height 60% (com scroll).
 function addMapBiomasLegend() {
   var legend = ui.Panel({
     style: {
@@ -456,8 +362,7 @@ function addMapBiomasLegend() {
       margin: '0px',
       padding: '0px',
       fontSize: '12px',
-      maxHeight: '60%',
-      overflow: 'auto'
+      maxHeight: '60%'
     }
   });
   legend.add(ui.Label('MapBiomas Col. 11', { fontWeight: 'bold', margin: '0px', padding: '0px' }));
@@ -470,11 +375,14 @@ function addMapBiomasLegend() {
   Map.add(legend);
 }
 
-// Diagnóstico (não interfere nos exports): LULC da C11 no ano YEAR + legenda.
+// Diagnóstico (não interfere nos exports): LULC C11 + limite do bioma + legenda.
 var lulcVis = ee.Image(
   'projects/mapbiomas-public/assets/brazil/lulc/collection11/'
   + 'mapbiomas_brazil_collection11_coverage_v3')
   .select('classification_' + YEAR)
   .rename('classification');
 Map.addLayer(lulcVis, MAPBIOMAS_VIS, 'MapBiomas LULC Col 11', false);
+Map.addLayer(
+  ee.FeatureCollection(BIOME_FC).filter(ee.Filter.eq(BIOME_PROP, BIOME_NAME)),
+  { color: 'red' }, 'Limite ' + BIOME_NAME, false);
 addMapBiomasLegend();

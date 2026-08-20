@@ -1,47 +1,21 @@
 /**
- * =============================================================================
- * PROJETO : MAPBIOMAS-CARBONO — Coleção 0 · PANTANAL (AGC · amostras GEDI)
- * VERSÃO  : v001
- * SCRIPT  : COLLECTION_00/pantanal/mb_carbon_agc.js
- * AMBIENTE: GEE Code Editor (code.earthengine.google.com)
- * -----------------------------------------------------------------------------
- * DESCRIÇÃO
- *   Fluxo único portado do notebook `mb_carbon_agc.py` (Colab). Extrai os
- *   footprints GEDI L4A v002 filtrados, monta o stack de covariáveis
- *   (HLS/PALSAR/HAND/ERA5-CWD/MapBiomas) e exporta as amostras em LOOP por
- *   região, duplicado para Google Drive (CSV) e Assets GEE (FeatureCollection).
+ * MAPBIOMAS-CARBONO — Coleção 0 · PANTANAL · AGC (amostras GEDI)
+ * Porta do notebook mb_carbon_agc.py (apenas SAÍDAS — sem análise).
+ * Extrai footprints GEDI L4A v002 filtrados, monta o stack de covariáveis
+ * (HLS/PALSAR/HAND/ERA5-CWD/MapBiomas C11) e exporta em loop por região,
+ * duplicado para Drive (CSV) e Assets GEE (FC). Assíncrono: os exports só
+ * são criados após baixar, via evaluate(), a lista de granules e o total de
+ * pegadas filtradas. Ver mb_carbon_flow_map.md e COLLECTION_00/README.md.
  *
- *   Apenas SAÍDAS de fato — toda a parte de ANÁLISE do notebook (EDA, folium,
- *   geemap, outliers, gráficos) foi removida. Ver mb_carbon_flow_map.md.
+ * SCRIPT DEDICADO AO BIOMA PANTANAL — pode divergir do script do Cerrado
+ * (COLLECTION_00/cerrado/mb_carbon_agc.js) em grids, covariáveis, filtros e
+ * parâmetros.
  *
- *   SCRIPT DEDICADO AO BIOMA PANTANAL — pode divergir do script do Cerrado
- *   (COLLECTION_00/cerrado/mb_carbon_agc.js) a partir desta versão (grids,
- *   covariáveis, filtros, escala, parâmetros). Ver COLLECTION_00/README.md.
- *
- *   ASSÍNCRONO (sem getInfo): a função principal que cria os exports roda
- *   somente após baixar, via evaluate(), as variáveis importantes
- *   (lista de granules e total de pegadas filtradas) de cada região.
- *
- *   NOTA DE DATAS: o intervalo de 1 ano usa fim EXCLUSIVO ([inicio, fim)),
- *   ou seja, fim = (YEAR+1)-01-01 e NÃO 'YYYY-12-31'. Ver bloco de comentário
- *   na seção 3 (correção para discussão com a equipe).
- *
- * -----------------------------------------------------------------------------
- * COMO USAR
- *   1) Crie as pastas-pai no Assets GEE (aba Assets > NEW > Folder):
+ * COMO USAR:
+ *   1) Crie as pastas-pai no Assets GEE:
  *        MAPBIOMAS / CARBON / MAPPING / COLLECTION_00 / PANTANAL_FOREST / SAMPLES
- *   2) Configure YEAR e os toggles de destino/produto abaixo.
- *   3) Na seção "GRIDS" o grid do Pantanal já está ativo; adicione outros se quiser.
- *   4) Na seção "REGIÕES ATIVAS", liste os ids que entrarão no loop.
- *   5) Run > monitore na aba TASKS.
- * -----------------------------------------------------------------------------
- * EQUIPE : MAPBIOMAS-CARBONO / IPAM Amazônia
- * PORTE  : mb_carbon_agc.py -> COLLECTION_00/pantanal/mb_carbon_agc.js
- * -----------------------------------------------------------------------------
- * HISTÓRICO
- *   v001 (ago/2026): LULC migrado p/ Coleção 11 (coverage_v3) + seção 7
- *                    (legenda C11: MAPBIOMAS_LEGEND / MAPBIOMAS_VIS / UI).
- * =============================================================================
+ *   2) Configure YEAR e ACTIVE_GRIDS.
+ *   3) Run > monitore na aba TASKS.
  */
 
 // =============================================================================
@@ -54,7 +28,7 @@ var YEAR = 2023;
 // Escala de extração das covariáveis (m)
 var SCALE = 30;
 
-// Tamanho do batch para o export em CSV (Drive) — evita arquivo gigante
+// Tamanho do batch para o export em CSV (Drive)
 var BATCH_SIZE = 1000;
 
 // Pasta de destino no Google Drive
@@ -63,7 +37,7 @@ var EXPORT_FOLDER = 'GEE_Exports_AGC-v3';
 // Base dos assets (pastas-pai devem existir no Assets GEE)
 var ASSET_BASE = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/SAMPLES';
 
-// Toggles de DESTINO (desligue o que não quiser)
+// Toggles de DESTINO
 var EXPORT_TO_DRIVE = true;   // CSV no Google Drive
 var EXPORT_TO_ASSET = true;   // FeatureCollection em Assets GEE
 
@@ -71,37 +45,26 @@ var EXPORT_TO_ASSET = true;   // FeatureCollection em Assets GEE
 var EXPORT_FOOTPRINTS = true; // footprints GEDI filtrados (sem covariáveis)
 var EXPORT_SAMPLES    = true; // amostras com o stack de covariáveis
 
+// Bioma (IBGE/IPAM) — camada de diagnóstico
+var BIOME_FC = 'projects/ee-ipam/assets/ORIGINAIS/IBGE/limite_biomas_IBGE_2026';
+var BIOME_PROP = 'Bioma';
+var BIOME_NAME = 'Pantanal';
+
 // =============================================================================
-// 1. REGISTRO DE GRIDS / REGIÕES
+// 1. GRIDS / REGIÕES
 // =============================================================================
-// Cada entrada: 'id' -> { label: 'nome', bbox: [xmin, ymin, xmax, ymax] }
-// Para usar uma região, descomente a linha dela (e/ou ajuste as coordenadas).
-// O loop é controlado por ACTIVE_GRIDS na seção 2.
+// 'id' -> { label, bbox: [xmin, ymin, xmax, ymax] }. Descomente para ativar.
 var GRIDS = {
-
-  // ===========================================================================
-  // ╔══════════════════════════════════════════════════════════════════════════╗
-  // ║  PANTANAL — BIOMA COMPLETO (GRID PRINCIPAL DESTE SCRIPT)                  ║
-  // ║  Quadro cobrindo todo o bioma Pantanal, de onde saem as amostras AGC.     ║
-  // ║  Script dedicado ao Pantanal — pode divergir do script do Cerrado         ║
-  // ║  (ver COLLECTION_00/README.md).                                           ║
-  // ╚══════════════════════════════════════════════════════════════════════════╝
+  // PANTANAL — bioma completo (grid principal deste script)
   'pantanal': { label: 'Pantanal (bioma completo)', bbox: [-60.678789762675464, -22.813804973745906, -52.548906950175464, -12.958681301038263] },
-
-  // ---------------------------------------------------------------------------
-  // --- OUTRAS REGIÕES (exemplos — ajuste as coordenadas para uma nova área)
-  // ---------------------------------------------------------------------------
+  // Outras regiões (exemplo — ajuste as coordenadas):
   // 'maranhao': { label: 'Maranhao', bbox: [-48.75, -10.25, -41.25, -1.0] },
 };
 
 // =============================================================================
 // 2. REGIÕES ATIVAS — LOOP DE EXPORT
 // =============================================================================
-// Liste aqui os ids (de GRIDS) que serão exportados neste Run.
-//   Só Pantanal          ->  var ACTIVE_GRIDS = ['pantanal'];
-//   Pantanal + outra     ->  var ACTIVE_GRIDS = ['pantanal', 'maranhao'];
-//   Todos                ->  var ACTIVE_GRIDS = Object.keys(GRIDS);
-var ACTIVE_GRIDS = ['pantanal'];
+var ACTIVE_GRIDS = ['pantanal'];   // ou Object.keys(GRIDS) para todas
 
 // =============================================================================
 // 3. FUNÇÕES — FILTROS GEDI
@@ -112,14 +75,12 @@ function filterGedi(fc, aoi) {
   fc = fc.filter(ee.Filter.eq('l4_quality_flag', 1));
   fc = fc.filter(ee.Filter.eq('degrade_flag', 0));
   fc = fc.filter(ee.Filter.gt('agbd', 0));
-
   fc = fc.map(function (f) {
     var agbd = ee.Number(f.get('agbd'));
     var agbd_se = ee.Number(f.get('agbd_se'));
     var rel = ee.Algorithms.If(agbd.gt(0), agbd_se.divide(agbd), ee.Number(99));
     return f.set('rel_error', rel);
   });
-
   fc = fc.filter(ee.Filter.lt('rel_error', 0.5));                     // erro relativo < 50%
   fc = fc.filter(ee.Filter.gte('sensitivity', 0.95));
   fc = fc.filter(ee.Filter.inList('beam', [0, 1, 2, 3, 5, 6, 8, 11])); // 8 beams
@@ -127,34 +88,15 @@ function filterGedi(fc, aoi) {
   return fc.filterBounds(aoi);
 }
 
-// ┌────────────────────────────────────────────────────────────────────────────┐
-// │ CORREÇÃO DE INTERVALO DE DATAS — DISCUTIR COM A EQUIPE                     │
-// │                                                                            │
-// │ O intervalo de 1 ano é [inicio, fim): o INÍCIO é INCLUSIVO e o FIM é       │
-// │ EXCLUSIVO.                                                                 │
-// │   * ee.ImageCollection.filterDate(a, b)  → inclui a, EXCLUI b              │
-// │   * ee.Filter.dateRange(a, b, campo)     → inclui a, EXCLUI b              │
-// │                                                                            │
-// │ Portanto, para capturar o ano 2023 o correto é:                            │
-// │   inicio = '2023-01-01'   fim = '2024-01-01'   (NÃO '2023-12-31')          │
-// │                                                                            │
-// │ Por que o '12-31' no fim está errado:                                      │
-// │   - filterDate(...) corta no 31/12 00:00 → PERDE o último dia do ano;      │
-// │   - lte('...12-31') compara em 00:00:00 do 31/12 → também PERDE o dia 31.  │
-// │                                                                            │
-// │ VERSÃO ANTERIOR (preservada — reverter aqui se a equipe decidir):          │
-// │   .filter(ee.Filter.gte('time_start', start))                              │
-// │   .filter(ee.Filter.lte('time_start', end))   // end = 'YYYY-12-31'        │
-// │                                                                            │
-// │ Obs.: o notebook Python (mb_carbon_agc.py) tem o mesmo problema; não foi   │
-// │ alterado (está no .gitignore).                                             │
-// └────────────────────────────────────────────────────────────────────────────┘
-
-// Descobre os granules (table_id) do GEDI no AOI + janela temporal [inicio, fim).
-// Assíncrona: entrega o resultado via callback (estratégia evaluate — sem getInfo).
+// Descobre os granules (table_id) do GEDI no AOI + janela [inicio, fim) (fim exclusivo).
+// O índice não tem system:time_start; filtra-se a propriedade 'time_start' em millis.
+// Assíncrona: resultado via callback (estratégia evaluate — sem getInfo).
 function discoverGranules(aoi, start, end, callback) {
+  var t0 = ee.Date(start).millis();
+  var t1 = ee.Date(end).millis();
   var idx = ee.FeatureCollection('LARSE/GEDI/GEDI04_A_002_INDEX')
-    .filter(ee.Filter.dateRange(start, end, 'time_start'))   // inicio incluso, fim excluso
+    .filter(ee.Filter.gte('time_start', t0))
+    .filter(ee.Filter.lt('time_start', t1))
     .filterBounds(aoi);
   idx.aggregate_array('table_id').distinct().evaluate(function (assets) {
     callback({ assets: assets, n: assets.length, yearUsed: parseInt(start.slice(0, 4), 10) });
@@ -162,10 +104,10 @@ function discoverGranules(aoi, start, end, callback) {
 }
 
 // =============================================================================
-// 4. FUNÇÕES — COVARIÁVEIS (todas server-side)
+// 4. FUNÇÕES — COVARIÁVEIS (server-side)
 // =============================================================================
 
-// --- 4a. HLS: máscara de nuvem/sombra/cirrus (Fmask) + índices espectrais ---
+// --- 4a. HLS: máscara Fmask + índices espectrais ---
 function maskHlsClouds(img) {
   var qa = img.select('Fmask');
   var clear = qa.bitwiseAnd(1 << 1).eq(0)   // bit 1 = cloud
@@ -214,14 +156,13 @@ var BAND_L = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'Fmask'];
 var BAND_S = ['B2', 'B3', 'B4', 'B8A', 'B11', 'B12', 'Fmask'];
 var BAND_NAME = ['Blue', 'Green', 'Red', 'NIR', 'SWIR1', 'SWIR2', 'Fmask'];
 
-// Monta o stack integrado de covariáveis (porta do notebook, seções 6–8).
-// HLS P10/P50/P90/AMP (24) + PALSAR-2 (4) + HAND (2) + ERA5/CWD (5) + MapBiomas (1) = 36 bandas
+// Stack integrado (36 bandas): HLS P10/P50/P90/AMP (24) + PALSAR-2 (4) + HAND (2)
+// + ERA5/CWD (5) + MapBiomas C11 (1).
 function buildCovariateStack(aoi, yearUsed) {
   var dStart = yearUsed + '-01-01';
-  var dEnd = (yearUsed + 1) + '-01-01';   // CORRIGIDO: fim EXCLUSIVO — filterDate é [inicio, fim)
-  // var dEnd = yearUsed + '-12-31';      // (versão anterior — cortava o último dia do ano)
+  var dEnd = (yearUsed + 1) + '-01-01';   // fim EXCLUSIVO — filterDate é [inicio, fim)
 
-  // --- 4b. HLS: composição anual P10/P50/P90/AMP dos índices espectrais ---
+  // --- 4b. HLS: composição anual P10/P50/P90/AMP ---
   var hlsL = ee.ImageCollection('NASA/HLS/HLSL30/v002')
     .filterBounds(aoi).filterDate(dStart, dEnd)
     .select(BAND_L, BAND_NAME).map(maskHlsClouds).map(addSpectralIndices);
@@ -288,21 +229,13 @@ function buildCovariateStack(aoi, yearUsed) {
     .select('total_precipitation_sum').sum().multiply(1000).rename('Prec_mm');
   var climateStack = cwdCurr.addBands([cwdClim, cwd3yr, tMean, precAnn]);
 
-  // --- 4f. MapBiomas: classe de uso e cobertura do ano (Coleção 11, coverage v3) ---
-  // Obs.: se o asset da C11 ainda não estiver acessível no GEE, reverter p/ o
-  // fallback da C10.1 (bloco comentado logo abaixo).
+  // --- 4f. MapBiomas: classe de uso e cobertura do ano (Coleção 11) ---
   var mapbiomasLulc = ee.Image(
     'projects/mapbiomas-public/assets/brazil/lulc/collection11/'
     + 'mapbiomas_brazil_collection11_coverage_v3')
     .select('classification_' + yearUsed)
     .rename('mapbiomas_lulc')
     .toFloat();
-  // var mapbiomasLulc = ee.Image(          // FALLBACK: Coleção 10.1
-  //   'projects/mapbiomas-public/assets/brazil/lulc/collection10_1/'
-  //   + 'mapbiomas_brazil_collection10_1_coverage_v1')
-  //   .select('classification_' + yearUsed)
-  //   .rename('mapbiomas_lulc')
-  //   .toFloat();
 
   return hlsStack
     .addBands(palsarStack)
@@ -313,8 +246,10 @@ function buildCovariateStack(aoi, yearUsed) {
 }
 
 // =============================================================================
-// 5. LOOP DE EXPORT POR REGIÃO (Drive + Asset)
+// 5. PIPELINE POR REGIÃO — ESTRATÉGIA evaluate (sem getInfo)
 // =============================================================================
+// Os exports só são criados após baixar, via evaluate(): a lista de granules
+// (EVALUATE #1) e o total de pegadas filtradas (EVALUATE #2, p/ batching).
 
 var GEDI_SELECTORS = [
   'lon_lowestmode_a1', 'lat_lowestmode_a1', 'agbd', 'agbd_se',
@@ -330,23 +265,13 @@ var SAMPLE_PROPS = [
 
 function pad3(n) { return ('000' + n).slice(-3); }
 
-// =============================================================================
-// 5. PIPELINE POR REGIÃO — ESTRATÉGIA evaluate (sem getInfo)
-// =============================================================================
-// A "função principal" (runMain, que cria os exports) só roda DEPOIS de
-// baixarmos as variáveis importantes via evaluate:
-//   EVALUATE #1  lista de granules GEDI (table_id)
-//   EVALUATE #2  total de pegadas filtradas (necessário p/ batching do Drive)
-
 function processRegion(gridId, grid) {
   var aoi = ee.Geometry.BBox(grid.bbox[0], grid.bbox[1], grid.bbox[2], grid.bbox[3]);
   print('==================== REGIAO: ' + grid.label + ' (' + gridId + ') ====================');
   Map.addLayer(aoi, { color: 'yellow' }, grid.label + ' - AOI', false);
 
-  // Janela temporal do ano — [inicio, fim) com fim EXCLUSIVO (ver bloco de correção acima)
   var DATE_START_STR = YEAR + '-01-01';
   var DATE_END_STR = (YEAR + 1) + '-01-01';
-  // var DATE_END_STR = YEAR + '-12-31';   // (versão anterior — cortava o último dia)
 
   // EVALUATE #1 — baixa a lista de granules antes de prosseguir
   discoverGranules(aoi, DATE_START_STR, DATE_END_STR, function (res) {
@@ -484,23 +409,13 @@ ACTIVE_GRIDS.forEach(function (gridId) {
   processRegion(gridId, grid);
 });
 
-print('\n[FIM] Script executado. Monitore as tasks na aba TASKS.');
-print('      Drive : ' + EXPORT_FOLDER);
-print('      Assets: ' + ASSET_BASE);
-
 // =============================================================================
 // 7. LEGENDA MAPBIOMAS COL. 11 — INTELIGÊNCIA (BLOCO COPÁVEL)
 // =============================================================================
-// Legenda oficial de uso e cobertura da Coleção 11 (níveis 1 e 2), com os
-// códigos e as cores da paleta oficial (brasil.mapbiomas.org). Inclui as
-// classes novas da C11: 7 Savana Alagada (β), 77 Formação Herbácea Arbustiva,
-// 84 Marisma (β) e 91 Parque eólico (β).
-//
-// USO:
-//   MAPBIOMAS_LEGEND    -> objeto código -> {nome, cor} (lógica/filtros)
-//   MAPBIOMAS_LEVEL1    -> resumo das 5 classes do nível 1
-//   MAPBIOMAS_VIS       -> visParams prontos (bands/min/max/palette)
-//   addMapBiomasLegend() -> legenda discreta no canto inferior esquerdo
+// Legenda oficial da Coleção 11 (paleta brasil.mapbiomas.org), incl. classes
+// novas: 7 Savana Alagada (β), 77 Formação Herbácea Arbustiva, 84 Marisma (β)
+// e 91 Parque eólico (β). MAPBIOMAS_VIS usa bands/min/max/palette; a legenda
+// discreta é adicionada por addMapBiomasLegend() (canto inferior esquerdo).
 
 var MAPBIOMAS_LEGEND = {
   3:  { nome: 'Formação Florestal',             cor: '#1f8d49' },
@@ -550,8 +465,7 @@ var MAPBIOMAS_LEVEL1 = [
   { codigo: 26, nome: "Corpo d'Água",               cor: '#2532e4' }
 ];
 
-// visParams prontos: banda 'classification', min/max cobrindo os códigos e
-// palette gerada a partir de MAPBIOMAS_LEGEND (alinhada por código, sem shift).
+// visParams prontos (bands/min/max/palette), palette alinhada por código.
 var MAPBIOMAS_VIS = (function () {
   var codes = Object.keys(MAPBIOMAS_LEGEND).map(function (k) { return parseInt(k, 10); });
   var maxCode = Math.max.apply(null, codes);
@@ -561,8 +475,6 @@ var MAPBIOMAS_VIS = (function () {
   return { bands: ['classification'], min: 0, max: maxCode, palette: palette };
 })();
 
-// Legenda discreta no canto inferior esquerdo.
-// Regras: margin/padding 0px, font-size 12px, max-height 60% (com scroll).
 function addMapBiomasLegend() {
   var legend = ui.Panel({
     style: {
@@ -570,8 +482,7 @@ function addMapBiomasLegend() {
       margin: '0px',
       padding: '0px',
       fontSize: '12px',
-      maxHeight: '60%',
-      overflow: 'auto'
+      maxHeight: '60%'
     }
   });
   legend.add(ui.Label('MapBiomas Col. 11', { fontWeight: 'bold', margin: '0px', padding: '0px' }));
@@ -584,11 +495,14 @@ function addMapBiomasLegend() {
   Map.add(legend);
 }
 
-// Diagnóstico (não interfere nos exports): LULC da C11 no ano YEAR + legenda.
+// Diagnóstico (não interfere nos exports): LULC C11 + limite do bioma + legenda.
 var lulcVis = ee.Image(
   'projects/mapbiomas-public/assets/brazil/lulc/collection11/'
   + 'mapbiomas_brazil_collection11_coverage_v3')
   .select('classification_' + YEAR)
   .rename('classification');
 Map.addLayer(lulcVis, MAPBIOMAS_VIS, 'MapBiomas LULC Col 11', false);
+Map.addLayer(
+  ee.FeatureCollection(BIOME_FC).filter(ee.Filter.eq(BIOME_PROP, BIOME_NAME)),
+  { color: 'red' }, 'Limite ' + BIOME_NAME, false);
 addMapBiomasLegend();

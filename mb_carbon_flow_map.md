@@ -1,8 +1,9 @@
 # MAPBIOMAS-CARBONO — Mapeamento do notebook `mb_carbon_agc.py`
 
-> Portado para o **GEE Code Editor**, subdividido em 2 scripts por região/bioma:
-> `COLLECTION_00/cerrado/mb_carbon_agc.js` e `COLLECTION_00/pantanal/mb_carbon_agc.js`
-> (ver `COLLECTION_00/README.md` — cofre de conhecimento).
+> Portado para o **GEE Code Editor**, subdividido em scripts por região/bioma:
+> `COLLECTION_00/cerrado/mb_carbon_agc.js`, `COLLECTION_00/pantanal/mb_carbon_agc.js`
+> e `COLLECTION_00/cerrado/mb_carbon_agc_points.js` (exemplo: pontos genéricos).
+> Ver `COLLECTION_00/README.md` — cofre de conhecimento.
 >
 > Legenda: 🔧 infraestrutura · ⚙️ preparação · 📊 análise · 📦 **SAÍDA**
 
@@ -66,6 +67,7 @@ Os registros de grids foram **subdivididos por script** (um por bioma):
 
 - **`cerrado/mb_carbon_agc.js`** → 14 tiles do Cerrado (`t0_0` … `t3_3`, bbox de referência do notebook) + Maranhão (exemplo comentado). `ACTIVE_GRIDS` default: `['t0_0']`.
 - **`pantanal/mb_carbon_agc.js`** → grid **Pantanal — bioma completo** ativo por padrão: quadro `[-60.6788, -22.8138, -52.5489, -12.9587]`. `ACTIVE_GRIDS` default: `['pantanal']`.
+- **`cerrado/mb_carbon_agc_points.js`** → **exemplo de pontos genéricos** (não aleatórios): dado um asset `POINTS_FC`, extrai o stack e exporta `points_samples_{ANO}` (Asset + Drive). AOI = bounds dos pontos; `randomPoints` aparece só comentado como exemplo.
 
 O Pantanal pode divergir do Cerrado a partir desta versão (grids, covariáveis, filtros, escala, parâmetros).
 
@@ -76,8 +78,10 @@ O Pantanal pode divergir do Cerrado a partir desta versão (grids, covariáveis,
 - Export duplicado: **Drive (CSV)** + **Asset GEE (FeatureCollection)**.
 - Loop por região com registro central de grids.
 - **Scripts subdivididos por região/bioma** (`cerrado/` e `pantanal/`) — cada um com `ASSET_BASE`, `GRIDS` e `ACTIVE_GRIDS` próprios, para o Pantanal divergir do Cerrado sem afetá-lo.
-- **LULC migrado para a Coleção 11** (`collection11/mapbiomas_brazil_collection11_coverage_v3`); fallback da C10.1 preservado comentado nos scripts (asset da C11 pode ainda não estar publicado no GEE).
-- **Seção 7 — Legenda MapBiomas Col. 11 (inteligência, copiável)**: `MAPBIOMAS_LEGEND` (35 classes, códigos+cores), `MAPBIOMAS_LEVEL1` (5 classes do nível 1), `MAPBIOMAS_VIS` (`{bands:['classification'], min:0, max:91, palette}` gerado do objeto) e `addMapBiomasLegend()` — legenda discreta no canto inferior esquerdo (margin/padding 0px, font-size 12px, max-height 60%).
+- **LULC migrado para a Coleção 11** (`collection11/mapbiomas_brazil_collection11_coverage_v3`, banda `classification_<ano>`).
+- **Seção 7 — Legenda MapBiomas Col. 11 (inteligência, copiável)**: `MAPBIOMAS_LEGEND` (35 classes, códigos+cores), `MAPBIOMAS_LEVEL1` (5 classes do nível 1), `MAPBIOMAS_VIS` (`{bands:['classification'], min:0, max:91, palette}` gerado do objeto) e `addMapBiomasLegend()` — legenda discreta no canto inferior esquerdo (margin/padding 0px, font-size 12px, max-height 60%). `overflow` removido (não é estilo válido de `ui.Panel`).
 - **Sem `getInfo()` — estratégia `evaluate()` assíncrona**: a função principal que cria os exports (`runMain`) só roda depois de baixar as variáveis importantes de cada região — lista de granules (`EVALUATE #1`) e total de pegadas filtradas (`EVALUATE #2`). Cada `Export.*` recebe `.start()` explícito (dentro de callback o auto-start do Code Editor não dispara).
-- **Correção do intervalo de datas `[inicio, fim)`**: o fim agora é **exclusivo** — `(YEAR+1)-01-01`, não `YYYY-12-31`. Em GEE, `filterDate` e `ee.Filter.dateRange` incluem o início e excluem o fim; usar `12-31` no fim cortava o último dia do ano. No índice GEDI o filtro passou de `gte/lte` para `ee.Filter.dateRange(start, end, 'time_start')`. A versão anterior fica preservada em comentário no script (para discussão com a equipe). Obs.: o notebook Python mantém o problema original.
+- **Correção da descoberta de granules**: o índice `LARSE/GEDI/GEDI04_A_002_INDEX` **não tem `system:time_start`** — `filterDate`/`dateRange` retornavam 0 granules. O filtro agora usa a propriedade **`time_start` em millis** (`ee.Filter.gte/lt` com `ee.Date().millis()`), janela `[inicio, fim)` (fim exclusivo — `(YEAR+1)-01-01`, não `YYYY-12-31`). Obs.: o notebook Python mantém o problema original.
+- **Novo script de pontos genéricos** (`cerrado/mb_carbon_agc_points.js`): extração de covariáveis para um asset `POINTS_FC` (exemplo, não aleatório) — 2 EVALs (total de pontos + bandas).
+- **Viz do limite do bioma** (IBGE/IPAM): camada de diagnóstico `Limite {Bioma}` nos 3 scripts (`Cerrado` no cerrado/points; `Pantanal` no pantanal).
 - Fallback de ano agora usa `YEAR-1` (o notebook usava 2022 fixo).
