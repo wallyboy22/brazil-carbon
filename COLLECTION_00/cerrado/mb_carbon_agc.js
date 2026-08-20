@@ -106,14 +106,12 @@ function filterGedi(fc, aoi) {
 }
 
 // Descobre os granules (table_id) do GEDI no AOI + janela [inicio, fim) (fim exclusivo).
-// O índice não tem system:time_start; filtra-se a propriedade 'time_start' em millis.
+// O índice tem 'time_start' como STRING ISO 8601 — filtra com comparação string.
 // Assíncrona: resultado via callback (estratégia evaluate — sem getInfo).
 function discoverGranules(aoi, start, end, callback) {
-  var t0 = ee.Date(start).millis();
-  var t1 = ee.Date(end).millis();
   var idx = ee.FeatureCollection('LARSE/GEDI/GEDI04_A_002_INDEX')
-    .filter(ee.Filter.gte('time_start', t0))
-    .filter(ee.Filter.lt('time_start', t1))
+    .filter(ee.Filter.gt('time_start', start + 'T00:00:00Z'))
+    .filter(ee.Filter.lt('time_start', end + 'T00:00:00Z'))
     .filterBounds(aoi);
   
   // DEBUG: inspeciona granules candidatos
@@ -275,7 +273,7 @@ function buildCovariateStack(aoi, yearUsed) {
 // (EVALUATE #1) e o total de pegadas filtradas (EVALUATE #2, p/ batching).
 
 var GEDI_SELECTORS = [
-  'lon_lowestmode_a1', 'lat_lowestmode_a1', 'agbd', 'agbd_se',
+  'lon_lowestmode', 'lat_lowestmode', 'agbd', 'agbd_se',
   'agbd_pi_lower', 'agbd_pi_upper', 'sensitivity', 'beam',
   'selected_algorithm', 'pft_class', 'region_class', 'landsat_treecover',
   'shot_number', 'delta_time'
@@ -283,7 +281,7 @@ var GEDI_SELECTORS = [
 
 var SAMPLE_PROPS = [
   'agbd', 'agbd_se', 'pft_class', 'shot_number',
-  'lon_lowestmode_a1', 'lat_lowestmode_a1'
+  'lon_lowestmode', 'lat_lowestmode'
 ];
 
 function pad3(n) { return ('000' + n).slice(-3); }
