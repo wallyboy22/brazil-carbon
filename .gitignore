@@ -1,0 +1,8 @@
+# Notebooks Python (Colab) — mantidos apenas localmente
+mb_carbon_agc.py
+NOTEBOOK_COLLAB_PY.PY
+*.ipynb
+
+# Saídas locais (CSV, imagens de diagnóstico)
+*.csv
+*.png
