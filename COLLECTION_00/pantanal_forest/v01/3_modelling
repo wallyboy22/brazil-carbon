@@ -4,11 +4,12 @@
  * Etapa 3 da pipeline modular: carrega a matriz de treino da pasta MATRIX
  * (produzida pelo 2_data_matrix), treina Random Forest de regressão no alvo
  * `agbd` e gera a predição espaço-temporal multibanda do estoque de carbono
- * acima do solo, exportando para Drive (GeoTIFF) e Assets GEE.
+ * acima do solo, exportando para Assets GEE (e opcionalmente Drive).
  *
- * SAÍDAS (fase de teste — apenas Drive):
- *   Drive: agc_pred_{version}.tif   (multibanda prediction_{ano}, GeoTIFF)
- *   (PREDICTIONS/MODELS: voltam a ser escritos quando EXPORT_TO_ASSET=true)
+ * SAÍDAS (baldes GEE — fluxo de predição):
+ *   PREDICTIONS/agc_pred_{version}   → imagem multibanda prediction_{ano}
+ *   (MODELS: toggle SAVE_MODEL_TO_ASSET, desligado por padrão)
+ *   (Drive: ligar EXPORT_TO_DRIVE p/ GeoTIFF de diagnóstico)
  *
  * PRÉ-REQUISITO: rodar 2_data_matrix antes (asset MATRIX/agc_matrix_{version}).
  *
@@ -46,8 +47,11 @@ var rfParams = {
 // Salvar o modelo treinado como asset? (padrão OFF — ver decisão no README v01)
 var SAVE_MODEL_TO_ASSET = false;
 
-// Destino dos exports — fase de teste: apenas Drive (Asset OFF)
-var EXPORT_TO_ASSET = false;
+// Destino dos exports — Assets GEE (fluxo de predição)
+var EXPORT_TO_ASSET = true;
+
+// Export de diagnóstico no Google Drive (desligado por padrão)
+var EXPORT_TO_DRIVE = false;
 
 // Pasta de destino no Google Drive
 var EXPORT_FOLDER = 'GEE_Exports_AGC-v01';
@@ -151,15 +155,17 @@ if (EXPORT_TO_ASSET) {
   print('[EXPORT] Asset:', ASSET_PREDICTIONS + '/agc_pred_' + VERSION);
 }
 
-Export.image.toDrive({
-  image: predictions,
-  description: 'WS_CARBONO_toDrive-agc_pred_' + VERSION,
-  folder: EXPORT_FOLDER,
-  fileNamePrefix: 'agc_pred_' + VERSION,
-  region: aoiBounds,
-  scale: src.SCALE,
-  maxPixels: 1e13
-});
-print('[EXPORT] Drive:', 'agc_pred_' + VERSION + '.tif');
+if (EXPORT_TO_DRIVE) {
+  Export.image.toDrive({
+    image: predictions,
+    description: 'WS_CARBONO_toDrive-agc_pred_' + VERSION,
+    folder: EXPORT_FOLDER,
+    fileNamePrefix: 'agc_pred_' + VERSION,
+    region: aoiBounds,
+    scale: src.SCALE,
+    maxPixels: 1e13
+  });
+  print('[EXPORT] Drive:', 'agc_pred_' + VERSION + '.tif');
+}
 
 print('MAPBIOMAS-CARBONO · v01 · 3_modelling · Pantanal · anos ' + YEARS.join(','));

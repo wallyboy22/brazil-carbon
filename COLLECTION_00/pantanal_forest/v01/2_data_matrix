@@ -7,9 +7,10 @@
  * Assíncrono: exports só são criados após baixar, via evaluate(), a lista de
  * granules (EVALUATE #1) e o total de pegadas filtradas (EVALUATE #2).
  *
- * SAÍDAS (fase de teste — apenas Drive):
- *   Drive: GEDI_L4A_AGB_{ano}_{grid}_filtered.csv + AGC_samples_..._batchNNN.csv
- *   (baldes SAMPLES/MATRIX: voltam a ser escritos quando EXPORT_TO_ASSET=true)
+ * SAÍDAS (baldes GEE — fluxo de predição):
+ *   SAMPLES/footprint_{grid}_{ano}   → footprints GEDI filtrados (sem covariáveis)
+ *   MATRIX/agc_matrix_{version}      → matriz de treino (alimenta 3_modelling)
+ *   (Drive: ligar EXPORT_TO_DRIVE p/ CSVs de diagnóstico)
  *
  * ORDEM DA PIPELINE v01:
  *   0_covariate_source → 1_check_covariates → [2_data_matrix] → 3_modelling
@@ -42,9 +43,9 @@ var EXPORT_FOLDER = 'GEE_Exports_AGC-v01';
 var ASSET_SAMPLES = src.ASSET_ROOT + '/SAMPLES';
 var ASSET_MATRIX  = src.ASSET_ROOT + '/MATRIX';
 
-// Toggles de DESTINO — fase de teste: exports apenas para o Drive
-var EXPORT_TO_DRIVE = true;    // CSV no Google Drive
-var EXPORT_TO_ASSET = false;   // FeatureCollection em Assets GEE (religar p/ fase produtiva)
+// Toggles de DESTINO — exports para Assets GEE (continuidade do fluxo de predição)
+var EXPORT_TO_DRIVE = false;   // CSV no Google Drive (ligar p/ diagnóstico)
+var EXPORT_TO_ASSET = true;    // FeatureCollection em Assets GEE
 
 // Toggles de PRODUTO
 var EXPORT_FOOTPRINTS = true;  // footprints GEDI filtrados → SAMPLES

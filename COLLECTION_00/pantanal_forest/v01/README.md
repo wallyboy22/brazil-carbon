@@ -10,8 +10,8 @@
 |---|---|---|
 | `0_covariate_source` | Módulo `require()`: filtros GEDI, `discoverGranules`, `buildCovariatesStack` (HLS/PALSAR-2/HAND/ERA5-CWD/LULC C11, 36 bandas), `ensureFolder()`, config compartilhada | — |
 | `1_check_covariates` | Diagnóstico: bandas do stack, camadas viz, teste `sampleRegions(3)` | — |
-| `2_data_matrix` | Matriz de treino (GEDI filtrado + covariáveis) | Drive CSV (batches 1000) · Asset `SAMPLES/`+`MATRIX/` quando `EXPORT_TO_ASSET=true` |
-| `3_modelling` | RF regressão no `agbd` + predição anual multibanda | Drive GeoTIFF · Asset `PREDICTIONS/` quando `EXPORT_TO_ASSET=true` (+ modelo opcional) |
+| `2_data_matrix` | Matriz de treino (GEDI filtrado + covariáveis) | Asset `SAMPLES/` + `MATRIX/` · Drive CSV (batches 1000) quando `EXPORT_TO_DRIVE=true` |
+| `3_modelling` | RF regressão no `agbd` + predição anual multibanda | Asset `PREDICTIONS/` (+ modelo opcional) · Drive GeoTIFF quando `EXPORT_TO_DRIVE=true` |
 | `4_merge` | Stub documentado — consolidação futura a definir pela equipe | — |
 
 **Ordem de execução:** 0 → 1 → 2 → 3 (→ 4 quando definido).
@@ -32,9 +32,10 @@ faltar, nível a nível, antes dos exports — não precisa criar manualmente.
 
 ## Convenções
 
-- **Fase atual — teste com exports apenas para o Drive**: `EXPORT_TO_DRIVE=true`
-  e `EXPORT_TO_ASSET=false` em `2_data_matrix`/`3_modelling`. Baldes `MATRIX/`,
-  `PREDICTIONS/` e `MODELS/` são escritos quando `EXPORT_TO_ASSET` voltar a `true`.
+- **Fluxo de predição = exports para Assets GEE**: `EXPORT_TO_ASSET=true` em
+  `2_data_matrix`/`3_modelling`. `MATRIX/agc_matrix_v01` alimenta `3_modelling`;
+  `PREDICTIONS/agc_pred_v01` guarda a série predita. Drive (`EXPORT_TO_DRIVE`)
+  desligado por padrão, para diagnóstico quando preciso.
 - **Flags pessoais** nas descriptions: `WS_CARBONO_toDrive-…` / `WS_CARBONO_toAsset-…`
 - **Estratégia `evaluate()`** (sem `getInfo`); janela `[inicio, fim)` exclusiva;
   fallback para `YEAR-1` sem granules; LULC Coleção 11; semente fixa no RF.
@@ -45,9 +46,11 @@ faltar, nível a nível, antes dos exports — não precisa criar manualmente.
 
 ## Decisões registradas
 
-1. **Fase de teste = exports só no Drive.** A v01 nasce com `EXPORT_TO_ASSET=false`
-   para validar o fluxo ponta a ponta no Google Drive (CSVs + GeoTIFF). Quando o
-   fluxo estiver validado, liga-se o Asset e o `ensureFolder()` cria os baldes.
+1. **Fluxo de predição = exports via asset no GEE.** Após validar o fluxo no Drive
+   (fase de teste), a v01 passa a exportar para os baldes de asset: `MATRIX/`
+   alimenta `3_modelling` e `PREDICTIONS/` guarda a série predita. O `ensureFolder()`
+   cria os baldes automaticamente. Drive fica disponível via `EXPORT_TO_DRIVE`
+   para diagnóstico (CSV/GeoTIFF) quando necessário.
 2. **`MODELS` nasce desligado.** O GEE tem API consolidada
    (`Export.classifier.toAsset()` + `ee.Classifier.load()`), mas o time não usa
    essa prática internamente (o Solo retreina a cada execução). Toggle
