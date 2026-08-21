@@ -14,7 +14,7 @@
 // 0. CONFIG
 // =============================================================================
 
-var YEAR = 2018;
+var YEAR = 2023;
 
 var IFN_ASSET = 'projects/ee-ipam/assets/IFN/IFN_2026_Field_Cerrado';
 
@@ -32,11 +32,10 @@ var EXPORT_TO_ASSET = true;
 // =============================================================================
 
 var IFN_PROPS = [
-  'fid', 'UA', 'Subparcela', 'Subunidade', 'n_arv',
-  'G_m2', 'G_m2_ha', 'ano', 'lat_pc', 'lon_pc',
-  'mun', 'uf', 'bioma', 'area_m2', 'compriment',
-  'azimute_ve', 'declinacao', 'dist_centr',
-  'nivel_ifn', 'orientacao', 'vazia'
+  'fid', 'UA', 'Subunidade',
+  'G_m2', 'G_m2_ha', 'area_ha',
+  'AGB_Mg', 'AGB_Mg_ha', 'CO2e_Mg_ha', 'C_Mg_ha',
+  'n_ind', 'orientacao', 'mun', 'bioma'
 ];
 
 // =============================================================================
@@ -189,14 +188,13 @@ function buildCovariateStack(aoi, yearUsed) {
 var IFN_FC = ee.FeatureCollection(IFN_ASSET);
 print('[INFO] IFN parcelas carregadas:', IFN_FC.size());
 
-// Centroides + copiar todas propriedades IFN
-var IFN_centroids = IFN_FC.map(function(f) {
-  return ee.Feature(f.geometry().centroid()).copyProperties(f);
-});
+// Filtrar features sem geometria (evita erro "null geometry")
+var IFN_valid = IFN_FC.filter(ee.Filter.notNull(['.geo']));
+print('[INFO] IFN parcelas com geometria:', IFN_valid.size());
 
-// DEBUG: amostra 3 centroides
-IFN_centroids.limit(3).evaluate(function (sample) {
-  print('[DEBUG] Centroides IFN (amostra 3):', sample);
+// Centroides + copiar todas propriedades IFN
+var IFN_centroids = IFN_valid.map(function(f) {
+  return ee.Feature(f.geometry().centroid()).copyProperties(f);
 });
 
 // AOI = bounds dos centroides
@@ -208,11 +206,6 @@ Map.addLayer(IFN_centroids, { color: 'red' }, 'IFN centroides', false);
 // Build stack
 var stack = buildCovariateStack(aoi, YEAR);
 
-// DEBUG: bandas do stack
-stack.bandNames().evaluate(function (bands) {
-  print('[DEBUG] Stack de covariáveis (' + bands.length + ' bandas):', bands);
-});
-
 // SampleRegions nos centroides
 var sampled = stack.sampleRegions({
   collection: IFN_centroids,
@@ -220,11 +213,6 @@ var sampled = stack.sampleRegions({
   scale: SCALE,
   geometries: false,
   tileScale: 8
-});
-
-// DEBUG: amostra 3 features finais
-sampled.limit(3).evaluate(function (sample) {
-  print('[DEBUG] Features finais (IFN props + covariáveis) amostra 3:', sample);
 });
 
 // =============================================================================
@@ -254,4 +242,4 @@ if (EXPORT_TO_DRIVE && typeof EXPORT_FOLDER !== 'undefined') {
   print('[EXPORT] Drive:', EXPORT_FOLDER + '/' + desc + '.csv');
 }
 
-print('====== FIM: IFN covariáveis ' + YEAR + ' ======');
+print('[FIM] IFN covariáveis', YEAR);

@@ -79,9 +79,8 @@ var ACTIVE_GRIDS = ['t0_0'];   // ou Object.keys(GRIDS) para todas
 // 3. FUNÇÕES — FILTROS GEDI
 // =============================================================================
 
-// Filtros de qualidade do GEDI L4A v002 (porta exata do notebook)
+// Filtros de qualidade do GEDI L4A v002
 function filterGedi(fc, aoi) {
-  print('[DEBUG filterGedi] entrada:', fc.size());
   fc = fc.filter(ee.Filter.eq('l4_quality_flag', 1));
   fc = fc.filter(ee.Filter.eq('degrade_flag', 0));
   fc = fc.filter(ee.Filter.gt('agbd', 0));
@@ -91,18 +90,11 @@ function filterGedi(fc, aoi) {
     var rel = ee.Algorithms.If(agbd.gt(0), agbd_se.divide(agbd), ee.Number(99));
     return f.set('rel_error', rel);
   });
-  fc = fc.filter(ee.Filter.lt('rel_error', 0.5));                     // erro relativo < 50%
+  fc = fc.filter(ee.Filter.lt('rel_error', 0.5));
   fc = fc.filter(ee.Filter.gte('sensitivity', 0.95));
-  fc = fc.filter(ee.Filter.inList('beam', [0, 1, 2, 3, 5, 6, 8, 11])); // 8 beams
-  fc = fc.filter(ee.Filter.lt('solar_elevation', 0));                 // apenas noturno
-  fc = fc.filterBounds(aoi);
-  
-  // DEBUG: amostra 3 features filtradas
-  fc.limit(3).evaluate(function (sample) {
-    print('[DEBUG filterGedi] saída (size):', fc.size());
-    print('[DEBUG filterGedi] amostra 3:', sample);
-  });
-  return fc;
+  fc = fc.filter(ee.Filter.inList('beam', [0, 1, 2, 3, 5, 6, 8, 11]));
+  fc = fc.filter(ee.Filter.lt('solar_elevation', 0));
+  return fc.filterBounds(aoi);
 }
 
 // Descobre os granules (table_id) do GEDI no AOI + janela [inicio, fim) (fim exclusivo).
@@ -113,13 +105,8 @@ function discoverGranules(aoi, start, end, callback) {
     .filter(ee.Filter.gt('time_start', start + 'T00:00:00Z'))
     .filter(ee.Filter.lt('time_start', end + 'T00:00:00Z'))
     .filterBounds(aoi);
-  
-  // DEBUG: inspeciona granules candidatos
   idx.aggregate_array('table_id').distinct().evaluate(function (assets) {
-    print('[DEBUG discoverGranules] granules encontrados:', assets.length);
-    if (assets.length > 0) {
-      print('[DEBUG discoverGranules] primeiros 3:', assets.slice(0, 3));
-    }
+    print('[OK] Granules encontrados:', assets.length);
     callback({ assets: assets, n: assets.length, yearUsed: parseInt(start.slice(0, 4), 10) });
   });
 }
@@ -317,23 +304,18 @@ function processRegion(gridId, grid) {
 
 // Roda SÓ depois do EVALUATE #1 (granules baixados).
 function onGranulesReady(gridId, grid, aoi, assets, yearUsed) {
-  print('[OK] Granules: ' + assets.length + ' · ano efetivo: ' + yearUsed);
+  print('[OK] Granules:', assets.length, '· ano:', yearUsed);
 
   // FeatureCollection filtrada (server-side) — junta todos os granules
   var fcServer = ee.FeatureCollection(assets.map(function (tid) {
     return filterGedi(ee.FeatureCollection(tid), aoi);
   })).flatten();
 
-  // DEBUG: inspeciona fcServer antes do size()
-  fcServer.limit(3).evaluate(function (sample) {
-    print('[DEBUG onGranulesReady] fcServer amostra 3:', sample);
-  });
-
   // EVALUATE #2 — baixa o total de pegadas filtradas
   fcServer.size().evaluate(function (total) {
-    print('[OK] Pegadas filtradas (server-side): ' + total);
+    print('[OK] Pegadas filtradas:', total);
     if (total === 0) {
-      print('[ERRO] Nenhuma pegada após filtros para ' + grid.label + ' — pulando.');
+      print('[AVISO] Nenhuma pegada após filtros para', grid.label, '— pulando.');
       return;
     }
     runMain(gridId, grid, aoi, fcServer, yearUsed, total);
@@ -344,24 +326,23 @@ function onGranulesReady(gridId, grid, aoi, assets, yearUsed) {
 function runMain(gridId, grid, aoi, fcServer, yearUsed, total) {
   var stack = buildCovariateStack(aoi, yearUsed);
 
-  // Diagnóstico não-bloqueante (não atrasa a criação dos exports)
+  // Diagnóstico não-bloqueante
   stack.bandNames().evaluate(function (bands) {
-    print('[OK] Stack de covariáveis montado (' + bands.length + ' bandas).');
-    print('[DEBUG runMain] bandas do stack:', bands);
+    print('[OK] Stack:', bands.length, 'bandas');
   });
 
-  // DEBUG: testa sampleRegions em 3 features ANTES de exportar
+  // Teste sampleRegions em 3 features
   var testSample = stack.sampleRegions({
     collection: fcServer.limit(3), properties: SAMPLE_PROPS,
     scale: SCALE, geometries: false, tileScale: 8
   });
   testSample.evaluate(function (sample) {
-    print('[DEBUG runMain] sampleRegions teste (3 feats):', sample);
+    print('[DEBUG] sampleRegions teste (3):', sample);
   });
 
   createFootprintExports(gridId, grid, fcServer, yearUsed);
   createSampleExports(gridId, grid, fcServer, stack, yearUsed, total);
-  print('==================== FIM: ' + grid.label + ' ====================\n');
+  print('[FIM]', grid.label);
 }
 
 // Saída 1 — footprints GEDI filtrados (sem covariáveis)
@@ -373,8 +354,8 @@ function createFootprintExports(gridId, grid, fcServer, yearUsed) {
     Export.table.toDrive({
       collection: fcServer, description: nameFoot, folder: EXPORT_FOLDER,
       fileNamePrefix: nameFoot, fileFormat: 'CSV', selectors: GEDI_SELECTORS
-    }).start();
-    print('  [Drive ] ' + nameFoot + '.csv');
+    });
+    print('[EXPORT] Drive:', nameFoot + '.csv');
   }
 
   if (EXPORT_TO_ASSET) {
@@ -382,8 +363,8 @@ function createFootprintExports(gridId, grid, fcServer, yearUsed) {
     Export.table.toAsset({
       collection: fcServer, description: 'footprint_' + gridId + '_' + yearUsed,
       assetId: assetFoot
-    }).start();
-    print('  [Asset ] ' + assetFoot);
+    });
+    print('[EXPORT] Asset:', assetFoot);
   }
 }
 
@@ -397,18 +378,12 @@ function createSampleExports(gridId, grid, fcServer, stack, yearUsed, total) {
       collection: fcServer, properties: SAMPLE_PROPS,
       scale: SCALE, geometries: false, tileScale: 8
     });
-    
-    // DEBUG: inspeciona sampledAll (primeiras 3)
-    sampledAll.limit(3).evaluate(function (sample) {
-      print('[DEBUG createSampleExports] Asset sampledAll amostra 3:', sample);
-    });
-
     var assetSamp = ASSET_BASE + '/AGC_samples_' + gridId + '_' + yearUsed;
     Export.table.toAsset({
       collection: sampledAll, description: 'AGC_samples_' + gridId + '_' + yearUsed,
       assetId: assetSamp
     });
-    print('  [Asset ] ' + assetSamp);
+    print('[EXPORT] Asset:', assetSamp);
   }
 
   // Drive: batches de BATCH_SIZE (padrão do notebook)
@@ -423,20 +398,12 @@ function createSampleExports(gridId, grid, fcServer, stack, yearUsed, total) {
         collection: fcBatch, properties: SAMPLE_PROPS,
         scale: SCALE, geometries: false, tileScale: 8
       });
-      
-      // DEBUG: primeiro batch apenas
-      if (b === 0) {
-        sampledBatch.limit(3).evaluate(function (sample) {
-          print('[DEBUG createSampleExports] Drive batch001 amostra 3:', sample);
-        });
-      }
-
       var fname = 'AGC_samples_' + gridId + '_' + yearUsed + '_batch' + pad3(b + 1);
       Export.table.toDrive({
         collection: sampledBatch, description: fname, folder: EXPORT_FOLDER,
         fileNamePrefix: fname, fileFormat: 'CSV'
       });
-      print('  [Drive ] ' + fname + '.csv (offset ' + offset + ' -> ' + (offset + size) + ')');
+      print('[EXPORT] Drive:', fname + '.csv');
     }
   }
 }
@@ -445,17 +412,11 @@ function createSampleExports(gridId, grid, fcServer, stack, yearUsed, total) {
 // 6. EXECUÇÃO — LOOP SOBRE AS REGIÕES ATIVAS
 // =============================================================================
 
-print('MAPBIOMAS-CARBONO · Coleção 0 · Amostras GEDI (Drive + Asset)');
-print('Grids ativos neste Run: ' + (ACTIVE_GRIDS.length ? ACTIVE_GRIDS.join(', ') : '(nenhum)'));
-print('Destinos: Drive=' + EXPORT_TO_DRIVE + ' · Asset=' + EXPORT_TO_ASSET);
-print('');
-
+print('MAPBIOMAS-CARBONO · Coleção 0 · AGC GEDI (Drive + Asset)');
+print('Grids:', ACTIVE_GRIDS.join(', '));
 ACTIVE_GRIDS.forEach(function (gridId) {
   var grid = GRIDS[gridId];
-  if (!grid) {
-    print('[ERRO] Grid "' + gridId + '" não encontrado no registro GRIDS.');
-    return;
-  }
+  if (!grid) { print('[ERRO] Grid', gridId, 'não encontrado'); return; }
   processRegion(gridId, grid);
 });
 
