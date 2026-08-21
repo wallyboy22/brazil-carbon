@@ -38,7 +38,7 @@ var EXPORT_FOLDER = 'GEE_Exports_AGC-v3';
 var ASSET_BASE = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/SAMPLES';
 
 // Toggles de DESTINO
-var EXPORT_TO_DRIVE = true;   // CSV no Google Drive
+var EXPORT_TO_DRIVE = false;   // CSV no Google Drive
 var EXPORT_TO_ASSET = true;   // FeatureCollection em Assets GEE
 
 // Toggles de PRODUTO
@@ -341,7 +341,7 @@ function createFootprintExports(gridId, grid, fcServer, yearUsed) {
   if (EXPORT_TO_DRIVE) {
     var nameFoot = 'GEDI_L4A_AGB_' + yearUsed + '_' + gridId + '_filtered';
     Export.table.toDrive({
-      collection: fcServer, description: nameFoot, folder: EXPORT_FOLDER,
+  collection: fcServer, description: "WS_CARBONO_toDrive-"+ nameFoot, folder: EXPORT_FOLDER,
       fileNamePrefix: nameFoot, fileFormat: 'CSV', selectors: GEDI_SELECTORS
     });
     print('[EXPORT] Drive:', nameFoot + '.csv');
@@ -350,7 +350,7 @@ function createFootprintExports(gridId, grid, fcServer, yearUsed) {
   if (EXPORT_TO_ASSET) {
     var assetFoot = ASSET_BASE + '/footprint_' + gridId + '_' + yearUsed;
     Export.table.toAsset({
-      collection: fcServer, description: 'footprint_' + gridId + '_' + yearUsed,
+  collection: fcServer, description: "WS_CARBONO_toAsset-"+ 'footprint_' + gridId + '_' + yearUsed,
       assetId: assetFoot
     });
     print('[EXPORT] Asset:', assetFoot);
