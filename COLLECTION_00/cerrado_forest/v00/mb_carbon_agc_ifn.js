@@ -30,6 +30,22 @@ var EXPORT_TO_DRIVE = true;   // requer EXPORT_FOLDER descomentado
 var EXPORT_TO_ASSET = true;
 
 // =============================================================================
+// 1.5. HELPER — SOBRESCREVER ASSET (deleta se existir)
+// =============================================================================
+
+// O Export.table.toAsset falha se o assetId já existir. Este helper remove o
+// asset de destino antes do export, permitindo re-execução (sobrescreve).
+function overwriteAsset(assetId) {
+  try {
+    ee.data.getAsset(assetId);       // se não lançar erro → asset existe
+    ee.data.deleteAsset(assetId);
+    print('[INFO] Asset sobrescrito (removido antes):', assetId);
+  } catch (e) {
+    print('[INFO] Asset não existia — criando:', assetId);
+  }
+}
+
+// =============================================================================
 // 1. PROPRIEDADES IFN A PRESERVAR
 // =============================================================================
 
@@ -37,7 +53,8 @@ var IFN_PROPS = [
   'fid', 'UA', 'Subunidade',
   'G_m2', 'G_m2_ha', 'area_ha',
   'AGB_Mg', 'AGB_Mg_ha', 'CO2e_Mg_ha', 'C_Mg_ha',
-  'n_ind', 'orientacao', 'mun', 'bioma'
+  'n_ind', 'orientacao', 'mun', 'bioma',
+  'centroid_lon', 'centroid_lat'
 ];
 
 // =============================================================================
@@ -201,6 +218,15 @@ YEARS.forEach(function (year) {
   Map.addLayer(aoi, { color: 'yellow' }, 'AOI IFN ' + year, false);
   Map.addLayer(IFN_valid, { color: 'orange' }, 'IFN parcelas ' + year, false);
 
+  // Adiciona centroid (lat/lon) do polígono como colunas de saída
+  IFN_valid = IFN_valid.map(function (f) {
+    var c = ee.List(f.geometry().centroid().coordinates());
+    return f.set({
+      'centroid_lon': c.get(0),
+      'centroid_lat': c.get(1)
+    });
+  });
+
   // Build stack
   var stack = buildCovariateStack(aoi, year);
 
@@ -218,6 +244,7 @@ YEARS.forEach(function (year) {
   var desc = 'IFN_covariaveis_' + year;
 
   if (EXPORT_TO_ASSET) {
+    overwriteAsset(assetId);
     Export.table.toAsset({
       collection: sampled,
       description: 'WS_CARBONO_toAsset-'+desc,
