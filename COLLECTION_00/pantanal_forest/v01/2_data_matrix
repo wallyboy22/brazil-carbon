@@ -1,0 +1,230 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Coleção 0 · PANTANAL · v01 · Matriz de treino (AGC)
+ * ----------------------------------------------------------------------------
+ * Etapa 2 da pipeline modular: descobre granules GEDI, aplica filtros de
+ * qualidade, monta a matriz de treino (agbd + stack de covariáveis) e exporta
+ * em loop por região, duplicado para Drive (CSV) e Assets GEE (FC).
+ * Assíncrono: exports só são criados após baixar, via evaluate(), a lista de
+ * granules (EVALUATE #1) e o total de pegadas filtradas (EVALUATE #2).
+ *
+ * SAÍDAS (baldes):
+ *   SAMPLES/footprint_{grid}_{ano}      → footprints GEDI filtrados (sem covariáveis)
+ *   MATRIX/agc_matrix_{version}         → amostras com covariáveis (matriz de treino)
+ *   Drive: GEDI_L4A_AGB_{ano}_{grid}_filtered.csv + AGC_samples_..._batchNNN.csv
+ *
+ * ORDEM DA PIPELINE v01:
+ *   0_covariate_source → 1_check_covariates → [2_data_matrix] → 3_modelling
+ ******************************************************************************/
+
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/v01/0_covariate_source');
+
+// =============================================================================
+// 0. CONFIG
+// =============================================================================
+
+// Ano de referência (GEDI, covariáveis e MapBiomas). Se não houver granules,
+// cai automaticamente para YEAR-1 (fallback herdado do v00).
+var YEAR = 2023;
+
+// Versão gravada no nome do asset da matriz
+var VERSION = 'v01';
+
+// Escala de extração das covariáveis (m)
+var SCALE = src.SCALE;
+
+// Tamanho do batch para o export CSV (Drive)
+var BATCH_SIZE = 1000;
+
+// Pasta de destino no Google Drive
+var EXPORT_FOLDER = 'GEE_Exports_AGC-v01';
+
+// Bases dos baldes de asset (ensureFolder cria o que faltar antes do export)
+var ASSET_SAMPLES = src.ASSET_ROOT + '/SAMPLES';
+var ASSET_MATRIX  = src.ASSET_ROOT + '/MATRIX';
+
+// Toggles de DESTINO
+var EXPORT_TO_DRIVE = false;   // CSV no Google Drive
+var EXPORT_TO_ASSET = true;    // FeatureCollection em Assets GEE
+
+// Toggles de PRODUTO
+var EXPORT_FOOTPRINTS = true;  // footprints GEDI filtrados → SAMPLES
+var EXPORT_SAMPLES    = true;  // matriz com covariáveis → MATRIX
+
+// =============================================================================
+// 1. GRIDS / REGIÕES
+// =============================================================================
+
+// 'id' -> { label, bbox: [xmin, ymin, xmax, ymax] }. Descomente para ativar.
+var GRIDS = {
+  // PANTANAL — bioma completo (grid principal deste script)
+  'pantanal': { label: 'Pantanal (bioma completo)',
+                bbox: [-60.678789762675464, -22.813804973745906, -52.548906950175464, -12.958681301038263] },
+};
+
+// Regiões ativas — loop de export
+var ACTIVE_GRIDS = ['pantanal'];
+
+// =============================================================================
+// 2. PIPELINE POR REGIÃO — ESTRATÉGIA evaluate (sem getInfo)
+// =============================================================================
+
+function pad3(n) { return ('000' + n).slice(-3); }
+
+function processRegion(gridId, grid) {
+  var aoi = ee.Geometry.BBox(grid.bbox[0], grid.bbox[1], grid.bbox[2], grid.bbox[3]);
+  print('====== REGIAO:', grid.label, '(' + gridId + ') ======');
+  Map.addLayer(aoi, { color: 'yellow' }, grid.label + ' - AOI', false);
+
+  var DATE_START_STR = YEAR + '-01-01';
+  var DATE_END_STR = (YEAR + 1) + '-01-01';
+
+  // EVALUATE #1 — baixa a lista de granules antes de prosseguir
+  src.discoverGranules(aoi, DATE_START_STR, DATE_END_STR, function (res) {
+    var yearUsed = res.yearUsed;
+    if (res.n === 0) {
+      print('[AVISO] Sem granules em', YEAR, 'para', grid.label, '— tentando ano anterior...');
+      src.discoverGranules(aoi, (YEAR - 1) + '-01-01', YEAR + '-01-01', function (res2) {
+        yearUsed = res2.yearUsed;
+        if (res2.n === 0) {
+          print('[ERRO] Nenhum granule GEDI para', grid.label);
+          return;
+        }
+        onGranulesReady(gridId, grid, aoi, res2.assets, yearUsed);
+      });
+    } else {
+      onGranulesReady(gridId, grid, aoi, res.assets, yearUsed);
+    }
+  });
+}
+
+// Roda SÓ depois do EVALUATE #1 (granules baixados).
+function onGranulesReady(gridId, grid, aoi, assets, yearUsed) {
+  print('[OK] Granules:', assets.length, '· ano:', yearUsed);
+
+  // FeatureCollection filtrada (server-side) — junta todos os granules
+  var fcServer = ee.FeatureCollection(assets.map(function (tid) {
+    return src.filterGedi(ee.FeatureCollection(tid), aoi);
+  })).flatten();
+
+  // EVALUATE #2 — baixa o total de pegadas filtradas
+  fcServer.size().evaluate(function (total) {
+    print('[OK] Pegadas filtradas:', total);
+    if (total === 0) {
+      print('[AVISO] Nenhuma pegada após filtros para', grid.label, '— pulando.');
+      return;
+    }
+    runMain(gridId, grid, aoi, fcServer, yearUsed, total);
+  });
+}
+
+// FUNÇÃO PRINCIPAL — roda SÓ depois dos dois evaluates.
+function runMain(gridId, grid, aoi, fcServer, yearUsed, total) {
+  var stack = src.buildCovariatesStack(aoi, yearUsed);
+
+  // Garante as pastas de destino antes de criar qualquer export
+  if (EXPORT_TO_ASSET) {
+    if (EXPORT_FOOTPRINTS) src.ensureFolder(ASSET_SAMPLES);
+    if (EXPORT_SAMPLES) src.ensureFolder(ASSET_MATRIX);
+  }
+
+  createFootprintExports(gridId, grid, fcServer, yearUsed);
+  createSampleExports(gridId, grid, fcServer, stack, yearUsed, total);
+  print('[FIM]', grid.label);
+}
+
+// =============================================================================
+// 3. SAÍDA 1 — footprints GEDI filtrados → SAMPLES (+ Drive CSV)
+// =============================================================================
+
+function createFootprintExports(gridId, grid, fcServer, yearUsed) {
+  if (!EXPORT_FOOTPRINTS) return;
+
+  if (EXPORT_TO_DRIVE) {
+    var nameFoot = 'GEDI_L4A_AGB_' + yearUsed + '_' + gridId + '_filtered';
+    Export.table.toDrive({
+      collection: fcServer,
+      description: 'WS_CARBONO_toDrive-' + nameFoot,
+      folder: EXPORT_FOLDER,
+      fileNamePrefix: nameFoot,
+      fileFormat: 'CSV',
+      selectors: src.GEDI_SELECTORS
+    });
+    print('[EXPORT] Drive:', nameFoot + '.csv');
+  }
+
+  if (EXPORT_TO_ASSET) {
+    var assetFoot = ASSET_SAMPLES + '/footprint_' + gridId + '_' + yearUsed;
+    Export.table.toAsset({
+      collection: fcServer,
+      description: 'WS_CARBONO_toAsset-footprint_' + gridId + '_' + yearUsed,
+      assetId: assetFoot
+    });
+    print('[EXPORT] Asset:', assetFoot);
+  }
+}
+
+// =============================================================================
+// 4. SAÍDA 2 — matriz com covariáveis → MATRIX (+ Drive CSV em batches)
+// =============================================================================
+
+function createSampleExports(gridId, grid, fcServer, stack, yearUsed, total) {
+  if (!EXPORT_SAMPLES) return;
+
+  // Asset: uma FeatureCollection única na pasta MATRIX
+  if (EXPORT_TO_ASSET) {
+    var sampledAll = stack.sampleRegions({
+      collection: fcServer,
+      properties: src.SAMPLE_PROPS,
+      scale: SCALE,
+      geometries: false,
+      tileScale: 8
+    });
+    var assetSamp = ASSET_MATRIX + '/agc_matrix_' + VERSION;
+    Export.table.toAsset({
+      collection: sampledAll,
+      description: 'WS_CARBONO_toAsset-agc_matrix_' + VERSION,
+      assetId: assetSamp
+    });
+    print('[EXPORT] Asset:', assetSamp);
+  }
+
+  // Drive: batches de BATCH_SIZE
+  if (EXPORT_TO_DRIVE) {
+    var fcList = fcServer.toList(total);
+    var nBatches = Math.ceil(total / BATCH_SIZE);
+    for (var b = 0; b < nBatches; b++) {
+      var offset = b * BATCH_SIZE;
+      var size = Math.min(BATCH_SIZE, total - offset);
+      var fcBatch = ee.FeatureCollection(fcList.slice(offset, offset + size));
+      var sampledBatch = stack.sampleRegions({
+        collection: fcBatch,
+        properties: src.SAMPLE_PROPS,
+        scale: SCALE,
+        geometries: false,
+        tileScale: 8
+      });
+      var fname = 'AGC_samples_' + gridId + '_' + yearUsed + '_batch' + pad3(b + 1);
+      Export.table.toDrive({
+        collection: sampledBatch,
+        description: 'WS_CARBONO_toDrive-' + fname,
+        folder: EXPORT_FOLDER,
+        fileNamePrefix: fname,
+        fileFormat: 'CSV'
+      });
+      print('[EXPORT] Drive:', fname + '.csv');
+    }
+  }
+}
+
+// =============================================================================
+// 5. EXECUÇÃO — LOOP SOBRE AS REGIÕES ATIVAS
+// =============================================================================
+
+print('MAPBIOMAS-CARBONO · v01 · 2_data_matrix · Pantanal · ano ' + YEAR);
+print('Grids:', ACTIVE_GRIDS.join(', '));
+ACTIVE_GRIDS.forEach(function (gridId) {
+  var grid = GRIDS[gridId];
+  if (!grid) { print('[ERRO] Grid', gridId, 'não encontrado'); return; }
+  processRegion(gridId, grid);
+});

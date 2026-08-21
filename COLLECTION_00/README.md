@@ -1,24 +1,30 @@
 # COLLECTION_00 — Cofre de conhecimento
 
 > Organização dos scripts da Coleção 0 (amostras GEDI para AGC) do MAPBIOMAS-CARBONO.
+>
+> **Convenção de pastas:** `<cobertura>_forest/v<NN>/<script>` — o nome da pasta
+> espelha o balde de asset GEE correspondente (`CERRADO_FOREST`,
+> `PANTANAL_FOREST`, …), abrindo espaço para novas coberturas/projetos.
+> Cada pasta evolui no seu ritmo; versões anteriores ficam congeladas como referência.
 
-## Scripts por região/bioma
+## Scripts por região/bioma (v00)
 
-A Coleção 0 foi **subdividida em 2 scripts** (um por bioma) para o Pantanal
-divergir do Cerrado sem quebrá-lo — **cada um evolui no seu ritmo**. O
-trade-off aceito: ~490 linhas do núcleo duplicadas de propósito (independência
-> DRY).
+Os scripts v00 foram **subdivididos por bioma** para o Pantanal divergir do
+Cerrado sem quebrá-lo — **cada um evolui no seu ritmo**. O trade-off aceito:
+~490 linhas do núcleo duplicadas de propósito (independência > DRY).
 
 | Script | Região | Asset base (GEE) | Grids |
 |---|---|---|---|
-| `cerrado/mb_carbon_agc.js` | **Cerrado** | `.../COLLECTION_00/CERRADO_FOREST/SAMPLES` | 14 tiles (`t0_0` … `t3_3`) |
-| `pantanal/mb_carbon_agc.js` | **Pantanal** | `.../COLLECTION_00/PANTANAL_FOREST/SAMPLES` | 1 grid (bioma completo) |
-| `cerrado/mb_carbon_agc_points.js` | **Cerrado (exemplo)** | `.../COLLECTION_00/CERRADO_FOREST/SAMPLES` | pontos genéricos (`POINTS_FC`) |
+| `cerrado_forest/v00/mb_carbon_agc_gedi.js` | **Cerrado** | `.../COLLECTION_00/CERRADO_FOREST/SAMPLES` | 14 tiles (`t0_0` … `t3_3`) |
+| `cerrado_forest/v00/mb_carbon_agc_ifn.js` | **Cerrado** | `.../COLLECTION_00/CERRADO_FOREST/SAMPLES` | loop de anos, polígonos IFN |
+| `pantanal_forest/v00/mb_carbon_agc.js` | **Pantanal** | `.../COLLECTION_00/PANTANAL_FOREST/SAMPLES` | 1 grid (bioma completo) |
+| `cerrado_forest/v00/mb_carbon_agc_points.js` | **Cerrado (exemplo)** | `.../COLLECTION_00/CERRADO_FOREST/SAMPLES` | pontos genéricos (`POINTS_FC`) |
+| `cerrado_forest/v00/ifn_vs_gedi.js` | **Cerrado (comparação)** | — | diagnóstico IFN × GEDI |
 
-O terceiro é um **exemplo de extração de covariáveis para pontos genéricos**
-(não aleatórios): dado um asset `POINTS_FC`, exporta `id/lon/lat` + as 36
-bandas do stack para Asset e Drive. Serve de referência para outras coberturas
-(carbono azul, campestres, agropecuária).
+`mb_carbon_agc_points.js` é um **exemplo de extração de covariáveis para pontos
+genéricos** (não aleatórios): dado um asset `POINTS_FC`, exporta `id/lon/lat`
++ as 36 bandas do stack para Asset e Drive. Serve de referência para outras
+coberturas (carbono azul, campestres, agropecuária).
 
 ## Convenções compartilhadas
 
@@ -40,11 +46,49 @@ bandas do stack para Asset e Drive. Serve de referência para outras coberturas
   (pantanal). Nota: conferir o valor exato do atributo `Bioma` no asset.
 - **Só saídas**: sem EDA/gráficos (ver `mb_carbon_flow_map.md` na raiz).
 
+## Pipeline modular v01 (Pantanal)
+
+O Pantanal ganhou uma **v01 modular** (`pantanal_forest/v01/`) seguindo o
+padrão do MapBiomas Solo (`collection3/carbon`): pipeline em etapas numeradas
+com módulo de covariáveis compartilhado via `require()`. O Cerrado permanece
+só com v00.
+
+| Etapa | Papel | Saídas |
+|---|---|---|
+| `0_covariate_source` | Módulo `require()`: stack HLS/PALSAR/HAND/ERA5-CWD/LULC C11, filtros GEDI, `ensureFolder()` | — |
+| `1_check_covariates` | Diagnóstico: bandas, teste `sampleRegions(3)`, camadas viz | — |
+| `2_data_matrix` | Matriz de treino (GEDI + covariáveis) | Drive CSV (batches) + Asset |
+| `3_modelling` | RF regressão (`agbd`) + predição anual multibanda | Drive GeoTIFF + Asset (+ modelo opcional) |
+| `4_merge` | Stub documentado — integração futura a definir | — |
+
+### Baldes de assets GEE
+
+Base: `projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/`
+
+| Balde | Status | Conteúdo |
+|---|---|---|
+| `SAMPLES/` | ✅ existente | footprints GEDI filtrados |
+| `MATRIX/` | 🆕 v01 | matrizes de treino consolidadas |
+| `PREDICTIONS/` | 🆕 v01 | imagens anuais AGC preditas |
+| `MODELS/` | 🆕 v01 (toggle **off**) | modelos RF via `Export.classifier.toAsset()` |
+
+> Sobre `MODELS`: o GEE suporta salvar/recarregar classificadores
+> (`Export.classifier.toAsset()` + `ee.Classifier.load()`), mas o time não usa
+> essa prática internamente (o Solo retreina a cada run). Por isso o toggle
+> `SAVE_MODEL_TO_ASSET` nasce desligado — fácil de ligar sem inventar padrão.
+
+Convenções mantidas na v01: flags pessoais `WS_CARBONO_toDrive-` /
+`WS_CARBONO_toAsset-` nas descriptions, export duplicado Drive + Asset,
+estratégia `evaluate()` (sem `getInfo`), janela `[inicio, fim)` exclusiva,
+fallback de ano e LULC Coleção 11. Novidade: helper `ensureFolder()` cria as
+pastas de asset nível a nível antes dos exports.
+
 ## Como adicionar uma nova região/bioma
 
-1. Crie a subpasta `COLLECTION_00/<regiao>/` e copie um script existente.
+1. Crie a subpasta versionada `COLLECTION_00/<cobertura>_forest/v<NN>/` e copie um script existente.
 2. Ajuste: `ASSET_BASE`, `GRIDS`, `ACTIVE_GRIDS` e o cabeçalho.
-3. (Opcional) Crie as pastas-pai no Assets GEE antes do primeiro export.
+3. (Opcional) As pastas-pai no Assets GEE são criadas pelo `ensureFolder()` na v01;
+   nas v00, crie manualmente antes do primeiro export.
 
 ## Expansão para outras coberturas/usos — decisões (sem scripts por ora)
 
@@ -78,7 +122,10 @@ Diagnóstico: `Map.addLayer(lulc C11, MAPBIOMAS_VIS)` + `addMapBiomasLegend()`.
 
 - `MAPBIOMAS / CARBON / MAPPING / COLLECTION_00 / CERRADO_FOREST / SAMPLES`
 - `MAPBIOMAS / CARBON / MAPPING / COLLECTION_00 / PANTANAL_FOREST / SAMPLES`
+- `... / PANTANAL_FOREST / MATRIX` · `PREDICTIONS` · `MODELS` (v01, criadas pelo `ensureFolder()`)
 
 ## Referência
 
 - Mapeamento completo do notebook → JS: `mb_carbon_flow_map.md` (raiz).
+- Docs de datasets (GEDI L4A v2.1, índice de granules): `docs/` (raiz).
+- Pipeline modular: `pantanal_forest/v01/README.md`.

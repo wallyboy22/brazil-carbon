@@ -220,7 +220,7 @@ YEARS.forEach(function (year) {
   if (EXPORT_TO_ASSET) {
     Export.table.toAsset({
       collection: sampled,
-      description: desc,
+      description: 'WS_CARBONO_toAsset-'+desc,
       assetId: assetId
     });
     print('[EXPORT] Asset:', assetId);
@@ -229,7 +229,7 @@ YEARS.forEach(function (year) {
   if (EXPORT_TO_DRIVE && typeof EXPORT_FOLDER !== 'undefined') {
     Export.table.toDrive({
       collection: sampled,
-      description: desc,
+      description: 'WS_CARBONO_toDrive-'+desc,
       folder: EXPORT_FOLDER,
       fileNamePrefix: desc,
       fileFormat: 'CSV'
