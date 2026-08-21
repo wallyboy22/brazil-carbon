@@ -33,8 +33,16 @@ var VERSION = 'v01';
 // Escala de extração das covariáveis (m)
 var SCALE = src.SCALE;
 
-// Tamanho do batch para o export CSV (Drive)
-var BATCH_SIZE = 1000;
+// Tamanho do batch para o export CSV (Drive) — diagnóstico
+var BATCH_SIZE = 10000;
+
+// Tamanho do chunk do sampleRegions para o Asset — evita
+// "reduceRegions: Computed value is too large" amostrando em pedaços
+// e mergeando num FC único antes do export.
+var ASSET_BATCH_SIZE = 10000;
+
+// tileScale do sampleRegions — maior = menos memória por request
+var TILE_SCALE = 16;
 
 // Pasta de destino no Google Drive
 var EXPORT_FOLDER = 'GEE_Exports_AGC-v01';
@@ -171,38 +179,48 @@ function createFootprintExports(gridId, grid, fcServer, yearUsed) {
 function createSampleExports(gridId, grid, fcServer, stack, yearUsed, total) {
   if (!EXPORT_SAMPLES) return;
 
-  // Asset: uma FeatureCollection única na pasta MATRIX
+  // Asset: amostra em CHUNKS (evita "reduceRegions: Computed value is too
+  // large") e mergea num único FC antes do export — 1 task só.
   if (EXPORT_TO_ASSET) {
-    var sampledAll = stack.sampleRegions({
-      collection: fcServer,
-      properties: src.SAMPLE_PROPS,
-      scale: SCALE,
-      geometries: false,
-      tileScale: 8
-    });
+    var fcList = fcServer.toList(total);
+    var nChunks = Math.ceil(total / ASSET_BATCH_SIZE);
+    var sampledList = [];
+    for (var c = 0; c < nChunks; c++) {
+      var off = c * ASSET_BATCH_SIZE;
+      var sz = Math.min(ASSET_BATCH_SIZE, total - off);
+      var fcChunk = ee.FeatureCollection(fcList.slice(off, off + sz));
+      sampledList.push(stack.sampleRegions({
+        collection: fcChunk,
+        properties: src.SAMPLE_PROPS,
+        scale: SCALE,
+        geometries: false,
+        tileScale: TILE_SCALE
+      }));
+    }
+    var sampledAll = ee.FeatureCollection(sampledList).flatten();
     var assetSamp = ASSET_MATRIX + '/agc_matrix_' + VERSION;
     Export.table.toAsset({
       collection: sampledAll,
       description: 'WS_CARBONO_toAsset-agc_matrix_' + VERSION,
       assetId: assetSamp
     });
-    print('[EXPORT] Asset:', assetSamp);
+    print('[EXPORT] Asset:', assetSamp, '· chunks:', nChunks);
   }
 
-  // Drive: batches de BATCH_SIZE
+  // Drive: batches de BATCH_SIZE (diagnóstico)
   if (EXPORT_TO_DRIVE) {
-    var fcList = fcServer.toList(total);
+    var fcListDrive = fcServer.toList(total);
     var nBatches = Math.ceil(total / BATCH_SIZE);
     for (var b = 0; b < nBatches; b++) {
       var offset = b * BATCH_SIZE;
       var size = Math.min(BATCH_SIZE, total - offset);
-      var fcBatch = ee.FeatureCollection(fcList.slice(offset, offset + size));
+      var fcBatch = ee.FeatureCollection(fcListDrive.slice(offset, offset + size));
       var sampledBatch = stack.sampleRegions({
         collection: fcBatch,
         properties: src.SAMPLE_PROPS,
         scale: SCALE,
         geometries: false,
-        tileScale: 8
+        tileScale: TILE_SCALE
       });
       var fname = 'AGC_samples_' + gridId + '_' + yearUsed + '_batch' + pad3(b + 1);
       Export.table.toDrive({
