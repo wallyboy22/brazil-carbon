@@ -369,7 +369,7 @@ function createSampleExports(gridId, grid, fcServer, stack, yearUsed, total) {
     });
     var assetSamp = ASSET_BASE + '/AGC_samples_' + gridId + '_' + yearUsed;
     Export.table.toAsset({
-      collection: sampledAll, description: 'AGC_samples_' + gridId + '_' + yearUsed,
+      collection: sampledAll, description:"WS_CARBONO_toAsset-"+ 'AGC_samples_' + gridId + '_' + yearUsed,
       assetId: assetSamp
     });
     print('[EXPORT] Asset:', assetSamp);

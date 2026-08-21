@@ -1,10 +1,10 @@
 /**
- * MAPBIOMAS-CARBONO — Coleção 0 · CERRADO · Covariáveis para centroides IFN
+ * MAPBIOMAS-CARBONO — Coleção 0 · CERRADO · Covariáveis para parcelas IFN
  * Extrai stack completo de covariáveis (HLS/PALSAR/HAND/ERA5-CWD/MapBiomas C11)
- * nos centroides das parcelas IFN, exporta para Asset GEE e Drive (CSV).
+ * nas parcelas IFN (polígonos), exporta para Asset GEE e Drive (CSV).
  *
  * COMO USAR:
- *   1) Configure YEAR.
+ *   1) Configure YEARS (apenas um ativo).
  *   2) Verifique IFN_ASSET e SAMPLES_BASE.
  *   3) Descomente EXPORT_FOLDER se quiser Drive.
  *   4) Run > monitore na aba TASKS.
@@ -14,7 +14,9 @@
 // 0. CONFIG
 // =============================================================================
 
-var YEAR = 2023;
+// Anos — apenas um ativo, outros comentados
+// var YEARS = [2019, 2020, 2021, 2022, 2023, 2024];
+var YEARS = [2023];  // ANO ATIVO
 
 var IFN_ASSET = 'projects/ee-ipam/assets/IFN/IFN_2026_Field_Cerrado';
 
@@ -181,65 +183,59 @@ function buildCovariateStack(aoi, yearUsed) {
 }
 
 // =============================================================================
-// 3. PIPELINE
+// 3. PIPELINE — LOOP POR ANO
 // =============================================================================
 
-// Carregar IFN
-var IFN_FC = ee.FeatureCollection(IFN_ASSET);
-print('[INFO] IFN parcelas carregadas:', IFN_FC.size());
+YEARS.forEach(function (year) {
+  print('====== ANO:', year, '======');
 
-// Filtrar features sem geometria (evita erro "null geometry")
-var IFN_valid = IFN_FC.filter(ee.Filter.notNull(['.geo']));
-print('[INFO] IFN parcelas com geometria:', IFN_valid.size());
+  // Carregar IFN
+  var IFN_FC = ee.FeatureCollection(IFN_ASSET);
 
-// Centroides + copiar todas propriedades IFN
-var IFN_centroids = IFN_valid.map(function(f) {
-  return ee.Feature(f.geometry().centroid()).copyProperties(f);
-});
+  // Filtrar features sem geometria (evita erro "null geometry")
+  var IFN_valid = IFN_FC.filter(ee.Filter.notNull(['.geo']));
+  print('[INFO] IFN parcelas com geometria:', IFN_valid.size());
 
-// AOI = bounds dos centroides
-var aoi = IFN_centroids.geometry().bounds();
-Map.addLayer(aoi, { color: 'yellow' }, 'AOI IFN centroids', false);
-Map.addLayer(IFN_FC, { color: 'orange' }, 'IFN parcelas', false);
-Map.addLayer(IFN_centroids, { color: 'red' }, 'IFN centroides', false);
+  // AOI = bounds do IFN válido
+  var aoi = IFN_valid.geometry().bounds();
+  Map.addLayer(aoi, { color: 'yellow' }, 'AOI IFN ' + year, false);
+  Map.addLayer(IFN_valid, { color: 'orange' }, 'IFN parcelas ' + year, false);
 
-// Build stack
-var stack = buildCovariateStack(aoi, YEAR);
+  // Build stack
+  var stack = buildCovariateStack(aoi, year);
 
-// SampleRegions nos centroides
-var sampled = stack.sampleRegions({
-  collection: IFN_centroids,
-  properties: IFN_PROPS,
-  scale: SCALE,
-  geometries: false,
-  tileScale: 8
-});
-
-// =============================================================================
-// 4. EXPORTS
-// =============================================================================
-
-var assetId = SAMPLES_BASE + '/IFN_covariaveis_' + YEAR;
-var desc = 'IFN_covariaveis_' + YEAR;
-
-if (EXPORT_TO_ASSET) {
-  Export.table.toAsset({
-    collection: sampled,
-    description: desc,
-    assetId: assetId
+  // SampleRegions nos POLÍGONOS com .first() (padrão)
+  var sampled = stack.sampleRegions({
+    collection: IFN_valid,
+    properties: IFN_PROPS,
+    scale: SCALE,
+    geometries: true,      // mantém geometria do polígono
+    tileScale: 8
   });
-  print('[EXPORT] Asset:', assetId);
-}
 
-if (EXPORT_TO_DRIVE && typeof EXPORT_FOLDER !== 'undefined') {
-  Export.table.toDrive({
-    collection: sampled,
-    description: desc,
-    folder: EXPORT_FOLDER,
-    fileNamePrefix: desc,
-    fileFormat: 'CSV'
-  });
-  print('[EXPORT] Drive:', EXPORT_FOLDER + '/' + desc + '.csv');
-}
+  // Export com ano no nome
+  var assetId = SAMPLES_BASE + '/IFN_covariaveis_' + year;
+  var desc = 'IFN_covariaveis_' + year;
 
-print('[FIM] IFN covariáveis', YEAR);
+  if (EXPORT_TO_ASSET) {
+    Export.table.toAsset({
+      collection: sampled,
+      description: desc,
+      assetId: assetId
+    });
+    print('[EXPORT] Asset:', assetId);
+  }
+
+  if (EXPORT_TO_DRIVE && typeof EXPORT_FOLDER !== 'undefined') {
+    Export.table.toDrive({
+      collection: sampled,
+      description: desc,
+      folder: EXPORT_FOLDER,
+      fileNamePrefix: desc,
+      fileFormat: 'CSV'
+    });
+    print('[EXPORT] Drive:', EXPORT_FOLDER + '/' + desc + '.csv');
+  }
+
+  print('[FIM] IFN covariáveis', year);
+});
