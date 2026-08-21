@@ -30,22 +30,6 @@ var EXPORT_TO_DRIVE = true;   // requer EXPORT_FOLDER descomentado
 var EXPORT_TO_ASSET = true;
 
 // =============================================================================
-// 1.5. HELPER — SOBRESCREVER ASSET (deleta se existir)
-// =============================================================================
-
-// O Export.table.toAsset falha se o assetId já existir. Este helper remove o
-// asset de destino antes do export, permitindo re-execução (sobrescreve).
-function overwriteAsset(assetId) {
-  try {
-    ee.data.getAsset(assetId);       // se não lançar erro → asset existe
-    ee.data.deleteAsset(assetId);
-    print('[INFO] Asset sobrescrito (removido antes):', assetId);
-  } catch (e) {
-    print('[INFO] Asset não existia — criando:', assetId);
-  }
-}
-
-// =============================================================================
 // 1. PROPRIEDADES IFN A PRESERVAR
 // =============================================================================
 
@@ -244,11 +228,11 @@ YEARS.forEach(function (year) {
   var desc = 'IFN_covariaveis_' + year;
 
   if (EXPORT_TO_ASSET) {
-    overwriteAsset(assetId);
     Export.table.toAsset({
       collection: sampled,
       description: 'WS_CARBONO_toAsset-'+desc,
-      assetId: assetId
+      assetId: assetId,
+      overwrite: true
     });
     print('[EXPORT] Asset:', assetId);
   }
