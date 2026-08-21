@@ -52,7 +52,9 @@ var ASSET_SAMPLES = src.ASSET_ROOT + '/SAMPLES';
 var ASSET_MATRIX  = src.ASSET_ROOT + '/MATRIX';
 
 // Toggles de DESTINO — exports para Assets GEE (continuidade do fluxo de predição)
-var EXPORT_TO_DRIVE = false;   // CSV no Google Drive (ligar p/ diagnóstico)
+var EXPORT_TO_DRIVE = false;   // CSV no Google Drive — ligar para exportar o
+                               // UNIVERSO de amostras p/ a análise offline
+                               // (ANALYSIS/offline_agc_analysis.py, Colab)
 var EXPORT_TO_ASSET = true;    // FeatureCollection em Assets GEE
 
 // Toggles de PRODUTO

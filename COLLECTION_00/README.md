@@ -57,9 +57,15 @@ só com v00.
 |---|---|---|
 | `0_covariate_source` | Módulo `require()`: stack HLS/PALSAR/HAND/ERA5-CWD/LULC C11, filtros GEDI, `ensureFolder()` | — |
 | `1_check_covariates` | Diagnóstico: bandas, teste `sampleRegions(3)`, camadas viz | — |
-| `2_data_matrix` | Matriz de treino (GEDI + covariáveis) | Asset `SAMPLES/` + `MATRIX/` · Drive CSV quando `EXPORT_TO_DRIVE=true` |
-| `3_modelling` | RF regressão (`agbd`) + predição anual multibanda | Asset `PREDICTIONS/` (+ modelo opcional) · Drive GeoTIFF quando `EXPORT_TO_DRIVE=true` |
+| `2_data_matrix` | Matriz de treino (GEDI + covariáveis) | Asset `SAMPLES/` + `MATRIX/` · Drive CSV (universo p/ análise) quando `EXPORT_TO_DRIVE=true` |
+| `ANALYSIS/` (fora do GEE) | Análise offline: EDA, redundância (correlação/thinning/IsolationForest), split espacial, RF/GBM/SVR → gate de decisão | `analysis_summary` · registro em `EXPERIMENTS.md` |
+| `3_modelling` | Modelo (`MODEL_TYPE` rf/gbm/svm) + predição anual multibanda | Asset `PREDICTIONS/` (+ modelo opcional) · Drive GeoTIFF quando `EXPORT_TO_DRIVE=true` |
 | `4_merge` | Stub documentado — integração futura a definir | — |
+
+> **Fluxo com gate:** a matriz sai em `MATRIX/` e o universo em CSVs no Drive.
+> A **análise offline** (`ANALYSIS/offline_agc_analysis.py`, Colab) decide as
+> subversões/versão com métricas baratas; **só o champion dispara o
+> `3_modelling`** (predição massiva, cara). Ver `ANALYSIS/README.md`.
 
 ### Baldes de assets GEE
 
@@ -85,8 +91,10 @@ de Asset estiverem ligados.
 
 > **Fase atual:** a v01 exporta **para Assets GEE** (baldes `MATRIX/` e
 > `PREDICTIONS/`) para sustentar o fluxo de predição (`2_data_matrix` alimenta
-> `3_modelling`). Drive (`EXPORT_TO_DRIVE`) fica desligado por padrão, à mão
-> para diagnóstico.
+> `3_modelling`). O modelo no `3_modelling` é selecionável por `MODEL_TYPE`
+> (`rf` | `gbm` | `svm`, espelhando o GEE) e rotulado por `SUBVERSION`
+> (`agc_pred_v01_rf`, …). Drive (`EXPORT_TO_DRIVE`) fica desligado por padrão —
+> ligado apenas para exportar o **universo** da análise offline.
 
 ## Como adicionar uma nova região/bioma
 
@@ -134,3 +142,4 @@ Diagnóstico: `Map.addLayer(lulc C11, MAPBIOMAS_VIS)` + `addMapBiomasLegend()`.
 - Mapeamento completo do notebook → JS: `mb_carbon_flow_map.md` (raiz).
 - Docs de datasets (GEDI L4A v2.1, índice de granules): `docs/` (raiz).
 - Pipeline modular: `pantanal_forest/v01/README.md`.
+- Análise offline + registro de experimentos: `ANALYSIS/` (raiz).
