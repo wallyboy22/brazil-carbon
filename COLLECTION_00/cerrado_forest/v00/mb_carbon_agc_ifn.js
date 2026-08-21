@@ -16,7 +16,8 @@
 
 // Anos — apenas um ativo, outros comentados
 // var YEARS = [2019, 2020, 2021, 2022, 2023, 2024];
-var YEARS = [2023];  // ANO ATIVO
+//var YEARS = [2023];  // ANO ATIVO
+var YEARS = [2018];  // ANO ATIVO
 
 var IFN_ASSET = 'projects/ee-ipam/assets/IFN/IFN_2026_Field_Cerrado';
 
@@ -38,7 +39,7 @@ var IFN_PROPS = [
   'G_m2', 'G_m2_ha', 'area_ha',
   'AGB_Mg', 'AGB_Mg_ha', 'CO2e_Mg_ha', 'C_Mg_ha',
   'n_ind', 'orientacao', 'mun', 'bioma',
-  'centroid_lon', 'centroid_lat'
+  'centroid_lon', 'lat_lowestmode_a1',
 ];
 
 // =============================================================================
@@ -206,8 +207,8 @@ YEARS.forEach(function (year) {
   IFN_valid = IFN_valid.map(function (f) {
     var c = ee.List(f.geometry().centroid().coordinates());
     return f.set({
-      'centroid_lon': c.get(0),
-      'centroid_lat': c.get(1)
+      'lon_lowestmode_a1': c.get(0),
+      'lat_lowestmode_a1': c.get(1)
     });
   });
 
