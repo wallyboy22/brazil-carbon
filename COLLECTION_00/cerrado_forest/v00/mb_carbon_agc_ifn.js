@@ -39,8 +39,18 @@ var IFN_PROPS = [
   'G_m2', 'G_m2_ha', 'area_ha',
   'AGB_Mg', 'AGB_Mg_ha', 'CO2e_Mg_ha', 'C_Mg_ha',
   'n_ind', 'orientacao', 'mun', 'bioma',
-  'centroid_lon', 'lat_lowestmode_a1',
+  'lat_lowestmode_a1','lon_lowestmode_a1'
 ];
+
+
+//var IFN_PROPS = [
+//  'fid', 'UA', 'Subparcela', 'Subunidade', 'n_arv',
+//  'AGB_Mg', 'AGB_Mg_ha','CO2e_Mg_ha','C_Mg_ha', 'n_ind', //Include +Variáveis
+//  'G_m2', 'G_m2_ha', 'ano', 'lat_pc', 'lon_pc',
+//  'mun', 'uf', 'bioma', 'area_m2', 'compriment',
+//  'azimute_ve', 'declinacao', 'dist_centr',
+//  'nivel_ifn', 'orientacao', 'vazia', 'lat_lowestmode_a1','lon_lowestmode_a1'
+//];
 
 // =============================================================================
 // 2. FUNÇÕES — COVARIÁVEIS (server-side)
