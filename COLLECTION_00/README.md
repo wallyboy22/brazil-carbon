@@ -58,14 +58,19 @@ só com v00.
 | `0_covariate_source` | Módulo `require()`: stack HLS/PALSAR/HAND/ERA5-CWD/LULC C11, filtros GEDI, `ensureFolder()` | — |
 | `1_check_covariates` | Diagnóstico: bandas, teste `sampleRegions(3)`, camadas viz | — |
 | `2_data_matrix` | Matriz de treino (GEDI + covariáveis) | Asset `SAMPLES/` + `MATRIX/` · Drive CSV (universo p/ análise) quando `EXPORT_TO_DRIVE=true` |
-| `ANALYSIS/` (fora do GEE) | Análise offline: EDA, redundância (correlação/thinning/IsolationForest), split espacial, RF/GBM/SVR → gate de decisão | `analysis_summary` · registro em `EXPERIMENTS.md` |
+| `2_2_data_matriz_analisys/` *(offline)* | Análise fora do GEE: EDA, redundância (correlação/thinning/IsolationForest), CV espacial K-fold, RF/GBM/SVR → gate | relatório PASSA/FICA/SAI · registro `EXPERIMENTS.md` |
 | `3_modelling` | Modelo (`MODEL_TYPE` rf/gbm/svm) + predição anual multibanda | Asset `PREDICTIONS/` (+ modelo opcional) · Drive GeoTIFF quando `EXPORT_TO_DRIVE=true` |
 | `4_merge` | Stub documentado — integração futura a definir | — |
 
 > **Fluxo com gate:** a matriz sai em `MATRIX/` e o universo em CSVs no Drive.
-> A **análise offline** (`ANALYSIS/offline_agc_analysis.py`, Colab) decide as
-> subversões/versão com métricas baratas; **só o champion dispara o
-> `3_modelling`** (predição massiva, cara). Ver `ANALYSIS/README.md`.
+> A **análise offline** (`2_2_data_matriz_analisys/`, roda local ou Colab)
+> decide as subversões/versão com métricas baratas; **só o champion dispara o
+> `3_modelling`** (predição massiva, cara).
+>
+> 🔒 **Política de versionamento:** no repo GEE online entram **apenas `.js`,
+> `README.md` e os módulos `require()` (sem extensão)**. A pasta
+> `2_2_data_matriz_analisys/` é **ignorada** no online e mantém **próprio `.git`
+> local** — o histórico dela fica versionado localmente, nunca enviado ao GEE.
 
 ### Baldes de assets GEE
 
@@ -142,4 +147,4 @@ Diagnóstico: `Map.addLayer(lulc C11, MAPBIOMAS_VIS)` + `addMapBiomasLegend()`.
 - Mapeamento completo do notebook → JS: `mb_carbon_flow_map.md` (raiz).
 - Docs de datasets (GEDI L4A v2.1, índice de granules): `docs/` (raiz).
 - Pipeline modular: `pantanal_forest/v01/README.md`.
-- Análise offline + registro de experimentos: `ANALYSIS/` (raiz).
+- Análise offline + registro de experimentos: `pantanal_forest/v01/2_2_data_matriz_analisys/` (pasta **local**, fora do GEE).

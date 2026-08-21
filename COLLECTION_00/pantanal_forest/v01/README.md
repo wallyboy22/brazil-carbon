@@ -11,7 +11,7 @@
 | `0_covariate_source` | Módulo `require()`: filtros GEDI, `discoverGranules`, `buildCovariatesStack` (HLS/PALSAR-2/HAND/ERA5-CWD/LULC C11, 36 bandas), `ensureFolder()`, config compartilhada | — |
 | `1_check_covariates` | Diagnóstico: bandas do stack, camadas viz, teste `sampleRegions(3)` | — |
 | `2_data_matrix` | Matriz de treino (GEDI filtrado + covariáveis) | Asset `SAMPLES/` + `MATRIX/` · Drive CSV (universo p/ análise) quando `EXPORT_TO_DRIVE=true` |
-| **`ANALYSIS/`** *(fora do GEE)* | Análise offline (Colab): EDA, redundância (correlação/thinning/IsolationForest), split espacial, RF/GBM/SVR → gate | `analysis_summary` · `EXPERIMENTS.md` |
+| **`2_2_data_matriz_analisys/`** *(offline, fora do GEE)* | Análise offline (local/Colab): EDA, redundância (correlação/thinning/IsolationForest), CV espacial K-fold, RF/GBM/SVR → gate | `outputs/analysis_report.md` · `EXPERIMENTS.md` |
 | `3_modelling` | Modelo selecionável (`MODEL_TYPE` rf/gbm/svm) + predição anual multibanda | Asset `PREDICTIONS/` · Drive GeoTIFF quando `EXPORT_TO_DRIVE=true` |
 | `4_merge` | Stub documentado — consolidação futura a definir pela equipe | — |
 
@@ -32,13 +32,19 @@ Base: `projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FO
 O helper `ensureFolder()` (em `0_covariate_source`) cria qualquer pasta que
 faltar, nível a nível, antes dos exports — não precisa criar manualmente.
 
+> 🔒 **Política de versionamento:** no repo GEE online entram **apenas `.js`,
+> `README.md` e os módulos `require()`** (os arquivos sem extensão desta pasta).
+> A subpasta `2_2_data_matriz_analisys/` é **ignorada** no online e tem **próprio
+> `.git` local** — o histórico dela (scripts, dados, relatórios) fica versionado
+> localmente e **nunca vai para o earthengine.googlesource.com**.
+
 ## Convenções
 
 - **Fluxo de predição = exports para Assets GEE**: `EXPORT_TO_ASSET=true` em
   `2_data_matrix`/`3_modelling`. `MATRIX/agc_matrix_v01` alimenta `3_modelling`;
   `PREDICTIONS/agc_pred_{version}{subversion}` guarda a série predita.
   Drive (`EXPORT_TO_DRIVE`) desligado por padrão — ligado para exportar o
-  **universo** da análise offline (`ANALYSIS/`).
+  **universo** da análise offline (`2_2_data_matriz_analisys/`).
 - **Modelo selecionável**: `MODEL_TYPE` (`rf` | `gbm` | `svm`, espelhando o GEE)
   + hiperparâmetros em `MODEL_PARAMS`. A escolha vem do champion da análise
   offline. `SUBVERSION` rotula o experimento (`agc_pred_v01_rf`, …).
