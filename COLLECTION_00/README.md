@@ -57,8 +57,8 @@ só com v00.
 |---|---|---|
 | `0_covariate_source` | Módulo `require()`: stack HLS/PALSAR/HAND/ERA5-CWD/LULC C11, filtros GEDI, `ensureFolder()` | — |
 | `1_check_covariates` | Diagnóstico: bandas, teste `sampleRegions(3)`, camadas viz | — |
-| `2_data_matrix` | Matriz de treino (GEDI + covariáveis) | Drive CSV (batches) + Asset |
-| `3_modelling` | RF regressão (`agbd`) + predição anual multibanda | Drive GeoTIFF + Asset (+ modelo opcional) |
+| `2_data_matrix` | Matriz de treino (GEDI + covariáveis) | Drive CSV (batches) · Asset quando `EXPORT_TO_ASSET=true` |
+| `3_modelling` | RF regressão (`agbd`) + predição anual multibanda | Drive GeoTIFF · Asset quando `EXPORT_TO_ASSET=true` (+ modelo opcional) |
 | `4_merge` | Stub documentado — integração futura a definir | — |
 
 ### Baldes de assets GEE
@@ -78,10 +78,15 @@ Base: `projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FO
 > `SAVE_MODEL_TO_ASSET` nasce desligado — fácil de ligar sem inventar padrão.
 
 Convenções mantidas na v01: flags pessoais `WS_CARBONO_toDrive-` /
-`WS_CARBONO_toAsset-` nas descriptions, export duplicado Drive + Asset,
-estratégia `evaluate()` (sem `getInfo`), janela `[inicio, fim)` exclusiva,
-fallback de ano e LULC Coleção 11. Novidade: helper `ensureFolder()` cria as
-pastas de asset nível a nível antes dos exports.
+`WS_CARBONO_toAsset-` nas descriptions, estratégia `evaluate()` (sem `getInfo`),
+janela `[inicio, fim)` exclusiva, fallback de ano e LULC Coleção 11. Novidade:
+helper `ensureFolder()` cria as pastas de asset nível a nível quando os exports
+de Asset estiverem ligados.
+
+> **Fase atual:** a v01 está em **teste com exports apenas para o Drive**
+> (`EXPORT_TO_DRIVE=true`, `EXPORT_TO_ASSET=false`). Baldes `MATRIX/`,
+> `PREDICTIONS/` e `MODELS/` passam a ser escritos quando `EXPORT_TO_ASSET`
+> voltar a `true` (fase produtiva).
 
 ## Como adicionar uma nova região/bioma
 

@@ -6,11 +6,9 @@
  * `agbd` e gera a predição espaço-temporal multibanda do estoque de carbono
  * acima do solo, exportando para Drive (GeoTIFF) e Assets GEE.
  *
- * SAÍDAS (baldes):
- *   PREDICTIONS/agc_pred_{version}   → imagem multibanda prediction_{ano}
- *   MODELS/rf_agc_{version}          → modelo RF (toggle SAVE_MODEL_TO_ASSET,
- *                                      DESLIGADO por padrão — ver README v01)
- *   Drive: agc_pred_{version}.tif
+ * SAÍDAS (fase de teste — apenas Drive):
+ *   Drive: agc_pred_{version}.tif   (multibanda prediction_{ano}, GeoTIFF)
+ *   (PREDICTIONS/MODELS: voltam a ser escritos quando EXPORT_TO_ASSET=true)
  *
  * PRÉ-REQUISITO: rodar 2_data_matrix antes (asset MATRIX/agc_matrix_{version}).
  *
@@ -47,6 +45,9 @@ var rfParams = {
 
 // Salvar o modelo treinado como asset? (padrão OFF — ver decisão no README v01)
 var SAVE_MODEL_TO_ASSET = false;
+
+// Destino dos exports — fase de teste: apenas Drive (Asset OFF)
+var EXPORT_TO_ASSET = false;
 
 // Pasta de destino no Google Drive
 var EXPORT_FOLDER = 'GEE_Exports_AGC-v01';
@@ -132,21 +133,23 @@ predictions.bandNames().evaluate(function (bands) {
 });
 
 // =============================================================================
-// 4. EXPORTS — PREDICTIONS (Asset) + DRIVE (GeoTIFF)
+// 4. EXPORTS — DRIVE (GeoTIFF) + PREDICTIONS (Asset, toggle)
 // =============================================================================
 
-src.ensureFolder(ASSET_PREDICTIONS);
+if (EXPORT_TO_ASSET) {
+  src.ensureFolder(ASSET_PREDICTIONS);
 
-Export.image.toAsset({
-  image: predictions,
-  description: 'WS_CARBONO_toAsset-agc_pred_' + VERSION,
-  assetId: ASSET_PREDICTIONS + '/agc_pred_' + VERSION,
-  region: aoiBounds,
-  scale: src.SCALE,
-  maxPixels: 1e13,
-  pyramidingPolicy: { '.default': 'mean' }
-});
-print('[EXPORT] Asset:', ASSET_PREDICTIONS + '/agc_pred_' + VERSION);
+  Export.image.toAsset({
+    image: predictions,
+    description: 'WS_CARBONO_toAsset-agc_pred_' + VERSION,
+    assetId: ASSET_PREDICTIONS + '/agc_pred_' + VERSION,
+    region: aoiBounds,
+    scale: src.SCALE,
+    maxPixels: 1e13,
+    pyramidingPolicy: { '.default': 'mean' }
+  });
+  print('[EXPORT] Asset:', ASSET_PREDICTIONS + '/agc_pred_' + VERSION);
+}
 
 Export.image.toDrive({
   image: predictions,
