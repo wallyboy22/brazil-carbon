@@ -83,7 +83,7 @@ var EXCLUDE_PROPS = [
   'agbd', 'agbd_se', 'agbd_pi_lower', 'agbd_pi_upper',
   'sensitivity', 'beam', 'selected_algorithm', 'pft_class',
   'region_class', 'landsat_treecover', 'shot_number', 'delta_time',
-  'lon_lowestmode', 'lat_lowestmode'
+  'lon_lowestmode', 'lat_lowestmode', 'system:index'
 ];
 var inputProps = ee.Feature(matrix.first()).propertyNames()
   .removeAll(EXCLUDE_PROPS);
