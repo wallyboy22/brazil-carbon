@@ -48,6 +48,12 @@ no export.
    manual. `MATRIX_ASSET_IDS` é override opcional (vazio = descobrir tudo).
 6. Execute `3_modelling` para treinar e exportar as predições.
 
+O `3_modelling` exporta **uma imagem por ano** (`agc_pred_v02_rf_2019` …
+`_2023`) em vez de uma única imagem multibanda, para evitar o
+`Computed value is too large` na predição. Opcionalmente, ligue `ADD_LAYER=true`
+para adicionar as predições ao mapa (diagnóstico); `false` (padrão) não adiciona
+nada.
+
 O módulo de covariáveis usa a implementação da v01 por enquanto, pois a
 alteração desta versão é de particionamento/export, não de alvo ou stack. A
 interface, entretanto, está dentro da própria v02:

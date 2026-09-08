@@ -39,6 +39,13 @@ var EXPORT_FOLDER = 'GEE_Exports_AGC-v02';
 var ASSET_PREDICTIONS = src.ASSET_ROOT + '/PREDICTIONS';
 var ASSET_MODELS = src.ASSET_ROOT + '/MODELS';
 
+// true = adiciona as predições ao mapa (diagnóstico). false (padrão) = não
+// adiciona nada ao mapa.
+var ADD_LAYER = false;
+
+// Paleta de diagnóstico usada quando ADD_LAYER=true.
+var PRED_PALETTE = ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'];
+
 // =============================================================================
 // MATRIZ PARTICIONADA
 // =============================================================================
@@ -138,45 +145,49 @@ if (SAVE_MODEL_TO_ASSET) {
 var biomeFc = ee.FeatureCollection(src.BIOME_FC)
   .filter(ee.Filter.eq(src.BIOME_PROP, src.BIOME_NAME));
 var aoiBounds = biomeFc.geometry().bounds();
-var predictions = ee.Image().select([]);
+var suffix = VERSION + SUBVERSION;
+
+if (EXPORT_TO_ASSET) src.ensureFolder(ASSET_PREDICTIONS);
 
 print('[AGUARDE] Calculando as predições para', YEARS.length,
-  'anos. Os exports aparecerão na aba Tasks quando estiverem prontos.');
+  'anos. Cada ano vira uma task própria na aba Tasks.');
 YEARS.forEach(function (year) {
   var stackYear = src.buildCovariatesStack(aoiBounds, year);
   var predYear = stackYear.classify(model)
-    .rename('prediction_' + year).round().int16();
-  predictions = predictions.addBands(predYear);
+    .rename('prediction_' + year).round().int16().clip(aoiBounds);
+
+  if (ADD_LAYER) {
+    Map.addLayer(predYear,
+      { min: 0, max: 150, palette: PRED_PALETTE },
+      'AGC pred ' + year, false);
+  }
+
+  if (EXPORT_TO_ASSET) {
+    print('[AGUARDE] Criando a task de export da predição ' + year + ' para Asset.');
+    Export.image.toAsset({
+      image: predYear,
+      description: 'WS_CARBONO_toAsset-agc_pred_' + suffix + '_' + year,
+      assetId: ASSET_PREDICTIONS + '/agc_pred_' + suffix + '_' + year,
+      region: aoiBounds,
+      scale: src.SCALE,
+      maxPixels: 1e13,
+      pyramidingPolicy: { '.default': 'mean' }
+    });
+  }
+
+  if (EXPORT_TO_DRIVE) {
+    print('[AGUARDE] Criando a task de export da predição ' + year + ' para Drive.');
+    Export.image.toDrive({
+      image: predYear,
+      description: 'WS_CARBONO_toDrive-agc_pred_' + suffix + '_' + year,
+      folder: EXPORT_FOLDER,
+      fileNamePrefix: 'agc_pred_' + suffix + '_' + year,
+      region: aoiBounds,
+      scale: src.SCALE,
+      maxPixels: 1e13
+    });
+  }
 });
-predictions = predictions.clip(aoiBounds);
-
-var suffix = VERSION + SUBVERSION;
-if (EXPORT_TO_ASSET) {
-  print('[AGUARDE] Criando a task de export da predição para Asset.');
-  src.ensureFolder(ASSET_PREDICTIONS);
-  Export.image.toAsset({
-    image: predictions,
-    description: 'WS_CARBONO_toAsset-agc_pred_' + suffix,
-    assetId: ASSET_PREDICTIONS + '/agc_pred_' + suffix,
-    region: aoiBounds,
-    scale: src.SCALE,
-    maxPixels: 1e13,
-    pyramidingPolicy: { '.default': 'mean' }
-  });
-}
-
-if (EXPORT_TO_DRIVE) {
-  print('[AGUARDE] Criando a task de export da predição para Drive.');
-  Export.image.toDrive({
-    image: predictions,
-    description: 'WS_CARBONO_toDrive-agc_pred_' + suffix,
-    folder: EXPORT_FOLDER,
-    fileNamePrefix: 'agc_pred_' + suffix,
-    region: aoiBounds,
-    scale: src.SCALE,
-    maxPixels: 1e13
-  });
-}
 
 print('MAPBIOMAS-CARBONO · v02 · 3_modelling · Pantanal · modelo ' +
-  MODEL_TYPE + ' · assets ' + matrixAssets.length);
+  MODEL_TYPE + ' · assets ' + matrixAssets.length + ' · anos ' + YEARS.join(','));
