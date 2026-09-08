@@ -116,6 +116,9 @@ agc_matrix_v02_pantanal_tile01_batch002
 
 O `3_modelling` recebe em `MATRIX_ASSET_IDS` os assets concluídos e os combina
 apenas para o treinamento.
+Antes da matriz, a subetapa `2_0_check_footprint` valida o asset persistido
+`SAMPLES/footprint_pantanal_2023`; a v02 não redescobre nem reexporta os
+footprints GEDI.
 O módulo de covariáveis continua sendo o da v01, pois não houve mudança no
 alvo nem no stack. O tamanho inicial dos batches é `500`, com `TILE_SCALE=32`;
 se necessário, reduzir para `250` e repetir somente o tile afetado.

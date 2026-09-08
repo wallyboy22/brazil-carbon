@@ -9,11 +9,12 @@
 |---|---|
 | `0_covariate_source` | Interface v02 da fonte de covariáveis compartilhada com a v01 |
 | `1_check_covariates` | Diagnóstico do stack e teste de amostragem |
-| `2_data_matrix` | Export da matriz em assets particionados |
+| `2_0_check_footprint` | Validação do footprint persistido, sem export |
+| `2_data_matrix` | Subetapa 2.1: export da matriz em assets particionados |
 | `3_modelling` | Treino e predição anual usando os assets concluídos |
 | `4_merge` | Stub para consolidação futura |
 
-**Ordem:** `0 → 1 → 2 → 3 → 4`.
+**Ordem:** `0 → 1 → 2_0 → 2_data_matrix → 3 → 4`.
 
 ## Mudança principal
 
@@ -37,8 +38,8 @@ no export.
 
 ## Ordem de execução
 
-1. Confirme que existe o asset `SAMPLES/footprint_pantanal_2023`.
-2. Execute `2_data_matrix`.
+1. Execute `2_0_check_footprint` e confirme os diagnósticos.
+2. Execute `2_data_matrix` somente após a validação passar.
 3. Inicie as tasks `agc_matrix_v02_pantanal_tileNN_batchNNN`.
 4. Confirme quais assets terminaram.
 5. Em `3_modelling`, preencha `MATRIX_ASSET_IDS` com os assets concluídos.
@@ -51,6 +52,11 @@ interface, entretanto, está dentro da própria v02:
 ```javascript
 require('users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v02/0_covariate_source')
 ```
+
+O asset `SAMPLES/footprint_pantanal_2023` é uma entrada persistida. A v02 não
+redescobre granules nem reexporta footprints; a subetapa `2_0_check_footprint`
+apenas verifica se a entrada está disponível e possui geometria antes da
+amostragem.
 
 ## Assets
 

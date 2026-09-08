@@ -1,7 +1,8 @@
 /******************************************************************************
  * MAPBIOMAS-CARBONO — Coleção 0 · PANTANAL · v02 · Matriz de treino (AGC)
  * ---------------------------------------------------------------------------
- * Processa o footprint já exportado em tiles espaciais. Cada tile monta apenas
+ * Subetapa 2.1. Processa o footprint validado por 2_0_check_footprint em tiles
+ * espaciais. Cada tile monta apenas
  * o stack da sua área, amostra lotes pequenos e exporta Assets independentes.
  * Isso evita tanto geometrias nulas quanto o grafo global de toList(total).
  ******************************************************************************/
@@ -119,6 +120,7 @@ function createTileExports(tileDef, tile, tileFootprints, total) {
 
 print('MAPBIOMAS-CARBONO · v02 · 2_data_matrix · Pantanal · ano ' + YEAR);
 print('[INFO] Footprints de entrada:', FOOTPRINT_ASSET);
+print('[INFO] Entrada validada previamente por 2_0_check_footprint.');
 print('[INFO] Tiles:', tileDefinitions.length,
   '· batch máximo:', ASSET_BATCH_SIZE, '· tileScale:', TILE_SCALE);
 
