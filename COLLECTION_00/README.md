@@ -46,7 +46,7 @@ coberturas (carbono azul, campestres, agropecuária).
   (pantanal). Nota: conferir o valor exato do atributo `Bioma` no asset.
 - **Só saídas**: sem EDA/gráficos (ver `mb_carbon_flow_map.md` na raiz).
 
-## Pipeline modular v01 (Pantanal)
+## Pipeline modular v01/v02 (Pantanal)
 
 O Pantanal ganhou uma **v01 modular** (`pantanal_forest/v01/`) seguindo o
 padrão do MapBiomas Solo (`collection3/carbon`): pipeline em etapas numeradas
@@ -79,9 +79,9 @@ Base: `projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FO
 | Balde | Status | Conteúdo |
 |---|---|---|
 | `SAMPLES/` | ✅ existente | footprints GEDI filtrados |
-| `MATRIX/` | 🆕 v01 | matrizes de treino consolidadas |
-| `PREDICTIONS/` | 🆕 v01 | imagens anuais AGC preditas |
-| `MODELS/` | 🆕 v01 (toggle **off**) | modelos RF via `Export.classifier.toAsset()` |
+| `MATRIX/` | 🆕 v01/v02 | matriz consolidada (v01) ou batches (v02) |
+| `PREDICTIONS/` | 🆕 v01/v02 | imagens anuais AGC preditas |
+| `MODELS/` | 🆕 v01/v02 (toggle **off**) | modelos RF via `Export.classifier.toAsset()` |
 
 > Sobre `MODELS`: o GEE suporta salvar/recarregar classificadores
 > (`Export.classifier.toAsset()` + `ee.Classifier.load()`), mas o time não usa
@@ -100,6 +100,24 @@ de Asset estiverem ligados.
 > (`rf` | `gbm` | `svm`, espelhando o GEE) e rotulado por `SUBVERSION`
 > (`agc_pred_v01_rf`, …). Drive (`EXPORT_TO_DRIVE`) fica desligado por padrão —
 > ligado apenas para exportar o **universo** da análise offline.
+
+### v02 — matriz particionada (Pantanal)
+
+A `pantanal_forest/v02/` preserva a v01 e corrige o timeout observado no export
+da matriz completa. Em vez de reunir todos os `sampleRegions()` em um único
+`FeatureCollection`, a v02 exporta batches independentes no balde `MATRIX/`:
+
+```text
+agc_matrix_v02_pantanal_batch001
+agc_matrix_v02_pantanal_batch002
+...
+```
+
+O `3_modelling` recebe os números dos batches concluídos em
+`MATRIX_BATCH_IDS`, carrega os assets e os combina apenas para o treinamento.
+O módulo de covariáveis continua sendo o da v01, pois não houve mudança no
+alvo nem no stack. O tamanho inicial dos batches é `2000`; se necessário,
+reduzir para `1000` e repetir somente as tasks que falharam.
 
 ## Como adicionar uma nova região/bioma
 
@@ -146,5 +164,5 @@ Diagnóstico: `Map.addLayer(lulc C11, MAPBIOMAS_VIS)` + `addMapBiomasLegend()`.
 
 - Mapeamento completo do notebook → JS: `mb_carbon_flow_map.md` (raiz).
 - Docs de datasets (GEDI L4A v2.1, índice de granules): `docs/` (raiz).
-- Pipeline modular: `pantanal_forest/v01/README.md`.
+- Pipeline modular: `pantanal_forest/v01/README.md` e `pantanal_forest/v02/README.md`.
 - Análise offline + registro de experimentos: `pantanal_forest/v01/2_2_data_matriz_analisys/` (pasta **local**, fora do GEE).

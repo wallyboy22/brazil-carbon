@@ -1,0 +1,153 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Coleção 0 · PANTANAL · v02 · Matriz de treino (AGC)
+ * ---------------------------------------------------------------------------
+ * Exporta cada lote da matriz como um Asset GEE independente. A v01 tentava
+ * reunir todos os sampleRegions em um único FeatureCollection e sofria timeout
+ * na computação do Pantanal completo.
+ ******************************************************************************/
+
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v01/0_covariate_source');
+
+// =============================================================================
+// CONFIG
+// =============================================================================
+
+var YEAR = 2023;
+var VERSION = 'v02';
+var SCALE = src.SCALE;
+var ASSET_BATCH_SIZE = 2000;
+var TILE_SCALE = 16;
+var EXPORT_FOLDER = 'GEE_Exports_AGC-v02';
+
+var ASSET_SAMPLES = src.ASSET_ROOT + '/SAMPLES';
+var ASSET_MATRIX = src.ASSET_ROOT + '/MATRIX';
+
+var EXPORT_TO_DRIVE = false;
+var EXPORT_TO_ASSET = true;
+var EXPORT_FOOTPRINTS = false;
+var EXPORT_SAMPLES = true;
+
+// =============================================================================
+// GRID
+// =============================================================================
+
+var GRIDS = {
+  pantanal: {
+    label: 'Pantanal (bioma completo)',
+    bbox: [-60.678789762675464, -22.813804973745906,
+      -52.548906950175464, -12.958681301038263]
+  }
+};
+var ACTIVE_GRIDS = ['pantanal'];
+
+function pad3(n) { return ('000' + n).slice(-3); }
+
+function processRegion(gridId, grid) {
+  var aoi = ee.Geometry.BBox(
+    grid.bbox[0], grid.bbox[1], grid.bbox[2], grid.bbox[3]);
+  Map.addLayer(aoi, { color: 'yellow' }, grid.label + ' - AOI', false);
+
+  var start = YEAR + '-01-01';
+  var end = (YEAR + 1) + '-01-01';
+  src.discoverGranules(aoi, start, end, function (res) {
+    if (res.n === 0) {
+      print('[AVISO] Sem granules em', YEAR, '— tentando ano anterior.');
+      src.discoverGranules(aoi, (YEAR - 1) + '-01-01', YEAR + '-01-01',
+        function (fallback) {
+          if (fallback.n === 0) {
+            print('[ERRO] Nenhum granule GEDI para', grid.label);
+            return;
+          }
+          onGranulesReady(gridId, grid, aoi, fallback.assets, fallback.yearUsed);
+        });
+      return;
+    }
+    onGranulesReady(gridId, grid, aoi, res.assets, res.yearUsed);
+  });
+}
+
+function onGranulesReady(gridId, grid, aoi, assets, yearUsed) {
+  print('[OK] Granules:', assets.length, '· ano:', yearUsed);
+  var fcServer = ee.FeatureCollection(assets.map(function (id) {
+    return src.filterGedi(ee.FeatureCollection(id), aoi);
+  })).flatten();
+
+  fcServer.size().evaluate(function (total) {
+    print('[OK] Pegadas filtradas:', total);
+    if (total === 0) {
+      print('[AVISO] Nenhuma pegada após filtros para', grid.label);
+      return;
+    }
+    runMain(gridId, grid, aoi, fcServer, yearUsed, total);
+  });
+}
+
+function runMain(gridId, grid, aoi, fcServer, yearUsed, total) {
+  var stack = src.buildCovariatesStack(aoi, yearUsed);
+  if (EXPORT_TO_ASSET) {
+    if (EXPORT_FOOTPRINTS) src.ensureFolder(ASSET_SAMPLES);
+    if (EXPORT_SAMPLES) src.ensureFolder(ASSET_MATRIX);
+  }
+
+  if (EXPORT_FOOTPRINTS) {
+    Export.table.toAsset({
+      collection: fcServer,
+      description: 'WS_CARBONO_toAsset-footprint_' + gridId + '_' + yearUsed,
+      assetId: ASSET_SAMPLES + '/footprint_' + gridId + '_' + yearUsed
+    });
+  }
+  createMatrixBatchExports(gridId, fcServer, stack, yearUsed, total);
+  print('[FIM] Batches criados:', Math.ceil(total / ASSET_BATCH_SIZE));
+}
+
+function createMatrixBatchExports(gridId, fcServer, stack, yearUsed, total) {
+  if (!EXPORT_SAMPLES) return;
+
+  var fcList = fcServer.toList(total);
+  var nBatches = Math.ceil(total / ASSET_BATCH_SIZE);
+  for (var b = 0; b < nBatches; b++) {
+    var offset = b * ASSET_BATCH_SIZE;
+    var size = Math.min(ASSET_BATCH_SIZE, total - offset);
+    var fcBatch = ee.FeatureCollection(fcList.slice(offset, offset + size));
+    var sampledBatch = stack.sampleRegions({
+      collection: fcBatch,
+      properties: src.SAMPLE_PROPS,
+      scale: SCALE,
+      geometries: false,
+      tileScale: TILE_SCALE
+    });
+    var batch = pad3(b + 1);
+    var name = 'agc_matrix_' + VERSION + '_' + gridId + '_batch' + batch;
+
+    if (EXPORT_TO_ASSET) {
+      Export.table.toAsset({
+        collection: sampledBatch,
+        description: 'WS_CARBONO_toAsset-' + name,
+        assetId: ASSET_MATRIX + '/' + name
+      });
+      print('[EXPORT] Asset:', ASSET_MATRIX + '/' + name,
+        '· amostras:', size);
+    }
+
+    if (EXPORT_TO_DRIVE) {
+      Export.table.toDrive({
+        collection: sampledBatch,
+        description: 'WS_CARBONO_toDrive-' + name,
+        folder: EXPORT_FOLDER,
+        fileNamePrefix: name,
+        fileFormat: 'CSV'
+      });
+      print('[EXPORT] Drive:', name + '.csv');
+    }
+  }
+}
+
+print('MAPBIOMAS-CARBONO · v02 · 2_data_matrix · Pantanal · ano ' + YEAR);
+ACTIVE_GRIDS.forEach(function (gridId) {
+  if (!GRIDS[gridId]) {
+    print('[ERRO] Grid não encontrado:', gridId);
+    return;
+  }
+  processRegion(gridId, GRIDS[gridId]);
+});

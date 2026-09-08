@@ -1,0 +1,150 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Coleção 0 · PANTANAL · v02 · Modelagem e predição
+ * ---------------------------------------------------------------------------
+ * Carrega os assets particionados produzidos por 2_data_matrix, treina o
+ * modelo selecionado e exporta a predição anual multibanda.
+ ******************************************************************************/
+
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v01/0_covariate_source');
+
+// =============================================================================
+// CONFIG
+// =============================================================================
+
+var VERSION = 'v02';
+var SUBVERSION = '_rf';
+var MODEL_TYPE = 'rf';
+var TARGET = 'agbd';
+
+// Preencha com os batches que terminaram no GEE. Exemplo: [1, 2, 3, 4].
+var MATRIX_BATCH_IDS = [1];
+
+var YEARS = [2019, 2020, 2021, 2022, 2023];
+var MODEL_PARAMS = {
+  rf: { numberOfTrees: 300, bagFraction: 0.632, seed: 2021 },
+  gbm: { numberOfTrees: 300, shrinkage: 0.1, samplingRate: 0.9, seed: 2021 },
+  svm: { svmType: 'EPSILON_SVR', kernelType: 'RBF', gamma: 0.01,
+    cost: 100, epsilon: 0.1 }
+};
+
+var SAVE_MODEL_TO_ASSET = false;
+var EXPORT_TO_ASSET = true;
+var EXPORT_TO_DRIVE = false;
+var EXPORT_FOLDER = 'GEE_Exports_AGC-v02';
+var ASSET_MATRIX = src.ASSET_ROOT + '/MATRIX';
+var ASSET_PREDICTIONS = src.ASSET_ROOT + '/PREDICTIONS';
+var ASSET_MODELS = src.ASSET_ROOT + '/MODELS';
+
+// =============================================================================
+// MATRIZ PARTICIONADA
+// =============================================================================
+
+var matrixAssets = MATRIX_BATCH_IDS.map(function (id) {
+  var suffix = ('000' + id).slice(-3);
+  return ASSET_MATRIX + '/agc_matrix_' + VERSION + '_pantanal_batch' + suffix;
+});
+var matrix = ee.FeatureCollection(matrixAssets.map(function (asset) {
+  return ee.FeatureCollection(asset);
+})).flatten();
+
+print('[OK] Batches da matriz:', matrixAssets);
+matrix.size().evaluate(function (n) { print('[OK] Amostras:', n); });
+
+var EXCLUDE_PROPS = [
+  'agbd', 'agbd_se', 'agbd_pi_lower', 'agbd_pi_upper',
+  'sensitivity', 'beam', 'selected_algorithm', 'pft_class',
+  'region_class', 'landsat_treecover', 'shot_number', 'delta_time',
+  'lon_lowestmode', 'lat_lowestmode'
+];
+var inputProps = ee.Feature(matrix.first()).propertyNames()
+  .removeAll(EXCLUDE_PROPS);
+print('[OK] Covariáveis:', inputProps);
+
+function buildModel() {
+  if (MODEL_TYPE === 'rf') {
+    return ee.Classifier.smileRandomForest(MODEL_PARAMS.rf)
+      .setOutputMode('REGRESSION');
+  }
+  if (MODEL_TYPE === 'gbm') {
+    return ee.Classifier.smileGradientTreeBoost(MODEL_PARAMS.gbm)
+      .setOutputMode('REGRESSION');
+  }
+  if (MODEL_TYPE === 'svm') {
+    return ee.Classifier.libsvm(MODEL_PARAMS.svm)
+      .setOutputMode('REGRESSION');
+  }
+  throw new Error('MODEL_TYPE inválido: ' + MODEL_TYPE);
+}
+
+var model = buildModel().train({
+  features: matrix,
+  classProperty: TARGET,
+  inputProperties: inputProps
+});
+print('[OK] Modelo treinado:', MODEL_TYPE, '· subversão:', SUBVERSION);
+
+if (MODEL_TYPE !== 'svm') {
+  model.explain().evaluate(function (exp) {
+    var pairs = Object.keys(exp.importance).map(function (key) {
+      return [exp.importance[key], key];
+    });
+    pairs.sort(function (a, b) { return b[0] - a[0]; });
+    print('[OK] Importância (top 15):', pairs.slice(0, 15));
+  });
+}
+
+if (SAVE_MODEL_TO_ASSET) {
+  src.ensureFolder(ASSET_MODELS);
+  Export.classifier.toAsset({
+    classifier: model,
+    description: 'WS_CARBONO_toAsset-' + MODEL_TYPE + '_agc_' + VERSION + SUBVERSION,
+    assetId: ASSET_MODELS + '/' + MODEL_TYPE + '_agc_' + VERSION + SUBVERSION
+  });
+}
+
+// =============================================================================
+// PREDIÇÃO E EXPORTS
+// =============================================================================
+
+var biomeFc = ee.FeatureCollection(src.BIOME_FC)
+  .filter(ee.Filter.eq(src.BIOME_PROP, src.BIOME_NAME));
+var aoiBounds = biomeFc.geometry().bounds();
+var predictions = ee.Image().select([]);
+
+YEARS.forEach(function (year) {
+  var stackYear = src.buildCovariatesStack(aoiBounds, year);
+  var predYear = stackYear.classify(model)
+    .rename('prediction_' + year).round().int16();
+  predictions = predictions.addBands(predYear);
+});
+predictions = predictions.clip(aoiBounds);
+
+var suffix = VERSION + SUBVERSION;
+if (EXPORT_TO_ASSET) {
+  src.ensureFolder(ASSET_PREDICTIONS);
+  Export.image.toAsset({
+    image: predictions,
+    description: 'WS_CARBONO_toAsset-agc_pred_' + suffix,
+    assetId: ASSET_PREDICTIONS + '/agc_pred_' + suffix,
+    region: aoiBounds,
+    scale: src.SCALE,
+    maxPixels: 1e13,
+    pyramidingPolicy: { '.default': 'mean' }
+  });
+}
+
+if (EXPORT_TO_DRIVE) {
+  Export.image.toDrive({
+    image: predictions,
+    description: 'WS_CARBONO_toDrive-agc_pred_' + suffix,
+    folder: EXPORT_FOLDER,
+    fileNamePrefix: 'agc_pred_' + suffix,
+    region: aoiBounds,
+    scale: src.SCALE,
+    maxPixels: 1e13
+  });
+}
+
+print('MAPBIOMAS-CARBONO · v02 · 3_modelling · Pantanal · modelo ' +
+  MODEL_TYPE + ' · batches ' + MATRIX_BATCH_IDS.join(', '));
