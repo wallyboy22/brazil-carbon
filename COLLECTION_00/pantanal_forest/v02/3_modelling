@@ -16,9 +16,13 @@ var VERSION = 'v02';
 var SUBVERSION = '_rf';
 var MODEL_TYPE = 'rf';
 var TARGET = 'agbd';
+var ASSET_MATRIX = src.ASSET_ROOT + '/MATRIX';
 
-// Preencha com os batches que terminaram no GEE. Exemplo: [1, 2, 3, 4].
-var MATRIX_BATCH_IDS = [1];
+// Preencha com os assets que terminaram com sucesso no GEE.
+var MATRIX_ASSET_IDS = [
+  // Exemplo: adicione aqui somente os assets que terminaram com sucesso.
+  ASSET_MATRIX + '/agc_matrix_v02_pantanal_tile01_batch001'
+];
 
 var YEARS = [2019, 2020, 2021, 2022, 2023];
 var MODEL_PARAMS = {
@@ -32,7 +36,6 @@ var SAVE_MODEL_TO_ASSET = false;
 var EXPORT_TO_ASSET = true;
 var EXPORT_TO_DRIVE = false;
 var EXPORT_FOLDER = 'GEE_Exports_AGC-v02';
-var ASSET_MATRIX = src.ASSET_ROOT + '/MATRIX';
 var ASSET_PREDICTIONS = src.ASSET_ROOT + '/PREDICTIONS';
 var ASSET_MODELS = src.ASSET_ROOT + '/MODELS';
 
@@ -42,10 +45,7 @@ var ASSET_MODELS = src.ASSET_ROOT + '/MODELS';
 
 print('[AGUARDE] Carregando os batches da matriz e preparando o treinamento.');
 print('[AGUARDE] Esta etapa pode levar alguns segundos ou minutos antes de o export aparecer.');
-var matrixAssets = MATRIX_BATCH_IDS.map(function (id) {
-  var suffix = ('000' + id).slice(-3);
-  return ASSET_MATRIX + '/agc_matrix_' + VERSION + '_pantanal_batch' + suffix;
-});
+var matrixAssets = MATRIX_ASSET_IDS;
 var matrix = ee.FeatureCollection(matrixAssets.map(function (asset) {
   return ee.FeatureCollection(asset);
 })).flatten();
@@ -153,4 +153,4 @@ if (EXPORT_TO_DRIVE) {
 }
 
 print('MAPBIOMAS-CARBONO · v02 · 3_modelling · Pantanal · modelo ' +
-  MODEL_TYPE + ' · batches ' + MATRIX_BATCH_IDS.join(', '));
+  MODEL_TYPE + ' · assets ' + MATRIX_ASSET_IDS.length);

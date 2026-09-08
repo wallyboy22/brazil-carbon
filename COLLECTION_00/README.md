@@ -103,21 +103,22 @@ de Asset estiverem ligados.
 
 ### v02 — matriz particionada (Pantanal)
 
-A `pantanal_forest/v02/` preserva a v01 e corrige o timeout observado no export
-da matriz completa. Em vez de reunir todos os `sampleRegions()` em um único
-`FeatureCollection`, a v02 exporta batches independentes no balde `MATRIX/`:
+A `pantanal_forest/v02/` preserva a v01 e corrige os erros de geometria nula e
+memória observados no export da matriz completa. O footprint existente é
+dividido em tiles espaciais; cada tile monta seu próprio stack e exporta
+batches independentes no balde `MATRIX/`:
 
 ```text
-agc_matrix_v02_pantanal_batch001
-agc_matrix_v02_pantanal_batch002
+agc_matrix_v02_pantanal_tile01_batch001
+agc_matrix_v02_pantanal_tile01_batch002
 ...
 ```
 
-O `3_modelling` recebe os números dos batches concluídos em
-`MATRIX_BATCH_IDS`, carrega os assets e os combina apenas para o treinamento.
+O `3_modelling` recebe em `MATRIX_ASSET_IDS` os assets concluídos e os combina
+apenas para o treinamento.
 O módulo de covariáveis continua sendo o da v01, pois não houve mudança no
-alvo nem no stack. O tamanho inicial dos batches é `2000`; se necessário,
-reduzir para `1000` e repetir somente as tasks que falharam.
+alvo nem no stack. O tamanho inicial dos batches é `500`, com `TILE_SCALE=32`;
+se necessário, reduzir para `250` e repetir somente o tile afetado.
 
 ## Como adicionar uma nova região/bioma
 
