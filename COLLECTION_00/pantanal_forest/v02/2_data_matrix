@@ -84,6 +84,8 @@ function onGranulesReady(gridId, grid, aoi, assets, yearUsed) {
 }
 
 function runMain(gridId, grid, aoi, fcServer, yearUsed, total) {
+  print('[AGUARDE] Calculando o stack de covariáveis e preparando os exports da matriz.');
+  print('[AGUARDE] O export aparecerá na aba Tasks em alguns segundos ou minutos.');
   var stack = src.buildCovariatesStack(aoi, yearUsed);
   if (EXPORT_TO_ASSET) {
     if (EXPORT_FOOTPRINTS) src.ensureFolder(ASSET_SAMPLES);
@@ -104,6 +106,9 @@ function runMain(gridId, grid, aoi, fcServer, yearUsed, total) {
 function createMatrixBatchExports(gridId, fcServer, stack, yearUsed, total) {
   if (!EXPORT_SAMPLES) return;
 
+  print('[AGUARDE] Calculando sampleRegions em',
+    Math.ceil(total / ASSET_BATCH_SIZE), 'batches.');
+  print('[AGUARDE] Aguarde a criação das tasks antes de iniciar os exports.');
   var fcList = fcServer.toList(total);
   var nBatches = Math.ceil(total / ASSET_BATCH_SIZE);
   for (var b = 0; b < nBatches; b++) {

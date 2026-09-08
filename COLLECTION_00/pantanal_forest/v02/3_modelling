@@ -40,6 +40,8 @@ var ASSET_MODELS = src.ASSET_ROOT + '/MODELS';
 // MATRIZ PARTICIONADA
 // =============================================================================
 
+print('[AGUARDE] Carregando os batches da matriz e preparando o treinamento.');
+print('[AGUARDE] Esta etapa pode levar alguns segundos ou minutos antes de o export aparecer.');
 var matrixAssets = MATRIX_BATCH_IDS.map(function (id) {
   var suffix = ('000' + id).slice(-3);
   return ASSET_MATRIX + '/agc_matrix_' + VERSION + '_pantanal_batch' + suffix;
@@ -112,6 +114,8 @@ var biomeFc = ee.FeatureCollection(src.BIOME_FC)
 var aoiBounds = biomeFc.geometry().bounds();
 var predictions = ee.Image().select([]);
 
+print('[AGUARDE] Calculando as predições para', YEARS.length,
+  'anos. Os exports aparecerão na aba Tasks quando estiverem prontos.');
 YEARS.forEach(function (year) {
   var stackYear = src.buildCovariatesStack(aoiBounds, year);
   var predYear = stackYear.classify(model)
@@ -122,6 +126,7 @@ predictions = predictions.clip(aoiBounds);
 
 var suffix = VERSION + SUBVERSION;
 if (EXPORT_TO_ASSET) {
+  print('[AGUARDE] Criando a task de export da predição para Asset.');
   src.ensureFolder(ASSET_PREDICTIONS);
   Export.image.toAsset({
     image: predictions,
@@ -135,6 +140,7 @@ if (EXPORT_TO_ASSET) {
 }
 
 if (EXPORT_TO_DRIVE) {
+  print('[AGUARDE] Criando a task de export da predição para Drive.');
   Export.image.toDrive({
     image: predictions,
     description: 'WS_CARBONO_toDrive-agc_pred_' + suffix,
