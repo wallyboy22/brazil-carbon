@@ -1,7 +1,19 @@
 # pantanal_forest/v02 — Matriz particionada e modelagem
 
-> Evolução da v01 para evitar o timeout do export único da matriz de treino.
+> Evolução completa da v01 para evitar o timeout do export único da matriz de treino.
 > A `v01` permanece congelada como referência.
+
+## Etapas
+
+| Etapa | Papel |
+|---|---|
+| `0_covariate_source` | Interface v02 da fonte de covariáveis compartilhada com a v01 |
+| `1_check_covariates` | Diagnóstico do stack e teste de amostragem |
+| `2_data_matrix` | Export da matriz em assets particionados |
+| `3_modelling` | Treino e predição anual usando os batches concluídos |
+| `4_merge` | Stub para consolidação futura |
+
+**Ordem:** `0 → 1 → 2 → 3 → 4`.
 
 ## Mudança principal
 
@@ -28,11 +40,12 @@ export.
 4. Em `3_modelling`, preencha `MATRIX_BATCH_IDS` com os números concluídos.
 5. Execute `3_modelling` para treinar e exportar as predições.
 
-O módulo de covariáveis é compartilhado com a v01, pois a alteração desta
-versão é de particionamento/export, não de alvo ou stack:
+O módulo de covariáveis usa a implementação da v01 por enquanto, pois a
+alteração desta versão é de particionamento/export, não de alvo ou stack. A
+interface, entretanto, está dentro da própria v02:
 
 ```javascript
-require('users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v01/0_covariate_source')
+require('users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v02/0_covariate_source')
 ```
 
 ## Assets

@@ -6,7 +6,7 @@
  ******************************************************************************/
 
 var src = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v01/0_covariate_source');
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v02/0_covariate_source');
 
 // =============================================================================
 // CONFIG
