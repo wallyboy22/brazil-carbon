@@ -69,5 +69,5 @@ Base:
 | `MATRIX/` | batches por tile `agc_matrix_v02_pantanal_tileNN_batchNNN` |
 | `PREDICTIONS/` | imagens anuais AGC da modelagem |
 
-`ASSET_BATCH_SIZE` começa em `500` e `TILE_SCALE` em `32`. Se uma task ainda
+`ASSET_BATCH_SIZE` começa em `500` e `TILE_SCALE` em `16`. Se uma task ainda
 exceder o limite, reduza o batch para `250` e repita somente o tile afetado.

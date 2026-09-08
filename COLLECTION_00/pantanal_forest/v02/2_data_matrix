@@ -18,7 +18,7 @@ var YEAR = 2023;
 var VERSION = 'v02';
 var SCALE = src.SCALE;
 var ASSET_BATCH_SIZE = 500;
-var TILE_SCALE = 32;
+var TILE_SCALE = 16;
 var EXPORT_FOLDER = 'GEE_Exports_AGC-v02';
 
 var ASSET_SAMPLES = src.ASSET_ROOT + '/SAMPLES';
