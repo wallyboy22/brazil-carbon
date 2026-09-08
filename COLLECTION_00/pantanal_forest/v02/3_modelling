@@ -18,11 +18,11 @@ var MODEL_TYPE = 'rf';
 var TARGET = 'agbd';
 var ASSET_MATRIX = src.ASSET_ROOT + '/MATRIX';
 
-// Preencha com os assets que terminaram com sucesso no GEE.
-var MATRIX_ASSET_IDS = [
-  // Exemplo: adicione aqui somente os assets que terminaram com sucesso.
-  ASSET_MATRIX + '/agc_matrix_v02_pantanal_tile01_batch001'
-];
+// Override OPCIONAL dos assets da matriz. Vazio (padrão) = descobre
+// automaticamente todos os assets 'agc_matrix_v02_pantanal_*' existentes
+// na pasta MATRIX/ (tiles vazios, "Table is empty", não geram asset e são
+// ignorados). Preencha somente para restringir o treino a um subconjunto.
+var MATRIX_ASSET_IDS = [];
 
 var YEARS = [2019, 2020, 2021, 2022, 2023];
 var MODEL_PARAMS = {
@@ -45,12 +45,46 @@ var ASSET_MODELS = src.ASSET_ROOT + '/MODELS';
 
 print('[AGUARDE] Carregando os batches da matriz e preparando o treinamento.');
 print('[AGUARDE] Esta etapa pode levar alguns segundos ou minutos antes de o export aparecer.');
-var matrixAssets = MATRIX_ASSET_IDS;
+
+// Lista, via metadata (sem computação), os assets de matriz existentes na
+// pasta MATRIX/. Assets de tiles sem amostra ("Table is empty") não existem
+// e são naturalmente ignorados.
+function listMatrixAssets() {
+  var prefix = 'agc_matrix_' + VERSION + '_pantanal_';
+  var listing = null;
+  try {
+    listing = ee.data.listAssets({ parent: ASSET_MATRIX });
+  } catch (e1) {
+    try {
+      listing = ee.data.listAssets({ id: ASSET_MATRIX });
+    } catch (e2) {
+      throw new Error('Não foi possível listar assets em ' + ASSET_MATRIX
+        + ': ' + e1.message + ' / ' + e2.message);
+    }
+  }
+  var ids = [];
+  (listing.assets || []).forEach(function (a) {
+    var name = a.id.split('/').pop();
+    if (name.indexOf(prefix) === 0 && a.type === 'TABLE') {
+      ids.push(a.id);
+    }
+  });
+  ids.sort();
+  return ids;
+}
+
+var matrixAssets = MATRIX_ASSET_IDS.length > 0 ? MATRIX_ASSET_IDS : listMatrixAssets();
+if (matrixAssets.length === 0) {
+  print('[ERRO] Nenhum asset de matriz encontrado em', ASSET_MATRIX,
+    '. Execute 2_data_matrix (e confira os que completaram) antes do 3_modelling.');
+  throw new Error('Matriz vazia: nenhum asset de matriz disponível.');
+}
+
 var matrix = ee.FeatureCollection(matrixAssets.map(function (asset) {
   return ee.FeatureCollection(asset);
 })).flatten();
 
-print('[OK] Batches da matriz:', matrixAssets);
+print('[OK] Assets da matriz (' + matrixAssets.length + '):', matrixAssets);
 matrix.size().evaluate(function (n) { print('[OK] Amostras:', n); });
 
 var EXCLUDE_PROPS = [
@@ -153,4 +187,4 @@ if (EXPORT_TO_DRIVE) {
 }
 
 print('MAPBIOMAS-CARBONO · v02 · 3_modelling · Pantanal · modelo ' +
-  MODEL_TYPE + ' · assets ' + MATRIX_ASSET_IDS.length);
+  MODEL_TYPE + ' · assets ' + matrixAssets.length);

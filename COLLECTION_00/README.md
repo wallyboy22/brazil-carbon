@@ -114,8 +114,10 @@ agc_matrix_v02_pantanal_tile01_batch002
 ...
 ```
 
-O `3_modelling` recebe em `MATRIX_ASSET_IDS` os assets concluídos e os combina
-apenas para o treinamento.
+O `3_modelling` descobre automaticamente os assets `agc_matrix_v02_pantanal_*`
+existentes em `MATRIX/` (tiles sem amostra válida — "Table is empty" — não
+geram asset e são ignorados) e os combina apenas para o treinamento.
+`MATRIX_ASSET_IDS` é um override opcional (vazio = descobrir tudo).
 Antes da matriz, a subetapa `2_0_check_footprint` valida o asset persistido
 `SAMPLES/footprint_pantanal_2023`; a v02 não redescobre nem reexporta os
 footprints GEDI.

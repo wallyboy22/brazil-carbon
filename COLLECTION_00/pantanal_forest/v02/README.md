@@ -41,8 +41,11 @@ no export.
 1. Execute `2_0_check_footprint` e confirme os diagnósticos.
 2. Execute `2_data_matrix` somente após a validação passar.
 3. Inicie as tasks `agc_matrix_v02_pantanal_tileNN_batchNNN`.
-4. Confirme quais assets terminaram.
-5. Em `3_modelling`, preencha `MATRIX_ASSET_IDS` com os assets concluídos.
+4. Confirme quais assets terminaram (tiles sem amostra falham com "Table is
+   empty" e **não geram asset** — esperado e sem impacto no treino).
+5. Execute `3_modelling`. Por padrão ele **descobre automaticamente** todos os
+   assets `agc_matrix_v02_pantanal_*` existentes em `MATRIX/`, sem lista
+   manual. `MATRIX_ASSET_IDS` é override opcional (vazio = descobrir tudo).
 6. Execute `3_modelling` para treinar e exportar as predições.
 
 O módulo de covariáveis usa a implementação da v01 por enquanto, pois a
