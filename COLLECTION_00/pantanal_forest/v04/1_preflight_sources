@@ -1,0 +1,27 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Pantanal v04 · Preflight das fontes
+ ******************************************************************************/
+
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v04/0_covariate_source');
+
+var TILE_ID = 'tile01';
+var YEAR = 2023;
+var tile = src.makeTiles().filter(function (item) { return item.id === TILE_ID; })[0];
+var aoi = ee.Geometry.BBox(tile.bbox[0], tile.bbox[1], tile.bbox[2], tile.bbox[3]);
+
+var hls = ee.ImageCollection('NASA/HLS/HLSL30/v002')
+  .merge(ee.ImageCollection('NASA/HLS/HLSS30/v002'))
+  .filterBounds(aoi).filterDate(YEAR + '-01-01', (YEAR + 1) + '-01-01');
+var palsar = ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
+  .filterBounds(aoi).filter(ee.Filter.calendarRange(YEAR, YEAR, 'year'));
+var era5 = ee.ImageCollection('ECMWF/ERA5_LAND/MONTHLY_AGGR')
+  .filterBounds(aoi).filter(ee.Filter.calendarRange(YEAR, YEAR, 'year'));
+
+print('MAPBIOMAS-CARBONO · Pantanal v04 · 1_preflight_sources');
+ee.Dictionary({ hls: hls.size(), palsar: palsar.size(), era5: era5.size() })
+  .evaluate(function (counts) { print('[FONTES]', counts); });
+
+var stack = src.buildTypedCovariatesStack(aoi, YEAR);
+print('[BANDAS]', stack.bandNames());
+print('[TIPOS]', stack.bandTypes());

@@ -1,0 +1,73 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Pantanal v04 · Cache tipado de covariáveis
+ * ---------------------------------------------------------------------------
+ * Esta etapa paga o custo do stack uma vez por célula/ano. A matriz e a
+ * predição usam os assets resultantes, evitando recalcular HLS/PALSAR/ERA5 em
+ * cada batch de tabela.
+ ******************************************************************************/
+
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v04/0_covariate_source');
+
+var YEARS = [2023];
+var ACTIVE_TILE_IDS = ['tile01'];
+var PART_SPLIT = 4;
+var ASSET_COVARIATES = src.ASSET_ROOT + '/COVARIATES';
+var biomeGeom = ee.FeatureCollection(src.BIOME_FC)
+  .filter(ee.Filter.eq(src.BIOME_PROP, src.BIOME_NAME)).geometry();
+var tiles = src.makeTiles();
+var tileById = {};
+tiles.forEach(function (tile) { tileById[tile.id] = tile; });
+
+function splitTile(tile) {
+  var parts = [];
+  for (var i = 0; i < PART_SPLIT; i++) {
+    for (var j = 0; j < PART_SPLIT; j++) {
+      parts.push({
+        id: 'p' + ('00' + (i * PART_SPLIT + j + 1)).slice(-2),
+        bbox: [
+          tile.bbox[0] + (tile.bbox[2] - tile.bbox[0]) * j / PART_SPLIT,
+          tile.bbox[1] + (tile.bbox[3] - tile.bbox[1]) * i / PART_SPLIT,
+          tile.bbox[0] + (tile.bbox[2] - tile.bbox[0]) * (j + 1) / PART_SPLIT,
+          tile.bbox[1] + (tile.bbox[3] - tile.bbox[1]) * (i + 1) / PART_SPLIT
+        ]
+      });
+    }
+  }
+  return parts;
+}
+
+function schedule(tileId, part, year, geom) {
+  var image = src.buildTypedCovariatesStack(geom, year);
+  var name = 'covariates_v04_' + tileId + '_' + part.id + '_' + year;
+  Export.image.toAsset({
+    image: image,
+    description: 'WS_CARBONO_toAsset-' + name,
+    assetId: ASSET_COVARIATES + '/' + name,
+    region: geom,
+    scale: src.SCALE,
+    maxPixels: 1e13,
+    pyramidingPolicy: { '.default': 'mean' }
+  });
+  print('[TASK]', name);
+}
+
+print('MAPBIOMAS-CARBONO · Pantanal v04 · 2_1_export_covariate_tiles');
+print('[INFO] Tiles:', ACTIVE_TILE_IDS, '· anos:', YEARS,
+  '· partes:', PART_SPLIT * PART_SPLIT);
+src.ensureFolder(ASSET_COVARIATES);
+
+ACTIVE_TILE_IDS.forEach(function (tileId) {
+  if (!tileById[tileId]) return;
+  splitTile(tileById[tileId]).forEach(function (part) {
+    var geom = ee.Geometry.BBox(part.bbox[0], part.bbox[1],
+      part.bbox[2], part.bbox[3]).intersection(biomeGeom, ee.ErrorMargin(30));
+    geom.area(30).evaluate(function (area) {
+      if (!area) {
+        print('[SKIP] Parte sem área:', tileId, part.id);
+        return;
+      }
+      YEARS.forEach(function (year) { schedule(tileId, part, year, geom); });
+    });
+  });
+});

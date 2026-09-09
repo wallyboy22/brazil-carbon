@@ -1,0 +1,65 @@
+# pantanal_forest/v04 — Cache de covariáveis e matriz barata
+
+A v04 mantém a v03 como baseline e altera o custo da etapa cara. O stack bruto
+de HLS/PALSAR/ERA5/HAND/LULC é calculado uma vez por célula e ano, persistido
+como imagem tipada e reutilizado pela matriz e pela predição.
+
+## Grafo
+
+```text
+V03/SAMPLES/footprint_pantanal_2023
+                ↓
+0_contract → 1_preflight_sources → 2_0_check_footprint
+                                      ↓
+                         2_1_export_covariate_tiles
+                                      ↓
+                         2_2_data_matrix_from_assets
+                                      ↓
+                              3_model_training
+                                      ↓
+                      4_spatial_prediction_from_assets
+                                      ↓
+                                  5_merge
+                                      ↓
+                                    6_qa
+```
+
+## Por que é mais barata
+
+Na v03, cada batch da matriz referencia novamente o stack bruto. Na v04, o
+stack é materializado uma vez em `COVARIATES/`; a matriz só lê imagens locais
+já tipadas. O batch inicial da matriz sobe de 500 para 2.000 amostras.
+
+## Tipos
+
+| Grupo | Tipo |
+|---|---|
+| Índices, PALSAR, HAND e clima | `Float32` |
+| Classes geomorfológicas e LULC | `Uint8` |
+| Predições | `Float32` |
+
+## Assets
+
+Base:
+`projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/V04/`
+
+| Balde | Conteúdo |
+|---|---|
+| `COVARIATES/` | `covariates_v04_tileNN_pNN_AAAA` |
+| `MATRIX/` | `agc_matrix_v04_tileNN_pNN_AAAA_batchNNN` |
+| `MODELS/` | `rf_agc_v04` |
+| `PREDICTIONS/` | `agc_pred_v04_tileNN_pNN_AAAA` e merges |
+
+## Execução inicial
+
+1. Execute `1_preflight_sources` para `tile01/2023`.
+2. Execute `2_0_check_footprint`.
+3. Execute `2_1_export_covariate_tiles` com o smoke test padrão.
+4. Confirme os assets em `COVARIATES/`.
+5. Execute `2_2_data_matrix_from_assets`.
+6. Execute `3_model_training` e rode a task `rf_agc_v04`.
+7. Execute `4_spatial_prediction_from_assets`.
+8. Confirme uma predição concluída antes de expandir `YEARS` e tiles.
+9. Execute `5_merge` e depois `6_qa`.
+
+Após validar o smoke test, expanda `YEARS` e os tiles nos scripts 2.1 e 4.

@@ -142,6 +142,14 @@ entrada, mas os novos produtos ficam isolados em
 smoke test (`tile01`, 2023), em partes `4×4`, antes da expansão para todo o
 Pantanal.
 
+### v04 — cache de covariáveis e matriz barata (Pantanal)
+
+A `pantanal_forest/v04/` reutiliza o footprint e o contrato científico da v03,
+mas materializa o stack tipado em `V04/COVARIATES/` antes de gerar a matriz.
+Assim HLS, PALSAR, ERA5, HAND e LULC são calculados uma vez por célula/ano,
+em vez de serem recalculados por cada batch de tabela. A matriz v04 usa batches
+iniciais de 2.000 amostras e a predição lê os mesmos rasters cacheados.
+
 ## Como adicionar uma nova região/bioma
 
 1. Crie a subpasta versionada `COLLECTION_00/<cobertura>_forest/v<NN>/` e copie um script existente.
