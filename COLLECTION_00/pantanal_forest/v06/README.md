@@ -51,6 +51,29 @@ a matriz v05, pois o filtro de entrada mudou.
 `MASK_MODE = prediction_year`: cada predição usa a classificação florestal do
 próprio ano. A matriz inicial usa `classification_2023`.
 
+## Estrutura de predições
+
+As predições por célula são exportadas **dentro da ImageCollection**
+`PREDICTIONS/COL` (não em uma pasta). O mosaico anual consolidado sai como
+**irmão da COL**, com nome simples, no mesmo `PREDICTIONS/`:
+
+```text
+V06/PREDICTIONS/                       ← pasta (ensureFolder)
+├── COL/                               ← ImageCollection (criar manualmente)
+│   ├── agc_pred_v06_<célula>_<ano>
+│   └── ...
+└── agc_pred_v06_merged_<ano>          ← merge, irmão da COL, nome simples
+```
+
+Cada imagem da COL carrega as propriedades `year`, `cell_id` e
+`system:time_start` (1º de janeiro do ano), usadas pelo `5_merge`.
+
+A ImageCollection `PREDICTIONS/COL` é criada **automaticamente** pelo helper
+`ensureImageCollection` (mecanismo `ee.data.createAsset`), chamado no
+`4_spatial_prediction` — não é necessário criar manualmente via Assets. Se um
+asset com o mesmo nome já existir como pasta, o script emite aviso para
+excluir/recriar.
+
 ## Execução
 
 1. Execute `1_preflight`.
@@ -58,6 +81,7 @@ próprio ano. A matriz inicial usa `classification_2023`.
 3. Execute `2_1_filter_footprint` e rode a task do novo footprint.
 4. Execute `2_2_data_matrix`.
 5. Execute `3_model_training` e rode a task do modelo.
-6. Execute `4_spatial_prediction`.
+6. Execute `4_spatial_prediction` — a ImageCollection `PREDICTIONS/COL` é criada
+   automaticamente e os exports entram nela.
 7. Use `ADD_LAYER=true` para visualizar somente a área florestal.
-8. Execute `5_merge` e `6_qa`.
+8. Execute `5_merge` (mosaico por ano, irmão da COL) e `6_qa`.

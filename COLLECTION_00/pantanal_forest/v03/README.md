@@ -45,7 +45,15 @@ Base:
 |---|---|
 | `MATRIX/` | `agc_matrix_v03_pantanal_tileNN_batchNNN` |
 | `MODELS/` | `rf_agc_v03` |
-| `PREDICTIONS/` | `agc_pred_v03_tileNN_pNN_AAAA` e merges anuais |
+| `PREDICTIONS/COL/` | ImageCollection de predições por célula/ano |
+| `PREDICTIONS/` | merges anuais (`agc_pred_v03_merged_AAAA`), irmãos da `COL` |
+
+As predições por célula são exportadas **dentro da ImageCollection**
+`PREDICTIONS/COL` (criada automaticamente pelo `ensureImageCollection`, via
+`ee.data.createAsset`), cada uma com as propriedades `year`, `cell_id` e
+`system:time_start`. O `5_merge` lê a `COL` filtrada por `year` e exporta o
+mosaico anual como irmão, com nome simples. Se a `COL` existir como pasta, o
+script avisa para excluir/recriar.
 
 Entrada persistida da matriz:
 `.../PANTANAL_FOREST/SAMPLES/footprint_pantanal_2023`.
@@ -58,7 +66,8 @@ Entrada persistida da matriz:
 4. Rode a análise do `2_2_offline_gate`.
 5. Execute `3_model_training` e rode a task do modelo `rf_agc_v03`.
 6. Execute `4_spatial_prediction`; as células válidas são descobertas
-   server-side pelo polígono e pelos footprints.
+   server-side pelo polígono e pelos footprints. A ImageCollection
+   `PREDICTIONS/COL` é criada automaticamente e os exports entram nela.
 7. Ligue `ADD_LAYER=true` quando quiser visualizar as predições no mapa.
 8. Execute `5_merge` somente após as predições necessárias concluírem.
 9. Execute `6_qa` para conferir cobertura e assets.

@@ -48,7 +48,15 @@ Base:
 | `COVARIATES/` | `covariates_v04_tileNN_pNN_AAAA` |
 | `MATRIX/` | `agc_matrix_v04_tileNN_pNN_AAAA_batchNNN` |
 | `MODELS/` | `rf_agc_v04` |
-| `PREDICTIONS/` | `agc_pred_v04_tileNN_pNN_AAAA` e merges |
+| `PREDICTIONS/COL/` | ImageCollection de predições por célula/ano |
+| `PREDICTIONS/` | merges anuais (`agc_pred_v04_merged_AAAA`), irmãos da `COL` |
+
+As predições são exportadas **dentro da ImageCollection** `PREDICTIONS/COL`
+(criada automaticamente pelo `ensureImageCollection`, via `ee.data.createAsset`),
+cada uma com as propriedades `year`, `cell_id` e `system:time_start`. O
+`5_merge` lê a `COL` filtrada por `year` e exporta o mosaico anual como irmão,
+com nome simples. Se a `COL` existir como pasta, o script avisa para
+excluir/recriar.
 
 ## Execução inicial
 
@@ -59,7 +67,8 @@ Base:
 4. Confirme os assets em `COVARIATES/`.
 5. Execute `2_2_data_matrix_from_assets`.
 6. Execute `3_model_training` e rode a task `rf_agc_v04`.
-7. Execute `4_spatial_prediction_from_assets`.
+7. Execute `4_spatial_prediction_from_assets`; a ImageCollection
+   `PREDICTIONS/COL` é criada automaticamente e os exports entram nela.
 8. Confirme uma predição concluída antes de expandir `YEARS` e tiles.
 9. Execute `5_merge` e depois `6_qa`.
 

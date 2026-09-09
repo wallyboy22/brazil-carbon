@@ -3,9 +3,16 @@
  ******************************************************************************/
 var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v05/0_covariate_source');
-var roots = ['/MATRIX', '/MODELS', '/PREDICTIONS'];
+var roots = ['/MATRIX', '/MODELS'];
+var col = ee.ImageCollection(src.ASSET_ROOT + '/PREDICTIONS/COL');
 print('MAPBIOMAS-CARBONO · Pantanal v05 · 6_qa');
 roots.forEach(function (suffix) {
   var response = ee.data.listAssets(src.ASSET_ROOT + suffix);
   print('[QA]', suffix, (response.assets || []).map(function (a) { return a.id; }));
+});
+col.size().evaluate(function (n) {
+  print('[QA] PREDICTIONS/COL · membros:', n);
+});
+col.aggregate_array('year').distinct().evaluate(function (years) {
+  print('[QA] PREDICTIONS/COL · anos:', years);
 });

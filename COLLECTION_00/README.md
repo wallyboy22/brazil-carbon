@@ -165,7 +165,11 @@ dos exports.
 A v06 filtra os footprints de entrada e mascara as predições pelas formações
 florestais da Coleção 11 (`3`, `4`, `6`, `7`, `49`). Como o universo de treino
 muda, a matriz é regenerada em `V06/MATRIX/`; a v06 não reutiliza diretamente a
-matriz v05. A máscara de saída pode acompanhar o ano da predição.
+matriz v05. A máscara de saída pode acompanhar o ano da predição. As predições
+por célula são exportadas **dentro de uma ImageCollection**
+`V06/PREDICTIONS/COL`, criada automaticamente pelo `ensureImageCollection`
+(`ee.data.createAsset`), e o mosaico anual do `5_merge` sai como irmão da COL,
+nome simples.
 
 ### `pantanal_grassland/v01` — primeira pipeline não-florestal
 

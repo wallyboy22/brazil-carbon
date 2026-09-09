@@ -13,6 +13,7 @@ var PRED_PART_SPLIT = 4;
 var ADD_LAYER = false;
 var PRED_PALETTE = ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'];
 var ASSET_PREDICTIONS = src.ASSET_ROOT + '/PREDICTIONS';
+var IC = ASSET_PREDICTIONS + '/COL';
 var MODEL_ASSET = src.ASSET_ROOT + '/MODELS/rf_agc_v03';
 
 var model = ee.Classifier.load(MODEL_ASSET);
@@ -36,14 +37,16 @@ function createExports(cellIds) {
       definition.bbox[2], definition.bbox[3]).intersection(biomeGeom, ee.ErrorMargin(30));
     YEARS.forEach(function (year) {
       var image = src.buildTypedCovariatesStack(geom, year)
-        .classify(model).rename('prediction_' + year).toFloat().clip(geom);
+        .classify(model).rename('prediction_' + year).toFloat().clip(geom)
+        .set('year', year).set('cell_id', cellId)
+        .set('system:time_start', ee.Date.fromYMD(year, 1, 1).millis());
       var name = 'agc_pred_v03_' + cellId + '_' + year;
       if (ADD_LAYER) Map.addLayer(image,
         { min: 0, max: 150, palette: PRED_PALETTE }, name, false);
       Export.image.toAsset({
         image: image,
         description: 'WS_CARBONO_toAsset-' + name,
-        assetId: ASSET_PREDICTIONS + '/' + name,
+        assetId: IC + '/' + name,
         region: geom, scale: src.SCALE, maxPixels: 1e13,
         pyramidingPolicy: { '.default': 'mean' }
       });
@@ -53,7 +56,9 @@ function createExports(cellIds) {
 
 print('MAPBIOMAS-CARBONO · Pantanal v03 · 4_spatial_prediction');
 print('[INFO] Modelo:', MODEL_ASSET, '· ADD_LAYER:', ADD_LAYER);
+print('[IMPORTANTE] As predições por célula entram na ImageCollection ' + IC);
 src.ensureFolder(ASSET_PREDICTIONS);
+src.ensureImageCollection(IC);
 cells.aggregate_array('cell_id').evaluate(function (cellIds) {
   print('[OK] Células válidas:', cellIds.length);
   createExports(cellIds);

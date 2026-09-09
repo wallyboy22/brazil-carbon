@@ -6,11 +6,16 @@ var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v03/0_covariate_source');
 var matrixPath = src.ASSET_ROOT + '/MATRIX';
 var predictionPath = src.ASSET_ROOT + '/PREDICTIONS';
+var col = ee.ImageCollection(predictionPath + '/COL');
 
 var matrix = ee.data.listAssets(matrixPath);
-var predictions = ee.data.listAssets(predictionPath);
 
 print('MAPBIOMAS-CARBONO · Pantanal v03 · 6_qa');
 print('[QA] Matrix assets:', (matrix.assets || []).map(function (a) { return a.id; }));
-print('[QA] Prediction assets:',
-  (predictions.assets || []).map(function (a) { return a.id; }));
+col.size().evaluate(function (n) {
+  print('[QA] Predições · membros da ImageCollection COL:', n);
+});
+col.aggregate_array('year').distinct().evaluate(function (years) {
+  print('[QA] Predições · anos:', years);
+});
+print('[QA] Predições · bandNames do primeiro membro:', col.first().bandNames());

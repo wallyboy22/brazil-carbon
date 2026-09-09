@@ -10,6 +10,7 @@ var YEARS = [2023];
 var ADD_LAYER = false;
 var palette = ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'];
 var root = c.ASSET_ROOT;
+var IC = root + '/PREDICTIONS/COL';
 var model = ee.Classifier.load(root + '/MODELS/rf_agc_v06_forest_masked');
 var biome = src.getBiome().geometry();
 var forestPoints = ee.FeatureCollection(root + '/SAMPLES/forest_footprint_v06_' + c.YEAR);
@@ -29,12 +30,14 @@ function createExports(ids) {
     YEARS.forEach(function (year) {
       var mask = src.getForestMask(year);
       var image = src.buildTypedCovariatesStack(geom, year).classify(model)
-        .rename('prediction_' + year).toFloat().updateMask(mask).clip(geom);
+        .rename('prediction_' + year).toFloat().updateMask(mask).clip(geom)
+        .set('year', year).set('cell_id', id)
+        .set('system:time_start', ee.Date.fromYMD(year, 1, 1).millis());
       var name = 'agc_pred_v06_' + id + '_' + year;
       if (ADD_LAYER) Map.addLayer(image, { min: 0, max: 150, palette: palette }, name, false);
       Export.image.toAsset({ image: image,
         description: 'WS_CARBONO_toAsset-' + name,
-        assetId: root + '/PREDICTIONS/' + name,
+        assetId: IC + '/' + name,
         region: geom, scale: c.SCALE, maxPixels: 1e13,
         pyramidingPolicy: { '.default': 'mean' } });
     });
@@ -43,7 +46,9 @@ function createExports(ids) {
 
 print('MAPBIOMAS-CARBONO · Pantanal Forest v06 · 4_spatial_prediction');
 print('[MASK MODE]', c.MASK_MODE, '· [ADD_LAYER]', ADD_LAYER);
+print('[IMPORTANTE] As predições por célula entram na ImageCollection ' + IC);
 src.ensureFolder(root + '/PREDICTIONS');
+src.ensureImageCollection(IC);
 cells.aggregate_array('cell_id').evaluate(function (ids) {
   print('[CÉLULAS]', ids.length); createExports(ids);
 });

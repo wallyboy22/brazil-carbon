@@ -14,6 +14,7 @@ exports.BIOME_PROP = base.BIOME_PROP;
 exports.BIOME_NAME = base.BIOME_NAME;
 exports.SCALE = base.SCALE;
 exports.ensureFolder = base.ensureFolder;
+exports.ensureImageCollection = base.ensureImageCollection;
 exports.SAMPLE_PROPS = base.SAMPLE_PROPS;
 exports.FEATURE_BANDS = contract.FEATURE_BANDS;
 exports.TARGET = contract.TARGET;

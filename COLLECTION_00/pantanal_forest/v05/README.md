@@ -41,7 +41,16 @@ Base:
 |---|---|
 | `MATRIX/` | uma matriz por célula válida |
 | `MODELS/` | `rf_agc_v05` |
-| `PREDICTIONS/` | predições por célula/ano e merges |
+| `PREDICTIONS/COL/` | ImageCollection de predições por célula/ano |
+| `PREDICTIONS/` | merges anuais (`agc_pred_v05_merged_AAAA`), irmãos da `COL` |
+
+As predições por célula são exportadas **dentro da ImageCollection**
+`PREDICTIONS/COL` (criada automaticamente pelo `ensureImageCollection`, via
+`ee.data.createAsset`), cada uma com as propriedades `year`, `cell_id` e
+`system:time_start`. O `5_merge` lê a `COL` filtrada por `year` e exporta o
+mosaico anual como irmão, com nome simples. Se a `COL` existir como pasta, o
+script avisa para excluir/recriar. Predições v05 antigas exportadas na pasta
+(fora da `COL`) não são consideradas pelo merge.
 
 O footprint de entrada é filtrado pelo polígono oficial do Pantanal.
 
@@ -51,7 +60,8 @@ O footprint de entrada é filtrado pelo polígono oficial do Pantanal.
 2. Execute `2_0_check_footprint`.
 3. Execute `2_1_data_matrix`.
 4. Execute `3_model_training` e rode a task do modelo.
-5. Execute `4_spatial_prediction`.
+5. Execute `4_spatial_prediction`; a ImageCollection `PREDICTIONS/COL` é criada
+   automaticamente e os exports entram nela.
 6. Para visualizar as predições no mapa, altere `ADD_LAYER` para `true`.
 7. Execute `5_merge` após as predições concluírem.
 8. Execute `6_qa`.

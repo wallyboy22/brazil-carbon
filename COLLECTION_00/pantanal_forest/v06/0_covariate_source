@@ -22,6 +22,27 @@ exports.makeCellDefinitions = c.makeCellDefinitions;
 exports.makeCellFeatures = c.makeCellFeatures;
 exports.ensureFolder = base.ensureFolder;
 
+exports.ensureImageCollection = function (collectionPath) {
+  var parent = collectionPath.slice(0, collectionPath.lastIndexOf('/'));
+  exports.ensureFolder(parent);
+  try {
+    var info = ee.data.getAsset(collectionPath);
+    if (info.type !== 'IMAGE_COLLECTION' && info.type !== 'ImageCollection') {
+      print('[ERRO] ' + collectionPath + ' existe, mas NÃO é ImageCollection (' +
+        info.type + '). Excluir/recriar antes de rodar.');
+      return;
+    }
+    print('[OK] ImageCollection já existe:', collectionPath);
+  } catch (e) {
+    try {
+      ee.data.createAsset({ type: 'ImageCollection' }, collectionPath);
+      print('[OK] ImageCollection criada:', collectionPath);
+    } catch (e2) {
+      print('[AVISO] Falha ao criar ImageCollection', collectionPath, '—', e2.message);
+    }
+  }
+};
+
 exports.getBiome = function () {
   return ee.FeatureCollection(c.BIOME_FC)
     .filter(ee.Filter.eq(c.BIOME_PROP, c.BIOME_NAME));

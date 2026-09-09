@@ -11,6 +11,7 @@ var src = require(
 var YEARS = [2023];
 var ASSET_COVARIATES = src.ASSET_ROOT + '/COVARIATES';
 var ASSET_PREDICTIONS = src.ASSET_ROOT + '/PREDICTIONS';
+var IC = ASSET_PREDICTIONS + '/COL';
 var MODEL_ASSET = src.ASSET_ROOT + '/MODELS/rf_agc_v04';
 var ADD_LAYER = false;
 var PRED_PALETTE = ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'];
@@ -22,14 +23,17 @@ var allAssets = (response.assets || []).filter(function (asset) {
 });
 
 function exportPrediction(asset, year) {
-  var image = ee.Image(asset.id).classify(model)
-    .rename('prediction_' + year).toFloat();
   var name = asset.id.split('/').pop().replace('covariates_', 'agc_pred_');
+  var cellId = name.replace('agc_pred_v04_', '').slice(0, -5);
+  var image = ee.Image(asset.id).classify(model)
+    .rename('prediction_' + year).toFloat()
+    .set('year', Number(year)).set('cell_id', cellId)
+    .set('system:time_start', ee.Date.fromYMD(year, 1, 1).millis());
   if (ADD_LAYER) Map.addLayer(image, { min: 0, max: 150, palette: PRED_PALETTE }, name, false);
   Export.image.toAsset({
     image: image,
     description: 'WS_CARBONO_toAsset-' + name,
-    assetId: ASSET_PREDICTIONS + '/' + name,
+    assetId: IC + '/' + name,
     region: image.geometry(),
     scale: src.SCALE,
     maxPixels: 1e13,
@@ -40,7 +44,9 @@ function exportPrediction(asset, year) {
 
 print('MAPBIOMAS-CARBONO · Pantanal v04 · 4_spatial_prediction_from_assets');
 print('[INFO] Modelo:', MODEL_ASSET, '· covariáveis:', allAssets.length);
+print('[IMPORTANTE] As predições entram na ImageCollection ' + IC);
 src.ensureFolder(ASSET_PREDICTIONS);
+src.ensureImageCollection(IC);
 YEARS.forEach(function (year) {
   allAssets.filter(function (asset) {
     return asset.id.slice(-4) === String(year);
