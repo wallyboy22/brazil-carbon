@@ -10,11 +10,15 @@ var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v04/0_covariate_source');
 
 var YEARS = [2023];
-var ACTIVE_TILE_IDS = ['tile01'];
+// Vazio = selecionar automaticamente tiles com área e footprints dentro do
+// polígono real do Pantanal. Preencha para restringir a execução.
+var ACTIVE_TILE_IDS = [];
 var PART_SPLIT = 4;
 var ASSET_COVARIATES = src.ASSET_ROOT + '/COVARIATES';
 var biomeGeom = ee.FeatureCollection(src.BIOME_FC)
   .filter(ee.Filter.eq(src.BIOME_PROP, src.BIOME_NAME)).geometry();
+var footprints = ee.FeatureCollection(src.FOOTPRINT_ASSET)
+  .filterBounds(biomeGeom);
 var tiles = src.makeTiles();
 var tileById = {};
 tiles.forEach(function (tile) { tileById[tile.id] = tile; });
@@ -52,22 +56,42 @@ function schedule(tileId, part, year, geom) {
   print('[TASK]', name);
 }
 
+function processTile(tile) {
+  var tileGeom = ee.Geometry.BBox(tile.bbox[0], tile.bbox[1],
+    tile.bbox[2], tile.bbox[3]);
+  var validTileGeom = tileGeom.intersection(biomeGeom, ee.ErrorMargin(30));
+  var tilePoints = footprints.filterBounds(tileGeom);
+  ee.Dictionary({
+    area: validTileGeom.area(30),
+    points: tilePoints.size()
+  }).evaluate(function (stats) {
+    if (!stats || !stats.area || !stats.points) {
+      print('[SKIP] Tile fora do bioma ou sem footprints:', tile.id, stats);
+      return;
+    }
+    print('[OK] Tile válido:', tile.id, '· footprints:', stats.points);
+    splitTile(tile).forEach(function (part) {
+      var geom = ee.Geometry.BBox(part.bbox[0], part.bbox[1],
+        part.bbox[2], part.bbox[3]).intersection(biomeGeom, ee.ErrorMargin(30));
+      geom.area(30).evaluate(function (area) {
+        if (!area) {
+          print('[SKIP] Parte fora do bioma:', tile.id, part.id);
+          return;
+        }
+        YEARS.forEach(function (year) { schedule(tile.id, part, year, geom); });
+      });
+    });
+  });
+}
+
 print('MAPBIOMAS-CARBONO · Pantanal v04 · 2_1_export_covariate_tiles');
 print('[INFO] Tiles:', ACTIVE_TILE_IDS, '· anos:', YEARS,
   '· partes:', PART_SPLIT * PART_SPLIT);
 src.ensureFolder(ASSET_COVARIATES);
 
-ACTIVE_TILE_IDS.forEach(function (tileId) {
-  if (!tileById[tileId]) return;
-  splitTile(tileById[tileId]).forEach(function (part) {
-    var geom = ee.Geometry.BBox(part.bbox[0], part.bbox[1],
-      part.bbox[2], part.bbox[3]).intersection(biomeGeom, ee.ErrorMargin(30));
-    geom.area(30).evaluate(function (area) {
-      if (!area) {
-        print('[SKIP] Parte sem área:', tileId, part.id);
-        return;
-      }
-      YEARS.forEach(function (year) { schedule(tileId, part, year, geom); });
-    });
-  });
+var selectedTiles = ACTIVE_TILE_IDS.length ? ACTIVE_TILE_IDS : tiles.map(function (tile) {
+  return tile.id;
+});
+selectedTiles.forEach(function (tileId) {
+  if (tileById[tileId]) processTile(tileById[tileId]);
 });

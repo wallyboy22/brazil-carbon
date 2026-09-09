@@ -10,7 +10,10 @@ var BATCH_SIZE = 2000;
 var TILE_SCALE = 16;
 var ASSET_COVARIATES = src.ASSET_ROOT + '/COVARIATES';
 var ASSET_MATRIX = src.ASSET_ROOT + '/MATRIX';
-var footprints = ee.FeatureCollection(src.FOOTPRINT_ASSET);
+var biomeGeom = ee.FeatureCollection(src.BIOME_FC)
+  .filter(ee.Filter.eq(src.BIOME_PROP, src.BIOME_NAME)).geometry();
+var footprints = ee.FeatureCollection(src.FOOTPRINT_ASSET)
+  .filterBounds(biomeGeom);
 
 var response = ee.data.listAssets(ASSET_COVARIATES);
 var covariateAssets = (response.assets || []).filter(function (asset) {

@@ -149,6 +149,8 @@ mas materializa o stack tipado em `V04/COVARIATES/` antes de gerar a matriz.
 Assim HLS, PALSAR, ERA5, HAND e LULC são calculados uma vez por célula/ano,
 em vez de serem recalculados por cada batch de tabela. A matriz v04 usa batches
 iniciais de 2.000 amostras e a predição lê os mesmos rasters cacheados.
+Os tiles e footprints da v04 são filtrados pelo polígono oficial do Pantanal,
+não apenas pelo retângulo envolvente usado nas versões anteriores.
 
 ## Como adicionar uma nova região/bioma
 

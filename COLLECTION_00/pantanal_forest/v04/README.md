@@ -52,9 +52,10 @@ Base:
 
 ## Execução inicial
 
-1. Execute `1_preflight_sources` para `tile01/2023`.
+1. Execute `1_preflight_sources` para uma área de teste.
 2. Execute `2_0_check_footprint`.
-3. Execute `2_1_export_covariate_tiles` com o smoke test padrão.
+3. Execute `2_1_export_covariate_tiles`; por padrão ele seleciona tiles com
+   área e footprints dentro do polígono real do Pantanal.
 4. Confirme os assets em `COVARIATES/`.
 5. Execute `2_2_data_matrix_from_assets`.
 6. Execute `3_model_training` e rode a task `rf_agc_v04`.
@@ -62,4 +63,5 @@ Base:
 8. Confirme uma predição concluída antes de expandir `YEARS` e tiles.
 9. Execute `5_merge` e depois `6_qa`.
 
-Após validar o smoke test, expanda `YEARS` e os tiles nos scripts 2.1 e 4.
+Após validar o smoke test, expanda `YEARS` no script 2.1 e depois execute a
+predição para os assets COVARIATES produzidos.
