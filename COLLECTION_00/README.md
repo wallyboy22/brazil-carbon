@@ -118,9 +118,10 @@ O `3_modelling` descobre automaticamente os assets `agc_matrix_v02_pantanal_*`
 existentes em `MATRIX/` (tiles sem amostra válida — "Table is empty" — não
 geram asset e são ignorados) e os combina apenas para o treinamento.
 `MATRIX_ASSET_IDS` é um override opcional (vazio = descobrir tudo).
-A predição é exportada **uma imagem por ano** (`agc_pred_v02_rf_2019` …
-`_2023`), e `ADD_LAYER=true` adiciona as camadas ao mapa (diagnóstico; default
-`false`).
+A predição é exportada **por tile × parte × ano** (`agc_pred_v02_rf_tile01_p01_2019` …)
+para evitar o `Computed value is too large`; `PRED_PART_SPLIT` (default `2`)
+subdivide cada tile em N×N partes, e `ADD_LAYER=true` adiciona as camadas ao
+mapa (diagnóstico; default `false`).
 Antes da matriz, a subetapa `2_0_check_footprint` valida o asset persistido
 `SAMPLES/footprint_pantanal_2023`; a v02 não redescobre nem reexporta os
 footprints GEDI.

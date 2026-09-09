@@ -48,11 +48,7 @@ no export.
    manual. `MATRIX_ASSET_IDS` é override opcional (vazio = descobrir tudo).
 6. Execute `3_modelling` para treinar e exportar as predições.
 
-O `3_modelling` exporta **uma imagem por ano** (`agc_pred_v02_rf_2019` …
-`_2023`) em vez de uma única imagem multibanda, para evitar o
-`Computed value is too large` na predição. Opcionalmente, ligue `ADD_LAYER=true`
-para adicionar as predições ao mapa (diagnóstico); `false` (padrão) não adiciona
-nada.
+O `3_modelling` exporta a predição **por tile × parte × ano** (`agc_pred_v02_rf_tile01_p01_2019`, …) para evitar o `Computed value is too large` na predição sobre o bioma inteiro. Por padrão ele prediz apenas os tiles que possuem ao menos um asset de matriz válido (`ACTIVE_TILE_IDS` é override opcional); `PRED_PART_SPLIT` (default `2`) subdivide cada tile em N×N partes. Opcionalmente, ligue `ADD_LAYER=true` para adicionar as predições ao mapa (diagnóstico); `false` (padrão) não adiciona nada.
 
 O módulo de covariáveis usa a implementação da v01 por enquanto, pois a
 alteração desta versão é de particionamento/export, não de alvo ou stack. A
@@ -76,7 +72,7 @@ Base:
 |---|---|
 | `SAMPLES/` | footprints GEDI filtrados |
 | `MATRIX/` | batches por tile `agc_matrix_v02_pantanal_tileNN_batchNNN` |
-| `PREDICTIONS/` | imagens anuais AGC da modelagem |
+| `PREDICTIONS/` | predições por tile×parte×ano `agc_pred_v02_rf_tileNN_pNN_AAAA` |
 
 `ASSET_BATCH_SIZE` começa em `500` e `TILE_SCALE` em `16`. Se uma task ainda
 exceder o limite, reduza o batch para `250` e repita somente o tile afetado.
