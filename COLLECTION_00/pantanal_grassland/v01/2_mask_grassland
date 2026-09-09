@@ -2,9 +2,9 @@
  * Pantanal Grassland v01 · Máscara Coleção 11
  ******************************************************************************/
 var c = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland_v01/0_contract');
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland/v01/0_contract');
 var src = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland_v01/0_sensor_landsat_modis');
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland/v01/0_sensor_landsat_modis');
 var mask = src.getGrasslandMask(c.YEAR);
 print('MAPBIOMAS-CARBONO · Pantanal Grassland v01 · 2_mask_grassland');
 print('[MASK] Classes C11:', c.GRASSLAND_CLASSES);

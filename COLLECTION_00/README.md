@@ -160,10 +160,10 @@ Cada célula gera um único export de matriz, e `ADD_LAYER=true` no
 `4_spatial_prediction` permite visualizar as predições no mapa antes ou junto
 dos exports.
 
-### `pantanal_grassland_v01` — primeira pipeline não-florestal
+### `pantanal_grassland/v01` — primeira pipeline não-florestal
 
 A pipeline de campos foi criada separadamente da floresta em
-`pantanal_grassland_v01/`. A v01 usa o método do Pampa com Landsat harmonizado,
+`pantanal_grassland/v01/`. A v01 usa o método do Pampa com Landsat harmonizado,
 MODIS fPAR/DSR e coeficientes `εCA` do Pampa, adaptando a máscara para o
 Pantanal e a Coleção 11, classes `11`, `12` e `50`. Produz biomassa seca, ANPP
 e estoque de carbono como produtos separados. O arquivo legado

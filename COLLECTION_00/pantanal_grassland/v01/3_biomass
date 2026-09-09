@@ -2,9 +2,9 @@
  * Pantanal Grassland v01 · Biomassa seca mensal/anual
  ******************************************************************************/
 var c = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland_v01/0_contract');
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland/v01/0_contract');
 var src = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland_v01/0_sensor_landsat_modis');
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland/v01/0_sensor_landsat_modis');
 var ROOT = c.ASSET_ROOT + '/BIOMASS';
 var months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 var monthly = ee.Image.cat(months.map(function (month) {

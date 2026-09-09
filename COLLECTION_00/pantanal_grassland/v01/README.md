@@ -1,4 +1,4 @@
-# pantanal_grassland_v01 — Biomassa, ANPP e carbono
+# pantanal_grassland/v01 — Biomassa, ANPP e carbono
 
 Primeira pipeline de campos/grassland do Pantanal. O protótipo original
 `COLLECTION_00/pantanal_grassland` é preservado separadamente; esta pasta usa a

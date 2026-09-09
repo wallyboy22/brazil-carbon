@@ -2,9 +2,9 @@
  * Pantanal Grassland v01 · Estoque de carbono derivado
  ******************************************************************************/
 var c = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland_v01/0_contract');
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland/v01/0_contract');
 var src = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland_v01/0_sensor_landsat_modis');
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland/v01/0_sensor_landsat_modis');
 var ROOT = c.ASSET_ROOT + '/CARBON';
 var biomass = ee.Image(
   c.ASSET_ROOT + '/BIOMASS/grassland_biomass_annual_v01_2023');

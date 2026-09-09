@@ -6,7 +6,7 @@
  ******************************************************************************/
 
 var c = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland_v01/0_contract');
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland/v01/0_contract');
 var infra = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v01/0_covariate_source');
 
