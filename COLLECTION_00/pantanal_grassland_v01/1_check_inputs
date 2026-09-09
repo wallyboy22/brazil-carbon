@@ -1,0 +1,21 @@
+/******************************************************************************
+ * Pantanal Grassland v01 · Check de entradas
+ ******************************************************************************/
+var c = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland_v01/0_contract');
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland_v01/0_sensor_landsat_modis');
+var biome = src.getBiome();
+var mask = src.getGrasslandMask(c.YEAR);
+var biomass = src.monthlyBiomass(c.YEAR, 1);
+var anpp = src.monthlyAnpp(c.YEAR, 1);
+
+print('MAPBIOMAS-CARBONO · Pantanal Grassland v01 · 1_check_inputs');
+print('[CONTRACT] Ano:', c.YEAR, '· classes:', c.GRASSLAND_CLASSES);
+print('[BIOME]', biome);
+print('[MASK TYPES]', mask.bandTypes());
+print('[BIOMASS TYPES]', biomass.bandTypes());
+print('[ANPP TYPES]', anpp.bandTypes());
+Map.addLayer(mask, { palette: ['#86b074'] }, 'Grassland mask C11', false);
+Map.addLayer(biomass, { min: 400, max: 1500 }, 'Biomass Jan', false);
+Map.addLayer(anpp, { min: 0, max: 2000 }, 'ANPP Jan', false);

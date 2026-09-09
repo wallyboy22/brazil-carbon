@@ -1,0 +1,23 @@
+/******************************************************************************
+ * Pantanal Grassland v01 · QA
+ ******************************************************************************/
+var c = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland_v01/0_contract');
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland_v01/0_sensor_landsat_modis');
+var mask = src.getGrasslandMask(c.YEAR);
+var biomass = ee.Image(c.ASSET_ROOT + '/BIOMASS/grassland_biomass_annual_v01_2023');
+var anpp = ee.Image(c.ASSET_ROOT + '/ANPP/grassland_anpp_annual_v01_2023');
+var carbon = ee.Image(c.ASSET_ROOT + '/CARBON/grassland_carbon_stock_v01_2023');
+
+print('MAPBIOMAS-CARBONO · Pantanal Grassland v01 · 6_qa');
+print('[MASK]', mask.bandTypes());
+print('[BIOMASS]', biomass.bandTypes());
+print('[ANPP]', anpp.bandTypes());
+print('[CARBON]', carbon.bandTypes());
+print('[RANGES] Biomass:', biomass.reduceRegion({
+  reducer: ee.Reducer.minMax(), geometry: src.getBiome().geometry(),
+  scale: c.SCALE, maxPixels: 1e13
+}));
+Map.addLayer(carbon, { min: 0, max: 10, palette: ['ffffcc', '78c679', '006837'] },
+  'Carbon stock v01 2023', false);

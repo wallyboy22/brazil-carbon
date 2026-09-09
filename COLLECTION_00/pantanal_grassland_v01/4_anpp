@@ -1,0 +1,32 @@
+/******************************************************************************
+ * Pantanal Grassland v01 · ANPP Monteith mensal/anual
+ ******************************************************************************/
+var c = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland_v01/0_contract');
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_grassland_v01/0_sensor_landsat_modis');
+var ROOT = c.ASSET_ROOT + '/ANPP';
+var months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+var monthly = ee.Image.cat(months.map(function (month) {
+  return src.monthlyAnpp(c.YEAR, month);
+}));
+var annual = monthly.reduce(ee.Reducer.sum()).rename('anpp_annual').toFloat();
+var region = src.getBiome().geometry();
+
+print('MAPBIOMAS-CARBONO · Pantanal Grassland v01 · 4_anpp');
+print('[UNITS] Mensal/anual: kg MS/ha');
+src.ensureFolder(ROOT);
+Export.image.toAsset({
+  image: monthly,
+  description: 'WS_CARBONO_toAsset-grassland_anpp_monthly_v01_2023',
+  assetId: ROOT + '/grassland_anpp_monthly_v01_2023',
+  region: region, scale: c.SCALE, maxPixels: 1e13,
+  pyramidingPolicy: { '.default': 'mean' }
+});
+Export.image.toAsset({
+  image: annual,
+  description: 'WS_CARBONO_toAsset-grassland_anpp_annual_v01_2023',
+  assetId: ROOT + '/grassland_anpp_annual_v01_2023',
+  region: region, scale: c.SCALE, maxPixels: 1e13,
+  pyramidingPolicy: { '.default': 'mean' }
+});
