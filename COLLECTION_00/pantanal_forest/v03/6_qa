@@ -1,0 +1,16 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Pantanal v03 · QA dos assets
+ ******************************************************************************/
+
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v03/0_covariate_source');
+var matrixPath = src.ASSET_ROOT + '/MATRIX';
+var predictionPath = src.ASSET_ROOT + '/PREDICTIONS';
+
+var matrix = ee.data.listAssets(matrixPath);
+var predictions = ee.data.listAssets(predictionPath);
+
+print('MAPBIOMAS-CARBONO · Pantanal v03 · 6_qa');
+print('[QA] Matrix assets:', (matrix.assets || []).map(function (a) { return a.id; }));
+print('[QA] Prediction assets:',
+  (predictions.assets || []).map(function (a) { return a.id; }));

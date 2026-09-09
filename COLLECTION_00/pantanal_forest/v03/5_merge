@@ -1,0 +1,39 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Pantanal v03 · Merge das predições
+ ******************************************************************************/
+
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v03/0_covariate_source');
+var ASSET_PREDICTIONS = src.ASSET_ROOT + '/PREDICTIONS';
+var YEARS = [2019, 2020, 2021, 2022, 2023];
+
+var response = ee.data.listAssets(ASSET_PREDICTIONS);
+var assets = (response.assets || []).filter(function (asset) {
+  return asset.type === 'IMAGE' && asset.id.indexOf('/agc_pred_v03_') > -1 &&
+    asset.id.indexOf('_merged_') === -1;
+});
+
+print('MAPBIOMAS-CARBONO · Pantanal v03 · 5_merge');
+YEARS.forEach(function (year) {
+  var yearAssets = assets.filter(function (asset) {
+    return asset.id.slice(-4) === String(year);
+  });
+  if (!yearAssets.length) {
+    print('[SKIP] Sem predições para', year);
+    return;
+  }
+  var mosaic = ee.ImageCollection(yearAssets.map(function (asset) {
+    return ee.Image(asset.id);
+  })).mosaic().toFloat();
+  Export.image.toAsset({
+    image: mosaic.rename('prediction_' + year),
+    description: 'WS_CARBONO_toAsset-agc_pred_v03_merged_' + year,
+    assetId: ASSET_PREDICTIONS + '/agc_pred_v03_merged_' + year,
+    region: ee.FeatureCollection(src.BIOME_FC)
+      .filter(ee.Filter.eq(src.BIOME_PROP, src.BIOME_NAME)).geometry(),
+    scale: src.SCALE,
+    maxPixels: 1e13,
+    pyramidingPolicy: { '.default': 'mean' }
+  });
+  print('[TASK] Merge:', year, '· partes:', yearAssets.length);
+});

@@ -129,6 +129,19 @@ O módulo de covariáveis continua sendo o da v01, pois não houve mudança no
 alvo nem no stack. O tamanho inicial dos batches é `500`, com `TILE_SCALE=16`;
 se necessário, reduzir para `250` e repetir somente o tile afetado.
 
+### v03 — pipeline tipada e espacial (Pantanal)
+
+A `pantanal_forest/v03/` inaugura uma pipeline limpa, sem reutilizar os
+exports de predição da v02. Ela define um contrato explícito para as 36 bandas,
+converte contínuas para `Float32` e classes para `Uint8`, valida fontes e tipos
+antes dos exports, e separa matriz, treino, predição espacial, merge e QA.
+
+O footprint persistido de `SAMPLES/footprint_pantanal_2023` é reutilizado como
+entrada, mas os novos produtos ficam isolados em
+`PANTANAL_FOREST/V03/{MATRIX,MODELS,PREDICTIONS}`. A predição inicia com um
+smoke test (`tile01`, 2023), em partes `4×4`, antes da expansão para todo o
+Pantanal.
+
 ## Como adicionar uma nova região/bioma
 
 1. Crie a subpasta versionada `COLLECTION_00/<cobertura>_forest/v<NN>/` e copie um script existente.
