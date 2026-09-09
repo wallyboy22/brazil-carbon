@@ -160,6 +160,13 @@ Cada célula gera um único export de matriz, e `ADD_LAYER=true` no
 `4_spatial_prediction` permite visualizar as predições no mapa antes ou junto
 dos exports.
 
+### v06 — universo florestal filtrado (Pantanal)
+
+A v06 filtra os footprints de entrada e mascara as predições pelas formações
+florestais da Coleção 11 (`3`, `4`, `6`, `7`, `49`). Como o universo de treino
+muda, a matriz é regenerada em `V06/MATRIX/`; a v06 não reutiliza diretamente a
+matriz v05. A máscara de saída pode acompanhar o ano da predição.
+
 ### `pantanal_grassland/v01` — primeira pipeline não-florestal
 
 A pipeline de campos foi criada separadamente da floresta em

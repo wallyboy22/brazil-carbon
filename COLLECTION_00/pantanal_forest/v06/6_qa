@@ -1,0 +1,12 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Pantanal Forest v06 · QA
+ ******************************************************************************/
+var c = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v06/0_contract');
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v06/0_covariate_source');
+var root = c.ASSET_ROOT;
+var response = ee.data.listAssets(root + '/PREDICTIONS');
+print('MAPBIOMAS-CARBONO · Pantanal Forest v06 · 6_qa');
+print('[CLASSES]', c.FOREST_CLASSES);
+print('[PREDICTIONS]', (response.assets || []).map(function (a) { return a.id; }));

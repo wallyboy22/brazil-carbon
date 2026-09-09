@@ -1,0 +1,26 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Pantanal Forest v06 · Merge
+ ******************************************************************************/
+var c = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v06/0_contract');
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v06/0_covariate_source');
+var root = c.ASSET_ROOT + '/PREDICTIONS';
+var response = ee.data.listAssets(root);
+var assets = (response.assets || []).filter(function (a) {
+  return a.type === 'IMAGE' && a.id.indexOf('/agc_pred_v06_') > -1 &&
+    a.id.indexOf('_merged_') === -1;
+});
+var region = src.getBiome().geometry();
+print('MAPBIOMAS-CARBONO · Pantanal Forest v06 · 5_merge');
+c.YEARS.forEach(function (year) {
+  var subset = assets.filter(function (a) { return a.id.slice(-4) === String(year); });
+  if (!subset.length) return;
+  var image = ee.ImageCollection(subset.map(function (a) { return ee.Image(a.id); }))
+    .mosaic().toFloat().rename('prediction_' + year);
+  Export.image.toAsset({ image: image,
+    description: 'WS_CARBONO_toAsset-agc_pred_v06_merged_' + year,
+    assetId: root + '/agc_pred_v06_merged_' + year,
+    region: region, scale: c.SCALE, maxPixels: 1e13,
+    pyramidingPolicy: { '.default': 'mean' } });
+});

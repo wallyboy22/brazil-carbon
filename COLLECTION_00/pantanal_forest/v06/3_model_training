@@ -1,0 +1,30 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Pantanal Forest v06 · Treino florestal
+ ******************************************************************************/
+var c = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v06/0_contract');
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v06/0_covariate_source');
+var root = c.ASSET_ROOT;
+var response = ee.data.listAssets(root + '/MATRIX');
+var assets = (response.assets || []).filter(function (a) {
+  return a.type === 'TABLE' && a.id.indexOf('/agc_matrix_v06_') > -1;
+});
+if (!assets.length) throw new Error('Matriz florestal v06 não encontrada.');
+var matrix = ee.FeatureCollection(assets.map(function (a) {
+  return ee.FeatureCollection(a.id);
+})).flatten().select(c.FEATURE_BANDS.concat([c.TARGET]));
+var model = ee.Classifier.smileRandomForest({
+  numberOfTrees: 300, bagFraction: 0.632, seed: 2021
+}).setOutputMode('REGRESSION').train({
+  features: matrix, classProperty: c.TARGET, inputProperties: c.FEATURE_BANDS
+});
+var modelAsset = root + '/MODELS/rf_agc_v06_forest_masked';
+
+print('MAPBIOMAS-CARBONO · Pantanal Forest v06 · 3_model_training');
+print('[MATRIZES]', assets.length, '· [CLASSES]', c.FOREST_CLASSES);
+matrix.size().evaluate(function (n) { print('[AMOSTRAS]', n); });
+src.ensureFolder(root + '/MODELS');
+Export.classifier.toAsset({ classifier: model,
+  description: 'WS_CARBONO_toAsset-rf_agc_v06_forest_masked', assetId: modelAsset });
+print('[TASK]', modelAsset);
