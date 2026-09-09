@@ -57,8 +57,9 @@ Entrada persistida da matriz:
 3. Execute `2_1_data_matrix`; lotes vazios são pulados antes do export.
 4. Rode a análise do `2_2_offline_gate`.
 5. Execute `3_model_training` e rode a task do modelo `rf_agc_v03`.
-6. Execute `4_spatial_prediction` com o smoke test padrão (`tile01`, 2023).
-7. Se o teste passar, expanda `ACTIVE_TILE_IDS` e `YEARS` gradualmente.
+6. Execute `4_spatial_prediction`; as células válidas são descobertas
+   server-side pelo polígono e pelos footprints.
+7. Ligue `ADD_LAYER=true` quando quiser visualizar as predições no mapa.
 8. Execute `5_merge` somente após as predições necessárias concluírem.
 9. Execute `6_qa` para conferir cobertura e assets.
 

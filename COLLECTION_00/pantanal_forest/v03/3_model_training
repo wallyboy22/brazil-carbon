@@ -15,7 +15,7 @@ function listMatrixAssets() {
   var response = ee.data.listAssets(ASSET_MATRIX);
   return (response.assets || []).filter(function (asset) {
     return asset.type === 'TABLE' &&
-      asset.id.split('/').pop().indexOf('agc_matrix_v03_pantanal_') === 0;
+      asset.id.split('/').pop().indexOf('agc_matrix_v03_') === 0;
   }).map(function (asset) { return asset.id; }).sort();
 }
 

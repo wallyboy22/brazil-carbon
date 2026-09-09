@@ -1,15 +1,14 @@
 /******************************************************************************
  * MAPBIOMAS-CARBONO — Pantanal v03 · Predição espacial
  * ---------------------------------------------------------------------------
- * Uma task por célula de predição e ano. O default é um smoke test: um tile e
- * um ano. Expanda ACTIVE_TILE_IDS/YEARS somente após validar uma task.
+ * A grade é filtrada server-side; apenas uma lista final de células atravessa
+ * evaluate(). Os exports são criados client-side para essas células válidas.
  ******************************************************************************/
 
 var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v03/0_covariate_source');
 
 var YEARS = [2023];
-var ACTIVE_TILE_IDS = ['tile01'];
 var PRED_PART_SPLIT = 4;
 var ADD_LAYER = false;
 var PRED_PALETTE = ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'];
@@ -19,92 +18,43 @@ var MODEL_ASSET = src.ASSET_ROOT + '/MODELS/rf_agc_v03';
 var model = ee.Classifier.load(MODEL_ASSET);
 var biomeGeom = ee.FeatureCollection(src.BIOME_FC)
   .filter(ee.Filter.eq(src.BIOME_PROP, src.BIOME_NAME)).geometry();
-var tiles = src.makeTiles();
-var tileById = {};
-tiles.forEach(function (tile) { tileById[tile.id] = tile; });
+var footprints = ee.FeatureCollection(src.FOOTPRINT_ASSET).filterBounds(biomeGeom);
+var cells = src.makeCellFeatures(PRED_PART_SPLIT).map(function (cell) {
+  var geom = cell.geometry().intersection(biomeGeom, ee.ErrorMargin(30));
+  return cell.set({ valid_area: geom.area(30), n_footprints: footprints.filterBounds(geom).size() });
+}).filter(ee.Filter.gt('valid_area', 0)).filter(ee.Filter.gt('n_footprints', 0));
+var cellDefinitions = {};
+src.makeCellDefinitions(PRED_PART_SPLIT).forEach(function (cell) {
+  cellDefinitions[cell.id] = cell;
+});
 
-function splitTile(tile) {
-  var parts = [];
-  var S = PRED_PART_SPLIT;
-  for (var i = 0; i < S; i++) {
-    for (var j = 0; j < S; j++) {
-      parts.push({
-        id: 'p' + ('00' + (i * S + j + 1)).slice(-2),
-        bbox: [
-          tile.bbox[0] + (tile.bbox[2] - tile.bbox[0]) * j / S,
-          tile.bbox[1] + (tile.bbox[3] - tile.bbox[1]) * i / S,
-          tile.bbox[0] + (tile.bbox[2] - tile.bbox[0]) * (j + 1) / S,
-          tile.bbox[1] + (tile.bbox[3] - tile.bbox[1]) * (i + 1) / S
-        ]
+function createExports(cellIds) {
+  cellIds.forEach(function (cellId) {
+    var definition = cellDefinitions[cellId];
+    if (!definition) return;
+    var geom = ee.Geometry.BBox(definition.bbox[0], definition.bbox[1],
+      definition.bbox[2], definition.bbox[3]).intersection(biomeGeom, ee.ErrorMargin(30));
+    YEARS.forEach(function (year) {
+      var image = src.buildTypedCovariatesStack(geom, year)
+        .classify(model).rename('prediction_' + year).toFloat().clip(geom);
+      var name = 'agc_pred_v03_' + cellId + '_' + year;
+      if (ADD_LAYER) Map.addLayer(image,
+        { min: 0, max: 150, palette: PRED_PALETTE }, name, false);
+      Export.image.toAsset({
+        image: image,
+        description: 'WS_CARBONO_toAsset-' + name,
+        assetId: ASSET_PREDICTIONS + '/' + name,
+        region: geom, scale: src.SCALE, maxPixels: 1e13,
+        pyramidingPolicy: { '.default': 'mean' }
       });
-    }
-  }
-  return parts;
-}
-
-function sourceCounts(aoi, year, callback) {
-  var start = year + '-01-01';
-  var end = (year + 1) + '-01-01';
-  var hls = ee.ImageCollection('NASA/HLS/HLSL30/v002')
-    .merge(ee.ImageCollection('NASA/HLS/HLSS30/v002'))
-    .filterBounds(aoi).filterDate(start, end).size();
-  var palsar = ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
-    .filterBounds(aoi).filter(ee.Filter.calendarRange(year, year, 'year')).size();
-  var era5 = ee.ImageCollection('ECMWF/ERA5_LAND/MONTHLY_AGGR')
-    .filterBounds(aoi).filter(ee.Filter.calendarRange(year, year, 'year')).size();
-  ee.Dictionary({ hls: hls, palsar: palsar, era5: era5 }).evaluate(callback);
-}
-
-function schedulePrediction(tileId, part, year, partGeom) {
-  sourceCounts(partGeom, year, function (counts) {
-    if (!counts || !counts.hls || !counts.palsar || !counts.era5) {
-      print('[SKIP] Fontes incompletas:', tileId, part.id, year, counts);
-      return;
-    }
-    var stack = src.buildTypedCovariatesStack(partGeom, year);
-    var prediction = stack.classify(model).rename('prediction_' + year)
-      .toFloat().clip(partGeom);
-    var tag = tileId + '_' + part.id + '_' + year;
-    if (ADD_LAYER) {
-      Map.addLayer(prediction, { min: 0, max: 150, palette: PRED_PALETTE },
-        'AGC ' + tag, false);
-    }
-    Export.image.toAsset({
-      image: prediction,
-      description: 'WS_CARBONO_toAsset-agc_pred_v03_' + tag,
-      assetId: ASSET_PREDICTIONS + '/agc_pred_v03_' + tag,
-      region: partGeom,
-      scale: src.SCALE,
-      maxPixels: 1e13,
-      pyramidingPolicy: { '.default': 'mean' }
     });
-    print('[TASK] Predição:', tag);
   });
 }
 
 print('MAPBIOMAS-CARBONO · Pantanal v03 · 4_spatial_prediction');
-print('[INFO] Modelo:', MODEL_ASSET);
-print('[INFO] Tiles:', ACTIVE_TILE_IDS, '· anos:', YEARS,
-  '· partes por tile:', PRED_PART_SPLIT * PRED_PART_SPLIT);
+print('[INFO] Modelo:', MODEL_ASSET, '· ADD_LAYER:', ADD_LAYER);
 src.ensureFolder(ASSET_PREDICTIONS);
-
-ACTIVE_TILE_IDS.forEach(function (tileId) {
-  if (!tileById[tileId]) {
-    print('[SKIP] Tile desconhecido:', tileId);
-    return;
-  }
-  splitTile(tileById[tileId]).forEach(function (part) {
-    var partGeom = ee.Geometry.BBox(
-      part.bbox[0], part.bbox[1], part.bbox[2], part.bbox[3])
-      .intersection(biomeGeom, ee.ErrorMargin(30));
-    partGeom.area(30).evaluate(function (area) {
-      if (!area) {
-        print('[SKIP] Parte sem área:', part.id);
-        return;
-      }
-      YEARS.forEach(function (year) {
-        schedulePrediction(tileId, part, year, partGeom);
-      });
-    });
-  });
+cells.aggregate_array('cell_id').evaluate(function (cellIds) {
+  print('[OK] Células válidas:', cellIds.length);
+  createExports(cellIds);
 });

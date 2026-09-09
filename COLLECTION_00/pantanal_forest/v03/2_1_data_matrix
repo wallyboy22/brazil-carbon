@@ -1,70 +1,56 @@
 /******************************************************************************
- * MAPBIOMAS-CARBONO — Pantanal v03 · Matriz de treino
+ * MAPBIOMAS-CARBONO — Pantanal v03 · Matriz server-side por célula
  * ---------------------------------------------------------------------------
- * Usa o footprint persistido, aplica o contrato tipado e só cria export quando
- * o lote amostrado possui features válidas.
+ * A grade é filtrada no servidor. Um único evaluate() devolve os IDs válidos;
+ * os exports são então criados client-side, um por célula.
  ******************************************************************************/
-
 var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v03/0_covariate_source');
 
 var YEAR = 2023;
-var BATCH_SIZE = 500;
+var CELL_SPLIT = 4;
 var TILE_SCALE = 16;
-var ASSET_MATRIX = src.ASSET_ROOT + '/MATRIX';
-var footprints = ee.FeatureCollection(src.FOOTPRINT_ASSET);
-var tiles = src.makeTiles();
+var MATRIX = src.ASSET_ROOT + '/MATRIX';
+var biome = ee.FeatureCollection(src.BIOME_FC)
+  .filter(ee.Filter.eq(src.BIOME_PROP, src.BIOME_NAME)).geometry();
+var footprints = ee.FeatureCollection(src.FOOTPRINT_ASSET).filterBounds(biome);
+var definitions = src.makeCellDefinitions(CELL_SPLIT);
+var definitionById = {};
+definitions.forEach(function (cell) { definitionById[cell.id] = cell; });
 
-function pad3(n) { return ('000' + n).slice(-3); }
-
-function scheduleExport(sampled, name) {
-  sampled.size().evaluate(function (n) {
-    if (!n) {
-      print('[SKIP] Lote sem amostras válidas:', name);
-      return;
-    }
-    Export.table.toAsset({
-      collection: sampled,
-      description: 'WS_CARBONO_toAsset-' + name,
-      assetId: ASSET_MATRIX + '/' + name
-    });
-    print('[TASK]', name, '· amostras:', n);
+var cells = src.makeCellFeatures(CELL_SPLIT).map(function (cell) {
+  var geom = cell.geometry().intersection(biome, ee.ErrorMargin(30));
+  return cell.set({
+    valid_area: geom.area(30),
+    n_footprints: footprints.filterBounds(geom).size()
   });
-}
+}).filter(ee.Filter.gt('valid_area', 0))
+  .filter(ee.Filter.gt('n_footprints', 0));
 
-function exportTile(tileDef) {
-  var tile = ee.Geometry.BBox(tileDef.bbox[0], tileDef.bbox[1],
-    tileDef.bbox[2], tileDef.bbox[3]);
-  var tileFootprints = footprints.filterBounds(tile);
-
-  tileFootprints.size().evaluate(function (total) {
-    if (!total) {
-      print('[SKIP]', tileDef.id, 'sem footprints.');
-      return;
-    }
-    var stack = src.buildTypedCovariatesStack(tile, YEAR);
-    var nBatches = Math.ceil(total / BATCH_SIZE);
-    for (var b = 0; b < nBatches; b++) {
-      var offset = b * BATCH_SIZE;
-      var size = Math.min(BATCH_SIZE, total - offset);
-      var batch = ee.FeatureCollection(tileFootprints.toList(size, offset));
-      var sampled = stack.sampleRegions({
-        collection: batch,
-        properties: src.SAMPLE_PROPS,
-        scale: src.SCALE,
-        geometries: true,
-        tileScale: TILE_SCALE
-      }).filter(ee.Filter.notNull(src.FEATURE_BANDS.concat([src.TARGET])));
-      var name = 'agc_matrix_v03_pantanal_' + tileDef.id + '_batch' + pad3(b + 1);
-
-      // Impede tasks "Table is empty"; a função recebe cópias do lote/nome.
-      scheduleExport(sampled, name);
-    }
+function exportCell(cellId) {
+  var def = definitionById[cellId];
+  if (!def) return;
+  var geom = ee.Geometry.BBox(def.bbox[0], def.bbox[1],
+    def.bbox[2], def.bbox[3]).intersection(biome, ee.ErrorMargin(30));
+  var sampled = src.buildTypedCovariatesStack(geom, YEAR)
+    .sampleRegions({
+      collection: footprints.filterBounds(geom),
+      properties: src.SAMPLE_PROPS,
+      scale: src.SCALE,
+      geometries: true,
+      tileScale: TILE_SCALE
+    }).filter(ee.Filter.notNull(src.FEATURE_BANDS.concat([src.TARGET])));
+  var name = 'agc_matrix_v03_' + cellId + '_' + YEAR;
+  Export.table.toAsset({
+    collection: sampled,
+    description: 'WS_CARBONO_toAsset-' + name,
+    assetId: MATRIX + '/' + name
   });
 }
 
 print('MAPBIOMAS-CARBONO · Pantanal v03 · 2_1_data_matrix');
-print('[INFO] Entrada:', src.FOOTPRINT_ASSET);
-print('[INFO] Batches:', BATCH_SIZE, '· tileScale:', TILE_SCALE);
-src.ensureFolder(ASSET_MATRIX);
-tiles.forEach(exportTile);
+src.ensureFolder(MATRIX);
+cells.aggregate_array('cell_id').evaluate(function (cellIds) {
+  print('[OK] Células válidas:', cellIds.length);
+  cellIds.forEach(exportCell);
+});

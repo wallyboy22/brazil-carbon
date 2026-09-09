@@ -43,3 +43,30 @@ exports.makeTiles = function () {
   }
   return tiles;
 };
+
+exports.makeCellDefinitions = function (split) {
+  var cells = [];
+  exports.makeTiles().forEach(function (tile) {
+    for (var i = 0; i < split; i++) {
+      for (var j = 0; j < split; j++) {
+        cells.push({
+          id: tile.id + '_p' + ('00' + (i * split + j + 1)).slice(-2),
+          bbox: [
+            tile.bbox[0] + (tile.bbox[2] - tile.bbox[0]) * j / split,
+            tile.bbox[1] + (tile.bbox[3] - tile.bbox[1]) * i / split,
+            tile.bbox[0] + (tile.bbox[2] - tile.bbox[0]) * (j + 1) / split,
+            tile.bbox[1] + (tile.bbox[3] - tile.bbox[1]) * (i + 1) / split
+          ]
+        });
+      }
+    }
+  });
+  return cells;
+};
+
+exports.makeCellFeatures = function (split) {
+  return ee.FeatureCollection(exports.makeCellDefinitions(split).map(function (cell) {
+    return ee.Feature(ee.Geometry.BBox(cell.bbox[0], cell.bbox[1],
+      cell.bbox[2], cell.bbox[3]), { cell_id: cell.id });
+  }));
+};

@@ -21,8 +21,8 @@ amostragem ou predição.
 ## Estratégia
 
 Cada célula executa um único `sampleRegions` para a matriz. Não há batches
-internos de 500 amostras nem assets `COVARIATES/`. O `evaluate()` é usado no
-máximo uma vez por célula para evitar exports vazios.
+internos de 500 amostras nem assets `COVARIATES/`. O `evaluate()` descobre a
+lista server-side de células válidas uma única vez.
 
 Tipos do stack:
 

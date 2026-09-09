@@ -1,43 +1,39 @@
 /******************************************************************************
  * MAPBIOMAS-CARBONO — Pantanal v05 · Matriz em memória por célula
  * ---------------------------------------------------------------------------
- * O stack é calculado uma vez por célula e compartilhado pelo sampleRegions
- * daquele export. Não exporta covariáveis intermediárias.
+ * A grade é filtrada server-side e atravessa evaluate() uma única vez. Cada
+ * célula válida monta um stack em memória e cria um único export de tabela.
  ******************************************************************************/
+
 var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v05/0_covariate_source');
 
 var YEAR = 2023;
 var CELL_SPLIT = 4;
-var ACTIVE_TILE_IDS = [];
 var TILE_SCALE = 16;
 var ASSET_MATRIX = src.ASSET_ROOT + '/MATRIX';
 var biome = ee.FeatureCollection(src.BIOME_FC)
   .filter(ee.Filter.eq(src.BIOME_PROP, src.BIOME_NAME)).geometry();
 var footprints = ee.FeatureCollection(src.FOOTPRINT_ASSET).filterBounds(biome);
-var tiles = src.makeTiles();
-var tileById = {};
-tiles.forEach(function (tile) { tileById[tile.id] = tile; });
+var definitions = src.makeCellDefinitions(CELL_SPLIT);
+var definitionById = {};
+definitions.forEach(function (cell) { definitionById[cell.id] = cell; });
 
-function splitTile(tile) {
-  var parts = [];
-  for (var i = 0; i < CELL_SPLIT; i++) {
-    for (var j = 0; j < CELL_SPLIT; j++) {
-      parts.push({
-        id: 'p' + ('00' + (i * CELL_SPLIT + j + 1)).slice(-2),
-        bbox: [
-          tile.bbox[0] + (tile.bbox[2] - tile.bbox[0]) * j / CELL_SPLIT,
-          tile.bbox[1] + (tile.bbox[3] - tile.bbox[1]) * i / CELL_SPLIT,
-          tile.bbox[0] + (tile.bbox[2] - tile.bbox[0]) * (j + 1) / CELL_SPLIT,
-          tile.bbox[1] + (tile.bbox[3] - tile.bbox[1]) * (i + 1) / CELL_SPLIT
-        ]
-      });
-    }
-  }
-  return parts;
-}
+var cells = src.makeCellFeatures(CELL_SPLIT).map(function (cell) {
+  var geom = cell.geometry().intersection(biome, ee.ErrorMargin(30));
+  return cell.set({
+    valid_area: geom.area(30),
+    n_footprints: footprints.filterBounds(geom).size()
+  });
+}).filter(ee.Filter.gt('valid_area', 0))
+  .filter(ee.Filter.gt('n_footprints', 0));
 
-function scheduleCell(tileId, part, geom, points) {
+function exportCell(cellId) {
+  var definition = definitionById[cellId];
+  if (!definition) return;
+  var geom = ee.Geometry.BBox(definition.bbox[0], definition.bbox[1],
+    definition.bbox[2], definition.bbox[3]).intersection(biome, ee.ErrorMargin(30));
+  var points = footprints.filterBounds(geom);
   var stack = src.buildTypedCovariatesStack(geom, YEAR);
   var sampled = stack.sampleRegions({
     collection: points,
@@ -46,42 +42,19 @@ function scheduleCell(tileId, part, geom, points) {
     geometries: true,
     tileScale: TILE_SCALE
   }).filter(ee.Filter.notNull(src.FEATURE_BANDS.concat([src.TARGET])));
-  var name = 'agc_matrix_v05_' + tileId + '_' + part.id + '_' + YEAR;
-
-  // Uma verificação por célula; não há evaluate por batch.
-  sampled.limit(1).size().evaluate(function (hasSample) {
-    if (!hasSample) {
-      print('[SKIP] Célula sem amostras válidas:', name);
-      return;
-    }
-    Export.table.toAsset({
-      collection: sampled,
-      description: 'WS_CARBONO_toAsset-' + name,
-      assetId: ASSET_MATRIX + '/' + name
-    });
-    print('[TASK]', name);
-  });
-}
-
-function processCell(tileId, part) {
-  var geom = ee.Geometry.BBox(part.bbox[0], part.bbox[1],
-    part.bbox[2], part.bbox[3]).intersection(biome, ee.ErrorMargin(30));
-  var points = footprints.filterBounds(geom);
-  ee.Dictionary({ area: geom.area(30), points: points.size() }).evaluate(function (s) {
-    if (!s || !s.area || !s.points) {
-      print('[SKIP] Célula sem área/footprints:', tileId, part.id, s);
-      return;
-    }
-    scheduleCell(tileId, part, geom, points);
+  var name = 'agc_matrix_v05_' + cellId + '_' + YEAR;
+  Export.table.toAsset({
+    collection: sampled,
+    description: 'WS_CARBONO_toAsset-' + name,
+    assetId: ASSET_MATRIX + '/' + name
   });
 }
 
 print('MAPBIOMAS-CARBONO · Pantanal v05 · 2_1_data_matrix');
-print('[INFO] Células por tile:', CELL_SPLIT * CELL_SPLIT,
-  '· um export de matriz por célula');
+print('[INFO] Um export por célula · tileScale:', TILE_SCALE);
 src.ensureFolder(ASSET_MATRIX);
-var selected = ACTIVE_TILE_IDS.length ? ACTIVE_TILE_IDS : tiles.map(function (t) { return t.id; });
-selected.forEach(function (tileId) {
-  if (!tileById[tileId]) return;
-  splitTile(tileById[tileId]).forEach(function (part) { processCell(tileId, part); });
+var validIds = cells.aggregate_array('cell_id');
+validIds.evaluate(function (cellIds) {
+  print('[OK] Células válidas:', cellIds.length);
+  cellIds.forEach(exportCell);
 });

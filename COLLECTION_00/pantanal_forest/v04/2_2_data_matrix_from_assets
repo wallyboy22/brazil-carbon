@@ -1,61 +1,37 @@
 /******************************************************************************
  * MAPBIOMAS-CARBONO — Pantanal v04 · Matriz a partir do cache raster
  ******************************************************************************/
-
 var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v04/0_covariate_source');
-
 var YEAR = 2023;
-var BATCH_SIZE = 2000;
 var TILE_SCALE = 16;
-var ASSET_COVARIATES = src.ASSET_ROOT + '/COVARIATES';
-var ASSET_MATRIX = src.ASSET_ROOT + '/MATRIX';
-var biomeGeom = ee.FeatureCollection(src.BIOME_FC)
+var COVARIATES = src.ASSET_ROOT + '/COVARIATES';
+var MATRIX = src.ASSET_ROOT + '/MATRIX';
+var biome = ee.FeatureCollection(src.BIOME_FC)
   .filter(ee.Filter.eq(src.BIOME_PROP, src.BIOME_NAME)).geometry();
-var footprints = ee.FeatureCollection(src.FOOTPRINT_ASSET)
-  .filterBounds(biomeGeom);
-
-var response = ee.data.listAssets(ASSET_COVARIATES);
-var covariateAssets = (response.assets || []).filter(function (asset) {
-  return asset.type === 'IMAGE' && asset.id.slice(-4) === String(YEAR);
+var footprints = ee.FeatureCollection(src.FOOTPRINT_ASSET).filterBounds(biome);
+var response = ee.data.listAssets(COVARIATES);
+var assets = (response.assets || []).filter(function (a) {
+  return a.type === 'IMAGE' && a.id.slice(-4) === String(YEAR);
 });
 
-function pad3(n) { return ('000' + n).slice(-3); }
-function schedule(sampled, name) {
+print('MAPBIOMAS-CARBONO · Pantanal v04 · 2_2_data_matrix_from_assets');
+print('[INFO] Células raster:', assets.length);
+src.ensureFolder(MATRIX);
+assets.forEach(function (asset) {
+  var image = ee.Image(asset.id);
+  var points = footprints.filterBounds(image.geometry());
+  var sampled = image.sampleRegions({
+    collection: points,
+    properties: src.SAMPLE_PROPS,
+    scale: src.SCALE,
+    geometries: true,
+    tileScale: TILE_SCALE
+  }).filter(ee.Filter.notNull(src.FEATURE_BANDS.concat([src.TARGET])));
+  var name = asset.id.split('/').pop().replace('covariates_', 'agc_matrix_');
   Export.table.toAsset({
     collection: sampled,
     description: 'WS_CARBONO_toAsset-' + name,
-    assetId: ASSET_MATRIX + '/' + name
-  });
-  print('[TASK]', name);
-}
-
-print('MAPBIOMAS-CARBONO · Pantanal v04 · 2_2_data_matrix_from_assets');
-print('[INFO] Covariate assets:', covariateAssets.length);
-src.ensureFolder(ASSET_MATRIX);
-
-covariateAssets.forEach(function (asset) {
-  var image = ee.Image(asset.id);
-  var nameBase = asset.id.split('/').pop().replace('covariates_', 'agc_matrix_');
-  var geom = image.geometry();
-  var points = footprints.filterBounds(geom);
-  points.size().evaluate(function (total) {
-    if (!total) {
-      print('[SKIP] Sem footprints:', nameBase);
-      return;
-    }
-    var nBatches = Math.ceil(total / BATCH_SIZE);
-    for (var b = 0; b < nBatches; b++) {
-      var offset = b * BATCH_SIZE;
-      var size = Math.min(BATCH_SIZE, total - offset);
-      var sampled = image.sampleRegions({
-        collection: ee.FeatureCollection(points.toList(size, offset)),
-        properties: src.SAMPLE_PROPS,
-        scale: src.SCALE,
-        geometries: true,
-        tileScale: TILE_SCALE
-      }).filter(ee.Filter.notNull(src.FEATURE_BANDS.concat([src.TARGET])));
-      schedule(sampled, nameBase + '_batch' + pad3(b + 1));
-    }
+    assetId: MATRIX + '/' + name
   });
 });

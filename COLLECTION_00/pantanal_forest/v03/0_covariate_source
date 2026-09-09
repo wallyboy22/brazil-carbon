@@ -11,6 +11,8 @@ exports.ASSET_ROOT =
   'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/V03';
 exports.FOOTPRINT_ASSET =
   'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/SAMPLES/footprint_pantanal_2023';
+exports.FOOTPRINT_ASSET =
+  'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/SAMPLES/footprint_pantanal_2023';
 exports.BIOME_FC = base.BIOME_FC;
 exports.BIOME_PROP = base.BIOME_PROP;
 exports.BIOME_NAME = base.BIOME_NAME;
@@ -20,6 +22,8 @@ exports.SAMPLE_PROPS = base.SAMPLE_PROPS;
 exports.FEATURE_BANDS = contract.FEATURE_BANDS;
 exports.TARGET = contract.TARGET;
 exports.makeTiles = contract.makeTiles;
+exports.makeCellDefinitions = contract.makeCellDefinitions;
+exports.makeCellFeatures = contract.makeCellFeatures;
 
 // Rebuilds the stack with an explicit numeric contract. No implicit double
 // bands are allowed into sampling, training, or prediction.

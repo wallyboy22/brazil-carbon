@@ -17,6 +17,8 @@ exports.SAMPLE_PROPS = base.SAMPLE_PROPS;
 exports.FEATURE_BANDS = contract.FEATURE_BANDS;
 exports.TARGET = contract.TARGET;
 exports.makeTiles = contract.makeTiles;
+exports.makeCellDefinitions = contract.makeCellDefinitions;
+exports.makeCellFeatures = contract.makeCellFeatures;
 
 exports.buildTypedCovariatesStack = function (aoi, year) {
   var raw = base.buildTypedCovariatesStack(aoi, year);

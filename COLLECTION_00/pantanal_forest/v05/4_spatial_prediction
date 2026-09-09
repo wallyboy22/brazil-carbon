@@ -1,8 +1,10 @@
 /******************************************************************************
- * MAPBIOMAS-CARBONO — Pantanal v05 · Predição em memória
+ * MAPBIOMAS-CARBONO — Pantanal v05 · Predição em memória por célula
  * ---------------------------------------------------------------------------
- * ADD_LAYER=true adiciona cada predição célula/ano ao mapa para inspeção.
+ * A lista de células é filtrada server-side. ADD_LAYER=true permite inspeção
+ * das imagens no mapa sem alterar o fluxo de export.
  ******************************************************************************/
+
 var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v05/0_covariate_source');
 
@@ -14,51 +16,46 @@ var ROOT = src.ASSET_ROOT;
 var model = ee.Classifier.load(ROOT + '/MODELS/rf_agc_v05');
 var biome = ee.FeatureCollection(src.BIOME_FC)
   .filter(ee.Filter.eq(src.BIOME_PROP, src.BIOME_NAME)).geometry();
-var tiles = src.makeTiles();
+var definitions = src.makeCellDefinitions(CELL_SPLIT);
+var definitionById = {};
+definitions.forEach(function (cell) { definitionById[cell.id] = cell; });
+var footprints = ee.FeatureCollection(src.FOOTPRINT_ASSET).filterBounds(biome);
+var cells = src.makeCellFeatures(CELL_SPLIT).map(function (cell) {
+  var geom = cell.geometry().intersection(biome, ee.ErrorMargin(30));
+  return cell.set({
+    valid_area: geom.area(30),
+    n_footprints: footprints.filterBounds(geom).size()
+  });
+}).filter(ee.Filter.gt('valid_area', 0))
+  .filter(ee.Filter.gt('n_footprints', 0));
 
-function splitTile(tile) {
-  var parts = [];
-  for (var i = 0; i < CELL_SPLIT; i++) {
-    for (var j = 0; j < CELL_SPLIT; j++) {
-      parts.push({
-        id: 'p' + ('00' + (i * CELL_SPLIT + j + 1)).slice(-2),
-        bbox: [
-          tile.bbox[0] + (tile.bbox[2] - tile.bbox[0]) * j / CELL_SPLIT,
-          tile.bbox[1] + (tile.bbox[3] - tile.bbox[1]) * i / CELL_SPLIT,
-          tile.bbox[0] + (tile.bbox[2] - tile.bbox[0]) * (j + 1) / CELL_SPLIT,
-          tile.bbox[1] + (tile.bbox[3] - tile.bbox[1]) * (i + 1) / CELL_SPLIT
-        ]
+function createExports(cellIds) {
+  cellIds.forEach(function (cellId) {
+    var definition = definitionById[cellId];
+    if (!definition) return;
+    var geom = ee.Geometry.BBox(definition.bbox[0], definition.bbox[1],
+      definition.bbox[2], definition.bbox[3]).intersection(biome, ee.ErrorMargin(30));
+    YEARS.forEach(function (year) {
+      var image = src.buildTypedCovariatesStack(geom, year)
+        .classify(model).rename('prediction_' + year).toFloat().clip(geom);
+      var name = 'agc_pred_v05_' + cellId + '_' + year;
+      if (ADD_LAYER) Map.addLayer(image,
+        { min: 0, max: 150, palette: PRED_PALETTE }, name, false);
+      Export.image.toAsset({
+        image: image,
+        description: 'WS_CARBONO_toAsset-' + name,
+        assetId: ROOT + '/PREDICTIONS/' + name,
+        region: geom, scale: src.SCALE, maxPixels: 1e13,
+        pyramidingPolicy: { '.default': 'mean' }
       });
-    }
-  }
-  return parts;
-}
-
-function createPrediction(tile, part, year, geom) {
-  var image = src.buildTypedCovariatesStack(geom, year)
-    .classify(model).rename('prediction_' + year).toFloat().clip(geom);
-  var name = 'agc_pred_v05_' + tile.id + '_' + part.id + '_' + year;
-  if (ADD_LAYER) {
-    Map.addLayer(image, { min: 0, max: 150, palette: PRED_PALETTE }, name, false);
-  }
-  Export.image.toAsset({
-    image: image,
-    description: 'WS_CARBONO_toAsset-' + name,
-    assetId: ROOT + '/PREDICTIONS/' + name,
-    region: geom,
-    scale: src.SCALE,
-    maxPixels: 1e13,
-    pyramidingPolicy: { '.default': 'mean' }
+    });
   });
 }
 
 print('MAPBIOMAS-CARBONO · Pantanal v05 · 4_spatial_prediction');
 print('[INFO] ADD_LAYER:', ADD_LAYER, '· anos:', YEARS);
 src.ensureFolder(ROOT + '/PREDICTIONS');
-tiles.forEach(function (tile) {
-  splitTile(tile).forEach(function (part) {
-    var geom = ee.Geometry.BBox(part.bbox[0], part.bbox[1],
-      part.bbox[2], part.bbox[3]).intersection(biome, ee.ErrorMargin(30));
-    YEARS.forEach(function (year) { createPrediction(tile, part, year, geom); });
-  });
+cells.aggregate_array('cell_id').evaluate(function (cellIds) {
+  print('[OK] Células válidas:', cellIds.length);
+  createExports(cellIds);
 });

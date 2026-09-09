@@ -17,6 +17,8 @@ exports.X_EDGES = base.X_EDGES;
 exports.Y_EDGES = base.Y_EDGES;
 exports.PANTANAL_BBOX = base.PANTANAL_BBOX;
 exports.makeTiles = base.makeTiles;
+exports.makeCellDefinitions = base.makeCellDefinitions;
+exports.makeCellFeatures = base.makeCellFeatures;
 
 exports.ASSET_ROOT =
   'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/V04';
