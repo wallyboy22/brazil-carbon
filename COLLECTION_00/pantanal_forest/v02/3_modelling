@@ -61,8 +61,7 @@ var PRED_PART_SPLIT = 2;
 // MATRIZ PARTICIONADA
 // =============================================================================
 
-print('[AGUARDE] Carregando os batches da matriz e preparando o treinamento.');
-print('[AGUARDE] Esta etapa pode levar alguns segundos ou minutos antes de o export aparecer.');
+print('[AGUARDE] Carregando os assets da matriz e treinando. Pode levar alguns minutos.');
 
 // Lista, via metadata (sem computação), os assets de matriz existentes na
 // pasta MATRIX/. Assets de tiles sem amostra ("Table is empty") não existem
@@ -132,11 +131,15 @@ print('[OK] Modelo treinado:', MODEL_TYPE, '· subversão:', SUBVERSION);
 
 if (MODEL_TYPE !== 'svm') {
   model.explain().evaluate(function (exp) {
-    var pairs = Object.keys(exp.importance).map(function (key) {
-      return [exp.importance[key], key];
-    });
-    pairs.sort(function (a, b) { return b[0] - a[0]; });
-    print('[OK] Importância (top 15):', pairs.slice(0, 15));
+    if (exp && exp.importance) {
+      var pairs = Object.keys(exp.importance).map(function (key) {
+        return [exp.importance[key], key];
+      });
+      pairs.sort(function (a, b) { return b[0] - a[0]; });
+      print('[OK] Importância (top 15):', pairs.slice(0, 15));
+    } else {
+      print('[AVISO] model.explain() não retornou importance — pulando diagnóstico.');
+    }
   });
 }
 
@@ -222,10 +225,9 @@ tileIds.forEach(function (tileId) {
   splitTile(bb).forEach(function (part) {
     var partGeom = ee.Geometry.BBox(
       part.bbox[0], part.bbox[1], part.bbox[2], part.bbox[3])
-      .intersection(biomeGeom);
+      .intersection(biomeGeom, ee.ErrorMargin(30));
 
     YEARS.forEach(function (year) {
-      print('[AGUARDE] Preparando predição', tileId, part.id, year);
       var stackYear = src.buildCovariatesStack(partGeom, year);
       var predYear = stackYear.classify(model)
         .rename('prediction_' + year).round().int16().clip(partGeom);
@@ -247,7 +249,6 @@ tileIds.forEach(function (tileId) {
           maxPixels: 1e13,
           pyramidingPolicy: { '.default': 'mean' }
         });
-        print('[EXPORT] Asset: agc_pred_' + suffix + '_' + tag);
         nTaskCount++;
       }
 
@@ -261,7 +262,6 @@ tileIds.forEach(function (tileId) {
           scale: src.SCALE,
           maxPixels: 1e13
         });
-        print('[EXPORT] Drive: agc_pred_' + suffix + '_' + tag + '.tif');
       }
     });
   });
