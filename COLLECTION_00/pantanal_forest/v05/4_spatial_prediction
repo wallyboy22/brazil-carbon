@@ -1,0 +1,64 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Pantanal v05 · Predição em memória
+ * ---------------------------------------------------------------------------
+ * ADD_LAYER=true adiciona cada predição célula/ano ao mapa para inspeção.
+ ******************************************************************************/
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v05/0_covariate_source');
+
+var YEARS = [2023];
+var CELL_SPLIT = 4;
+var ADD_LAYER = false;
+var PRED_PALETTE = ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'];
+var ROOT = src.ASSET_ROOT;
+var model = ee.Classifier.load(ROOT + '/MODELS/rf_agc_v05');
+var biome = ee.FeatureCollection(src.BIOME_FC)
+  .filter(ee.Filter.eq(src.BIOME_PROP, src.BIOME_NAME)).geometry();
+var tiles = src.makeTiles();
+
+function splitTile(tile) {
+  var parts = [];
+  for (var i = 0; i < CELL_SPLIT; i++) {
+    for (var j = 0; j < CELL_SPLIT; j++) {
+      parts.push({
+        id: 'p' + ('00' + (i * CELL_SPLIT + j + 1)).slice(-2),
+        bbox: [
+          tile.bbox[0] + (tile.bbox[2] - tile.bbox[0]) * j / CELL_SPLIT,
+          tile.bbox[1] + (tile.bbox[3] - tile.bbox[1]) * i / CELL_SPLIT,
+          tile.bbox[0] + (tile.bbox[2] - tile.bbox[0]) * (j + 1) / CELL_SPLIT,
+          tile.bbox[1] + (tile.bbox[3] - tile.bbox[1]) * (i + 1) / CELL_SPLIT
+        ]
+      });
+    }
+  }
+  return parts;
+}
+
+function createPrediction(tile, part, year, geom) {
+  var image = src.buildTypedCovariatesStack(geom, year)
+    .classify(model).rename('prediction_' + year).toFloat().clip(geom);
+  var name = 'agc_pred_v05_' + tile.id + '_' + part.id + '_' + year;
+  if (ADD_LAYER) {
+    Map.addLayer(image, { min: 0, max: 150, palette: PRED_PALETTE }, name, false);
+  }
+  Export.image.toAsset({
+    image: image,
+    description: 'WS_CARBONO_toAsset-' + name,
+    assetId: ROOT + '/PREDICTIONS/' + name,
+    region: geom,
+    scale: src.SCALE,
+    maxPixels: 1e13,
+    pyramidingPolicy: { '.default': 'mean' }
+  });
+}
+
+print('MAPBIOMAS-CARBONO · Pantanal v05 · 4_spatial_prediction');
+print('[INFO] ADD_LAYER:', ADD_LAYER, '· anos:', YEARS);
+src.ensureFolder(ROOT + '/PREDICTIONS');
+tiles.forEach(function (tile) {
+  splitTile(tile).forEach(function (part) {
+    var geom = ee.Geometry.BBox(part.bbox[0], part.bbox[1],
+      part.bbox[2], part.bbox[3]).intersection(biome, ee.ErrorMargin(30));
+    YEARS.forEach(function (year) { createPrediction(tile, part, year, geom); });
+  });
+});

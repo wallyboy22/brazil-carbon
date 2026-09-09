@@ -152,6 +152,14 @@ iniciais de 2.000 amostras e a predição lê os mesmos rasters cacheados.
 Os tiles e footprints da v04 são filtrados pelo polígono oficial do Pantanal,
 não apenas pelo retângulo envolvente usado nas versões anteriores.
 
+### v05 — stack em memória por célula (Pantanal)
+
+A v05 desconsidera a estratégia de exportar `COVARIATES/` da v04. O stack é
+calculado em memória uma vez por célula, tanto na matriz quanto na predição.
+Cada célula gera um único export de matriz, e `ADD_LAYER=true` no
+`4_spatial_prediction` permite visualizar as predições no mapa antes ou junto
+dos exports.
+
 ## Como adicionar uma nova região/bioma
 
 1. Crie a subpasta versionada `COLLECTION_00/<cobertura>_forest/v<NN>/` e copie um script existente.

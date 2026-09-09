@@ -1,0 +1,11 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Pantanal v05 · Footprint de entrada
+ ******************************************************************************/
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v05/0_covariate_source');
+var biome = ee.FeatureCollection(src.BIOME_FC)
+  .filter(ee.Filter.eq(src.BIOME_PROP, src.BIOME_NAME)).geometry();
+var fc = ee.FeatureCollection(src.FOOTPRINT_ASSET).filterBounds(biome);
+print('MAPBIOMAS-CARBONO · Pantanal v05 · 2_0_check_footprint');
+print('[ENTRADA]', src.FOOTPRINT_ASSET);
+fc.size().evaluate(function (n) { print('[FOOTPRINTS DENTRO DO BIOMA]', n); });

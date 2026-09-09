@@ -1,0 +1,27 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Pantanal v05 · Fonte tipada em memória
+ ******************************************************************************/
+var contract = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v05/0_contract');
+var base = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal_forest/v03/0_covariate_source');
+
+exports.ASSET_ROOT = contract.ASSET_ROOT;
+exports.FOOTPRINT_ASSET = contract.FOOTPRINT_ASSET;
+exports.BIOME_FC = base.BIOME_FC;
+exports.BIOME_PROP = base.BIOME_PROP;
+exports.BIOME_NAME = base.BIOME_NAME;
+exports.SCALE = base.SCALE;
+exports.ensureFolder = base.ensureFolder;
+exports.SAMPLE_PROPS = base.SAMPLE_PROPS;
+exports.FEATURE_BANDS = contract.FEATURE_BANDS;
+exports.TARGET = contract.TARGET;
+exports.makeTiles = contract.makeTiles;
+
+exports.buildTypedCovariatesStack = function (aoi, year) {
+  var raw = base.buildTypedCovariatesStack(aoi, year);
+  return raw.select(contract.CONTINUOUS_BANDS).toFloat()
+    .addBands(raw.select(contract.CATEGORICAL_BANDS).toUint8())
+    .select(contract.FEATURE_BANDS)
+    .clip(aoi);
+};
