@@ -1,0 +1,48 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Pantanal v03 · Treino explícito
+ ******************************************************************************/
+
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v03/0_covariate_source');
+
+var MODEL_TYPE = 'rf';
+var ASSET_MATRIX = src.ASSET_ROOT + '/MATRIX';
+var ASSET_MODELS = src.ASSET_ROOT + '/MODELS';
+var MODEL_ASSET = ASSET_MODELS + '/rf_agc_v03';
+var MODEL_PARAMS = { numberOfTrees: 300, bagFraction: 0.632, seed: 2021 };
+
+function listMatrixAssets() {
+  var response = ee.data.listAssets(ASSET_MATRIX);
+  return (response.assets || []).filter(function (asset) {
+    return asset.type === 'TABLE' &&
+      asset.id.split('/').pop().indexOf('agc_matrix_v03_') === 0;
+  }).map(function (asset) { return asset.id; }).sort();
+}
+
+var matrixAssets = listMatrixAssets();
+if (!matrixAssets.length) {
+  throw new Error('Nenhum asset MATRIX v03 encontrado: ' + ASSET_MATRIX);
+}
+var matrix = ee.FeatureCollection(matrixAssets.map(function (id) {
+  return ee.FeatureCollection(id);
+})).flatten().select(src.FEATURE_BANDS.concat([src.TARGET]));
+
+var model = ee.Classifier.smileRandomForest(MODEL_PARAMS)
+  .setOutputMode('REGRESSION')
+  .train({
+    features: matrix,
+    classProperty: src.TARGET,
+    inputProperties: src.FEATURE_BANDS
+  });
+
+print('MAPBIOMAS-CARBONO · Pantanal v03 · 3_model_training');
+print('[OK] Assets:', matrixAssets.length);
+print('[CONTRACT] Features:', src.FEATURE_BANDS);
+matrix.size().evaluate(function (n) { print('[OK] Amostras:', n); });
+src.ensureFolder(ASSET_MODELS);
+Export.classifier.toAsset({
+  classifier: model,
+  description: 'WS_CARBONO_toAsset-rf_agc_v03',
+  assetId: MODEL_ASSET
+});
+print('[TASK] Modelo:', MODEL_ASSET);

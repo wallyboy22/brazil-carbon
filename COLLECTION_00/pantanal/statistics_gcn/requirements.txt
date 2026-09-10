@@ -1,0 +1,13 @@
+# MAPBIOMAS-CARBONO · Pantanal · statistics_gcn
+# Requisitos mínimos para rodar as células no Google Colab.
+# Instale com:
+#   !pip install -r requirements.txt
+# (Colab já traz quase tudo; serve para garantir versões.)
+pandas>=1.5
+numpy>=1.23
+matplotlib>=3.6
+openpyxl>=3.0
+# Ingredientes do cell04 (mapas, opcional — não precisa se FAZER_MAPAS=False)
+requests>=2.28
+pillow>=9.0
+earthengine-api>=0.1.370

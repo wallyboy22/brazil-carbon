@@ -15,11 +15,11 @@ Cerrado sem quebrá-lo — **cada um evolui no seu ritmo**. O trade-off aceito:
 
 | Script | Região | Asset base (GEE) | Grids |
 |---|---|---|---|
-| `cerrado_forest/v00/mb_carbon_agc_gedi.js` | **Cerrado** | `.../COLLECTION_00/CERRADO_FOREST/SAMPLES` | 14 tiles (`t0_0` … `t3_3`) |
-| `cerrado_forest/v00/mb_carbon_agc_ifn.js` | **Cerrado** | `.../COLLECTION_00/CERRADO_FOREST/SAMPLES` | loop de anos, polígonos IFN |
-| `pantanal_forest/v00/mb_carbon_agc.js` | **Pantanal** | `.../COLLECTION_00/PANTANAL_FOREST/SAMPLES` | 1 grid (bioma completo) |
-| `cerrado_forest/v00/mb_carbon_agc_points.js` | **Cerrado (exemplo)** | `.../COLLECTION_00/CERRADO_FOREST/SAMPLES` | pontos genéricos (`POINTS_FC`) |
-| `cerrado_forest/v00/ifn_vs_gedi.js` | **Cerrado (comparação)** | — | diagnóstico IFN × GEDI |
+| `cerrado/forest/v00/mb_carbon_agc_gedi.js` | **Cerrado** | `.../COLLECTION_00/CERRADO_FOREST/SAMPLES` | 14 tiles (`t0_0` … `t3_3`) |
+| `cerrado/forest/v00/mb_carbon_agc_ifn.js` | **Cerrado** | `.../COLLECTION_00/CERRADO_FOREST/SAMPLES` | loop de anos, polígonos IFN |
+| `pantanal/forest/v00/mb_carbon_agc.js` | **Pantanal** | `.../COLLECTION_00/PANTANAL_FOREST/SAMPLES` | 1 grid (bioma completo) |
+| `cerrado/forest/v00/mb_carbon_agc_points.js` | **Cerrado (exemplo)** | `.../COLLECTION_00/CERRADO_FOREST/SAMPLES` | pontos genéricos (`POINTS_FC`) |
+| `cerrado/forest/v00/ifn_vs_gedi.js` | **Cerrado (comparação)** | — | diagnóstico IFN × GEDI |
 
 `mb_carbon_agc_points.js` é um **exemplo de extração de covariáveis para pontos
 genéricos** (não aleatórios): dado um asset `POINTS_FC`, exporta `id/lon/lat`
@@ -48,7 +48,7 @@ coberturas (carbono azul, campestres, agropecuária).
 
 ## Pipeline modular v01/v02 (Pantanal)
 
-O Pantanal ganhou uma **v01 modular** (`pantanal_forest/v01/`) seguindo o
+O Pantanal ganhou uma **v01 modular** (`pantanal/forest/v01/`) seguindo o
 padrão do MapBiomas Solo (`collection3/carbon`): pipeline em etapas numeradas
 com módulo de covariáveis compartilhado via `require()`. O Cerrado permanece
 só com v00.
@@ -103,7 +103,7 @@ de Asset estiverem ligados.
 
 ### v02 — matriz particionada (Pantanal)
 
-A `pantanal_forest/v02/` preserva a v01 e corrige os erros de geometria nula e
+A `pantanal/forest/v02/` preserva a v01 e corrige os erros de geometria nula e
 memória observados no export da matriz completa. O footprint existente é
 dividido em tiles espaciais; cada tile monta seu próprio stack e exporta
 batches independentes no balde `MATRIX/`:
@@ -131,7 +131,7 @@ se necessário, reduzir para `250` e repetir somente o tile afetado.
 
 ### v03 — pipeline tipada e espacial (Pantanal)
 
-A `pantanal_forest/v03/` inaugura uma pipeline limpa, sem reutilizar os
+A `pantanal/forest/v03/` inaugura uma pipeline limpa, sem reutilizar os
 exports de predição da v02. Ela define um contrato explícito para as 36 bandas,
 converte contínuas para `Float32` e classes para `Uint8`, valida fontes e tipos
 antes dos exports, e separa matriz, treino, predição espacial, merge e QA.
@@ -144,7 +144,7 @@ Pantanal.
 
 ### v04 — cache de covariáveis e matriz barata (Pantanal)
 
-A `pantanal_forest/v04/` reutiliza o footprint e o contrato científico da v03,
+A `pantanal/forest/v04/` reutiliza o footprint e o contrato científico da v03,
 mas materializa o stack tipado em `V04/COVARIATES/` antes de gerar a matriz.
 Assim HLS, PALSAR, ERA5, HAND e LULC são calculados uma vez por célula/ano,
 em vez de serem recalculados por cada batch de tabela. A matriz v04 usa batches
@@ -171,14 +171,31 @@ por célula são exportadas **dentro de uma ImageCollection**
 (`ee.data.createAsset`), e o mosaico anual do `5_merge` sai como irmão da COL,
 nome simples.
 
-### `pantanal_grassland/v01` — primeira pipeline não-florestal
+### Estatísticas por classe LULC C11 (Pantanal)
+
+As estatísticas das versões finais (AGC florestal V03–V07 e produtos campestres
+v01) são disparadas **dentro do fluxo de cada versão** pelo step `7_statistics.js`,
+que `require()` o módulo compartilhado `statistics/stats_engine.js` de cada
+ecossistema (contrato em `statistics/0_contract_stats.js`):
+
+| Módulo GEE | Versões | O que gera (Drive `MAPBIOMAS_CARBONO_ESTATISTICAS`) |
+|---|---|---|
+| `pantanal/forest/statistics/` | `v03/7_statistics.js` … `v07/7_statistics.js` | `stats_forest_<v>_<território>_2023.csv` (níveis n0/n1/marcador/total) · v07: + `compare_forest_versoes_2023.csv` |
+| `pantanal/grassland/statistics/` | `v01/7_statistics.js` | `stats_grassland_<produto>_<território>_2023.csv` (biomassa/ANPP/carbono) + `compare_grassland_produtos_2023.csv` |
+
+- **Legenda C11 única**: `pantanal/module_lulc_legends.js` (n0 decimal, n1,
+  marcador florestal/campestre/outros) — espelho dos nomes do bloco da v00.
+- **Análise fora do GEE**: `pantanal/statistics_gcn/` (notebook Colab) consome
+  os CSVs — QA de somas, figuras, relatório XLSX + `.md` (não recomputa EE).
+
+### `pantanal/grassland/v01` — primeira pipeline não-florestal
 
 A pipeline de campos foi criada separadamente da floresta em
-`pantanal_grassland/v01/`. A v01 usa o método do Pampa com Landsat harmonizado,
+`pantanal/grassland/v01/`. A v01 usa o método do Pampa com Landsat harmonizado,
 MODIS fPAR/DSR e coeficientes `εCA` do Pampa, adaptando a máscara para o
 Pantanal e a Coleção 11, classes `11`, `12` e `50`. Produz biomassa seca, ANPP
 e estoque de carbono como produtos separados. O arquivo legado
-`pantanal_grassland` permanece preservado como protótipo.
+`pantanal/grassland` permanece preservado como protótipo.
 
 ## Como adicionar uma nova região/bioma
 
@@ -225,5 +242,5 @@ Diagnóstico: `Map.addLayer(lulc C11, MAPBIOMAS_VIS)` + `addMapBiomasLegend()`.
 
 - Mapeamento completo do notebook → JS: `mb_carbon_flow_map.md` (raiz).
 - Docs de datasets (GEDI L4A v2.1, índice de granules): `docs/` (raiz).
-- Pipeline modular: `pantanal_forest/v01/README.md` e `pantanal_forest/v02/README.md`.
-- Análise offline + registro de experimentos: `pantanal_forest/v01/2_2_data_matriz_analisys/` (pasta **local**, fora do GEE).
+- Pipeline modular: `pantanal/forest/v01/README.md` e `pantanal/forest/v02/README.md`.
+- Análise offline + registro de experimentos: `pantanal/forest/v01/2_2_data_matriz_analisys/` (pasta **local**, fora do GEE).

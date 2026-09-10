@@ -1,10 +1,10 @@
 # MAPBIOMAS-CARBONO — Mapeamento do notebook `mb_carbon_agc.py`
 
 > Portado para o **GEE Code Editor**, subdividido em scripts por região/bioma:
-> `COLLECTION_00/cerrado_forest/v00/mb_carbon_agc_gedi.js`,
-> `COLLECTION_00/pantanal_forest/v00/mb_carbon_agc.js` e
-> `COLLECTION_00/cerrado_forest/v00/mb_carbon_agc_points.js` (exemplo: pontos genéricos).
-> O Pantanal também tem pipeline modular em `COLLECTION_00/pantanal_forest/v01/`.
+> `COLLECTION_00/cerrado/forest/v00/mb_carbon_agc_gedi.js`,
+> `COLLECTION_00/pantanal/forest/v00/mb_carbon_agc.js` e
+> `COLLECTION_00/cerrado/forest/v00/mb_carbon_agc_points.js` (exemplo: pontos genéricos).
+> O Pantanal também tem pipeline modular em `COLLECTION_00/pantanal/forest/v01/`.
 > Ver `COLLECTION_00/README.md` — cofre de conhecimento.
 >
 > Legenda: 🔧 infraestrutura · ⚙️ preparação · 📊 análise · 📦 **SAÍDA**
@@ -67,9 +67,9 @@ Por **cada região ativa** no loop (`ACTIVE_GRIDS`):
 
 Os registros de grids foram **subdivididos por script** (um por bioma):
 
-- **`cerrado_forest/v00/mb_carbon_agc_gedi.js`** → 14 tiles do Cerrado (`t0_0` … `t3_3`, bbox de referência do notebook) + Maranhão (exemplo comentado). `ACTIVE_GRIDS` default: `['t0_0']`.
-- **`pantanal_forest/v00/mb_carbon_agc.js`** → grid **Pantanal — bioma completo** ativo por padrão: quadro `[-60.6788, -22.8138, -52.5489, -12.9587]`. `ACTIVE_GRIDS` default: `['pantanal']`.
-- **`cerrado_forest/v00/mb_carbon_agc_points.js`** → **exemplo de pontos genéricos** (não aleatórios): dado um asset `POINTS_FC`, extrai o stack e exporta `points_samples_{ANO}` (Asset + Drive). AOI = bounds dos pontos; `randomPoints` aparece só comentado como exemplo.
+- **`cerrado/forest/v00/mb_carbon_agc_gedi.js`** → 14 tiles do Cerrado (`t0_0` … `t3_3`, bbox de referência do notebook) + Maranhão (exemplo comentado). `ACTIVE_GRIDS` default: `['t0_0']`.
+- **`pantanal/forest/v00/mb_carbon_agc.js`** → grid **Pantanal — bioma completo** ativo por padrão: quadro `[-60.6788, -22.8138, -52.5489, -12.9587]`. `ACTIVE_GRIDS` default: `['pantanal']`.
+- **`cerrado/forest/v00/mb_carbon_agc_points.js`** → **exemplo de pontos genéricos** (não aleatórios): dado um asset `POINTS_FC`, extrai o stack e exporta `points_samples_{ANO}` (Asset + Drive). AOI = bounds dos pontos; `randomPoints` aparece só comentado como exemplo.
 
 O Pantanal pode divergir do Cerrado a partir desta versão (grids, covariáveis, filtros, escala, parâmetros).
 

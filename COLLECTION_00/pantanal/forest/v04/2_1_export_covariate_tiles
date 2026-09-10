@@ -1,0 +1,49 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Pantanal v04 · Cache tipado de covariáveis
+ * ---------------------------------------------------------------------------
+ * A grade é filtrada server-side e uma única lista de células válidas atravessa
+ * evaluate(). Os exports são criados somente depois dessa seleção.
+ ******************************************************************************/
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v04/0_covariate_source');
+
+var YEARS = [2023];
+var CELL_SPLIT = 4;
+var ASSET_COVARIATES = src.ASSET_ROOT + '/COVARIATES';
+var biome = ee.FeatureCollection(src.BIOME_FC)
+  .filter(ee.Filter.eq(src.BIOME_PROP, src.BIOME_NAME)).geometry();
+var definitions = src.makeCellDefinitions(CELL_SPLIT);
+var definitionById = {};
+definitions.forEach(function (cell) { definitionById[cell.id] = cell; });
+
+function createExports(cellIds) {
+  cellIds.forEach(function (cellId) {
+    var def = definitionById[cellId];
+    if (!def) return;
+    var geom = ee.Geometry.BBox(def.bbox[0], def.bbox[1],
+      def.bbox[2], def.bbox[3]).intersection(biome, ee.ErrorMargin(30));
+    YEARS.forEach(function (year) {
+      var image = src.buildTypedCovariatesStack(geom, year);
+      var name = 'covariates_v04_' + cellId + '_' + year;
+      Export.image.toAsset({
+        image: image,
+        description: 'WS_CARBONO_toAsset-' + name,
+        assetId: ASSET_COVARIATES + '/' + name,
+        overwrite: false,
+        region: geom, scale: src.SCALE, maxPixels: 1e13,
+        pyramidingPolicy: { '.default': 'mean' }
+      });
+    });
+  });
+}
+
+print('MAPBIOMAS-CARBONO · Pantanal v04 · 2_1_export_covariate_tiles');
+src.ensureFolder(ASSET_COVARIATES);
+var validCells = src.makeCellFeatures(CELL_SPLIT).map(function (cell) {
+  var geom = cell.geometry().intersection(biome, ee.ErrorMargin(30));
+  return cell.set({ valid_area: geom.area(30) });
+}).filter(ee.Filter.gt('valid_area', 0));
+validCells.aggregate_array('cell_id').evaluate(function (cellIds) {
+  print('[OK] Células válidas:', cellIds.length);
+  createExports(cellIds);
+});

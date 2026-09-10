@@ -1,0 +1,36 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Pantanal v04 · QA dos assets
+ ******************************************************************************/
+
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v04/0_covariate_source');
+var roots = [
+  src.ASSET_ROOT + '/COVARIATES',
+  src.ASSET_ROOT + '/MATRIX'
+];
+var col = ee.ImageCollection(src.ASSET_ROOT + '/PREDICTIONS/COL');
+var PRED_VIS = {
+  min: 0,
+  max: 150,
+  palette: ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850']
+};
+
+print('MAPBIOMAS-CARBONO · Pantanal v04 · 6_qa');
+roots.forEach(function (root) {
+  var response = ee.data.listAssets(root);
+  print('[QA]', root, '· assets:', (response.assets || []).length);
+});
+col.size().evaluate(function (n) {
+  print('[QA] PREDICTIONS/COL · membros:', n);
+});
+col.aggregate_array('year').distinct().evaluate(function (years) {
+  print('[QA] PREDICTIONS/COL · anos:', years);
+  years.forEach(function (year) {
+    var byYear = col.filter(ee.Filter.eq('year', year));
+    var mosaic = byYear.mosaic().toFloat();
+    Map.addLayer(mosaic, PRED_VIS, 'V04_merged_' + year);
+    byYear.size().evaluate(function (n) {
+      print('[QA] Mosaico ' + year + ' · imagens (células):', n);
+    });
+  });
+});

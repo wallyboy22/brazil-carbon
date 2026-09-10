@@ -1,0 +1,16 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Pantanal Forest v06 · Footprint de entrada
+ ******************************************************************************/
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v06/0_covariate_source');
+var raw = ee.FeatureCollection(src.FOOTPRINT_ASSET);
+var forest = src.getForestMask(2023);
+var labeled = forest.sampleRegions({
+  collection: raw, properties: src.SAMPLE_PROPS,
+  scale: src.SCALE, geometries: true, tileScale: 16
+});
+var filtered = labeled.filter(ee.Filter.eq('forest_mask', 1));
+
+print('MAPBIOMAS-CARBONO · Pantanal Forest v06 · 2_0_check_footprint');
+raw.size().evaluate(function (n) { print('[RAW]', n); });
+filtered.size().evaluate(function (n) { print('[FLORESTA C11]', n); });

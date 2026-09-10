@@ -1,0 +1,55 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Pantanal v04 · Predição a partir de covariáveis cacheadas
+ * ---------------------------------------------------------------------------
+ * Não recalcula HLS/PALSAR/ERA5. Cada asset COVARIATES gera uma predição por
+ * ano usando o modelo persistido.
+ ******************************************************************************/
+
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v04/0_covariate_source');
+
+var YEARS = [2023];
+var ASSET_COVARIATES = src.ASSET_ROOT + '/COVARIATES';
+var ASSET_PREDICTIONS = src.ASSET_ROOT + '/PREDICTIONS';
+var IC = ASSET_PREDICTIONS + '/COL';
+var MODEL_ASSET = src.ASSET_ROOT + '/MODELS/rf_agc_v04';
+var ADD_LAYER = false;
+var PRED_PALETTE = ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'];
+
+var model = ee.Classifier.load(MODEL_ASSET);
+var response = ee.data.listAssets(ASSET_COVARIATES);
+var allAssets = (response.assets || []).filter(function (asset) {
+  return asset.type === 'IMAGE';
+});
+
+function exportPrediction(asset, year) {
+  var name = asset.id.split('/').pop().replace('covariates_', 'agc_pred_');
+  var cellId = name.replace('agc_pred_v04_', '').slice(0, -5);
+  var image = ee.Image(asset.id).classify(model)
+    .rename('prediction_' + year).toFloat()
+    .set('year', Number(year)).set('cell_id', cellId)
+    .set('system:time_start', ee.Date.fromYMD(year, 1, 1).millis());
+  if (ADD_LAYER) Map.addLayer(image, { min: 0, max: 150, palette: PRED_PALETTE }, name, false);
+  Export.image.toAsset({
+    image: image,
+    description: 'WS_CARBONO_toAsset-' + name,
+    assetId: IC + '/' + name,
+    overwrite: false,
+    region: image.geometry(),
+    scale: src.SCALE,
+    maxPixels: 1e13,
+    pyramidingPolicy: { '.default': 'mean' }
+  });
+  print('[TASK]', name);
+}
+
+print('MAPBIOMAS-CARBONO · Pantanal v04 · 4_spatial_prediction_from_assets');
+print('[INFO] Modelo:', MODEL_ASSET, '· covariáveis:', allAssets.length);
+print('[IMPORTANTE] As predições entram na ImageCollection ' + IC);
+src.ensureFolder(ASSET_PREDICTIONS);
+src.ensureImageCollection(IC);
+YEARS.forEach(function (year) {
+  allAssets.filter(function (asset) {
+    return asset.id.slice(-4) === String(year);
+  }).forEach(function (asset) { exportPrediction(asset, year); });
+});
