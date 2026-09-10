@@ -62,7 +62,6 @@ print(f"[CORRELAÇÃO] pares com |r|>0.85: {red_m}")
 # --- RF baseline com CV espacial (blocos) → resíduos ------------------------
 cv = GroupKFold(n_splits=CONF["CV_FOLDS"])
 resid, ids_ = np.zeros(len(y)), np.zeros(len(y), dtype=bool)
-lo, hi = np.percentile(df[CONF["LON"]]), np.percentile(df[CONF["LAT"]])
 for tr, va in cv.split(X, y, df["_block"]):
     m = RandomForestRegressor(n_estimators=CONF["N_ESTIMATORS"],
                               max_features="sqrt", min_samples_leaf=5,
