@@ -10,7 +10,7 @@
 var c = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v07/0_contract.js');
 var base = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v06/0_covariate_source');
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v06/0_covariate_source.js');
 
 // ---------------------------------------------------------------------------
 // Re-exports herdados

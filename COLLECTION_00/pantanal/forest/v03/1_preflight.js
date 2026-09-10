@@ -1,0 +1,53 @@
+/******************************************************************************
+ * MAPBIOMAS-CARBONO — Pantanal v03 · Preflight do stack
+ * ---------------------------------------------------------------------------
+ * Diagnóstico obrigatório antes da matriz: bandas, tipos e amostragem.
+ ******************************************************************************/
+
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v03/0_covariate_source.js');
+
+var YEAR = 2023;
+var biome = ee.FeatureCollection(src.BIOME_FC)
+  .filter(ee.Filter.eq(src.BIOME_PROP, src.BIOME_NAME));
+var aoi = biome.geometry().bounds();
+var stack = src.buildTypedCovariatesStack(aoi, YEAR);
+
+print('MAPBIOMAS-CARBONO · Pantanal v03 · 1_preflight');
+print('[CONTRACT] Feature bands:', src.FEATURE_BANDS);
+print('[CHECK] Band names:', stack.bandNames());
+print('[CHECK] Band types:', stack.bandTypes());
+
+stack.bandTypes().evaluate(function (types) {
+  var doubles = [];
+  Object.keys(types || {}).forEach(function (band) {
+    if (types[band] && types[band].precision === 'double') doubles.push(band);
+  });
+  if (doubles.length) {
+    print('[ERRO] Bandas Double detectadas:', doubles);
+  } else {
+    print('[OK] Nenhuma banda Double detectada.');
+  }
+});
+
+stack.bandNames().evaluate(function (bands) {
+  if (!bands || bands.length !== src.FEATURE_BANDS.length) {
+    print('[ERRO] Número de bandas incompatível:', bands);
+    return;
+  }
+  print('[OK] Stack com', bands.length, 'bandas e schema completo.');
+});
+
+var test = stack.sampleRegions({
+  collection: ee.FeatureCollection.randomPoints(aoi, 10, 2021),
+  properties: [],
+  scale: src.SCALE,
+  geometries: true,
+  tileScale: 16
+});
+test.size().evaluate(function (n) {
+  print(n > 0 ? '[OK] Amostras de preflight:' : '[ERRO] Nenhuma amostra válida:', n);
+});
+
+Map.addLayer(stack.select('NDVI_p50'), { min: -1, max: 1 }, 'v03 NDVI_p50', false);
+Map.addLayer(stack.select('mapbiomas_lulc'), { min: 0, max: 91 }, 'v03 LULC', false);

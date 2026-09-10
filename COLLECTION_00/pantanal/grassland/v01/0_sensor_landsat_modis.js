@@ -1,0 +1,109 @@
+/******************************************************************************
+ * Pantanal Grassland v01 · Sensor Landsat/MODIS
+ * ---------------------------------------------------------------------------
+ * Interface sensor-específica. Um futuro módulo HLS deve preservar as mesmas
+ * funções públicas para não alterar as etapas de produto.
+ ******************************************************************************/
+
+var c = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/grassland/v01/0_contract.js');
+var infra = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v01/0_covariate_source.js');
+
+var NAMES = ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'];
+var SLOPES = ee.Image.constant([0.8474, 0.8483, 0.9047, 0.8462, 0.8937, 0.9071]).rename(NAMES);
+var ITCPS = ee.Image.constant([0.0003, 0.0088, 0.0061, 0.0412, 0.0254, 0.0172]).rename(NAMES);
+
+exports.ensureFolder = infra.ensureFolder;
+
+exports.getBiome = function () {
+  return ee.FeatureCollection(c.BIOME_FC)
+    .filter(ee.Filter.eq(c.BIOME_PROP, c.BIOME_NAME));
+};
+
+exports.getGrasslandMask = function (year) {
+  var biome = exports.getBiome();
+  var lulc = ee.Image(c.LULC_ASSET).select('classification_' + year);
+  return lulc.updateMask(ee.Image().paint(biome, 1))
+    .remap(c.GRASSLAND_CLASSES,
+      c.GRASSLAND_CLASSES.map(function () { return 1; }), 0)
+    .selfMask().rename('grassland_mask').toUint8();
+};
+
+function maskClouds(image) {
+  var qa = image.select('QA_PIXEL');
+  return image.updateMask(
+    qa.bitwiseAnd(1 << 1).eq(0)
+      .and(qa.bitwiseAnd(1 << 2).eq(0))
+      .and(qa.bitwiseAnd(1 << 3).eq(0))
+      .and(qa.bitwiseAnd(1 << 4).eq(0))
+  );
+}
+
+function prepTmEtm(image) {
+  return maskClouds(image)
+    .select(['SR_B1', 'SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B7'], NAMES)
+    .multiply(0.0000275).add(-0.2)
+    .copyProperties(image, image.propertyNames());
+}
+
+function prepOli(image) {
+  var refl = maskClouds(image)
+    .select(['SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B6', 'SR_B7'], NAMES)
+    .multiply(0.0000275).add(-0.2);
+  return refl.subtract(ITCPS).divide(SLOPES)
+    .copyProperties(image, image.propertyNames());
+}
+
+function addBiomass(image) {
+  return image.addBands(image.expression(
+    'exp(5.8195 + 26.1616 * red + 21.6240 * swir1 - 48.9521 * swir2)',
+    { red: image.select('red'), swir1: image.select('swir1'),
+      swir2: image.select('swir2') }
+  ).rename('biomass_kg_ha').toFloat());
+}
+
+exports.monthlyBiomass = function (year, month) {
+  var start = ee.Date.fromYMD(year, month, 1);
+  var end = start.advance(1, 'month');
+  var biome = exports.getBiome();
+  var mask = exports.getGrasslandMask(year);
+  function filter(col) {
+    return col.filterBounds(biome.geometry()).filterDate(start, end)
+      .filter(ee.Filter.lt('CLOUD_COVER', 40));
+  }
+  var col = filter(ee.ImageCollection('LANDSAT/LT05/C02/T1_L2')).map(prepTmEtm)
+    .merge(filter(ee.ImageCollection('LANDSAT/LE07/C02/T1_L2')).map(prepTmEtm))
+    .merge(filter(ee.ImageCollection('LANDSAT/LC08/C02/T1_L2')).map(prepOli))
+    .merge(filter(ee.ImageCollection('LANDSAT/LC09/C02/T1_L2')).map(prepOli))
+    .map(addBiomass);
+  return col.select('biomass_kg_ha').mean()
+    .updateMask(mask).rename('biomass_' + month).toFloat()
+    .set('year', year).set('month', month);
+};
+
+exports.monthlyPara = function (year, month) {
+  var start = ee.Date.fromYMD(year, month, 1);
+  var end = start.advance(1, 'month');
+  var fpar = ee.ImageCollection('MODIS/061/MCD15A3H')
+    .filterDate(start, end).select('Fpar');
+  var dsr = ee.ImageCollection('MODIS/061/MCD18A1')
+    .filterDate(start, end).select('DSR');
+  var para = fpar.map(function (image) {
+    var t = image.date();
+    var dsrMean = dsr.filterDate(t, t.advance(4, 'day')).mean()
+      .multiply(86400).multiply(1e-6);
+    return image.multiply(0.01).resample('bilinear')
+      .multiply(dsrMean.multiply(0.48)).multiply(4).rename('para');
+  }).sum();
+  return para.updateMask(exports.getGrasslandMask(year))
+    .rename('para_' + month).toFloat()
+    .set('year', year).set('month', month);
+};
+
+exports.monthlyAnpp = function (year, month) {
+  return exports.monthlyPara(year, month)
+    .multiply(c.ECA_MONTHLY[month]).multiply(10)
+    .rename('anpp_' + month).toFloat()
+    .set('year', year).set('month', month);
+};

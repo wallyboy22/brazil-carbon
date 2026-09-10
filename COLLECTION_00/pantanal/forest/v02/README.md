@@ -7,12 +7,12 @@
 
 | Etapa | Papel |
 |---|---|
-| `0_covariate_source` | Interface v02 da fonte de covariáveis compartilhada com a v01 |
-| `1_check_covariates` | Diagnóstico do stack e teste de amostragem |
-| `2_0_check_footprint` | Validação do footprint persistido, sem export |
-| `2_data_matrix` | Subetapa 2.1: export da matriz em assets particionados |
-| `3_modelling` | Treino e predição anual usando os assets concluídos |
-| `4_merge` | Stub para consolidação futura |
+| `0_covariate_source.js` | Interface v02 da fonte de covariáveis compartilhada com a v01 |
+| `1_check_covariates.js` | Diagnóstico do stack e teste de amostragem |
+| `2_0_check_footprint.js` | Validação do footprint persistido, sem export |
+| `2_data_matrix.js` | Subetapa 2.1: export da matriz em assets particionados |
+| `3_modelling.js` | Treino e predição anual usando os assets concluídos |
+| `4_merge.js` | Stub para consolidação futura |
 
 **Ordem:** `0 → 1 → 2_0 → 2_data_matrix → 3 → 4`.
 
@@ -55,7 +55,7 @@ alteração desta versão é de particionamento/export, não de alvo ou stack. A
 interface, entretanto, está dentro da própria v02:
 
 ```javascript
-require('users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v02/0_covariate_source')
+require('users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v02/0_covariate_source.js')
 ```
 
 O asset `SAMPLES/footprint_pantanal_2023` é uma entrada persistida. A v02 não

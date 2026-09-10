@@ -41,17 +41,17 @@ A v00 permanece congelada para comparação histórica.
 A v01 adotou a organização inspirada no MapBiomas Solo:
 
 ```text
-0_covariate_source
+0_covariate_source.js
     ↓
-1_check_covariates
+1_check_covariates.js
     ↓
-2_data_matrix
+2_data_matrix.js
     ↓
 2_2_data_matriz_analisys
     ↓
-3_modelling
+3_modelling.js
     ↓
-4_merge
+4_merge.js
 ```
 
 Decisões importantes:
@@ -117,7 +117,7 @@ A v03 introduziu um contrato explícito para as bandas:
 O modelo deixou de derivar o schema automaticamente de `propertyNames()`.
 Também foram adicionados:
 
-- `0_contract`;
+- `0_contract.js`;
 - `1_preflight`;
 - validação do footprint;
 - checagem de `bandTypes()`;

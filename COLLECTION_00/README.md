@@ -55,20 +55,20 @@ só com v00.
 
 | Etapa | Papel | Saídas |
 |---|---|---|
-| `0_covariate_source` | Módulo `require()`: stack HLS/PALSAR/HAND/ERA5-CWD/LULC C11, filtros GEDI, `ensureFolder()` | — |
-| `1_check_covariates` | Diagnóstico: bandas, teste `sampleRegions(3)`, camadas viz | — |
-| `2_data_matrix` | Matriz de treino (GEDI + covariáveis) | Asset `SAMPLES/` + `MATRIX/` · Drive CSV (universo p/ análise) quando `EXPORT_TO_DRIVE=true` |
+| `0_covariate_source.js` | Módulo `require()`: stack HLS/PALSAR/HAND/ERA5-CWD/LULC C11, filtros GEDI, `ensureFolder()` | — |
+| `1_check_covariates.js` | Diagnóstico: bandas, teste `sampleRegions(3)`, camadas viz | — |
+| `2_data_matrix.js` | Matriz de treino (GEDI + covariáveis) | Asset `SAMPLES/` + `MATRIX/` · Drive CSV (universo p/ análise) quando `EXPORT_TO_DRIVE=true` |
 | `2_2_data_matriz_analisys/` *(offline)* | Análise fora do GEE: EDA, redundância (correlação/thinning/IsolationForest), CV espacial K-fold, RF/GBM/SVR → gate | relatório PASSA/FICA/SAI · registro `EXPERIMENTS.md` |
-| `3_modelling` | Modelo (`MODEL_TYPE` rf/gbm/svm) + predição anual multibanda | Asset `PREDICTIONS/` (+ modelo opcional) · Drive GeoTIFF quando `EXPORT_TO_DRIVE=true` |
-| `4_merge` | Stub documentado — integração futura a definir | — |
+| `3_modelling.js` | Modelo (`MODEL_TYPE` rf/gbm/svm) + predição anual multibanda | Asset `PREDICTIONS/` (+ modelo opcional) · Drive GeoTIFF quando `EXPORT_TO_DRIVE=true` |
+| `4_merge.js` | Stub documentado — integração futura a definir | — |
 
 > **Fluxo com gate:** a matriz sai em `MATRIX/` e o universo em CSVs no Drive.
 > A **análise offline** (`2_2_data_matriz_analisys/`, roda local ou Colab)
 > decide as subversões/versão com métricas baratas; **só o champion dispara o
 > `3_modelling`** (predição massiva, cara).
 >
-> 🔒 **Política de versionamento:** no repo GEE online entram **apenas `.js`,
-> `README.md` e os módulos `require()` (sem extensão)**. A pasta
+> 🔒 **Política de versionamento:** no repo GEE online entram **apenas `.js`
+> (incluindo módulos `require()`) e `README.md`**. A pasta
 > `2_2_data_matriz_analisys/` é **ignorada** no online e mantém **próprio `.git`
 > local** — o histórico dela fica versionado localmente, nunca enviado ao GEE.
 

@@ -1,0 +1,23 @@
+/******************************************************************************
+ * Pantanal Grassland v01 · Estoque de carbono derivado
+ ******************************************************************************/
+var c = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/grassland/v01/0_contract.js');
+var src = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/grassland/v01/0_sensor_landsat_modis.js');
+var ROOT = c.ASSET_ROOT + '/CARBON';
+var biomass = ee.Image(
+  c.ASSET_ROOT + '/BIOMASS/grassland_biomass_annual_v01_2023');
+var carbon = biomass.multiply(c.CARBON_FRACTION).divide(1000)
+  .rename('carbon_stock_MgC_ha').toFloat();
+
+print('MAPBIOMAS-CARBONO · Pantanal Grassland v01 · 5_carbon_products');
+print('[WARNING] Fração de carbono provisória:', c.CARBON_FRACTION);
+src.ensureFolder(ROOT);
+Export.image.toAsset({
+  image: carbon,
+  description: 'WS_CARBONO_toAsset-grassland_carbon_stock_v01_2023',
+  assetId: ROOT + '/grassland_carbon_stock_v01_2023',
+  region: src.getBiome().geometry(), scale: c.SCALE, maxPixels: 1e13,
+  pyramidingPolicy: { '.default': 'mean' }
+});

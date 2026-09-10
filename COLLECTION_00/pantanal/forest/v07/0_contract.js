@@ -13,7 +13,7 @@
  *   - treino multi-ano preparado (TRAIN_YEARS); 2023 roda como piloto
  ******************************************************************************/
 var base = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v06/0_contract');
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v06/0_contract.js');
 
 exports.VERSION = 'v07';
 
