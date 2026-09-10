@@ -16,8 +16,11 @@ var CELL_SPLIT = 4;
 var TILE_SCALE = 16;
 var matrixRoot = c.ASSET_ROOT + '/MATRIX';
 var biome = src.getBiome().geometry();
-// Pasta raiz no Google Drive destino do CSV (Export.table.toDrive)
-var DRIVE_ROOT = 'mapbiomas_carbono/pantanal/forest/v07/matriz';
+// Pasta raiz no Google Drive destino do CSV (Export.table.toDrive).
+// NOTA: o GEE NÃO cria subpastas — o caminho vira um nome único de pasta.
+// Usamos um folder SIMPLES de um nível; a raiz do "balde" (MyDrive/mapbiomas_carbono)
+// é o mesmo DRIVE_ROOT usado pelas células do 2_3_gcn (CONF["DRIVE_ROOT"]).
+var DRIVE_ROOT = 'mapbiomas_carbono';
 
 var points = {};
 c.TRAIN_YEARS.forEach(function (y) {
@@ -66,7 +69,8 @@ function exportCell(id) {
 }
 
 print('MAPBIOMAS-CARBONO · Pantanal Forest v07 · 2_2_toDrive_matrix');
-print('[DRIVE ROOT]', DRIVE_ROOT);
+print('[DRIVE ROOT]', DRIVE_ROOT,
+  '(pasta única — o GEE não cria subpastas; CSVs caem na raiz do balde)');
 print('[ASSET ROOT]', matrixRoot);
 src.ensureFolder(matrixRoot);
 cells.aggregate_array('cell_id').evaluate(function (ids) {

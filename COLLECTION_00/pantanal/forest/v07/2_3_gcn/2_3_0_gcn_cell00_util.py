@@ -1,25 +1,22 @@
 """
-MAPBIOMAS-CARBONO — Pantanal Forest v07 · 2_3_util.py
-=====================================================
-Funções compartilhadas pelas células do Google Colab (2_3_gcn_cellNN_*.py).
+MAPBIOMAS-CARBONO · Pantanal Forest v07 — 2_3_0_GCN_CELL00_UTIL.py
+==================================================================
+Célula 00 do Google Colab (gcn = google collab notebook). FUNÇÕES E
+CONFIGURAÇÃO COMPARTILHADAS — rode ANTES das células 2_3_1..2_3_5.
+
+Não faz import de nada próprio: cole o conteúdo desta célula na PRIMEIRA
+célula do notebook (ou use %run) para que CONF e as funções abaixo fiquem
+disponíveis no namespace do runtime para as células seguintes.
 
 Papel do 2_3_gcn (gate offline da v07):
   - lê as matrizes de covariáveis exportadas para o DRIVE pelo 2_2_toDrive_matrix.js
   - gera a BIBLIOTECA DE FIGURAS (salvas NA MESMA PASTA do output no Drive)
   - faz o thinning espacial (grade 60-90 m, mantém o footprint de menor agbd_se)
   - decide o champion (parametrização do RF + ensemble) → champion.json
-
-Modo de uso (ver README do 2_3_gcn):
-  1. Abra QUALQUER notebook do Google Colab.
-  2. Rode 2_3_0_gcn_cell00_autentication_drive.py (autentica EE + monta o Drive).
-  3. Coloque este arquivo (e os demais cellNN) na pasta de output do Drive
-     (ou faça upload para o runtime) — o cell00 já adiciona a pasta ao sys.path.
-  4. Rode as células seguintes apontando para o .py do fluxo (%run ou cole).
 """
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 
 import numpy as np
@@ -30,13 +27,14 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 # ---------------------------------------------------------------------------
-# CONFIG (ajustável a cada execução — o cell00 preenche via DRIVE_ROOT)
+# CONFIG (ajustável a cada execução — ajuste DRIVE_ROOT se necessário)
 # ---------------------------------------------------------------------------
 CONF = {
-    # Pasta de OUTPUT no Drive — as figuras são salvas NA MESMA pasta de output
-    "DRIVE_ROOT": "/content/drive/MyDrive/mapbiomas_carbono/pantanal/forest/v07",
-    "MATRIX_DIR": "matriz",   # subpasta com os CSVs do 2_2_toDrive_matrix
-    "FIG_DIR": "figures",     # biblioteca de figuras (espelha o repo 2_3_gcn/figures)
+    # Raiz do "balde" no Drive: pasta única do 2_2_toDrive_matrix.js (folder=).
+    # O GEE não cria subpastas; os CSVs caem direto aqui.
+    "DRIVE_ROOT": "/content/drive/MyDrive/mapbiomas_carbono",
+    "MATRIX_DIR": "",           # CSVs da matriz na própria raiz do balde
+    "FIG_DIR": "figures",       # subpasta de figuras (criada pelo Python aqui)
     # --- dados ---
     "TARGET": "agbd",
     "WEIGHT_COL": "w",
@@ -248,3 +246,12 @@ def variogram(resids: np.ndarray, coords_m: np.ndarray, max_dist_m: float = 1500
 # ---------------------------------------------------------------------------
 def weights_1_se2(agbd_se: np.ndarray) -> np.ndarray:
     return 1.0 / np.maximum(agbd_se, 1.0) ** 2
+
+
+print("=" * 68)
+print("v07 · cell00 · util/config carregadas (CONF + funções no namespace)")
+print("     DRIVE_ROOT:", CONF["DRIVE_ROOT"], "· MATRIX_DIR:", CONF["MATRIX_DIR"],
+      "· FIG_DIR:", CONF["FIG_DIR"])
+print("     próximas: 2_3_1 (auth/drive) → 2_3_2 (diagnóstico) → 2_3_3 (CV) → " +
+      "2_3_4 (thinning) → 2_3_5 (champion)")
+print("=" * 68)
