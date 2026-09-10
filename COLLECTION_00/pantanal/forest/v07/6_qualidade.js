@@ -16,7 +16,7 @@ var root = c.ASSET_ROOT;
 var BASE = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST';
 var col = ee.ImageCollection(root + '/PREDICTIONS/COL');
 var PRED_VIS = {
-  min: 0, max: 150,
+  min: 0, max: 75,
   palette: ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850']
 };
 var STD_VIS = { min: 0, max: 40, palette: ['#ffffb2', '#fd8d3c', '#d73027', '#7f0000'] };

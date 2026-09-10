@@ -33,7 +33,7 @@ function createExports(ids) {
         .set('year', year).set('cell_id', id)
         .set('system:time_start', ee.Date.fromYMD(year, 1, 1).millis());
       var name = 'agc_pred_v06_' + id + '_' + year;
-      if (ADD_LAYER) Map.addLayer(image, { min: 0, max: 150, palette: palette }, name, false);
+      if (ADD_LAYER) Map.addLayer(image, { min: 0, max: 75, palette: palette }, name, false);
       Export.image.toAsset({ image: image,
         description: 'WS_CARBONO_toAsset-' + name,
         assetId: IC + '/' + name,

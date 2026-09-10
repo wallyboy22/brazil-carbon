@@ -15,8 +15,8 @@ var VERSIONS = [
 ];
 
 var PRED_VIS = {
-  min: 30,
-  max: 150,
+  min: 0,
+  max: 75,
   palette: ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850']
 };
 

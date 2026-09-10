@@ -235,7 +235,7 @@ tileIds.forEach(function (tileId) {
 
       if (ADD_LAYER) {
         Map.addLayer(predYear,
-          { min: 0, max: 150, palette: PRED_PALETTE },
+          { min: 0, max: 75, palette: PRED_PALETTE },
           'AGC ' + tag, false);
       }
 

@@ -75,7 +75,7 @@ function predictCell(id, year) {
 
   var name = 'agc_pred_v07_' + id + '_' + year;
   if (ADD_LAYER) Map.addLayer(image.select('prediction_' + year),
-    { min: 0, max: 150, palette: palette }, name, false);
+    { min: 0, max: 75, palette: palette }, name, false);
   Export.image.toAsset({ image: image,
     description: 'WS_CARBONO_toAsset-' + name,
     assetId: IC + '/' + name,

@@ -29,7 +29,7 @@ function exportPrediction(asset, year) {
     .rename('prediction_' + year).toFloat()
     .set('year', Number(year)).set('cell_id', cellId)
     .set('system:time_start', ee.Date.fromYMD(year, 1, 1).millis());
-  if (ADD_LAYER) Map.addLayer(image, { min: 0, max: 150, palette: PRED_PALETTE }, name, false);
+  if (ADD_LAYER) Map.addLayer(image, { min: 0, max: 75, palette: PRED_PALETTE }, name, false);
   Export.image.toAsset({
     image: image,
     description: 'WS_CARBONO_toAsset-' + name,

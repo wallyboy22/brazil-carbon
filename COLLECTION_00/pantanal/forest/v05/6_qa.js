@@ -7,7 +7,7 @@ var roots = ['/MATRIX', '/MODELS'];
 var col = ee.ImageCollection(src.ASSET_ROOT + '/PREDICTIONS/COL');
 var PRED_VIS = {
   min: 0,
-  max: 150,
+  max: 75,
   palette: ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850']
 };
 print('MAPBIOMAS-CARBONO · Pantanal v05 · 6_qa');
