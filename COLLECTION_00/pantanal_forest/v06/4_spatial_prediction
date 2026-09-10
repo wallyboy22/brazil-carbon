@@ -13,14 +13,13 @@ var root = c.ASSET_ROOT;
 var IC = root + '/PREDICTIONS/COL';
 var model = ee.Classifier.load(root + '/MODELS/rf_agc_v06_forest_masked');
 var biome = src.getBiome().geometry();
-var forestPoints = ee.FeatureCollection(root + '/SAMPLES/forest_footprint_v06_' + c.YEAR);
 var defs = c.makeCellDefinitions(CELL_SPLIT);
 var byId = {};
 defs.forEach(function (cell) { byId[cell.id] = cell; });
 var cells = c.makeCellFeatures(CELL_SPLIT).map(function (cell) {
   var geom = cell.geometry().intersection(biome, ee.ErrorMargin(30));
-  return cell.set({ valid_area: geom.area(30), n_points: forestPoints.filterBounds(geom).size() });
-}).filter(ee.Filter.gt('valid_area', 0)).filter(ee.Filter.gt('n_points', 0));
+  return cell.set({ valid_area: geom.area(30) });
+}).filter(ee.Filter.gt('valid_area', 0));
 
 function createExports(ids) {
   ids.forEach(function (id) {
@@ -38,6 +37,7 @@ function createExports(ids) {
       Export.image.toAsset({ image: image,
         description: 'WS_CARBONO_toAsset-' + name,
         assetId: IC + '/' + name,
+        overwrite: false,
         region: geom, scale: c.SCALE, maxPixels: 1e13,
         pyramidingPolicy: { '.default': 'mean' } });
     });

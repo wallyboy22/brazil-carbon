@@ -1,0 +1,107 @@
+"""
+MAPBIOMAS-CARBONO · Pantanal Forest v07 — 2_3_4_GCN_CELL04_CHAMPION.py
+======================================================================
+Célula 04 · Champion (configuração final do modelo v07) — Fase 2 da consulta.
+Rodar em Colab após a cell03. Aponta para o .py do fluxo salvo no Drive.
+
+Consome o gate_state.json escrito pela cell02 e:
+  1. decide log_target (linear vs log(1+agbd) + fator de Duan — B7)
+  2. escolhe minLeafPopulation (regularização direta da varredura)
+  3. fixa o ENSEMBLE (N=5, seed_base, ~80% bandas, ~80% linhas)
+  4. mede a importância de permutação do champion
+  5. escreve champion.json NA MESMA pasta das figuras — com esses valores,
+     copie os campos para o 0_contract.js e rode o 3_model_training.js
+"""
+from __future__ import annotations
+
+import json
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from pathlib import Path
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.inspection import permutation_importance
+
+import 2_3_util as u
+
+print("=" * 68)
+print("v07 · cell04 · champion")
+print("=" * 68)
+
+state_path = Path(u.CONF["DRIVE_ROOT"]) / u.CONF["FIG_DIR"] / "gate_state.json"
+if not state_path.exists():
+    raise FileNotFoundError(
+        "gate_state.json não encontrado. Rode 2_3_2 (cell02) antes.")
+state = json.loads(state_path.read_text(encoding="utf-8"))
+print(f"[ESTADO] carregado de {state_path}")
+
+df = u.load_matrix()
+df, _ = u.clean_features(df)
+df = u.grid_thin(df)  # champion é medido sobre a matriz THINNED (cell03)
+FEATS = [c for c in df.columns if c not in
+         (u.CONF["TARGET"], u.CONF["WEIGHT_COL"], u.CONF["LON"], u.CONF["LAT"],
+          u.CONF["AGBD_SE"], "geometry", "cell_id", "year")]
+X = df[FEATS].fillna(df[FEATS].median())
+y = df[u.CONF["TARGET"]].values
+w = u.weights_1_se2(df[u.CONF["AGBD_SE"]].values)
+
+# --- decisões ----------------------------------------------------------------
+log_on = state["log_eval"]["rmse_log"] < state["log_eval"]["rmse_linear"]
+min_leaf = state["min_leaf_best"]
+smear = float(np.exp(1.0))  # recalculado dentro do 3_model_training via Duan;
+                             # aqui registra-se apenas a decisão log
+
+champion = {
+    "version": "v07",
+    "log_target": log_on,
+    "log_offset": state["log_eval"]["log_offset"],
+    "smear_factor": None,  # pré-definido pelo desenho do GEE (fator de Duan)
+    "min_leaf_pop": int(min_leaf),
+    "variables_per_split": "sqrt(n_features)",
+    "ensemble": {
+        "num_members": u.CONF["N_MEMBERS"],
+        "seed_base": u.CONF["SEED_BASE"],
+        "band_fraction": u.CONF["BAND_FRACTION"],
+        "train_fraction": u.CONF["TRAIN_FRACTION"],
+    },
+    "metrics": {
+        "rmse_cv_linear": state["log_eval"]["rmse_linear"],
+        "bias_cv_linear": state["log_eval"]["bias_linear"],
+        "rmse_cv_log": state["log_eval"]["rmse_log"],
+        "bias_cv_log": state["log_eval"]["bias_log"],
+        "rmse_cv_minleaf_best": state["minleaf_sweep"][str(min_leaf)]["rmse"],
+    },
+    "n_features": int(X.shape[1]),
+    "n_rows_thinned": int(len(y)),
+    "n_rows_raw": state["n_rows"],
+}
+print(f"[DECISÃO] log_target={log_on} · minLeafPopulation={min_leaf}")
+
+# --- importância de permutação do champion ----------------------------------
+m = RandomForestRegressor(n_estimators=u.CONF["N_ESTIMATORS"],
+                          max_features="sqrt", min_samples_leaf=min_leaf,
+                          random_state=u.CONF["RANDOM_STATE"])
+yt = np.log1p(y) if log_on else y
+m.fit(X, yt, sample_weight=w)
+imp = permutation_importance(m, X, yt, n_repeats=5,
+                             random_state=u.CONF["RANDOM_STATE"])
+order = np.argsort(imp.importances_mean)[::-1][:15]
+fig, ax = plt.subplots(figsize=(7, 6))
+ax.barh([FEATS[i][:24] for i in order[::-1]],
+        imp.importances_mean[order[::-1]], color="#2b83ba")
+ax.set(xlabel="importância de permutação (ΔRMSE)",
+       title="f11 · importância de permutação — champion")
+u.save_fig(fig, "f11_importancia_permutacao.png")
+
+# --- persiste champion.json (mesma pasta das figuras/output) -----------------
+out_json = Path(u.CONF["DRIVE_ROOT"]) / u.CONF["FIG_DIR"] / "champion.json"
+u.write_artifact(out_json, champion)
+
+print()
+print("[CHAMPION] campeão configurado — copie para o 0_contract.js:")
+print()
+for k, v in champion.items():
+    print(f"  {k}: {json.dumps(v, ensure_ascii=False) if isinstance(v, dict) else v}")
+print()
+print("    → após copiar, rode no GEE: 3_model_training.js e 4_spatial_prediction.js")
+print("=" * 68)

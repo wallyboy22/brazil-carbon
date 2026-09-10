@@ -7,6 +7,11 @@ var src = require(
 var matrixPath = src.ASSET_ROOT + '/MATRIX';
 var predictionPath = src.ASSET_ROOT + '/PREDICTIONS';
 var col = ee.ImageCollection(predictionPath + '/COL');
+var PRED_VIS = {
+  min: 0,
+  max: 150,
+  palette: ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850']
+};
 
 var matrix = ee.data.listAssets(matrixPath);
 
@@ -17,5 +22,13 @@ col.size().evaluate(function (n) {
 });
 col.aggregate_array('year').distinct().evaluate(function (years) {
   print('[QA] Predições · anos:', years);
+  years.forEach(function (year) {
+    var byYear = col.filter(ee.Filter.eq('year', year));
+    var mosaic = byYear.mosaic().toFloat();
+    Map.addLayer(mosaic, PRED_VIS, 'V03_merged_' + year);
+    byYear.size().evaluate(function (n) {
+      print('[QA] Mosaico ' + year + ' · imagens (células):', n);
+    });
+  });
 });
 print('[QA] Predições · bandNames do primeiro membro:', col.first().bandNames());

@@ -1,23 +1,30 @@
 // =========================================================================
-// ANPP MENSAL — CAMPO NATURAL DO BIOMA PAMPA
+// ANPP MENSAL — CAMPO NATURAL DO BIOMA PANTANAL
+// Adaptação v00 a partir do protótipo original do Pampa.
+// ORIGINAL (PAMPA): ANPP MENSAL — CAMPO NATURAL DO BIOMA PAMPA
+// -------------------------------------------------------------------------
 // Modelo de Monteith (1977): ANPP = εCA × ΣPARa
 //   PARa  = fPAR × PAR_incidente  (MJ/m²)
 //   PAR   = DSR × 0,48            (fração fotossinteticamente ativa)
 //   fPAR  = MODIS MCD15A3H × 0,01 (fração, adimensional)
 //   DSR   = MODIS MCD18A1         (W/m² → MJ/m²/dia: × 86400 × 1e-6)
-//   εCA   = eficiência mensal calibrada para campo do Pampa (gMS/MJ)
+//   εCA   = eficiência mensal (gMS/MJ) — ORIGINAL calibrada para campo do
+//           Pampa; mantida como hipótese provisória para o Pantanal (ver v01)
 // Resultado: ANPP em kg MS/ha/mês  (g/m²/mês × 10)
 // Landsat harmonizado L5+L7+L8+L9 (Roy et al. 2016) — biomassa de referência
-// Máscara: campo natural Pampa, MapBiomas col.10.1, classes 12 e 50
+// Máscara: campo natural Pantanal, MapBiomas col.11, classes 11, 12 e 50
+// ORIGINAL (PAMPA): Máscara: campo natural Pampa, MapBiomas col.10.1, classes 12 e 50
 // =========================================================================
 
 // =========================================================================
 // 1. CONFIGURAÇÃO — ALTERE APENAS AQUI
 // =========================================================================
-var anoAlvo = 2021;  // >= 2000 (início do MODIS)
+var anoAlvo = 2023;  // >= 2000 (início do MODIS) | ORIGINAL (PAMPA): var anoAlvo = 2021;
 
 // =========================================================================
 // 2. EFICIÊNCIA DE CONVERSÃO εCA (gMS · MJ⁻¹) — tabela mensal
+//    ORIGINAL (PAMPA): valores calibrados para o campo do Pampa.
+//    Mantidos no Pantanal como hipótese provisória — calibração em v02+.
 //    Abril interpolado: média(Março=0,315 ; Maio=0,257) = 0,286
 // =========================================================================
 var eca = {
@@ -36,10 +43,13 @@ var eca = {
 };
 
 // =========================================================================
-// 3. MÁSCARA DO CAMPO NATURAL DO BIOMA PAMPA (MapBiomas col.10.1)
+// 3. MÁSCARA DO CAMPO NATURAL DO BIOMA PANTANAL (MapBiomas col.11)
+//    ORIGINAL (PAMPA): MÁSCARA DO CAMPO NATURAL DO BIOMA PAMPA (col.10.1)
 // =========================================================================
 var biomas = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biomas_IBGE_250mil_old')
-  .filterMetadata('Bioma', 'equals', 'Pampa');
+  .filterMetadata('Bioma', 'equals', 'Pantanal');
+// ORIGINAL (PAMPA): .filterMetadata('Bioma', 'equals', 'Pampa');
+// Nota: a v01 usa 'projects/ee-ipam/assets/ORIGINAIS/IBGE/limite_biomas_IBGE_2026' (ver 0_contract).
 
 var aoi = biomas.geometry();
 
@@ -47,15 +57,20 @@ var bioma_raster = ee.Image().uint32()
   .paint({featureCollection: biomas, color: 'CD_Bioma'})
   .rename('Bioma');
 
-var dirCol = 'projects/mapbiomas-public/assets/brazil/lulc/collection10_1/mapbiomas_brazil_collection10_1_coverage_v1';
+var dirCol = 'projects/mapbiomas-public/assets/brazil/lulc/collection11/' +
+             'mapbiomas_brazil_collection11_coverage_v3';
+// ORIGINAL (PAMPA): 'projects/mapbiomas-public/assets/brazil/lulc/collection10_1/mapbiomas_brazil_collection10_1_coverage_v1';
 var colecao_MB = ee.Image(dirCol)
   .updateMask(bioma_raster)
   .select('classification_' + anoAlvo);
 
-// Classes 12 (formação campestre) e 50 (restinga herbácea)
-var campo_Pampa = colecao_MB.eq(12).or(colecao_MB.eq(50)).selfMask();
+// Classes 11 (área úmida), 12 (formação campestre) e 50 (restinga herbácea)
+var campo_Pantanal = colecao_MB.eq(11).or(colecao_MB.eq(12)).or(colecao_MB.eq(50)).selfMask();
+// ORIGINAL (PAMPA): Classes 12 (formação campestre) e 50 (restinga herbácea)
+// ORIGINAL (PAMPA): var campo_Pampa = colecao_MB.eq(12).or(colecao_MB.eq(50)).selfMask();
 
-print('Máscara: classification_' + anoAlvo + ' | classes 12 e 50');
+print('Máscara: classification_' + anoAlvo + ' | classes 11, 12 e 50');
+// ORIGINAL (PAMPA): print('Máscara: classification_' + anoAlvo + ' | classes 12 e 50');
 
 // =========================================================================
 // 4. PRÉ-PROCESSAMENTO LANDSAT HARMONIZADO (L5 / L7 / L8 / L9)
@@ -96,7 +111,8 @@ function add_biomassa(image) {
 }
 
 // =========================================================================
-// 5. FUNÇÃO: BIOMASSA MÉDIA MENSAL (Landsat, recortada ao campo Pampa)
+// 5. FUNÇÃO: BIOMASSA MÉDIA MENSAL (Landsat, recortada ao campo Pantanal)
+//    ORIGINAL (PAMPA): ... recortada ao campo Pampa
 // =========================================================================
 function biomassaMensal(mes) {
   var dataIni = ee.Date.fromYMD(anoAlvo, mes, 1);
@@ -115,7 +131,7 @@ function biomassaMensal(mes) {
 
   var img = ee.Image(ee.Algorithms.If(
     col.size().gt(0),
-    col.select('biomassa').mean().updateMask(campo_Pampa).rename(nomeBanda),
+    col.select('biomassa').mean().updateMask(campo_Pantanal).rename(nomeBanda),
     ee.Image.constant(-9999).rename(nomeBanda).selfMask()
   ));
   return img.set('system:time_start', dataIni.millis()).set('mes', mes);
@@ -178,7 +194,7 @@ function paraMensal(mes) {
 
   // Soma todas as composições do mês → MJ/m²/mês
   var soma = colPara.sum()
-    .updateMask(campo_Pampa)
+    .updateMask(campo_Pantanal)
     .rename(nomeBanda);
 
   return soma.set('system:time_start', dataIni.millis()).set('mes', mes);
@@ -274,24 +290,28 @@ Map.addLayer(listaAnpp[9],  anppVis, 'ANPP ' + anoAlvo + '-' + labelsMes[9],  fa
 Map.addLayer(listaAnpp[10], anppVis, 'ANPP ' + anoAlvo + '-' + labelsMes[10], false);
 Map.addLayer(listaAnpp[11], anppVis, 'ANPP ' + anoAlvo + '-' + labelsMes[11], false);
 
-// Máscara campo Pampa para referência visual
-Map.addLayer(campo_Pampa.selfMask(), {palette: ['d4e6c3']}, 'Campo Pampa ' + anoAlvo, false);
+// Máscara campo Pantanal para referência visual
+Map.addLayer(campo_Pantanal.selfMask(), {palette: ['d4e6c3']}, 'Campo Pantanal ' + anoAlvo, false);
+// ORIGINAL (PAMPA): Map.addLayer(campo_Pampa.selfMask(), {palette: ['d4e6c3']}, 'Campo Pampa ' + anoAlvo, false);
 
-Map.setCenter(-53.5953, -30.5429, 8);
+Map.setCenter(-57.0, -18.0, 8);
+// ORIGINAL (PAMPA): Map.setCenter(-53.5953, -30.5429, 8);
 
 // =========================================================================
 // 10. LOG DE CONTROLE
 // =========================================================================
 print('=== Configurações ===');
 print('Ano-alvo:', anoAlvo);
-print('Máscara: campo Pampa — classes 12+50, MapBiomas col.10.1, classification_' + anoAlvo);
+print('Máscara: campo Pantanal — classes 11+12+50, MapBiomas col.11, classification_' + anoAlvo);
+// ORIGINAL (PAMPA): print('Máscara: campo Pampa — classes 12+50, MapBiomas col.10.1, classification_' + anoAlvo);
 print('PARa = fPAR (MCD15A3H×0,01) × DSR (MCD18A1×86400×1e-6) × 0,48 × 4 dias | soma mensal');
 print('ANPP = εCA × ΣPARa | resultado em kg MS/ha/mês');
+print('εCA: valores do Pampa mantidos no Pantanal (hipótese provisória — calibração em v02+)');
 print('εCA abril: interpolado (média março=0,315 e maio=0,257) = 0,286 gMS/MJ');
 print('Landsat: L5+L7+L8+L9 harmonizado Roy et al. (2016) — biomassa Fonseca et al.');
 
 // =========================================================================
-// 9. BIOMASSA + ANPP MENSAL e SOMA ANUAL DA PRODUÇÃO
+// 11. BIOMASSA + ANPP MENSAL e SOMA ANUAL DA PRODUÇÃO
 //    BioAnpp_mes = Biomassa_mes (kg/ha) + ANPP_mes (kg MS/ha/mês)
 //    Representa o estoque atual + produção do período em cada pixel.
 //    A soma dos 12 meses = produção integrada anual do bioma (kg MS/ha/ano).
@@ -306,7 +326,7 @@ var listaBioAnpp = meses.map(function(m) {
 
   // Soma pixel a pixel — mesma unidade: kg MS/ha
   return bio.add(anpp)
-    .updateMask(campo_Pampa)
+    .updateMask(campo_Pantanal)
     .rename(nomeBanda)
     .set('system:time_start', dataIni.millis())
     .set('mes', m);
@@ -315,7 +335,7 @@ var listaBioAnpp = meses.map(function(m) {
 // Soma anual: integra os 12 meses → representa a produção total do bioma (kg MS/ha/ano)
 var colBioAnpp    = ee.ImageCollection.fromImages(listaBioAnpp);
 var producaoAnual = colBioAnpp.sum()
-  .updateMask(campo_Pampa)
+  .updateMask(campo_Pantanal)
   .rename('producao_anual_' + anoAlvo);*/
 
 // =========================================================================
@@ -342,6 +362,6 @@ Map.addLayer(listaBioAnpp[10], bioAnppVis, 'Bio+ANPP ' + anoAlvo + '-11-Nov', fa
 Map.addLayer(listaBioAnpp[11], bioAnppVis, 'Bio+ANPP ' + anoAlvo + '-12-Dez', false);
 
 // --- Produção integrada anual do bioma (kg MS/ha/ano) — camada síntese ---
-//Map.addLayer(producaoAnual, producaoVis, 'Producao anual campo Pampa ' + anoAlvo, true);
+//Map.addLayer(producaoAnual, producaoVis, 'Producao anual campo Pantanal ' + anoAlvo, true);
 
 //print('Produção anual: soma dos 12 meses de (Biomassa + ANPP) em kg MS/ha/ano');

@@ -20,15 +20,10 @@ var biome = ee.FeatureCollection(src.BIOME_FC)
 var definitions = src.makeCellDefinitions(CELL_SPLIT);
 var definitionById = {};
 definitions.forEach(function (cell) { definitionById[cell.id] = cell; });
-var footprints = ee.FeatureCollection(src.FOOTPRINT_ASSET).filterBounds(biome);
 var cells = src.makeCellFeatures(CELL_SPLIT).map(function (cell) {
   var geom = cell.geometry().intersection(biome, ee.ErrorMargin(30));
-  return cell.set({
-    valid_area: geom.area(30),
-    n_footprints: footprints.filterBounds(geom).size()
-  });
-}).filter(ee.Filter.gt('valid_area', 0))
-  .filter(ee.Filter.gt('n_footprints', 0));
+  return cell.set({ valid_area: geom.area(30) });
+}).filter(ee.Filter.gt('valid_area', 0));
 
 function createExports(cellIds) {
   cellIds.forEach(function (cellId) {
@@ -48,6 +43,7 @@ function createExports(cellIds) {
         image: image,
         description: 'WS_CARBONO_toAsset-' + name,
         assetId: IC + '/' + name,
+        overwrite: false,
         region: geom, scale: src.SCALE, maxPixels: 1e13,
         pyramidingPolicy: { '.default': 'mean' }
       });

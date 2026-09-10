@@ -19,11 +19,10 @@ var MODEL_ASSET = src.ASSET_ROOT + '/MODELS/rf_agc_v03';
 var model = ee.Classifier.load(MODEL_ASSET);
 var biomeGeom = ee.FeatureCollection(src.BIOME_FC)
   .filter(ee.Filter.eq(src.BIOME_PROP, src.BIOME_NAME)).geometry();
-var footprints = ee.FeatureCollection(src.FOOTPRINT_ASSET).filterBounds(biomeGeom);
 var cells = src.makeCellFeatures(PRED_PART_SPLIT).map(function (cell) {
   var geom = cell.geometry().intersection(biomeGeom, ee.ErrorMargin(30));
-  return cell.set({ valid_area: geom.area(30), n_footprints: footprints.filterBounds(geom).size() });
-}).filter(ee.Filter.gt('valid_area', 0)).filter(ee.Filter.gt('n_footprints', 0));
+  return cell.set({ valid_area: geom.area(30) });
+}).filter(ee.Filter.gt('valid_area', 0));
 var cellDefinitions = {};
 src.makeCellDefinitions(PRED_PART_SPLIT).forEach(function (cell) {
   cellDefinitions[cell.id] = cell;
@@ -47,6 +46,7 @@ function createExports(cellIds) {
         image: image,
         description: 'WS_CARBONO_toAsset-' + name,
         assetId: IC + '/' + name,
+        overwrite: false,
         region: geom, scale: src.SCALE, maxPixels: 1e13,
         pyramidingPolicy: { '.default': 'mean' }
       });

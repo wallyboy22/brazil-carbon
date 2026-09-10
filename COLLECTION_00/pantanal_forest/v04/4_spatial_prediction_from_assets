@@ -34,6 +34,7 @@ function exportPrediction(asset, year) {
     image: image,
     description: 'WS_CARBONO_toAsset-' + name,
     assetId: IC + '/' + name,
+    overwrite: false,
     region: image.geometry(),
     scale: src.SCALE,
     maxPixels: 1e13,
