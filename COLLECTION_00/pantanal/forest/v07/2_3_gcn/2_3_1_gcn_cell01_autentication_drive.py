@@ -17,18 +17,23 @@ print("=" * 68)
 import ee  # noqa: E402
 
 try:
-    ee.Initialize(project="mapbiomas-carbono")
-    print("[EE] já inicializado (project=mapbiomas-carbono)")
+    ee.Initialize(project="mapbiomas-brazil")
+    print("[EE] já inicializado (project=mapbiomas-brazil)")
 except Exception:
     ee.Authenticate()
-    ee.Initialize(project="mapbiomas-carbono")
+    ee.Initialize(project="mapbiomas-brazil")
     print("[EE] autenticado e inicializado")
 
-# 2) Montagem do Google Drive
+# 2) Montagem do Google Drive (idempotente — não remonta se já montado)
+import os  # noqa: E402
 from google.colab import drive  # noqa: E402
 
-drive.mount("/content/drive")
-print("[DRIVE] montado em /content/drive")
+MOUNT = "/content/drive"
+if os.path.isdir(MOUNT + "/MyDrive"):
+    print("[DRIVE] já montado em", MOUNT)
+else:
+    drive.mount(MOUNT)
+    print("[DRIVE] montado em", MOUNT)
 
 if "DRIVE_ROOT" not in globals():
     print("[AVISO] CONF ainda não está no namespace — rode a célula 00 (util) " +

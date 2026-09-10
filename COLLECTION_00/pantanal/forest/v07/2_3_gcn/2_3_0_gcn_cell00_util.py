@@ -123,10 +123,13 @@ def load_matrix() -> pd.DataFrame:
 
 
 def clean_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Remove bandas quase vazias e linhas com alvo/geo ausentes."""
+    """Remove colunas de metadados, bandas quase vazias e linhas com alvo/geo ausentes."""
+    for col in ("system:index", "geometry", ".geo", "decimal", "_file"):
+        if col in df.columns:
+            df = df.drop(columns=col)
     feat_cols = [x for x in df.columns if x not in
                  (CONF["TARGET"], CONF["WEIGHT_COL"], CONF["LON"], CONF["LAT"],
-                  CONF["AGBD_SE"], "geometry", "system:index", "cell_id", "year")]
+                  CONF["AGBD_SE"], "cell_id", "year")]
     null_rate = df[feat_cols].isna().mean()
     drop_feats = list(null_rate[null_rate > CONF["MIN_FEAT_NULL_RATE"]].index)
     df = df.drop(columns=drop_feats, errors="ignore")
