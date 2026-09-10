@@ -3,7 +3,8 @@
  * ---------------------------------------------------------------------------
  * v07 (decisões da consulta estratégica):
  *   - regularização direta: minLeafPopulation + variablesPerSplit (champion)
- *   - pesos de amostra 1/agbd_se² (peso do rótulo GEDI — recomendação A4)
+ *   - treino SEM pesos: GEE atual não suporta weightProperty na API de
+ *     Classifier; a coluna 'w' (1/agbd_se²) segue preservada no dataset
  *   - ensemble: N=5 RF (seeds + ~80% bandas + ~80% linhas via bagFraction)
  *   - objetivo: agbd ou ln(1+agbd) conforme c.LOG_TARGET (Duan no passo 4)
  *
@@ -39,6 +40,26 @@ if (c.LOG_TARGET) {
   target = 'agbd_log';
 }
 
+// Export.classifier.toAsset não aceita 'overwrite' (API atual); para permitir
+// re-treino, o asset existente é removido antes do export.
+function deleteModelAsset(assetId) {
+  var exists = false;
+  try {
+    ee.data.getAsset(assetId);
+    exists = true;
+  } catch (e) {
+    // Asset ainda não existe — primeira execução.
+  }
+  if (exists) {
+    try {
+      ee.data.deleteAsset(assetId);
+      print('[AUTO] asset de modelo removido:', assetId);
+    } catch (e) {
+      print('[AVISO] falha ao remover asset:', assetId, '—', e.message);
+    }
+  }
+}
+
 function trainMember(i) {
   var bands = src.getMemberBands(i);
   var model = ee.Classifier.smileRandomForest({
@@ -50,11 +71,11 @@ function trainMember(i) {
   }).setOutputMode('REGRESSION').train({
     features: matrix.select(bands.concat([target])),
     classProperty: target,
-    inputProperties: bands,
-    weightProperty: 'w'                       // 1/agbd_se² (recomendação A4)
+    inputProperties: bands
   });
   var modelAsset = root + '/MODELS/rf_agc_v07_m' + i + '_' +
     (c.LOG_TARGET ? 'log' : 'lin');
+  deleteModelAsset(modelAsset);
   print('[TASK]', modelAsset, '· bandas', bands.length, '· seed',
     c.ENSEMBLE.SEED_BASE + i);
   Export.classifier.toAsset({ classifier: model,

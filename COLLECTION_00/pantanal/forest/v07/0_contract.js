@@ -3,7 +3,8 @@
  * ---------------------------------------------------------------------------
  * Estratégia v07 (decisões da consulta estratégica):
  *   - regularização direta via minLeafPopulation (varredura offline 5/10/20/30)
- *   - pesos de amostra 1/agbd_se² (erro publicado do GEDI)
+ *   - treino sem pesos (GEE atual não suporta weightProperty); a coluna 'w'
+ *     (1/agbd_se²) permanece na matriz para uso futuro
  *   - ensemble de predições RF: N=5 membros (seeds + subamostragem de bandas e
  *     de treino), combinação por MEDIANA, incerteza por desvio padrão (stdDev)
  *   - máscara florestal LULC (classes 3,4,6,7,49) SÓ FILTRA AMOSTRAS DE TREINO;
@@ -60,16 +61,16 @@ exports.ASSET_ROOT =
   'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/V07';
 
 // =========================================================================
-// CHAMPION — preenchido a partir de 2_3_gcn/figures/champion.json (10/09/2026)
-// (resultado do gate offline: CV espacial, curva de aprendizado e varredura
-// minLeafPopulation). Relatório completo em
+// CHAMPION — preenchido a partir de 2_3_gcn/figures/champion.json (10/09/2026,
+// gate revalidado SEM pesos). Resultado do gate offline: CV espacial, curva de
+// aprendizado e varredura minLeafPopulation. Relatório completo em
 // 2_3_gcn/figures/relatorio_recomendacoes.md. O contrato pré-champion está
 // arquivado em archive_contracts/0_contract_v07_pre-champion.js.
 // =========================================================================
-exports.MIN_LEAF_POP = 5;         // varredura offline: 5→52.40 · 10→52.54
-                                  //                  20→52.67 · 30→52.76
-exports.VARIABLES_PER_SPLIT = 6;  // sqrt(n_features)=sqrt(38)=6.2 → 6
-exports.LOG_TARGET = false;       // linear 52.40 < log 52.69 (champion)
+exports.MIN_LEAF_POP = 10;        // champion: RMSE 52.21 Mg/ha (sweep best);
+                                  // linear 52.26 < log 52.59
+exports.VARIABLES_PER_SPLIT = 6;  // sqrt(n_features)=sqrt(38)=6.16 → 6
+exports.LOG_TARGET = false;       // linear 52.26 < log 52.59 (champion)
 exports.SMEAR_FACTOR = 1.0;       // fator de Duan; inerte com LOG_TARGET=false
                                   // (recalculado no 3_model_training p/ log)
 exports.LOG_OFFSET = 1;           // 1 se target = ln(1+agbd), 0 se ln(agbd)

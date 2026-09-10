@@ -42,7 +42,6 @@ FEATS = [c for c in df.columns if c not in
           CONF["AGBD_SE"], "geometry", "cell_id", "year")]
 X = df[FEATS].fillna(df[FEATS].median())
 y = df[CONF["TARGET"]].values
-w = weights_1_se2(df[CONF["AGBD_SE"]].values)
 
 # --- decisões ----------------------------------------------------------------
 log_on = state["log_eval"]["rmse_log"] < state["log_eval"]["rmse_linear"]
@@ -81,7 +80,7 @@ m = RandomForestRegressor(n_estimators=CONF["N_ESTIMATORS"],
                           max_features="sqrt", min_samples_leaf=min_leaf,
                           random_state=CONF["RANDOM_STATE"])
 yt = np.log1p(y) if log_on else y
-m.fit(X, yt, sample_weight=w)
+m.fit(X, yt)
 imp = permutation_importance(m, X, yt, n_repeats=5,
                              random_state=CONF["RANDOM_STATE"])
 order = np.argsort(imp.importances_mean)[::-1][:15]

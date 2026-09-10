@@ -40,27 +40,20 @@ FEATS = [c for c in df.columns if c not in
           CONF["AGBD_SE"], "_block", "geometry", "cell_id", "year")]
 X = df[FEATS].fillna(df[FEATS].median())
 y = df[CONF["TARGET"]].values
-w = weights_1_se2(df[CONF["AGBD_SE"]].values)
 cv = GroupKFold(n_splits=CONF["CV_FOLDS"])
 n = len(y)
 print(f"[DADOS] n={n} · feats={X.shape[1]} · blocos={df['_block'].nunique()}")
 
 
-def blocked_cv(estimator, X_, y_, blocks, weights=None, scale=False):
-    """CV espacial em blocos; retorna (rmse, pbias).
-    Pesos = 1/agbd_se² (A4). SVR não aceita pesos: passe weights=None e
-    scale=True (StandardScaler). Algoritmos com suporte a sample_weight
-    (RF/GBM) recebem os pesos diretamente no .fit()."""
+def blocked_cv(estimator, X_, y_, blocks, scale=False):
+    """CV espacial em blocos; retorna (rmse, pbias)."""
     fold = []
     for tr, va in cv.split(X_, y_, blocks):
         m = clone(estimator)
         Xtr, Xva = X_.iloc[tr], X_.iloc[va]
         if scale:
             m = make_pipeline(StandardScaler(), m)
-        if weights is not None:
-            m.fit(Xtr, y_[tr], sample_weight=weights[tr])
-        else:
-            m.fit(Xtr, y_[tr])
+        m.fit(Xtr, y_[tr])
         r = y_[va] - m.predict(Xva)
         fold.append((r, y_[va]))
     rr = np.concatenate([f[0] for f in fold])
@@ -79,7 +72,7 @@ def smeared_blocked_cv(log_on=True, offset=None):
             n_estimators=CONF["N_ESTIMATORS"], max_features="sqrt",
             min_samples_leaf=5, random_state=CONF["RANDOM_STATE"])
         ytr = (np.log1p(y[tr]) if offset == 1 else np.log(y[tr])) if log_on else y[tr]
-        m.fit(X.iloc[tr], ytr, sample_weight=w[tr])
+        m.fit(X.iloc[tr], ytr)
         pred = m.predict(X.iloc[va])
         if log_on:
             res_fold = ytr - m.predict(X.iloc[tr])
@@ -103,18 +96,10 @@ algs = {
 res_algs = {}
 for name, est in algs.items():
     rmse, pbias = blocked_cv(est, X, y, df["_block"],
-                             weights=(None if name.startswith("SVR") else w),
                              scale=(name.startswith("SVR")))
     res_algs[name] = {"rmse": rmse, "pbias": pbias}
     print(f"[ALG] {name:38s} RMSE={rmse:6.2f} · bias={pbias:6.2f}%")
 
-# SVR não aceita sample_weight → reavaliado SEM pesos (padrão)
-if "SVR (RBF)" in res_algs:
-    rmse_svr, pbias_svr = blocked_cv(algs["SVR (RBF)"], X, y, df["_block"],
-                                     weights=None, scale=True)
-    res_algs["SVR (RBF)"] = {"rmse": rmse_svr, "pbias": pbias_svr}
-    print(f"[ALG] {'SVR (RBF) [sem pesos]':38s} RMSE={rmse_svr:6.2f} · "
-          f"bias={pbias_svr:6.2f}%")
 fig, ax = plt.subplots(figsize=(6.5, 4))
 names = list(res_algs); vals = [res_algs[k]["rmse"] for k in names]
 ax.bar(names, vals, color="#2b83ba")
@@ -136,7 +121,7 @@ for frac in fractions:
         for tr, va in cv.split(Xs, ys, df["_block"].iloc[idx].to_numpy()):
             m = RandomForestRegressor(n_estimators=200, max_features="sqrt",
                                       min_samples_leaf=5, random_state=seed)
-            m.fit(Xs.iloc[tr], ys[tr], sample_weight=w[idx][tr])
+            m.fit(Xs.iloc[tr], ys[tr])
             flds.append(ys[va] - m.predict(Xs.iloc[va]))
         rmses.append(np.sqrt(np.mean(np.concatenate(flds) ** 2)))
     lc[frac] = float(np.mean(rmses))
@@ -153,7 +138,7 @@ for mlf in CONF["MIN_LEAF_CANDIDATES"]:
     est = RandomForestRegressor(n_estimators=CONF["N_ESTIMATORS"],
                                 max_features="sqrt", min_samples_leaf=mlf,
                                 random_state=CONF["RANDOM_STATE"])
-    rmse, pbias = blocked_cv(est, X, y, df["_block"], weights=w)
+    rmse, pbias = blocked_cv(est, X, y, df["_block"])
     sweep[mlf] = {"rmse": rmse, "pbias": pbias}
     print(f"[MINLEAF] {mlf:3d} → RMSE={rmse:6.2f} · bias={pbias:6.2f}%")
 best_mlf = min(sweep, key=lambda k: sweep[k]["rmse"])

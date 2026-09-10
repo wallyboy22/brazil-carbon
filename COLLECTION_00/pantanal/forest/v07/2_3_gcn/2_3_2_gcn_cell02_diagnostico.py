@@ -36,7 +36,6 @@ FEATS = [c for c in df.columns if c not in
           CONF["AGBD_SE"], "_block", "geometry", "cell_id", "year", "decimal")]
 X = df[FEATS].fillna(df[FEATS].median())
 y = df[CONF["TARGET"]].values
-w = weights_1_se2(df[CONF["AGBD_SE"]].values)
 
 # --- f1: distribuição do alvo -------------------------------------------------
 fig, ax = plt.subplots(1, 2, figsize=(11, 4))
@@ -67,7 +66,7 @@ for tr, va in cv.split(X, y, df["_block"]):
     m = RandomForestRegressor(n_estimators=CONF["N_ESTIMATORS"],
                               max_features="sqrt", min_samples_leaf=5,
                               random_state=CONF["RANDOM_STATE"])
-    m.fit(X.iloc[tr], y[tr], sample_weight=w[tr])
+    m.fit(X.iloc[tr], y[tr])
     resid[va] = y[va] - m.predict(X.iloc[va])
     ids_[va] = True
 baseline_rmse = float(np.sqrt(np.mean(resid ** 2)))

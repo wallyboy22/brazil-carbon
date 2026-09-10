@@ -2,9 +2,11 @@
 
 **v07 = regularização + incerteza do rótulo + ensemble determinístico.**
 Traduz as decisões de `mapbiomas-carbono-v07-consulta-estrategica.md`:
-pesos `1/agbd_se²`, `minLeafPopulation` (champion offline), ensemble RF N=5
-(mediana + stdDev) e máscara LULC **apenas no treino** (a predição não é
-mascarada). O portão/validação roda no Google Colab (`2_3_gcn`).
+treino sem pesos (GEE não suporta `weightProperty`; a coluna `w=1/agbd_se²`
+segue na matriz para uso futuro), `minLeafPopulation` (champion offline),
+ensemble RF N=5 (mediana + stdDev) e máscara LULC **apenas no treino** (a
+predição não é mascarada). O portão/validação roda no Google Colab
+(`2_3_gcn`).
 
 ## Arquivos (GEE = Earth Engine, .js)
 
@@ -17,7 +19,7 @@ mascarada). O portão/validação roda no Google Colab (`2_3_gcn`).
 | 2 | `2_1_toAsset_samples_treino.js` | exporta footprints TREINO → Asset `SAMPLES/forest_footprint_v07_<ANO>` |
 | 2 | `2_2_toDrive_matrix.js` | matriz por célula×ano → Drive CSV + Asset (`lon,lat,w=1/se²`) |
 | 2 | `2_3_gcn/` (Colab) | diagnóstico, CV espacial, thinning, champion → `figures/` + `champion.json` |
-| 3 | `3_model_training.js` | N=5 RF (pesos, minLeaf, bag 0.8, bandas 0.8) → `MODELS/rf_agc_v07_m1..mN` |
+| 3 | `3_model_training.js` | N=5 RF (sem pesos, minLeaf, bag 0.8, bandas 0.8) → `MODELS/rf_agc_v07_m1..mN` |
 | 4 | `4_spatial_prediction.js` | ensemble → mediana + stdDev, sem máscara LULC → `PREDICTIONS/COL` |
 | 5 | `5_merge.js` | mosaico anual `PREDICTIONS/agc_pred_v07_merged_<ano>` |
 | 6 | `6_qualidade.js` | QA: v07 vs V03–V06 (coleções anteriores), stdDev de incerteza |
