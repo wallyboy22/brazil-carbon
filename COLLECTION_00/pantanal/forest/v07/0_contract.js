@@ -60,14 +60,18 @@ exports.ASSET_ROOT =
   'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/V07';
 
 // =========================================================================
-// CHAMPION — preencher manualmente a partir de 2_3_gcn/figures/champion.json
+// CHAMPION — preenchido a partir de 2_3_gcn/figures/champion.json (10/09/2026)
 // (resultado do gate offline: CV espacial, curva de aprendizado e varredura
-// minLeafPopulation). Atualizado a cada rodada do Colab.
+// minLeafPopulation). Relatório completo em
+// 2_3_gcn/figures/relatorio_recomendacoes.md. O contrato pré-champion está
+// arquivado em archive_contracts/0_contract_v07_pre-champion.js.
 // =========================================================================
-exports.MIN_LEAF_POP = 10;        // varredura offline: 5 / 10 / 20 / 30
-exports.VARIABLES_PER_SPLIT = 6;  // ~sqrt(36); testar 6-10 no gate
-exports.LOG_TARGET = false;       // true se o champion usar ln(1+agbd)
-exports.SMEAR_FACTOR = 1.0;       // fator de Duan (smearing) calculado offline
+exports.MIN_LEAF_POP = 5;         // varredura offline: 5→52.40 · 10→52.54
+                                  //                  20→52.67 · 30→52.76
+exports.VARIABLES_PER_SPLIT = 6;  // sqrt(n_features)=sqrt(38)=6.2 → 6
+exports.LOG_TARGET = false;       // linear 52.40 < log 52.69 (champion)
+exports.SMEAR_FACTOR = 1.0;       // fator de Duan; inerte com LOG_TARGET=false
+                                  // (recalculado no 3_model_training p/ log)
 exports.LOG_OFFSET = 1;           // 1 se target = ln(1+agbd), 0 se ln(agbd)
 
 // =========================================================================

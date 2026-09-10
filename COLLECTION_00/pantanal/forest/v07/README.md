@@ -43,8 +43,11 @@ para `2_3_gcn/figures/`.
 
 ## Champion → contrato
 
-Campos a preencher em `0_contract.js`: `MIN_LEAF_POP`, `VARIABLES_PER_SPLIT`,
-`LOG_TARGET`, `LOG_OFFSET`, `SMEAR_FACTOR` e `ENSEMBLE`.
+Os campos `MIN_LEAF_POP`, `VARIABLES_PER_SPLIT`, `LOG_TARGET`, `LOG_OFFSET`,
+`SMEAR_FACTOR` e `ENSEMBLE` já estão preenchidos com o champion do gate
+(10/09/2026). Ao re-rodar o `2_3_gcn/`, atualize a partir de
+`2_3_gcn/figures/champion.json`; o contrato anterior fica arquivado em
+`archive_contracts/0_contract_v07_pre-champion.js`.
 
 ## Smoke test / auditoria
 
