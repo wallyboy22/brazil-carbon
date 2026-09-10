@@ -68,7 +68,8 @@ print(f"[SE] mediana agbd_se antes={se_antes:.2f} → depois={se_depois:.2f} " +
 # --- exporta a matriz thinned (mesma pasta de output) ------------------------
 out_csv = matrix_dir() / "samples_thinned_v07.csv"
 thin.to_csv(out_csv, index=False)
-write_artifact(out_csv, f"thinned matrix: {len(thin)} rows")
+write_artifact(matrix_dir() / "samples_thinned_v07.note.txt",
+               f"thinned matrix: {len(thin)} rows")
 print(f"[CSV] matriz thinned → {out_csv}")
 
 print()

@@ -193,7 +193,7 @@ def grid_thin(df: pd.DataFrame, cell_m: float = None) -> pd.DataFrame:
 def _weights(coords_m: np.ndarray, band_m: float):
     from scipy.spatial import cKDTree
     tree = cKDTree(coords_m)
-    pairs = np.array(tree.query_pairs(r=band_m), dtype=int)
+    pairs = np.array(list(tree.query_pairs(r=band_m)), dtype=int)
     n = len(coords_m)
     wij = np.zeros((n, n))
     for i, j in pairs:
@@ -232,7 +232,7 @@ def variogram(resids: np.ndarray, coords_m: np.ndarray, max_dist_m: float = 1500
     """Variograma de nuvem (semivariância média por faixa de distância)."""
     from scipy.spatial import cKDTree
     tree = cKDTree(coords_m)
-    pairs = np.array(tree.query_pairs(r=max_dist_m, output_type="ndarray"))
+    pairs = np.array(list(tree.query_pairs(r=max_dist_m)), dtype=int)
     if len(pairs) == 0:
         return np.array([]), np.array([])
     d = np.sqrt(((coords_m[pairs[:, 0]] - coords_m[pairs[:, 1]]) ** 2).sum(axis=1))

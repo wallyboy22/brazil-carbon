@@ -5,7 +5,7 @@ abre um notebook do Google Colab (um em branco ou um próprio) e em cada célula
 conteúdo** do `*.py` do fluxo, na ordem abaixo.
 
 > Não há imports entre as células: a célula 00 (util) carrega `CONF` e as funções
-> compartilhadas no namespace do runtime, e as células 01–05 só as usam. Assim não
+> compartilhadas no namespace do runtime, e as células 01–06 só as usam. Assim não
 > existem `import` de módulos próprios (que quebrariam com nomes `2_3_*`).
 
 ## Fluxo de execução (ordem)
@@ -18,6 +18,7 @@ conteúdo** do `*.py` do fluxo, na ordem abaixo.
 | 03 | `2_3_3_gcn_cell03_cv_regularizacao.py` | CV **espacial em blocos**, RF×GBM×SVR, curva de aprendizado, varredura `minLeafPopulation`, avaliação log(1+agbd) com fator de Duan | `f5..f8_*.png` + `gate_state.json` |
 | 04 | `2_3_4_gcn_cell04_thinning_figuras.py` | thinning OFF-LINE em grade 60–90 m (mantém o footprint de menor `agbd_se`), figuras antes×depois, exporta a matriz thinned | `f9/f10_*.png` + `samples_thinned_v07.csv` |
 | 05 | `2_3_5_gcn_cell05_champion.py` | decide `log_target`/`minLeafPopulation`, fixa o ensemble, importância de permutação, grava o **champion** | `f11_*.png` + `champion.json` |
+| 06 | `2_3_6_gcn_cell06_relatorio.py` | lê `gate_state.json` + `champion.json` e gera o **relatório de recomendações** (tabela decisória MUDAR/MANTER por parâmetro do `0_contract.js`) | `relatorio_recomendacoes.md` |
 
 ## Estrutura de pastas no Drive
 
@@ -37,7 +38,7 @@ execução, baixe/exporte as figuras para cá:
 ```
 v07/2_3_gcn/figures/f1_alvo_distribuicao.png
 v07/2_3_gcn/figures/f2_correlacao_bandas.png
-... (+ gate_state.json, champion.json)
+... (+ diagnostico.json, gate_state.json, champion.json, relatorio_recomendacoes.md)
 ```
 
 ## Do champion para o modelo

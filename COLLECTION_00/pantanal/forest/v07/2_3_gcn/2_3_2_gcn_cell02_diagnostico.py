@@ -70,7 +70,8 @@ for tr, va in cv.split(X, y, df["_block"]):
     m.fit(X.iloc[tr], y[tr], sample_weight=w[tr])
     resid[va] = y[va] - m.predict(X.iloc[va])
     ids_[va] = True
-print(f"[BASELINE] RMSE espacial: {np.sqrt(np.mean(resid ** 2)):.2f} Mg/ha · "
+baseline_rmse = float(np.sqrt(np.mean(resid ** 2)))
+print(f"[BASELINE] RMSE espacial: {baseline_rmse:.2f} Mg/ha · "
       f"n_valid {ids_.sum()}")
 
 # --- f3: resíduo × agbd_se ---------------------------------------------------
@@ -97,6 +98,15 @@ a2.set(xlabel="distância (m)", ylabel="semivariância",
 fig.suptitle("f4 · autocorrelação residual", fontweight="bold")
 save_fig(fig, "f4_moran_variograma.png")
 print(f"[MORAN] I={I:.3f} · pseudo-p={p:.3f} · pairs(90m)={n_pairs}  ")
+
+# --- diagnostico.json: alimenta o relatório (célula 06) ----------------------
+write_artifact(fig_dir() / "diagnostico.json",
+               {"baseline_rmse": baseline_rmse,
+                "baseline_bias_pct": float(np.mean(resid[ids_]) / np.mean(y) * 100),
+                "collinear_pairs_gt085": int(red_m),
+                "moran_i": float(I), "moran_p": float(p),
+                "moran_pairs_90m": int(n_pairs),
+                "resid_se_pearson_r": float(corr_r)})
 
 print()
 print("[FIGURAS GERADAS]")

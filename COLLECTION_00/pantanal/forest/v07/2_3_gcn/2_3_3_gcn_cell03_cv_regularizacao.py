@@ -82,7 +82,7 @@ def smeared_blocked_cv(log_on=True, offset=None):
         m.fit(X.iloc[tr], ytr, sample_weight=w[tr])
         pred = m.predict(X.iloc[va])
         if log_on:
-            res_fold = ytr - pred
+            res_fold = ytr - m.predict(X.iloc[tr])
             smear = float(np.mean(np.exp(res_fold)))
             pred = np.exp(pred) * smear - (offset if offset == 1 else 0.0)
         folds.append((y[va] - pred, y[va]))
@@ -102,7 +102,8 @@ algs = {
 }
 res_algs = {}
 for name, est in algs.items():
-    rmse, pbias = blocked_cv(est, X, y, df["_block"], weights=w,
+    rmse, pbias = blocked_cv(est, X, y, df["_block"],
+                             weights=(None if name.startswith("SVR") else w),
                              scale=(name.startswith("SVR")))
     res_algs[name] = {"rmse": rmse, "pbias": pbias}
     print(f"[ALG] {name:38s} RMSE={rmse:6.2f} · bias={pbias:6.2f}%")
@@ -118,6 +119,7 @@ fig, ax = plt.subplots(figsize=(6.5, 4))
 names = list(res_algs); vals = [res_algs[k]["rmse"] for k in names]
 ax.bar(names, vals, color="#2b83ba")
 ax.set(ylabel="RMSE espacial (Mg/ha)", title="f5 · RF × GBM × SVR (CV em blocos)")
+ax.set_xticks(range(len(names)))
 ax.set_xticklabels(names, rotation=22, ha="right")
 save_fig(fig, "f5_cv_algoritmos.png")
 
@@ -186,6 +188,7 @@ state = {
                  "log_offset": CONF["LOG_OFFSET"]},
     "n_features": X.shape[1],
     "n_rows": n,
+    "n_blocks": int(df["_block"].nunique()),
 }
 out = Path(CONF["DRIVE_ROOT"]) / CONF["FIG_DIR"] / "gate_state.json"
 write_artifact(out, state)
