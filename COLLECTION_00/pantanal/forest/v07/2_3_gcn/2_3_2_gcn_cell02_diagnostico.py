@@ -77,7 +77,7 @@ fig, ax = plt.subplots(figsize=(7, 5))
 ax.scatter(df.loc[ids_, CONF["AGBD_SE"]], resid[ids_], s=8, alpha=0.4,
            color="#2b83ba")
 ax.axhline(0, color="black", lw=0.8)
-corr_r, corr_p = np.corrcoef(df.loc[ids_, CONF["AGBD_SE"]], resid[ids_])[0, 1]
+corr_r, corr_p = np.corrcoef(df.loc[ids_, CONF["AGBD_SE"]].values, resid[ids_])[0, 1]
 ax.set(xlabel="agbd_se (erro do rótulo GEDI)", ylabel="resíduo (y−ŷ)",
        title=f"f3 · resíduo × agbd_se (r={corr_r:.2f})")
 save_fig(fig, "f3_residuo_x_agbd_se.png")
