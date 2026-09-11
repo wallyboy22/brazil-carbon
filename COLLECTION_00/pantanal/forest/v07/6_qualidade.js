@@ -72,7 +72,7 @@ c.YEARS.forEach(function (year) {
   var shown = [], skipped = [];
   VERSIONS.forEach(function (p) {
     var band = p.band + year;
-    var vis = PRED_VIS
+    var vis = PRED_VIS;
     var label = p.v.toUpperCase() + '_merged_' + year;
     try {
       var img = yearImage(p, year).select([band]);
