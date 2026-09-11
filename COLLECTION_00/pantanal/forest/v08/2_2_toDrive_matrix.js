@@ -43,6 +43,10 @@ c.makeCellDefinitions(CELL_SPLIT).forEach(function (cell) { byId[cell.id] = cell
 
 function exportCell(id) {
   var def = byId[id];
+  if (!def) {
+    print('[AVISO] célula fora de byId — sem bbox para exportar:', id);
+    return;
+  }
   var geom = ee.Geometry.BBox(def.bbox[0], def.bbox[1], def.bbox[2], def.bbox[3])
     .intersection(biome, ee.ErrorMargin(30));
   c.TRAIN_YEARS.forEach(function (year) {
@@ -54,7 +58,8 @@ function exportCell(id) {
       .map(function (f) {
         var lon = f.geometry().centroid(30).coordinates().get(0);
         var lat = f.geometry().centroid(30).coordinates().get(1);
-        var se = ee.Number(f.get('agbd_se')).max(1);
+        var se = ee.Number(ee.Algorithms.If(f.get('agbd_se'),
+          f.get('agbd_se'), 1)).max(1);
         return f.set('lon', lon).set('lat', lat).set('w', ee.Number(1).divide(se.pow(2)));
       });
     var name = 'agc_matrix_v08_' + id + '_' + year;
@@ -78,4 +83,6 @@ print('[ASSET ROOT]', matrixRoot);
 src.ensureFolder(matrixRoot);
 cells.aggregate_array('cell_id').evaluate(function (ids) {
   print('[CÉLULAS]', ids.length); ids.forEach(exportCell);
+}, function (err) {
+  print('[ERRO no aggregate_array de cells]', err);
 });
