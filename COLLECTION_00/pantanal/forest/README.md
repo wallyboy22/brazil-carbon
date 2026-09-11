@@ -18,6 +18,22 @@ cada versão.
 | `v07` | Ensemble RF N=5 + regularização champion + stats | **Concluída** (produto 2023) |
 | `v08` | Fix PALSAR (mosaico global determinístico) | Em desenvolvimento (plano) |
 
+## Política de contratos
+
+A partir de set/2026, cada `0_contract.js` é **autossuficiente**: contém
+todos os termos sem `require()` de versão anterior. Ajustes:
+
+- O **bloco comum** (schema de bandas + grade de células espaciais) é a cópia
+  literal do v03 (referência/template) — verificados automaticamente pelo
+  script `_lint_contracts.js` (temp).
+- Cada **seção** do contrato traz um comentário com a **proveniência**: qual
+  versão tomou aquela decisão e por quê, formando uma série temporal de
+  decisões rastreáveis dentro do próprio arquivo.
+- Versões anteriores (v04–v07) foram reescritas em set/2026 para garantir
+  consistência (PANTANAL_BBOX adicionada em todas as versões; removeram-se
+  erros de drift herdado). Valores finais são idênticos aos contratos
+  originais — a mudança é somente estrutural.
+
 ## Linha do Tempo
 
 ### v00 — Referência inicial

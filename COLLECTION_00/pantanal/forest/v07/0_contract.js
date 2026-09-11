@@ -1,43 +1,108 @@
 /******************************************************************************
- * MAPBIOMAS-CARBONO — Pantanal Forest v07 · Contrato (v07)
+ * MAPBIOMAS-CARBONO — Pantanal Forest v07 · Contrato (autossuficiente)
  * ---------------------------------------------------------------------------
- * Estratégia v07 (decisões da consulta estratégica):
- *   - regularização direta via minLeafPopulation (varredura offline 5/10/20/30)
- *   - treino sem pesos (GEE atual não suporta weightProperty); a coluna 'w'
- *     (1/agbd_se²) permanece na matriz para uso futuro
- *   - ensemble de predições RF: N=5 membros (seeds + subamostragem de bandas e
- *     de treino), combinação por MEDIANA, incerteza por desvio padrão (stdDev)
- *   - máscara florestal LULC (classes 3,4,6,7,49) SÓ FILTRA AMOSTRAS DE TREINO;
- *     a saída da predição NÃO é mascarada por LULC
- *   - TRAINING_MASKS: lista extensível de máscaras independentes do LULC que
- *     restringem ainda mais as amostras que entram no treino
- *   - treino multi-ano preparado (TRAIN_YEARS); 2023 roda como piloto
+ * Política de contratos (decidida em set/2026): cada versão escreve TODOS os
+ * termos próprios — sem require de versão anterior. O bloco comum (schema de
+ * bandas + grade) é a referência da v03 (0_contract.js) copiada literalmente;
+ * o contexto geoespacial vem da cadeia (v06→v03), mas é reafirmado aqui como
+ * contrato próprio da v07.
+ *
+ * Delta vs v06:
+ *   + MASK_MODE 'prediction_year' → 'training_only' (decisão estratégica: a
+ *     máscara florestal LULC deixa de LIMITAR a predição e passa a FILTRAR
+ *     somente as amostras de treino; a saída cobre o Pantanal inteiro);
+ *   + TRAIN_YEARS e TRAINING_MASKS (lista extensível de máscaras de treino);
+ *   + CHAMPION (regularização minLeafPopulation 10, linear) e ENSEMBLE N=5
+ *     (respostas às decisões D15–D17 da consulta estratégica);
+ *   + caminhos próprios (ASSET_ROOT V07).
  ******************************************************************************/
-var base = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v06/0_contract.js');
 
 exports.VERSION = 'v07';
 
-// Bandas alvo/covariáveis e grade herdadas da cadeia v06→v05→v04→v03
-exports.CONTINUOUS_BANDS = base.CONTINUOUS_BANDS;
-exports.CATEGORICAL_BANDS = base.CATEGORICAL_BANDS;
-exports.FEATURE_BANDS = base.FEATURE_BANDS;
-exports.TARGET = base.TARGET;
-exports.X_EDGES = base.X_EDGES;
-exports.Y_EDGES = base.Y_EDGES;
-exports.makeTiles = base.makeTiles;
-exports.makeCellDefinitions = base.makeCellDefinitions;
-exports.makeCellFeatures = base.makeCellFeatures;
+// =========================================================================
+// Bloco 1 — Schema de covariáveis [definido v03; ref: v03/0_contract.js]
+// =========================================================================
+exports.CONTINUOUS_BANDS = [
+  'NDVI_p10', 'EVI_p10', 'NDMI_p10', 'BAI_p10', 'SAVI_p10', 'BSI_p10',
+  'NDVI_p50', 'EVI_p50', 'NDMI_p50', 'BAI_p50', 'SAVI_p50', 'BSI_p50',
+  'NDVI_p90', 'EVI_p90', 'NDMI_p90', 'BAI_p90', 'SAVI_p90', 'BSI_p90',
+  'NDVI_amp', 'EVI_amp', 'NDMI_amp', 'BAI_amp', 'SAVI_amp', 'BSI_amp',
+  'HH_db', 'HV_db', 'HV_HH_ratio', 'RVI', 'HAND_m',
+  'CWD_current', 'CWD_clim', 'CWD_3yr', 'Tmean_C', 'Prec_mm'
+];
 
+exports.CATEGORICAL_BANDS = ['geomorph_class', 'mapbiomas_lulc'];
+exports.FEATURE_BANDS = exports.CONTINUOUS_BANDS.concat(exports.CATEGORICAL_BANDS);
+exports.TARGET = 'agbd';
+
+// =========================================================================
+// Bloco 2 — Grade de células espaciais [definido v03]
+// =========================================================================
+exports.PANTANAL_BBOX = [
+  -60.678789762675464, -22.813804973745906,
+  -52.548906950175464, -12.958681301038263
+];
+
+exports.X_EDGES = [-60.678789762675464, -58.646318, -56.613847,
+  -54.581376, -52.548906950175464];
+exports.Y_EDGES = [-22.813804973745906, -20.350024, -17.886244,
+  -15.422463, -12.958681301038263];
+
+exports.makeTiles = function () {
+  var tiles = [];
+  for (var y = 0; y < exports.Y_EDGES.length - 1; y++) {
+    for (var x = 0; x < exports.X_EDGES.length - 1; x++) {
+      tiles.push({
+        id: 'tile' + ('00' + (y * 4 + x + 1)).slice(-2),
+        bbox: [exports.X_EDGES[x], exports.Y_EDGES[y],
+          exports.X_EDGES[x + 1], exports.Y_EDGES[y + 1]]
+      });
+    }
+  }
+  return tiles;
+};
+
+exports.makeCellDefinitions = function (split) {
+  var cells = [];
+  exports.makeTiles().forEach(function (tile) {
+    for (var i = 0; i < split; i++) {
+      for (var j = 0; j < split; j++) {
+        cells.push({
+          id: tile.id + '_p' + ('00' + (i * split + j + 1)).slice(-2),
+          bbox: [
+            tile.bbox[0] + (tile.bbox[2] - tile.bbox[0]) * j / split,
+            tile.bbox[1] + (tile.bbox[3] - tile.bbox[1]) * i / split,
+            tile.bbox[0] + (tile.bbox[2] - tile.bbox[0]) * (j + 1) / split,
+            tile.bbox[1] + (tile.bbox[3] - tile.bbox[1]) * (i + 1) / split
+          ]
+        });
+      }
+    }
+  });
+  return cells;
+};
+
+exports.makeCellFeatures = function (split) {
+  return ee.FeatureCollection(exports.makeCellDefinitions(split).map(function (cell) {
+    return ee.Feature(ee.Geometry.BBox(cell.bbox[0], cell.bbox[1],
+      cell.bbox[2], cell.bbox[3]), { cell_id: cell.id });
+  }));
+};
+
+// =========================================================================
+// Bloco 3 — Ano de referência e de treino
+// =========================================================================
 exports.YEAR = 2023;
 exports.YEARS = [2023];
 // Anos de treino. Piloto: só 2023. Expandir para 2019-2022 exigirá footprints
 // GEDI extraídos por ano (pipeline nova) + covariáveis por ano pareadas.
 exports.TRAIN_YEARS = [2023];
 
-// ---- Máscara de TREINO ----
-// Mantém a classe 7 (Savana Alagada) para FILTRAR o que entra no treino.
-// A predição NÃO é mascarada — o LULC não limita o resultado.
+// =========================================================================
+// Bloco 4 — Máscara de TREINO [definido v07]
+// A máscara florestal LULC FILTRA só as amostras de treino; a predição NÃO é
+// mascarada — o LULC não limita o resultado (mudança vs v06 'prediction_year').
+// =========================================================================
 exports.MASK_MODE = 'training_only';
 exports.FOREST_CLASSES = [3, 4, 6, 7, 49];
 // Lista extensível de máscaras independentes do LULC que restringem amostras de
@@ -51,18 +116,25 @@ exports.TRAINING_MASKS = [
   // { name: 'hand_dreno', max_hand: 5, apply: 'training' }
 ];
 
-exports.BIOME_FC = base.BIOME_FC;
-exports.BIOME_PROP = base.BIOME_PROP;
-exports.BIOME_NAME = base.BIOME_NAME;
-exports.LULC_ASSET = base.LULC_ASSET;
-exports.SCALE = base.SCALE;
-exports.FOOTPRINT_ASSET = base.FOOTPRINT_ASSET;
+// =========================================================================
+// Bloco 5 — Contexto geoespacial [definido v06; valores comuns à cadeia]
+// =========================================================================
+exports.BIOME_FC = 'projects/ee-ipam/assets/ORIGINAIS/IBGE/limite_biomas_IBGE_2026';
+exports.BIOME_PROP = 'Bioma';
+exports.BIOME_NAME = 'Pantanal';
+exports.LULC_ASSET =
+  'projects/mapbiomas-public/assets/brazil/lulc/collection11/' +
+  'mapbiomas_brazil_collection11_coverage_v3';
+exports.SCALE = 30;
+exports.FOOTPRINT_ASSET =
+  'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/SAMPLES/footprint_pantanal_2023';
 exports.ASSET_ROOT =
   'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/V07';
 
 // =========================================================================
-// CHAMPION — preenchido a partir de 2_3_gcn/figures/champion.json (10/09/2026,
-// gate revalidado SEM pesos). Resultado do gate offline: CV espacial, curva de
+// Bloco 6 — CHAMPION [definido v07, gate 10/09/2026]
+// Preenchido a partir de 2_3_gcn/figures/champion.json (10/09/2026, gate
+// revalidado SEM pesos). Resultado do gate offline: CV espacial, curva de
 // aprendizado e varredura minLeafPopulation. Relatório completo em
 // 2_3_gcn/figures/relatorio_recomendacoes.md. O contrato pré-champion está
 // arquivado em archive_contracts/0_contract_v07_pre-champion.js.
@@ -76,7 +148,8 @@ exports.SMEAR_FACTOR = 1.0;       // fator de Duan; inerte com LOG_TARGET=false
 exports.LOG_OFFSET = 1;           // 1 se target = ln(1+agbd), 0 se ln(agbd)
 
 // =========================================================================
-// ENSEMBLE (resposta D15-17): N=5 RF — seeds + 80% bandas + 80% linhas
+// Bloco 7 — ENSEMBLE [definido v07; resposta D15-17]
+// N=5 RF — seeds + 80% bandas + 80% linhas.
 // =========================================================================
 exports.ENSEMBLE = {
   NUM_MEMBERS: 5,
@@ -85,7 +158,10 @@ exports.ENSEMBLE = {
   TRAIN_FRACTION: 0.8
 };
 
-// Células de auditoria / smoke test (F25). Somente nelas as bandas membro do
-// ensemble são preservadas no export (m1..mN) além de median/std.
-// Preencher com ids reais da grade após primeira execução da predição.
+// =========================================================================
+// Bloco 8 — Células de auditoria / smoke test (F25)
+// Somente nelas as bandas membro do ensemble são preservadas no export
+// (m1..mN) além de median/std. Preencher com ids reais da grade após primeira
+// execução da predição.
+// =========================================================================
 exports.SMOKE_CELLS = [];

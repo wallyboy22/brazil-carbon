@@ -53,7 +53,7 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 |---|---|---|
 | PALSAR | `.first()` por célula (platôs) | mediana global no bioma |
 | Máscara de treino | LULC 3,4,6,7,49 + extras | + `palsar_nodata` |
-| Champion/ensemble | minLeaf 10 · 6 vars · linear · N=5 | herdados da v07 |
+| Champion/ensemble | minLeaf 10 · 6 vars · linear · N=5 | idênticos à v07 (valores inlineados no contrato v08) |
 | Predição | não mascarada | não mascarada |
 | Stats comparativo | V03–V07 | V03–V08 (`0_contract_stats.js`) |
 | QA visual | todas as versões (v07 fix) | V03–V08 com fallback COL |
