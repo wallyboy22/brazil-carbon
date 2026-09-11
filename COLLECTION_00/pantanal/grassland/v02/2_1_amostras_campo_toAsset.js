@@ -27,12 +27,12 @@ var region = src.getBiome().geometry();
 var covarBands = ['red', 'green', 'nir', 'swir1', 'swir2', 'ndvi', 'ndwi'];
 
 // Estatísticas ANUAIS das covariáveis mensais (média/min/max por banda).
-var monthlyCol = ee.ImageCollection(c.YEARS.map(function (year) {
-  return ee.ImageCollection([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-    .map(function (month) {
-      return src.monthlyReflectance(year, month);
-    }));
-}).flatten());
+var months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+var monthlyCol = ee.ImageCollection(c.YEARS.reduce(function (acc, year) {
+  return acc.concat(months.map(function (month) {
+    return src.monthlyReflectance(year, month);
+  }));
+}, []));
 var covar = monthlyCol.select(covarBands)
   .reduce(ee.Reducer.mean().combine(ee.Reducer.minMax(), null, true))
   .select(['red_mean', 'green_mean', 'nir_mean', 'swir1_mean', 'swir2_mean',
