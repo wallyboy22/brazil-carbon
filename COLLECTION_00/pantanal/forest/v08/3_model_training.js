@@ -71,6 +71,13 @@ function trainMember(i) {
     classProperty: target,
     inputProperties: bands
   });
+  // Proveniência de covariáveis anexada ao modelo exportado (asset properties)
+  model = model.set({
+    covariates_registry: JSON.stringify(src.COVARIATES_REGISTRY),
+    covariate_version: src.COVARIATES_VERSION,
+    model_version: 'v08',
+    ensemble_member: i
+  });
   var modelAsset = root + '/MODELS/rf_agc_v08_m' + i + '_' +
     (c.LOG_TARGET ? 'log' : 'lin');
   deleteModelAsset(modelAsset);
@@ -89,6 +96,12 @@ print('[ENSEMBLE] N =', N, '· seed_base =', c.ENSEMBLE.SEED_BASE,
   '· band_fraction =', c.ENSEMBLE.BAND_FRACTION,
   '· train_fraction =', c.ENSEMBLE.TRAIN_FRACTION);
 print('[FIX] PALSAR global + máscara palsar_nodata no treino');
+print('[COVARIATES] versão', src.COVARIATES_VERSION, '· n temas =',
+  src.COVARIATES_REGISTRY.length);
+print('[COVARIATES] registro compacto:',
+  JSON.stringify(src.COVARIATES_REGISTRY.map(function (r) {
+    return { id: r.id, nbands: r.bands.length, versions: r.versions };
+  })));
 print('[MATRIZES]', assets.length, '· [TARGET]', target);
 matrix.size().evaluate(function (n) { print('[AMOSTRAS]', n); });
 src.ensureFolder(root + '/MODELS');

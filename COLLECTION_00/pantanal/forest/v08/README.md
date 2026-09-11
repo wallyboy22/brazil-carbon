@@ -85,7 +85,32 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 4. `3_model_training.js` → `4_spatial_prediction.js` (tasks) → `5_merge.js`.
 5. `6_qualidade.js` (QA visual) → `7_statistics.js` (CSVs + comparativo).
 
-## 6. State
+## 6. Biblioteca de covariáveis (`covariate/`)
+
+A refatoração de set/2026 extraiu todas as formulações de covariáveis em uma
+biblioteca compartilhada em `pantanal/forest/covariate/`. Cada `0_covariate_source.js`
+é agora um orquestrador autossuficiente que requer o próprio contrato + biblioteca
+(mas **não outras versões**).
+
+| Módulo | Responsabilidade | Proveniência (since) |
+|---|---|---|
+| `_hls.js` | HLS spectral: Fmask, NDVI/EVI/NDMI/BAI/SAVI/BSI, P10/P50/P90/AMP | since_v01 |
+| `_palsar.js` | PALSAR-2: `.first()` per-cell (since_v01) + mediana global (v08) | since_v01/v08 |
+| `_hand.js` | HAND contínuo + classes geomorfológicas 1-4 | since_v01 |
+| `_era5.js` | ERA5 CWD (atual/climatológico/3yr), Tmean, Prec | since_v01 |
+| `_lulc.js` | MapBiomas C11 (classification_\<ano\>) | since_v01 |
+| `_infra.js` | ensureFolder, ensureImageCollection, getBiome, SAMPLE_PROPS | since_v01/v03/v06 |
+| `_training.js` | getForestMask, getTrainingMask, applyTrainingMask | since_v06/v07 |
+| `_ensemble.js` | hashString, getMemberBands (BAND_FRACTION) | since_v07 |
+| `_metadata.js` | COVARIATES_REGISTRY (proveniência por tema, tag since_vNN) | set/2026 |
+| `build_stack.js` | buildCovariatesStack, buildTypedCovariatesStack | since_v01/v03 |
+
+**Política de proveniência**: cada tema em `_metadata.js` tem uma lista `versions`
+com tags `since_vNN` (em vez de listar v03–v08). Mudanças entram como novos itens
+na lista. A registry completa é impressa no modelo como `covariates_registry` e
+`covariate_version` (asset properties) — ver `3_model_training.js`.
+
+## 7. State
 
 - v08 **em desenvolvimento**: código pronto para executar no GEE; nenhuma task
   de export rodada ainda.

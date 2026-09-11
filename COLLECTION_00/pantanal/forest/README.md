@@ -34,6 +34,25 @@ todos os termos sem `require()` de versão anterior. Ajustes:
   erros de drift herdado). Valores finais são idênticos aos contratos
   originais — a mudança é somente estrutural.
 
+## Política de covariáveis (set/2026)
+
+A partir de set/2026, todas as formulações de covariáveis foram extraídas em
+uma biblioteca compartilhada em `covariate/` (por temas). A política é
+análoga à dos contratos:
+
+1. **Cada `0_covariate_source.js` é um arquivo único autossuficiente** — lê o
+   próprio contrato + biblioteca `covariate/*`; **não requer outras versões**.
+2. **A biblioteca é o acervo imutável** — mudanças de formulação (ex.: PALSAR
+   global na v08) entram como overrides nos orquestradores das versões, nunca
+   editando `covariate/`.
+3. **Proveniência documentada em `_metadata.js`** — `COVARIATES_REGISTRY` lista
+   cada tema com `versions[].tag` usando a convenção `since_vNN` (ex.: HLS
+   `since_v01`; PALSAR `since_v01` + `v08`).
+4. **Metadata anexada ao modelo** — o `3_model_training.js` exporta
+   `covariates_registry` (JSON da registry) e `covariate_version` como
+   propriedades do classificador (asset properties), tornando a proveniência
+   rastreável no próprio modelo exportado.
+
 ## Linha do Tempo
 
 ### v00 — Referência inicial

@@ -1,58 +1,48 @@
 /******************************************************************************
- * MAPBIOMAS-CARBONO — Pantanal v03 · Fonte tipada de covariáveis
+ * MAPBIOMAS-CARBONO — Pantanal Forest v03 · Fonte tipada de covariáveis
+ * ---------------------------------------------------------------------------
+ * Política de contratos/covariáveis (set/2026): cada versão é um arquivo
+ * ÚNICO e autossuficiente — este módulo NÃO requer versões anteriores; ele
+ * lê o próprio contrato (v03/0_contract.js) e a biblioteca compartilhada
+ * (covariate/*), que congela a formulação desde_vNN (ver _metadata.js).
+ * v03 = referência da cadeia tipada (buildTypedCovariatesStack).
  ******************************************************************************/
-
-var contract = require(
+var c = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v03/0_contract.js');
-var base = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v02/0_covariate_source.js');
+var infra = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/covariate/_infra.js');
+var build_stack = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/covariate/build_stack.js');
 
-exports.ASSET_ROOT =
-  'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/V03';
-exports.FOOTPRINT_ASSET =
-  'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/SAMPLES/footprint_pantanal_2023';
-exports.FOOTPRINT_ASSET =
-  'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/SAMPLES/footprint_pantanal_2023';
-exports.BIOME_FC = base.BIOME_FC;
-exports.BIOME_PROP = base.BIOME_PROP;
-exports.BIOME_NAME = base.BIOME_NAME;
-exports.SCALE = base.SCALE;
-exports.ensureFolder = base.ensureFolder;
+// ---------------------------------------------------------------------------
+// Config (contrato da própria versão)
+// ---------------------------------------------------------------------------
+exports.ASSET_ROOT = c.ASSET_ROOT;
+exports.FOOTPRINT_ASSET = c.FOOTPRINT_ASSET;
+exports.BIOME_FC = c.BIOME_FC;
+exports.BIOME_PROP = c.BIOME_PROP;
+exports.BIOME_NAME = c.BIOME_NAME;
+exports.SCALE = c.SCALE;
+exports.FEATURE_BANDS = c.FEATURE_BANDS;
+exports.TARGET = c.TARGET;
+exports.makeTiles = c.makeTiles;
+exports.makeCellDefinitions = c.makeCellDefinitions;
+exports.makeCellFeatures = c.makeCellFeatures;
 
-exports.ensureImageCollection = function (collectionPath) {
-  var parent = collectionPath.slice(0, collectionPath.lastIndexOf('/'));
-  exports.ensureFolder(parent);
-  try {
-    var info = ee.data.getAsset(collectionPath);
-    if (info.type !== 'IMAGE_COLLECTION' && info.type !== 'ImageCollection') {
-      print('[ERRO] ' + collectionPath + ' existe, mas NÃO é ImageCollection (' +
-        info.type + '). Excluir/recriar antes de rodar.');
-      return;
-    }
-    print('[OK] ImageCollection já existe:', collectionPath);
-  } catch (e) {
-    try {
-      ee.data.createAsset({ type: 'ImageCollection' }, collectionPath);
-      print('[OK] ImageCollection criada:', collectionPath);
-    } catch (e2) {
-      print('[AVISO] Falha ao criar ImageCollection', collectionPath, '—', e2.message);
-    }
-  }
-};
-exports.SAMPLE_PROPS = base.SAMPLE_PROPS;
-exports.FEATURE_BANDS = contract.FEATURE_BANDS;
-exports.TARGET = contract.TARGET;
-exports.makeTiles = contract.makeTiles;
-exports.makeCellDefinitions = contract.makeCellDefinitions;
-exports.makeCellFeatures = contract.makeCellFeatures;
+// ---------------------------------------------------------------------------
+// Infra de assets (biblioteca compartilhada)
+// ---------------------------------------------------------------------------
+exports.ensureFolder = infra.ensureFolder;
+exports.ensureImageCollection = infra.ensureImageCollection;
+exports.SAMPLE_PROPS = infra.SAMPLE_PROPS;
 
-// Rebuilds the stack with an explicit numeric contract. No implicit double
-// bands are allowed into sampling, training, or prediction.
+// ---------------------------------------------------------------------------
+// Stack tipado — rebuild com contrato numérico explícito (sem bandas duplas)
+// ---------------------------------------------------------------------------
 exports.buildTypedCovariatesStack = function (aoi, year) {
-  var raw = base.buildCovariatesStack(aoi, year);
-  var continuous = raw.select(contract.CONTINUOUS_BANDS).toFloat();
-  var categorical = raw.select(contract.CATEGORICAL_BANDS).toUint8();
-  return continuous.addBands(categorical)
-    .select(contract.FEATURE_BANDS)
-    .clip(aoi);
+  return build_stack.buildTypedCovariatesStack(aoi, year, {
+    continuous: c.CONTINUOUS_BANDS,
+    categorical: c.CATEGORICAL_BANDS,
+    feature: c.FEATURE_BANDS
+  });
 };
