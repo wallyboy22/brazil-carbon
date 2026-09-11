@@ -12,7 +12,9 @@ de sensor Landsat/MODIS) e implementa as decisões de `reflexao_v02.md`.
 | Água | nada | **máscara de água permanente** (`getWaterMask`: C11=33 ou NDWI seco > 0,15) |
 | fPAR QC | não | **Fpar_QC** (MODLAND_QC ≤ 1) via `USE_QC` |
 | Estatística | só classes campestres | **bioma inteiro** (Floresta/Campestre/Outros via legendas C11) |
-| Carbono | só AGC | AGC (`ROOT_SHOOT_K=0`) + banda `elig_carbon` (fase 4) |
+| Carbono | só AGC | AGC (`ROOT_SHOOT_K=0`) + **banda `elig_carbon` ativa** (estabilidade C11 em 2021–2023) |
+| Infra | copy local | `ensureFolder`/`assetExists` em **`pantanal/module_infra.js`** (sem dependência do forest) |
+| εCA | Pampa | Pampa (provisório) + **`2_5_eca_observada`** p/ substituir (diagnóstico B6) |
 
 ## Caso de uso
 
@@ -42,7 +44,7 @@ PANTANAL_GRASSLAND/V02/
   BIOMASS/grassland_biomass_annual_v02_2023       → kg MS/ha
   ANPP/grassland_anpp_monthly_v02_2023            → kg MS/ha/mês
   ANPP/grassland_anpp_annual_v02_2023             → kg MS/ha/ano
-  CARBON/grassland_carbon_stock_v02_2023          → Mg C/ha (AGC)
+  CARBON/grassland_carbon_stock_v02_2023          → Mg C/ha (AGC) + banda `elig_carbon` (C11 estável 2021–2023)
 ```
 
 Estoque e fluxo são grandezas separadas e não são somados.
@@ -56,9 +58,11 @@ Estoque e fluxo são grandezas separadas e não são somados.
    **matriz de calibração** (asset + Drive).
 4. `2_3_gcn/*` (offline) — diagnostica a matriz e ajusta o modelo
    (`biomass_model.json`); copiar coefficients para o contrato.
-5. `3_biomass`, `4_anpp`, `5_carbon_products` — produtos em todo o bioma.
-6. `6_qa` — comparativo v01/v02, faixas, clamp e cobertura.
-7. `7_statistics` — CSVs por classe LULC em todo o bioma.
+5. `2_5_eca_observada` — ε aparente mensal por classe (MOD17 GPP/ΣPARa);
+   decide se a εCA do Pampa é substituída (reflexão B6).
+6. `3_biomass`, `4_anpp`, `5_carbon_products` — produtos em todo o bioma.
+7. `6_qa` — comparativo v01/v02, faixas, clamp, cobertura e `elig_carbon`.
+8. `7_statistics` — CSVs por classe LULC em todo o bioma.
 
 > Sem `FIELD.ASSET`, os steps seguem com os coeficientes provisórios do Pampa
 > (clamp ativo) e avisam no console — a pipeline continua executável enquanto

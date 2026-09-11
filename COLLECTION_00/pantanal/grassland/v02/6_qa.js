@@ -14,7 +14,7 @@ var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/grassland/v02/0_sensor_landsat_modis.js');
 
 var BIOME_GEO = src.getBiome().geometry();
-var V01 = c.ASSET_ROOT.replace(/V02$/, 'V01');
+var V01 = c.ASSET_ROOT.replace('V02', 'V01');
 var V02 = c.ASSET_ROOT;
 
 function assetExists(imageId) {

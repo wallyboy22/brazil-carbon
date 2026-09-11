@@ -28,9 +28,13 @@ var areaBiome = ee.Image.pixelArea().divide(10000).reduceRegion({
 }).getNumber('area');
 areaGrass.divide(areaBiome).multiply(100).evaluate(function (pct) {
   print('[COBERTURA] campestre C11 ≈', pct.toFixed(1), '% do bioma');
+}, function (err) {
+  print('[ERRO] cobertura C11', String(err).slice(0, 200));
 });
 areaWater.evaluate(function (ha) {
   print('[AGUA] permanente ≈', (ha / 10000).toFixed(0), 'mil ha');
+}, function (err) {
+  print('[ERRO] área de água', String(err).slice(0, 200));
 });
 Map.addLayer(mask, { palette: ['#86b074'] }, 'Grassland mask C11 (análise)', true);
 Map.addLayer(water, { palette: ['#3288bd'] }, 'Água permanente', false);

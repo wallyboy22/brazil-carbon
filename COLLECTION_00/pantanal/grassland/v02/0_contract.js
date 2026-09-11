@@ -26,8 +26,14 @@ exports.GRASSLAND_CLASSES = [11, 12, 50];
 
 // ---- v02: produção em TODO o bioma (não mascarar produto pela LULC) --------
 exports.PREDICT_FULL_BIOME = true;
-/** Fase 4: anos de estabilidade para banda de elegibilidade do carbono. */
-exports.STABILITY_YEARS = [];
+/**
+ * Anos de estabilidade para a BANDA de elegibilidade do carbono (elig_carbon):
+ * LULC ∈ {11,12,50} em TODOS estes anos antes do ano alvo. Como o produto cobre
+ * o bioma todo (o modelo de campo não vale para floresta), a banda marca onde o
+ * carbono pode ser contabilizado sem arrastar outros estratos (reflexão D15).
+ * Vazia = banda omitida. Ativa por padrão na v02.
+ */
+exports.STABILITY_YEARS = [2021, 2022, 2023];
 
 // ---- Biomassa: calibrada por parcela de campo (2_1 + 2_3_gcn) --------------
 // coefficients são substituídos pelo biomass_model.json gerado no gate offline

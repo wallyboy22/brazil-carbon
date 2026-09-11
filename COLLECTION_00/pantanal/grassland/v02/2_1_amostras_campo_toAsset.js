@@ -61,8 +61,8 @@ tabela.size().evaluate(function (n) {
     print('[AVISO] nenhuma parcela válida — confira c.FIELD.ASSET.');
     return;
   }
-  src.ensureFolder(c.ASSET_ROOT.replace(/\/V02$/, '/FIELD'));
-  var assetId = c.ASSET_ROOT.replace(/\/V02$/, '/FIELD/matriz_campo_' + c.YEAR);
+  src.ensureFolder(c.ASSET_ROOT.replace('/V02', '/FIELD'));
+  var assetId = c.ASSET_ROOT.replace('/V02', '/FIELD/matriz_campo_' + c.YEAR);
   Export.table.toAsset({
     collection: tabela, description: 'WS_CARBONO_toAsset-matriz_campo_v02',
     assetId: assetId

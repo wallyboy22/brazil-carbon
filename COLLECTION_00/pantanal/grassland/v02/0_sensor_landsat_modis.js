@@ -14,7 +14,7 @@
 var c = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/grassland/v02/0_contract.js');
 var infra = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v01/0_covariate_source.js');
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/module_infra.js');
 
 var NAMES = ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'];
 var SLOPES = ee.Image.constant([0.8474, 0.8483, 0.9047, 0.8462, 0.8937, 0.9071]).rename(NAMES);
@@ -38,15 +38,18 @@ exports.getGrasslandMask = function (year) {
     .selfMask().rename('grassland_mask').toUint8();
 };
 
-/** Água permanente: classe 33 (Rio/Lago) ou NDWI mínimo anual > 0,15. */
+/** Água permanente: classe 33 (Rio/Lago) ou NDWI de seca > 0,15. */
 exports.getWaterMask = function (year) {
   var biome = exports.getBiome();
   var lulc = ee.Image(c.LULC_ASSET).select('classification_' + year)
     .updateMask(ee.Image().paint(biome, 1));
   var waterLulc = lulc.eq(33);
-  var ndwiDry = ee.ImageCollection([7, 8, 9].map(function (month) {
+  // NDWI seco = percentil 10 dos NDWI mensais do ano (evolução da v01, que
+  // fixava jul/ago/set — reflexão B4). Mede o estado de seca real do pixel.
+  var MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  var ndwiDry = ee.ImageCollection(MONTHS.map(function (month) {
     return exports.monthlyReflectance(year, month).select('ndwi');
-  })).reduce(ee.Reducer.min()).rename('ndwi_dry');
+  })).reduce(ee.Reducer.percentile([10])).rename('ndwi_dry');
   var water = waterLulc.unmask(0).or(ndwiDry.gt(0.15));
   return water.gte(1).rename('water_mask')
     .updateMask(ee.Image().paint(biome, 1)).toUint8();
@@ -145,6 +148,13 @@ function qcFpar(image) {
   return image.updateMask(qc.bitwiseAnd(3).lte(1)); // MODLAND_QC ≤ 1
 }
 
+function qcDsr(image) {
+  if (!c.USE_QC) return image;
+  var qc = image.select('DSR_QC');
+  return image.updateMask(qc.bitwiseAnd(3).lte(1)
+    .and(qc.bitwiseAnd(12).eq(0))); // qualidade ≤ 1 e céu claro (bits 2-3)
+}
+
 /** PARa mensal (MJ/m²/mês) em todo o bioma. */
 exports.monthlyPara = function (year, month) {
   var start = ee.Date.fromYMD(year, month, 1);
@@ -154,11 +164,11 @@ exports.monthlyPara = function (year, month) {
     .select('Fpar', 'Fpar_QC');
   var dsr = ee.ImageCollection('MODIS/061/MCD18A1')
     .filterDate(start, end).filterBounds(exports.getBiome().geometry())
-    .select('DSR');
+    .select('DSR', 'DSR_QC');
   var para = fpar.map(function (image) {
     var t = image.date();
-    var dsrMean = dsr.filterDate(t, t.advance(4, 'day')).mean()
-      .multiply(86400).multiply(1e-6);
+    var dsrMean = dsr.filterDate(t, t.advance(4, 'day')).map(qcDsr)
+      .mean().multiply(86400).multiply(1e-6);
     return qcFpar(image).multiply(0.01).resample('bilinear')
       .multiply(dsrMean.multiply(0.48)).multiply(4).rename('para');
   }).sum();
