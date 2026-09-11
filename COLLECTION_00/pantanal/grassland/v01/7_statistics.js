@@ -11,4 +11,4 @@ var engine = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/grassland/statistics/stats_engine.js');
 
 engine.runForVersion('v01');
-engine.compareAll();
+engine.compareAll('v01');

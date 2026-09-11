@@ -1,14 +1,14 @@
 /******************************************************************************
  * MAPBIOMAS-CARBONO — Pantanal Grassland · stats_engine (módulo require)
  * ---------------------------------------------------------------------------
- * Motor das estatísticas dos produtos campestres v01 (biomassa, ANPP,
- * carbono) por classe LULC C11, ano 2023. Requerido pelo step
- * `7_statistics.js` da v01 (e por scripts ad-hoc no Code Editor).
+ * Motor das estatísticas dos produtos campestres v01 e v02 (biomassa, ANPP,
+ * carbono) por classe LULC C11, ano 2023. Requerido pelos steps
+ * `7_statistics.js` de cada versão (e por scripts ad-hoc no Code Editor).
  *
  * Expõe:
- *   runForVersion(versionId)  → CSVs `stats_grassland_<produto>_<territorio>_2023.csv`
- *                               (níveis n0/n1/marcador/total por produto)
- *   compareAll()              → `compare_grassland_produtos_2023.csv` + resumo
+ *   runForVersion(versionId) → CSVs `stats_grassland_<versao>_<produto>_<territorio>_2023.csv`
+ *                              (níveis n0/n1/marcador/total por produto)
+ *   compareAll()             → comparativo na versão mais recente (v02)
  *
  * Método (molde mapbiomas_solo/collection3/statistics):
  *   área_ha  = pixelArea()/10000
@@ -17,6 +17,9 @@
  *              [classe, área_ha, valor]
  * Produtos não possuem incerteza publicada (diferente do forest, que carrega
  * o ± do ensemble v07).
+ *
+ * → v02: os produtos cobrem TODO o bioma; a estatística agrega também as
+ *   classes florestais e demais usos (n1 Floresta/Campestre/Outros).
  ******************************************************************************/
 var C = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/grassland/statistics/0_contract_stats.js');
@@ -27,6 +30,25 @@ var YEAR = C.YEAR;
 var SCALE = C.SCALE;
 var REDUCER = ee.Reducer.sum().repeat(2)
   .group({ groupField: 0, groupName: 'classe' });
+var VERSIONS = ['v01', 'v02'];
+
+/** Guardas (padrão forest): consulta segura de asset e de grupos. */
+function assetExists(imageId) {
+  var parts = imageId.split('/');
+  parts.pop();
+  try {
+    var r = ee.data.listAssets(parts.join('/'));
+    return (r.assets || []).some(function (a) { return a.id === imageId; });
+  } catch (e) { return false; }
+}
+
+function groupsOrEmpty(groups, ctx) {
+  if (!groups || typeof groups.forEach !== 'function') {
+    print('[AVISO] sem dados (produto ausente ou sem interseção):', ctx);
+    return [];
+  }
+  return groups;
+}
 
 function biome() {
   return ee.FeatureCollection(C.BIOME_FC)
@@ -79,8 +101,8 @@ function reduceFor(p, geom) {
 function r(n) { return Math.round(n * 10) / 10; }
 
 function row(product, territorio, grupo, nivel, extra) {
-  var base = { produto: product.id, ano: YEAR, territorio: territorio,
-    nivel: nivel, grupo: grupo, unidade: product.unit };
+  var base = { produto: product.id, versao: product.version, ano: YEAR,
+    territorio: territorio, nivel: nivel, grupo: grupo, unidade: product.unit };
   for (var k in extra) { if (extra.hasOwnProperty(k)) base[k] = extra[k]; }
   return base;
 }
@@ -96,6 +118,9 @@ function sumBy(groups, getKey) {
   return acc;
 }
 
+var N1_ORDER = ['Floresta', 'Campestre', 'Outros'];
+var MARKER_ORDER = [LEG.MARK_FOREST, LEG.MARK_GRASS, LEG.MARK_OTHER];
+
 function buildRows(p, territorio, groups) {
   var rows = [];
 
@@ -109,7 +134,7 @@ function buildRows(p, territorio, groups) {
   });
 
   var byN1 = sumBy(groups, function (code) { return LEG.info(code).n1; });
-  ['Campestre', 'Outros'].forEach(function (label) {
+  N1_ORDER.forEach(function (label) {
     if (!byN1[label]) return;
     var a = byN1[label];
     rows.push(row(p, territorio, label, 'n1', {
@@ -119,7 +144,7 @@ function buildRows(p, territorio, groups) {
   });
 
   var byMark = sumBy(groups, function (code) { return LEG.info(code).marcador; });
-  [LEG.MARK_GRASS, LEG.MARK_OTHER].forEach(function (mark) {
+  MARKER_ORDER.forEach(function (mark) {
     var key = String(mark);
     if (!byMark[key]) return;
     var a = byMark[key];
@@ -169,59 +194,81 @@ function exportCsv(rows, fileName, description) {
 }
 
 /**
- * Gera as estatísticas de UMA versão dos produtos campestres (v01), por
- * região (bioma/UF). Uso: engine.runForVersion('v01');
+ * Gera as estatísticas de UMA versão dos produtos campestres, por região
+ * (bioma/UF). Uso: engine.runForVersion('v01') | engine.runForVersion('v02');
  */
 exports.runForVersion = function (versionId) {
-  if (versionId !== 'v01') { print('[ERRO] grassland só possui v01; recebido:',
-    versionId); return; }
-  print('MAPBIOMAS-CARBONO · Pantanal Grassland · 7_statistics · v01');
+  if (VERSIONS.indexOf(versionId) < 0) {
+    print('[ERRO] grassland versões disponíveis:', VERSIONS, '· recebido:',
+      versionId); return;
+  }
+  var products = C.PRODUCTS.filter(function (prod) {
+    return prod.version === versionId;
+  });
+  print('MAPBIOMAS-CARBONO · Pantanal Grassland · 7_statistics ·',
+    versionId, '·', products.length, 'produtos');
 
   collectRegions(function (regions) {
     var jobs = [];
     regions.forEach(function (region) {
-      C.PRODUCTS.forEach(function (p) { jobs.push({ p: p, region: region }); });
+      products.forEach(function (p) { jobs.push({ p: p, region: region }); });
     });
     var done = 0;
     jobs.forEach(function (job) {
+      var ctx = job.p.id + '/' + job.region.slug;
+      if (!assetExists(job.p.asset)) {
+        print('[AVISO] produto não encontrado — pulado:', job.p.asset);
+        done++;
+        if (done === jobs.length) print('[FIM] versão', versionId, 'completa.');
+        return;
+      }
       reduceFor(job.p, job.region.geom).evaluate(function (groups) {
+        groups = groupsOrEmpty(groups, ctx);
         var rows = buildRows(job.p, job.region.territorio, groups);
         qaSomas(job.p, job.region.territorio, rows);
         exportCsv(rows,
-          C.PREFIX + '_' + job.p.id + '_' + job.region.slug + '_' + YEAR,
-          'WS_CARBONO_stats_grassland_' + job.p.id + '_' + job.region.slug +
-            '_' + YEAR);
-        print('[OK]', job.p.id, job.region.territorio, '·', rows.length,
-          'linhas');
+          C.PREFIX + '_' + versionId + '_' + job.p.id + '_' + job.region.slug +
+            '_' + YEAR,
+          'WS_CARBONO_stats_grassland_' + versionId + '_' + job.p.id + '_' +
+            job.region.slug + '_' + YEAR);
+        print('[OK]', ctx, job.p.version, '·', rows.length, 'linhas');
         done++;
+        if (done === jobs.length) print('[FIM] versão', versionId, 'completa.');
       }, function (err) {
-        print('[ERRO]', job.p.id, job.region.territorio,
-          String(err).slice(0, 200));
+        print('[ERRO]', ctx, String(err).slice(0, 200));
         done++;
+        if (done === jobs.length) print('[FIM] versão', versionId, 'completa.');
       });
     });
   });
 };
 
-/** Comparativo dos produtos (biomassa × ANPP × carbono) — CSV + gráfico. */
-exports.compareAll = function () {
-  print('MAPBIOMAS-CARBONO · Pantanal Grassland · 3_compare_produtos');
+/** Comparativo dos produtos de UMA versão (padrão: mais recente). */
+exports.compareAll = function (versionId) {
+  versionId = versionId || VERSIONS[VERSIONS.length - 1];
+  if (VERSIONS.indexOf(versionId) < 0) {
+    print('[ERRO] versões disponíveis:', VERSIONS, '· recebido:', versionId);
+    return;
+  }
+  var products = C.PRODUCTS.filter(function (prod) { return prod.version === versionId; });
+  print('MAPBIOMAS-CARBONO · Pantanal Grassland · 3_compare_produtos ·', versionId);
   var b = biome();
   var rows = [];
-  var pending = C.PRODUCTS.length;
+  var pending = products.length;
 
-  C.PRODUCTS.forEach(function (p) {
+  products.forEach(function (p) {
     reduceFor(p, b).evaluate(function (groups) {
+      groups = groupsOrEmpty(groups, p.id);
       var tot = { area: 0, valor: 0 };
       groups.forEach(function (g) {
         var info = LEG.info(g['classe']);
-        rows.push({ produto: p.id, ano: YEAR, classe: g['classe'], n0: info.n0,
-          n1: info.n1, marcador: info.n2,
+        rows.push({ produto: p.id, versao: p.version, ano: YEAR,
+          classe: g['classe'], n0: info.n0, n1: info.n1, marcador: info.n2,
           area_ha: r(g['sum']), valor_Mg: r(g['sum_1']), unidade: p.unit });
         tot.area += g['sum']; tot.valor += g['sum_1'];
       });
-      rows.push({ produto: p.id, ano: YEAR, classe: '', n0: 'TOTAL', n1: '—',
-        marcador: 'total',
+      rows.push({ produto: p.id, versao: p.version, ano: YEAR, classe: '',
+        n0: 'TOTAL', n1: '—', marcador: 'total',
         area_ha: r(tot.area), valor_Mg: r(tot.valor), unidade: p.unit });
       pending--;
       if (pending === 0) {
@@ -229,8 +276,9 @@ exports.compareAll = function () {
           print(r2.produto, '|', r2.classe, r2.n0, '| área', r2.area_ha,
             'ha |', r2.valor_Mg, r2.unidade);
         });
-        exportCsv(rows, 'compare_grassland_produtos_' + YEAR,
-          'WS_CARBONO_compare_grassland_produtos_' + YEAR);
+        exportCsv(rows,
+          'compare_grassland_produtos_' + versionId + '_' + YEAR,
+          'WS_CARBONO_compare_grassland_produtos_' + versionId + '_' + YEAR);
       }
     }, function (err) {
       print('[ERRO]', p.id, String(err).slice(0, 200));
