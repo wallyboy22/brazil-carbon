@@ -1,0 +1,11 @@
+# MAPBIOMAS-CARBONO · Pantanal Forest v08 · gate offline (2_3_gcn)
+# Requisitos mínimos para rodar as células no Google Colab.
+# Instale com:
+#   !pip install -r requirements.txt
+# (Colab já traz quase tudo; serve para garantir versões.)
+earthengine-api>=0.1.370
+pandas>=1.5
+numpy>=1.23
+scikit-learn>=1.2
+scipy>=1.9
+matplotlib>=3.6

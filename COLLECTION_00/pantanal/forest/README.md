@@ -14,6 +14,9 @@ cada versão.
 | `v03` | Contrato explícito de bandas e tipos | Baseline tipada |
 | `v04` | Cache persistido de covariáveis | Experimental, não recomendada |
 | `v05` | Stack em memória por célula | Estratégia recomendada |
+| `v06` | Máscara florestal no treino | Intermediária |
+| `v07` | Ensemble RF N=5 + regularização champion + stats | **Concluída** (produto 2023) |
+| `v08` | Fix PALSAR (mosaico global determinístico) | Em desenvolvimento (plano) |
 
 ## Linha do Tempo
 

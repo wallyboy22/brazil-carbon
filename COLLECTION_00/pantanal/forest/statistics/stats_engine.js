@@ -26,8 +26,51 @@ var LEG = require(
 
 var YEAR = C.YEAR;
 var SCALE = C.SCALE;
+var BASE = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST';
 var REDUCER = ee.Reducer.sum().repeat(3)
   .group({ groupField: 0, groupName: 'classe' });
+
+/**
+ * Verifica se um asset IMAGE existe (por pasta de asset).
+ * listAssets pode lançar erro quando a pasta não existe — try/catch torna a
+ * consulta segura para QA/stats.
+ */
+function assetExists(imageId) {
+  var parts = imageId.split('/');
+  parts.pop();
+  try {
+    var r = ee.data.listAssets(parts.join('/'));
+    return (r.assets || []).some(function (a) { return a.id === imageId; });
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Resolve o mosaico de UMA versão, com fallback automático:
+ *   1) merge anual exportado (agc_pred_v0X_merged_<ano>);
+ *   2) senão, mosaico da ImageCollection PREDICTIONS/COL da própria versão.
+ * Evita o erro "Cannot read property 'forEach' of undefined" quando o merge
+ * não existe no Earth Engine.
+ */
+function safeMosaic(v) {
+  if (assetExists(v.mosaic)) return ee.Image(v.mosaic);
+  var colPath = v.mosaic.replace(/\/[^/]+$/, '/COL');
+  print('[AVISO] merge não encontrado — usando COL mosaic de', v.id, '→', colPath);
+  return ee.ImageCollection(colPath)
+    .filter(ee.Filter.eq('year', YEAR))
+    .mosaic()
+    .rename([v.band].concat(v.stdBand ? [v.stdBand] : []));
+}
+
+/** Valida o array de grupos retornado por reduceRegion().get('groups'). */
+function groupsOrEmpty(groups, ctx) {
+  if (!groups || typeof groups.forEach !== 'function') {
+    print('[AVISO] sem dados (provável mosaico ausente ou sem interseção):', ctx);
+    return [];
+  }
+  return groups;
+}
 
 function biome() {
   return ee.FeatureCollection(C.BIOME_FC)
@@ -61,7 +104,7 @@ function collectRegions(cb) {
 
 /** Stack [classe dec, área_ha, estoque, w2] mascarado por classe ∩ valor. */
 function statsImage(v) {
-  var img = ee.Image(v.mosaic);
+  var img = safeMosaic(v);
   var value = img.select(v.band).rename('valor');
   var lulc = ee.Image(C.LULC_ASSET).select(C.LULC_BAND).rename('n0');
   var mask = value.mask().and(lulc.mask());
@@ -104,6 +147,9 @@ function sumBy(groups, getKey) {
 /** Expande os grupos decimais em linhas n0/n1(=N1)/marcador/TOTAL. */
 function buildRows(v, territorio, groups) {
   var rows = [];
+  groups = groupsOrEmpty(groups, v.id + ' · ' + territorio +
+    ' (buildRows — reduzindo a linhas de n0/n1/marcador/total)');
+  if (!groups.length) { print('[AVISO]', v.id, territorio, '· 0 linhas geradas'); return rows; }
 
   groups.forEach(function (g) {
     var info = LEG.info(g['classe']);
@@ -218,7 +264,7 @@ exports.runForVersion = function (versionId) {
 
 /** Stack [marcador, área_ha, estoque, w2] para comparativo entre versões. */
 function markerStack(v) {
-  var img = ee.Image(v.mosaic);
+  var img = safeMosaic(v);
   var value = img.select(v.band).rename('valor');
   var lulc = ee.Image(C.LULC_ASSET).select(C.LULC_BAND)
     .remap(LEG.FOREST_CLASSES.concat(LEG.GRASSLAND_CLASSES),
@@ -246,9 +292,10 @@ exports.compareAll = function () {
     markerStack(v).reduceRegion({
       reducer: REDUCER, geometry: b, scale: SCALE, maxPixels: 1e13, tileScale: 2
     }).get('groups').evaluate(function (groups) {
+      groups = groupsOrEmpty(groups, v.id + ' · PO2 (compareAll)');
       var tot = { area: 0, stock: 0, sq: 0 };
       groups.forEach(function (g) {
-        var key = String(g['mark']);
+        var key = String(g['classe']);
         var label = LEG.N2_LABELS[key] || 'outros';
         rows.push({ version: v.id, ano: YEAR, marcador: label,
           area_ha: r(g['sum']), estoque_Mg: r(g['sum_1']),

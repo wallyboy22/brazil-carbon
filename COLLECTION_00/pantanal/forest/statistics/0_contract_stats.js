@@ -2,15 +2,15 @@
  * MAPBIOMAS-CARBONO — Pantanal Forest · Estatísticas (contrato)
  * ---------------------------------------------------------------------------
  * Estatísticas de AGC (agbd, Mg/ha) por classe LULC C11 para as versões
- * V03–V07 da cadeia florestal. Molde herdado de
+ * V03–V08 da cadeia florestal. Molde herdado de
  * `mapbiomas_solo/collection3/statistics` (pixelArea → grupo por classe →
  * Export.table.toDrive).
  *
  * Convenções:
  *   - todas as versões preveem APENAS 2023; mosaico final:
  *     <V0X>/PREDICTIONS/agc_pred_v0X_merged_2023
- *   - banda de predição: 'prediction_2023'; v07 tem incerteza de ensemble em
- *     'agbd_std_2023' (desvio padrão dos membros, Mg/ha)
+ *   - banda de predição: 'prediction_2023'; v07/v08 têm incerteza de ensemble
+ *     em 'agbd_std_2023' (desvio padrão dos membros, Mg/ha)
  *   - incerteza agregada (v07): std_total = sqrt( Σ (std × área_ha)² )
  ******************************************************************************/
 
@@ -49,6 +49,12 @@ exports.VERSIONS = [
   {
     id: 'v07',
     mosaic: 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/V07/PREDICTIONS/agc_pred_v07_merged_2023',
+    band: 'prediction_2023',
+    stdBand: 'agbd_std_2023'
+  },
+  {
+    id: 'v08',
+    mosaic: 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/V08/PREDICTIONS/agc_pred_v08_merged_2023',
     band: 'prediction_2023',
     stdBand: 'agbd_std_2023'
   }

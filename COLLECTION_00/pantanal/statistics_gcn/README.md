@@ -15,7 +15,7 @@ analisa. Se faltar arquivo, o `cell01` indica qual step rodar:
 
 | Cadeia | Step no GEE |
 |---|---|
-| Pantanal Forest V03–V07 | `forest/v0X/7_statistics.js` (v07 também roda o comparativo) |
+| Pantanal Forest V03–V08 | `forest/v0X/7_statistics.js` (v07 e v08 também rodam o comparativo) |
 | Pantanal Grassland v01 | `grassland/v01/7_statistics.js` |
 
 Depois, faça download/export dos CSVs para a pasta
@@ -53,7 +53,7 @@ pantanal/statistics_gcn/
 | `CSV_DIR` | `estatisticas` | subpasta com os CSVs do 7_statistics.js |
 | `FIG_DIR` | `figures` | biblioteca de figuras |
 | `OUT_DIR` | `relatorio` | XLSX + .md de resumo |
-| `FOREST_VERSIONS` | `[v03..v07]` | escopo esperado dos arquivos florestais |
+| `FOREST_VERSIONS` | `[v03..v08]` | escopo esperado dos arquivos florestais |
 | `GRASSLAND_PRODUCTS` | `[biomass, anpp, carbon]` | escopo campestre |
 | `MISSING_TOL` | `1.0` Mg | tolerância do QA de somas |
 | `FAZER_MAPAS` | `False` | cell04 só roda se `True` |

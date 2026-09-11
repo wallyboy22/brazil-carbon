@@ -7,7 +7,7 @@ Rodar em Colab após a cell00.
 O que faz:
   1. checa quais arquivos esperados existem (e indica o step 7_statistics.js
      de cada versão a rodar no GEE quando faltar)
-  2. consolida forest (V03–V07) e grassland (v01: biomassa/ANPP/carbono)
+  2. consolida forest (V03–V08) e grassland (v01: biomassa/ANPP/carbono)
   3. QA de somas (n0 = n1 = total) e territórios por versão
   4. salva consolidados em OUT_DIR (consolidado_forest_2023.csv e
      consolidado_grassland_2023.csv) para reuso nas células seguintes

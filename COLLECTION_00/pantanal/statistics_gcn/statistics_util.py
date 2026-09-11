@@ -43,7 +43,7 @@ CONF = {
     "OUT_DIR": "relatorio",     # XLSX + .md de resumo
     "YEAR": 2023,
     # --- escopo esperado dos arquivos ---
-    "FOREST_VERSIONS": ["v03", "v04", "v05", "v06", "v07"],
+    "FOREST_VERSIONS": ["v03", "v04", "v05", "v06", "v07", "v08"],
     "GRASSLAND_PRODUCTS": ["biomass", "anpp", "carbon"],
     "MISSING_TOL": 1.0,  # Mg (QA de somas)
     # --- figuras ---
