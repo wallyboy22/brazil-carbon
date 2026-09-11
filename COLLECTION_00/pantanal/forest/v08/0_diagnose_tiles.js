@@ -93,8 +93,10 @@ function baseTyped(year) { return base.buildTypedCovariatesStack(biome, year); }
 ['HV_db', 'HH_db', 'HV_HH_ratio', 'RVI'].forEach(function (band) {
   bandDiff(YEAR, band).evaluate(function (v) {
     print('[BANDA ' + band + '] média v07 (por célula) =',
-      v.v07 ? ee.Number(v.v07).round() : 'NA',
-      '· média v08 (global) =', v.v08 ? ee.Number(v.v08).round() : 'NA',
+      v.v07_mean ? ee.Number(v.v07_mean).round() : 'NA',
+      '· média v08 (global) =', v.v08_mean ? ee.Number(v.v08_mean).round() : 'NA',
       '(platôs por célula desaparecem na v08)');
+  }, function (err) {
+    print('[ERRO em bandDiff(' + band + ')]', err);
   });
 });
