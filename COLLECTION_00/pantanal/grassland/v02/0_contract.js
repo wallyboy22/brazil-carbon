@@ -73,6 +73,12 @@ exports.USE_QC = true;     // Fpar_QC (MODLAND_QC ≤ 1) aplicado no fPAR
 exports.MASK_WATER = true; // água permanente fora dos produtos
 /** Fase 4: cheia dinâmica mensal (máscara por NDWI mensal). */
 exports.MASK_FLOOD = false;
+/**
+ * Fase 4: interpolação temporal do fPAR — mês sem fPAR/DSR válido é preenchido
+ * com a média dos meses adjacentes (reflexão C11), evitando subestimar a ANPP
+ * anual em meses sem observações. Requer uma rodada a mais de vizinhos por mês.
+ */
+exports.INTERP_MISSING_FPAR = false;
 
 exports.ASSET_ROOT =
   'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_GRASSLAND/V02';

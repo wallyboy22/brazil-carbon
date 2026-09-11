@@ -36,11 +36,13 @@ comentários markdown). A base é ES5-limpa para o Code Editor.
 | B3 ✅ | `.evaluate` sem error callback em `2_mask_grassland` (mesma classe de bug vista no forest). | `2_mask_grassland.js` |
 | B4 ✅ | **NDWI seco por percentil 10** dos 12 meses (antes: jul/ago/set fixos — reflexão C9 evolução). | `0_sensor_landsat_modis.js` |
 | B6 ✅ | `ensureFolder`/`assetExists` extraídos para **`pantanal/module_infra.js`** — desacopla grassland da dependência `forest/v01`. | `module_infra.js` (novo) |
+| C9 ✅ | **Cheia dinâmica mensal** (`getFloodMask`): NDWI do próprio mês > 0,15 mascarado dos produtos quando `MASK_FLOOD=true`. | `0_sensor_landsat_modis.js` |
+| C11 ✅ | **Interpolação temporal do fPAR** (`INTERP_MISSING_FPAR=true`): mês sem fPAR/DSR válido = média dos adjacentes via `paraCore` (sem recursão). | `0_sensor_landsat_modis.js` |
 
 **Lacunas registradas (não executadas):** janela DSR `[t, t+4d]` pode sair do mês
 (centrar `[t−2, t+2]`); `monthlyBiomass` re-deriva o grafos Landsat num 2º
-caminho (só custo); **interpolação temporal** para mês sem MCD15A3H (C11) —
-pendente de implementar antes da série.
+caminho (só custo). Os dois gates novos (`MASK_FLOOD`, `INTERP_MISSING_FPAR`)
+ficam **OFF por padrão** — não mudam a rodada atual; ligar ao preparar a série.
 
 ## 3. Revisão estratégica (vs. v01) e avanços
 
@@ -63,7 +65,8 @@ pendente de implementar antes da série.
 2. **εCA observada:** rodar `2_5_eca_observada.js` (novo) → comparar com
    `ECA_MONTHLY`; se diferença > ±30% em >2 meses, adotar ε ajustada por
    classe/estado hidrológico e ligar `ECA_MODULATE_CWD` quando houver máscara.
-3. **Cheia dinâmica (C9/C10):** máscara mensal por NDWI (`MASK_FLOOD`) e
-   interpolação temporal do fPAR — pré-requisitos da série.
-4. **Série 2000–2023 (fase 5):** módulo separado, Landsat L5–L9 + SLC-off
+3. ✅ **Cheia dinâmica (C9/C10):** máscara mensal por NDWI (`getFloodMask` +
+   gate `MASK_FLOOD`) e interpolação temporal do fPAR (`INTERP_MISSING_FPAR`);
+   ligar os gates ao montar a série.
+4. 🔲 **Série 2000–2023 (fase 5):** módulo separado, Landsat L5–L9 + SLC-off
    tratado; decisão de produto "séries" aprovada pela equipe antes do custo.

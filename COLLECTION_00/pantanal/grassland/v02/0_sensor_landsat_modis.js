@@ -98,13 +98,24 @@ function addBiomass(image) {
   return image.addBands(clamped.rename('biomass_kg_ha').toFloat());
 }
 
-/** Máscara aplicada aos produtos: água (e grassland se PREDICT≠full). */
-function productMask(year) {
+/** Cheia dinâmica mensal: NDWI do próprio mês > 0,15 (reflexão C9/fase 4). */
+exports.getFloodMask = function (year, month) {
+  return exports.monthlyReflectance(year, month).select('ndwi')
+    .gt(0.15).rename('flood_mask').toUint8();
+};
+
+/** Máscara aplicada aos produtos: água (e grassland se PREDICT≠full; e a
+ * cheia mensal se MASK_FLOOD). */
+function productMask(year, month) {
   var keep = null;
   if (!c.PREDICT_FULL_BIOME) keep = exports.getGrasslandMask(year);
   if (c.MASK_WATER) {
     var land = exports.getWaterMask(year).not();
     keep = keep ? keep.mask(land) : land.updateMask(land);
+  }
+  if (c.MASK_FLOOD && month) {
+    var dry = exports.getFloodMask(year, month).not().selfMask();
+    keep = keep ? keep.mask(dry) : dry.updateMask(dry);
   }
   return keep ? keep : ee.Image.constant(1);
 }
@@ -138,7 +149,7 @@ exports.monthlyBiomass = function (year, month) {
   var biome = exports.getBiome();
   var col = filterScenes(biome, start, end).map(addBiomass);
   return col.select('biomass_kg_ha').mean()
-    .updateMask(productMask(year)).rename('biomass_' + month).toFloat()
+    .updateMask(productMask(year, month)).rename('biomass_' + month).toFloat()
     .set('year', year).set('month', month);
 };
 
@@ -155,8 +166,8 @@ function qcDsr(image) {
     .and(qc.bitwiseAnd(12).eq(0))); // qualidade ≤ 1 e céu claro (bits 2-3)
 }
 
-/** PARa mensal (MJ/m²/mês) em todo o bioma. */
-exports.monthlyPara = function (year, month) {
+/** PARa mensal bruto (MJ/m²) de um único mês — sem máscara/renome. */
+function paraCore(year, month) {
   var start = ee.Date.fromYMD(year, month, 1);
   var end = start.advance(1, 'month');
   var fpar = ee.ImageCollection('MODIS/061/MCD15A3H')
@@ -165,14 +176,29 @@ exports.monthlyPara = function (year, month) {
   var dsr = ee.ImageCollection('MODIS/061/MCD18A1')
     .filterDate(start, end).filterBounds(exports.getBiome().geometry())
     .select('DSR', 'DSR_QC');
-  var para = fpar.map(function (image) {
+  return fpar.map(function (image) {
     var t = image.date();
     var dsrMean = dsr.filterDate(t, t.advance(4, 'day')).map(qcDsr)
       .mean().multiply(86400).multiply(1e-6);
     return qcFpar(image).multiply(0.01).resample('bilinear')
       .multiply(dsrMean.multiply(0.48)).multiply(4).rename('para');
   }).sum();
-  return para.updateMask(productMask(year)).rename('para_' + month).toFloat()
+}
+
+/** PARa mensal (MJ/m²/mês) em todo o bioma. */
+exports.monthlyPara = function (year, month) {
+  var para = paraCore(year, month);
+  if (c.INTERP_MISSING_FPAR) {
+    // Interpolação temporal (reflexão C11): mês sem fPAR válido é preenchido
+    // com a média dos meses adjacentes. Sem recursão — vizinhos via paraCore.
+    var prev = paraCore(year, month > 1 ? month - 1 : 12, month);
+    var next = paraCore(year, month < 12 ? month + 1 : 1, month);
+    var need = para.mask().unmask(0).not(); // pixels sem fPAR no mês
+    var fill = prev.addBands(next).reduce(ee.Reducer.mean())
+      .rename('para').updateMask(need);
+    para = para.unmask(fill);
+  }
+  return para.updateMask(productMask(year, month)).rename('para_' + month).toFloat()
     .set('year', year).set('month', month);
 };
 

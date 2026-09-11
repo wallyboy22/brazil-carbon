@@ -15,6 +15,8 @@ de sensor Landsat/MODIS) e implementa as decisões de `reflexao_v02.md`.
 | Carbono | só AGC | AGC (`ROOT_SHOOT_K=0`) + **banda `elig_carbon` ativa** (estabilidade C11 em 2021–2023) |
 | Infra | copy local | `ensureFolder`/`assetExists` em **`pantanal/module_infra.js`** (sem dependência do forest) |
 | εCA | Pampa | Pampa (provisório) + **`2_5_eca_observada`** p/ substituir (diagnóstico B6) |
+| fPAR sem dado | — | **`INTERP_MISSING_FPAR`** (gate): mês sem fPAR válido = média dos adjacentes (reflexão C11) |
+| Cheia | nada | água permanente fixa + **`MASK_FLOOD`** (gate): NDWI mensal > 0,15 (reflexão C9) |
 
 ## Caso de uso
 
