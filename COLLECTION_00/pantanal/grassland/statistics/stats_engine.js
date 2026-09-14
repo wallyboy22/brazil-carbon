@@ -10,11 +10,14 @@
  *                              (níveis n0/n1/marcador/total por produto)
  *   compareAll()             → comparativo na versão mais recente (v02)
  *
- * Método (molde mapbiomas_solo/collection3/statistics):
+ * Método (molde mapbiomas_solo/collection3/statistics e 2_5_eca_observada):
  *   área_ha  = pixelArea()/10000
  *   valor    = banda (convertida a Mg/ha via toMgFactor) × área_ha
- *   reducer  = ee.Reducer.sum().repeat(2).group({groupField:0}) sobre
- *              [classe, área_ha, valor]
+ *   reducer  = ee.Reducer.sum().repeat(2).group({groupField:2}) sobre o stack
+ *              [área_ha, valor, classe] — a banda DE CLASSIFICAÇÃO fica na
+ *              ÚLTIMA posição (padrão comprovado: group pela última banda).
+ * `normalize()` converte cada grupo para {classe, sum, sum_1} aceitando o
+ * `sum` do `.repeat(2)` como LISTA [area, valor] OU chaves separadas.
  * Produtos não possuem incerteza publicada (diferente do forest, que carrega
  * o ± do ensemble v07).
  *
@@ -29,7 +32,7 @@ var LEG = require(
 var YEAR = C.YEAR;
 var SCALE = C.SCALE;
 var REDUCER = ee.Reducer.sum().repeat(2)
-  .group({ groupField: 0, groupName: 'classe' });
+  .group({ groupField: 2, groupName: 'classe' });
 var VERSIONS = ['v01', 'v02'];
 
 /** Guardas (padrão forest): consulta segura de asset e de grupos. */
@@ -48,6 +51,21 @@ function groupsOrEmpty(groups, ctx) {
     return [];
   }
   return groups;
+}
+
+/**
+ * Normaliza cada grupo para {classe, sum, sum_1}.
+ * O `sum` do `.repeat(2)` sai como LISTA [area, valor] (molde solo) ou, em
+ * versões do EE, como chaves separadas — esta função cobre os dois casos.
+ */
+function normalize(groups) {
+  return (groups || []).map(function (g) {
+    var s = g['sum'];
+    if (s && typeof s.length === 'number') {
+      return { classe: g['classe'], sum: s[0], sum_1: s[1] };
+    }
+    return { classe: g['classe'], sum: g['sum'], sum_1: g['sum_1'] };
+  });
 }
 
 function biome() {
@@ -80,7 +98,7 @@ function collectRegions(cb) {
   });
 }
 
-/** Stack [classe dec, área_ha, valor_Mg] mascarado por classe ∩ valor. */
+/** Stack [área_ha, valor_Mg, classe] mascarado por classe ∩ valor. */
 function productImage(p) {
   var value = ee.Image(p.asset).select(p.band).multiply(p.toMgFactor)
     .rename('valor');
@@ -88,7 +106,7 @@ function productImage(p) {
   var mask = value.mask().and(lulc.mask());
   var area = ee.Image.pixelArea().divide(10000).rename('area_ha').updateMask(mask);
   value = value.unmask(0).updateMask(mask);
-  return ee.Image.cat([lulc.select('n0'), area, value]);
+  return ee.Image.cat([area, value, lulc]);
 }
 
 function reduceFor(p, geom) {
@@ -123,6 +141,7 @@ var MARKER_ORDER = [LEG.MARK_FOREST, LEG.MARK_GRASS, LEG.MARK_OTHER];
 
 function buildRows(p, territorio, groups) {
   var rows = [];
+  groups = normalize(groupsOrEmpty(groups, p.id + ' · ' + territorio));
 
   groups.forEach(function (g) {
     var info = LEG.info(g['classe']);
@@ -258,7 +277,8 @@ exports.compareAll = function (versionId) {
 
   products.forEach(function (p) {
     reduceFor(p, b).evaluate(function (groups) {
-      groups = groupsOrEmpty(groups, p.id);
+      groups = normalize(groupsOrEmpty(groups, p.id));
+
       var tot = { area: 0, valor: 0 };
       groups.forEach(function (g) {
         var info = LEG.info(g['classe']);

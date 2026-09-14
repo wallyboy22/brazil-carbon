@@ -2,7 +2,7 @@
  * MAPBIOMAS-CARBONO — Pantanal Forest · stats_engine (módulo require)
  * ---------------------------------------------------------------------------
  * Motor das estatísticas de AGC (agbd, Mg/ha) por classe LULC C11 para as
- * versões V03–V07 (2023). Requerido pelos steps `7_statistics.js` de cada
+ * versões V03–V08 (2023). Requerido pelos steps `7_statistics.js` de cada
  * versão e por scripts ad-hoc no Code Editor.
  *
  * Expõe:
@@ -10,12 +10,16 @@
  *                               (níveis n0/n1/marcador/total)
  *   compareAll()              → `compare_forest_versoes_2023.csv` + resumo
  *
- * Método (molde mapbiomas_solo/collection3/statistics):
+ * Método (molde mapbiomas_solo/collection3/statistics e 2_5_eca_observada):
  *   área_ha  = pixelArea()/10000
  *   estoque  = banda (Mg/ha) × área_ha
- *   reducer  = ee.Reducer.sum().repeat(3).group({groupField:0}) sobre
- *              [classe, área_ha, estoque, w2], w2 = (std_ensemble × área_ha)²
- *   incerteza ± = √(Σ w2) — v07 (banda agbd_std_2023); demais versões: 0.
+ *   reducer  = ee.Reducer.sum().repeat(3).group({groupField:3}) sobre o stack
+ *              [área_ha, estoque, w2, classe] — a banda de classificação fica
+ *              na ÚLTIMA posição (padrão comprovado: group pela última banda);
+ *              w2 = (std_ensemble × área_ha)²
+ *   incerteza ± = √(Σ w2) — v07/v08 (banda agbd_std_2023); demais versões: 0.
+ * `normalize()` converte cada grupo para {classe, sum, sum_1, sum_2} aceitando
+ * o `sum` do `.repeat(3)` como LISTA [area, estoque, w2] OU chaves separadas.
  * A partir dos grupos por classe decimal (n0) agregam-se n1, marcador e TOTAL.
  * Território: bioma + UF opcional (0_contract_stats).
  ******************************************************************************/
@@ -28,7 +32,7 @@ var YEAR = C.YEAR;
 var SCALE = C.SCALE;
 var BASE = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST';
 var REDUCER = ee.Reducer.sum().repeat(3)
-  .group({ groupField: 0, groupName: 'classe' });
+  .group({ groupField: 3, groupName: 'classe' });
 
 /**
  * Verifica se um asset IMAGE existe (por pasta de asset).
@@ -72,6 +76,21 @@ function groupsOrEmpty(groups, ctx) {
   return groups;
 }
 
+/**
+ * Normaliza cada grupo para {classe, sum, sum_1, sum_2}.
+ * O `sum` do `.repeat(3)` sai como LISTA [area, estoque, w2] (molde solo) ou,
+ * em versões do EE, como chaves separadas — esta função cobre os dois casos.
+ */
+function normalize(groups) {
+  return (groups || []).map(function (g) {
+    var s = g['sum'];
+    if (s && typeof s.length === 'number') {
+      return { classe: g['classe'], sum: s[0], sum_1: s[1], sum_2: s[2] };
+    }
+    return { classe: g['classe'], sum: g['sum'], sum_1: g['sum_1'], sum_2: g['sum_2'] };
+  });
+}
+
 function biome() {
   return ee.FeatureCollection(C.BIOME_FC)
     .filter(ee.Filter.eq(C.BIOME_PROP, C.BIOME_NAME))
@@ -102,7 +121,7 @@ function collectRegions(cb) {
   });
 }
 
-/** Stack [classe dec, área_ha, estoque, w2] mascarado por classe ∩ valor. */
+/** Stack [área_ha, estoque, w2, classe] mascarado por classe ∩ valor. */
 function statsImage(v) {
   var img = safeMosaic(v);
   var value = img.select(v.band).rename('valor');
@@ -113,7 +132,7 @@ function statsImage(v) {
   var w2 = v.stdBand
     ? img.select(v.stdBand).rename('w2').multiply(area).pow(2).updateMask(mask)
     : ee.Image(0).rename('w2').updateMask(mask);
-  return ee.Image.cat([lulc.select('n0'), area, stock, w2]);
+  return ee.Image.cat([area, stock, w2, lulc]);
 }
 
 function reduceFor(v, geom) {
@@ -147,8 +166,8 @@ function sumBy(groups, getKey) {
 /** Expande os grupos decimais em linhas n0/n1(=N1)/marcador/TOTAL. */
 function buildRows(v, territorio, groups) {
   var rows = [];
-  groups = groupsOrEmpty(groups, v.id + ' · ' + territorio +
-    ' (buildRows — reduzindo a linhas de n0/n1/marcador/total)');
+  groups = normalize(groupsOrEmpty(groups, v.id + ' · ' + territorio +
+    ' (buildRows — reduzindo a linhas de n0/n1/marcador/total)'));
   if (!groups.length) { print('[AVISO]', v.id, territorio, '· 0 linhas geradas'); return rows; }
 
   groups.forEach(function (g) {
@@ -232,7 +251,7 @@ function exportCsv(rows, fileName, description) {
 }
 
 /**
- * Gera as estatísticas de UMA versão (V03–V07), por região (bioma/UF).
+ * Gera as estatísticas de UMA versão (V03–V08), por região (bioma/UF).
  * Uso: engine.runForVersion('v07');
  */
 exports.runForVersion = function (versionId) {
@@ -262,7 +281,7 @@ exports.runForVersion = function (versionId) {
   });
 };
 
-/** Stack [marcador, área_ha, estoque, w2] para comparativo entre versões. */
+/** Stack [área_ha, estoque, w2, marcador] para comparativo entre versões. */
 function markerStack(v) {
   var img = safeMosaic(v);
   var value = img.select(v.band).rename('valor');
@@ -278,10 +297,10 @@ function markerStack(v) {
   var w2 = v.stdBand
     ? img.select(v.stdBand).rename('w2').multiply(area).pow(2).updateMask(mask)
     : ee.Image(0).rename('w2').updateMask(mask);
-  return ee.Image.cat([lulc, area, stock, w2]);
+  return ee.Image.cat([area, stock, w2, lulc]);
 }
 
-/** Comparativo V03–V07 (florestal × campestre × total) — CSV + gráfico. */
+/** Comparativo V03–V08 (florestal × campestre × total) — CSV + gráfico. */
 exports.compareAll = function () {
   print('MAPBIOMAS-CARBONO · Pantanal Forest · 3_compare_versoes');
   var b = biome();
@@ -292,7 +311,7 @@ exports.compareAll = function () {
     markerStack(v).reduceRegion({
       reducer: REDUCER, geometry: b, scale: SCALE, maxPixels: 1e13, tileScale: 2
     }).get('groups').evaluate(function (groups) {
-      groups = groupsOrEmpty(groups, v.id + ' · PO2 (compareAll)');
+      groups = normalize(groupsOrEmpty(groups, v.id + ' · ' + ' (compareAll)'));
       var tot = { area: 0, stock: 0, sq: 0 };
       groups.forEach(function (g) {
         var key = String(g['classe']);

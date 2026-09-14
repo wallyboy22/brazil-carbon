@@ -1,7 +1,7 @@
 # Pantanal Forest — Estatísticas (módulo `require`)
 
 Estatísticas de **AGC (agbd, Mg/ha)** por classe de uso e cobertura (MapBiomas
-**Coleção 11**) para as versões V03–V07 da cadeia florestal, ano **2023**
+**Coleção 11**) para as versões V03–V08 da cadeia florestal, ano **2023**
 (único ano previsto por todas as versões).
 
 Esta pasta é uma **biblioteca `require`** — não roda sozinha. Cada versão
@@ -44,14 +44,20 @@ florestal/campestre).
   `version,ano,territorio,nivel,grupo,classe,n0,n1,n2,marcador,area_ha,estoque_Mg,incerteza_Mg`
 
   com `nivel` ∈ `n0 | n1 | marcador | total` e QA de somas impresso.
-- `compare_forest_versoes_2023.csv` — total por versão e marcador (v07).
+- `compare_forest_versoes_2023.csv` — total por versão e marcador (v07/v08).
 
 ## Fórmulas
 
 - área_ha = `pixelArea()/10000`
 - estoque_Mg = `prediction_2023 (Mg/ha) × área_ha`
-- incerteza_Mg (v07, ensemble) = `√( Σ (agbd_std_2023 × área_ha)² )`;
+- incerteza_Mg (v07/v08, ensemble) = `√( Σ (agbd_std_2023 × área_ha)² )`;
   versões sem banda `agbd_std` saem com incerteza `0`.
+
+> Agregação por classe: stack `[área_ha, estoque, w2, classe]` com
+> `ee.Reducer.sum().repeat(3).group({groupField:3})` — a banda de
+> classificação na última posição (padrão comprovado no molde solo e no
+> `2_5_eca_observada`); o `sum` do `.repeat(3)` chega como lista e é
+> normalizado pelo motor.
 
 ## Como rodar
 

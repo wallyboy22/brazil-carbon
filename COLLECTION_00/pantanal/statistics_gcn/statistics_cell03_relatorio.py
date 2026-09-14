@@ -21,10 +21,8 @@ print("=" * 68)
 forest = pd.read_csv(u.out_dir() / "consolidado_forest_2023.csv", encoding="utf-8")
 grassland_path = u.out_dir() / "consolidado_grassland_2023.csv"
 grassland = pd.read_csv(grassland_path, encoding="utf-8") if grassland_path.exists() else None
-cmpf_path = u.csv_dir() / "compare_forest_versoes_2023.csv"
-cmpf = pd.read_csv(cmpf_path, encoding="utf-8") if cmpf_path.exists() else None
-cmpg_path = u.csv_dir() / "compare_grassland_produtos_2023.csv"
-cmpg = pd.read_csv(cmpg_path, encoding="utf-8") if cmpg_path.exists() else None
+cmpf = u.load_compare_forest()
+cmpg = u.load_compare_grassland()
 
 md = [f"# Resumo das estatísticas · Pantanal · ano {u.CONF['YEAR']}",
       f"\nGerado por `pantanal/statistics_gcn` em Colab.",

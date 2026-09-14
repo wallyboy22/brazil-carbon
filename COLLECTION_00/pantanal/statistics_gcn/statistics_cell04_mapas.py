@@ -34,9 +34,10 @@ from PIL import Image  # noqa: E402
 BIOME = ee.FeatureCollection(
     "projects/ee-ipam/assets/ORIGINAIS/IBGE/limite_biomas_IBGE_2026")\
     .filter(ee.Filter.eq("Bioma", "Pantanal")).first().geometry()
-MOSAIC = ee.Image("projects/ee-ipam/assets/PANTANAL_FOREST/V07/PREDICTIONS/"
+MOSAIC = ee.Image("projects/mapbiomas-brazil/assets/CARBON/MAPPING/"
+                  "COLLECTION_00/PANTANAL_FOREST/V07/PREDICTIONS/"
                   "agc_pred_v07_merged_2023").select("prediction_2023")
-LULC = ee.Image("projects/mapbiomas-brazil/classification/collection11/"
+LULC = ee.Image("projects/mapbiomas-public/assets/brazil/lulc/collection11/"
                 "mapbiomas_brazil_collection11_coverage_v3").select(
     "classification_2023")
 

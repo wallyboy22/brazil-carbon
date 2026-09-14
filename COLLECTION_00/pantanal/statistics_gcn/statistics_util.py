@@ -180,7 +180,7 @@ def load_compare_grassland() -> pd.DataFrame:
 EXPECTED = {
     "forest": [f"stats_forest_{v}_*" for v in CONF["FOREST_VERSIONS"]] +
               ["compare_forest_versoes_2023"],
-    "grassland": [f"stats_grassland_{p}_*" for p in CONF["GRASSLAND_PRODUCTS"]] +
+    "grassland": [f"stats_grassland_*_{p}_*" for p in CONF["GRASSLAND_PRODUCTS"]] +
                  ["compare_grassland_produtos_2023"],
 }
 
