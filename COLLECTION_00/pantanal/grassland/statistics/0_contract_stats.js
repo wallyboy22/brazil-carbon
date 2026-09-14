@@ -27,8 +27,9 @@ function prod(version, id, name, asset, band, unit, toMgFactor) {
 
 var BASE = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_GRASSLAND';
 
-function v1(id, name, asset, band, unit) {
-  return prod('v01', id, name, BASE + '/V01/' + asset, band, unit, 1 / 1000);
+function v1(id, name, asset, band, unit, toMgFactor) {
+  return prod('v01', id, name, BASE + '/V01/' + asset, band, unit,
+    toMgFactor === undefined ? 1 / 1000 : toMgFactor);
 }
 function v2(id, name, asset, band, unit, toMgFactor) {
   return prod('v02', id, name, BASE + '/V02/' + asset, band, unit,

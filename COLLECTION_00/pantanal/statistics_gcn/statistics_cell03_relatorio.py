@@ -19,8 +19,11 @@ print("statistics_gcn · cell03 · relatório")
 print("=" * 68)
 
 forest = pd.read_csv(u.out_dir() / "consolidado_forest_2023.csv", encoding="utf-8")
+ref = u.CONF["GRASSLAND_REF_VERSION"]
 grassland_path = u.out_dir() / "consolidado_grassland_2023.csv"
 grassland = pd.read_csv(grassland_path, encoding="utf-8") if grassland_path.exists() else None
+if grassland is not None and "versao" in grassland.columns:
+    grassland = grassland[grassland["versao"].astype(str) == str(ref)]
 cmpf = u.load_compare_forest()
 cmpg = u.load_compare_grassland()
 
@@ -58,7 +61,7 @@ with pd.ExcelWriter(xlsx_path, engine="openpyxl") as xw:
                           f" (área {r['area_ha']:,.0f} ha)")
     # ---------------- GRASSLAND ----------------
     if grassland is not None and len(grassland):
-        md.append("\n## Campestre (v01 — biomassa/ANPP/carbono, 2023)\n")
+        md.append(f"\n## Campestre ({ref} — biomassa/ANPP/carbono, 2023)\n")
         prod_label = {"biomass": "biomassa (Mg MS)", "anpp": "ANPP (Mg MS/ano)",
                       "carbon": "carbono (Mg C)"}
         for p in grassland["produto"].unique():

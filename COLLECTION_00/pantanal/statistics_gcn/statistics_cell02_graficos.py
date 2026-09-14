@@ -24,6 +24,10 @@ forest = pd.read_csv(u.out_dir() / "consolidado_forest_2023.csv", encoding="utf-
 grassland = pd.read_csv(u.out_dir() / "consolidado_grassland_2023.csv",
                         encoding="utf-8") if (u.out_dir() /
                         "consolidado_grassland_2023.csv").exists() else None
+ref = u.CONF["GRASSLAND_REF_VERSION"]
+if grassland is not None and "versao" in grassland.columns:
+    grassland = grassland[grassland["versao"].astype(str) == str(ref)]
+    print(f"[INFO] grassland consolidado filtrado p/ referência {ref}")
 
 VEC = u.CONF["FOREST_VERSIONS"]
 X = np.arange(len(VEC))
@@ -89,7 +93,7 @@ if grassland is not None and len(grassland):
                ylabel="Mg")
         if len(d) == 0:
             ax.text(0.5, 0.5, "sem dados", ha="center", va="center", alpha=0.5)
-    fig.suptitle("f4 · produtos campestres v01 por marcador (2023)",
+    fig.suptitle(f"f4 · produtos campestres {ref} por marcador (2023)",
                  fontweight="bold")
     for ax in axes[len(grassland["produto"].unique()):]:
         ax.axis("off")
@@ -100,7 +104,7 @@ if grassland is not None and len(grassland):
     fig, ax = plt.subplots(figsize=(8, 4.5))
     ax.bar(totp["produto"], totp["valor_Mg"], color=u.CONF["C_GRASS"])
     ax.set(xlabel="produto", ylabel="Mg",
-           title="f5 · grassland v01 — total por produto (2023)")
+           title=f"f5 · grassland {ref} — total por produto (2023)")
     u.save_fig(fig, "f5_grassland_compare_menu.png")
 
 print()

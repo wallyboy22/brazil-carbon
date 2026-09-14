@@ -10,7 +10,7 @@ dispara suas estatísticas pelo próprio fluxo:
 ```
 v0X/7_statistics.js  →  require('...:COLLECTION_00/pantanal/forest/statistics/stats_engine.js')
                          engine.runForVersion('v0X')      → CSV da versão
-                         (v07) engine.compareAll()         → comparativo V03–V07
+                         (v08) engine.compareAll()         → comparativo V03–V08
 ```
 
 Molde herdado de `mapbiomas_solo/collection3/statistics`: área em ha via
@@ -32,7 +32,7 @@ florestal/campestre).
 ## Entradas (assets GEE)
 
 - Mosaicos finais por versão: `<V0X>/PREDICTIONS/agc_pred_v0X_merged_2023`
-  (banda `prediction_2023`; v07 também `agbd_std_2023`).
+  (banda `prediction_2023`; v07/v08 também `agbd_std_2023`).
 - LULC: `.../collection11/mapbiomas_brazil_collection11_coverage_v3`, banda
   `classification_2023`.
 - Bioma: `ee-ipam/assets/ORIGINAIS/IBGE/limite_biomas_IBGE_2026`.

@@ -45,6 +45,7 @@ CONF = {
     # --- escopo esperado dos arquivos ---
     "FOREST_VERSIONS": ["v03", "v04", "v05", "v06", "v07", "v08"],
     "GRASSLAND_PRODUCTS": ["biomass", "anpp", "carbon"],
+    "GRASSLAND_REF_VERSION": "v02",  # referência do comparativo de produtos (bioma completo)
     "MISSING_TOL": 1.0,  # Mg (QA de somas)
     # --- figuras ---
     "FIGURE_DPI": 120,
@@ -174,14 +175,18 @@ def load_compare_forest() -> pd.DataFrame:
 
 
 def load_compare_grassland() -> pd.DataFrame:
-    return _read("compare_grassland_produtos_2023*.csv")
+    """Comparativo de produtos do GEE; mantém só a versão de referência."""
+    df = _read("compare_grassland_produtos_*_2023*.csv")
+    if "versao" in df.columns:
+        df = df[df["versao"].astype(str) == str(CONF["GRASSLAND_REF_VERSION"])]
+    return df
 
 
 EXPECTED = {
     "forest": [f"stats_forest_{v}_*" for v in CONF["FOREST_VERSIONS"]] +
               ["compare_forest_versoes_2023"],
     "grassland": [f"stats_grassland_*_{p}_*" for p in CONF["GRASSLAND_PRODUCTS"]] +
-                 ["compare_grassland_produtos_2023"],
+                 ["compare_grassland_produtos_*_2023"],
 }
 
 
