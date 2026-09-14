@@ -16,7 +16,8 @@
  *   - demais decisões herdadas INTEGRALMENTE da v07 (champion + ensemble):
  *     minLeafPopulation 10, variablesPerSplit 6, linear, N=5 membros,
  *     máscara LULC (3,4,6,7,49) só no treino, predição não mascarada;
- *   - stats/QA herdados (compareAll agora cobre V03–V08).
+ *   - stats/QA herdados (comparativo entre versões montado offline no
+ *     statistics_gcn, a partir dos stats_forest_* do GEE).
  *
  * Delta vs v07:
  *   + PALSAR global por mediana (0_covariate_source.js, buildPalsarGlobal);

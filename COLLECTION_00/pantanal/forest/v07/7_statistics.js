@@ -4,8 +4,8 @@
  * Dispara as estatísticas de AGC 2023 × LULC C11 para a v07 (com incerteza
  * de ensemble, via agbd_std_2023 — v07 e v08), usando o módulo compartilhado
  * statistics/stats_engine.js.
- * O comparativo entre versões (V03–V08) é fechado pelo step da v08
- * (compareAll único — evita exportação duplicada).
+ * O comparativo entre versões (V03–V08) é montado OFFLINE no Colab
+ * (statistics_gcn).
  * CSVs para MAPBIOMAS_CARBONO_ESTATISTICAS/.
  ******************************************************************************/
 var engine = require(

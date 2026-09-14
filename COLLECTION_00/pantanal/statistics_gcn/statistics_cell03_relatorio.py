@@ -24,8 +24,8 @@ grassland_path = u.out_dir() / "consolidado_grassland_2023.csv"
 grassland = pd.read_csv(grassland_path, encoding="utf-8") if grassland_path.exists() else None
 if grassland is not None and "versao" in grassland.columns:
     grassland = grassland[grassland["versao"].astype(str) == str(ref)]
-cmpf = u.load_compare_forest()
-cmpg = u.load_compare_grassland()
+cmpf = u.build_compare_forest(forest)
+cmpg = u.build_compare_grassland(grassland)
 
 md = [f"# Resumo das estatísticas · Pantanal · ano {u.CONF['YEAR']}",
       f"\nGerado por `pantanal/statistics_gcn` em Colab.",

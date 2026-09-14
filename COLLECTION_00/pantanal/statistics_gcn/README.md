@@ -15,8 +15,13 @@ analisa. Se faltar arquivo, o `cell01` indica qual step rodar:
 
 | Cadeia | Step no GEE |
 |---|---|
-| Pantanal Forest V03–V08 | `forest/v0X/7_statistics.js` (v07 e v08 também rodam o comparativo) |
+| Pantanal Forest V03–V08 | `forest/v0X/7_statistics.js` (1 CSV por versão) |
 | Pantanal Grassland v01 | `grassland/v01/7_statistics.js` |
+| Pantanal Grassland v02 | `grassland/v02/7_statistics.js` |
+
+> Os comparativos entre versões (forest) e entre produtos (grassland, ref. v02)
+> são montados **offline** por este notebook (`build_compare_forest` /
+> `build_compare_grassland`), a partir dos CSVs consolidados.
 
 Depois, faça download/export dos CSVs para a pasta
 `DRIVE_ROOT/estatisticas/`.
@@ -55,6 +60,7 @@ pantanal/statistics_gcn/
 | `OUT_DIR` | `relatorio` | XLSX + .md de resumo |
 | `FOREST_VERSIONS` | `[v03..v08]` | escopo esperado dos arquivos florestais |
 | `GRASSLAND_PRODUCTS` | `[biomass, anpp, carbon]` | escopo campestre |
+| `GRASSLAND_REF_VERSION` | `v02` | versão de referência do comparativo de produtos |
 | `MISSING_TOL` | `1.0` Mg | tolerância do QA de somas |
 | `FAZER_MAPAS` | `False` | cell04 só roda se `True` |
 

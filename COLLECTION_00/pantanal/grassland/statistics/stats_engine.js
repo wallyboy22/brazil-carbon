@@ -6,9 +6,13 @@
  * `7_statistics.js` de cada versão (e por scripts ad-hoc no Code Editor).
  *
  * Expõe:
- *   runForVersion(versionId) → CSVs `stats_grassland_<versao>_<produto>_<territorio>_2023.csv`
- *                              (níveis n0/n1/marcador/total por produto)
- *   compareAll()             → comparativo na versão mais recente (v02)
+ *   runForVersion(versionId) → CSV único
+ *                              `stats_grassland_<versao>_<produto>_<territorio>_2023.csv`
+ *                              (níveis n0/n1/marcador/total por produto), sem
+ *                              `.geometry`/`system:index` (selectors no export).
+ *
+ *   O comparativo de produtos (v02) é montado OFFLINE no Colab
+ *   (statistics_gcn/build_compare_grassland), a partir dos CSVs desta etapa.
  *
  * Método (molde mapbiomas_solo/collection3/statistics e 2_5_eca_observada):
  *   área_ha  = pixelArea()/10000
@@ -196,20 +200,23 @@ function qaSomas(product, territorio, rows) {
   }
 }
 
-function exportCsv(rows, fileName, description) {
+/** Colunas dos CSVs das estatísticas (export único, sem .geo/system:index). */
+var PRODUCT_COLUMNS = ['produto', 'versao', 'ano', 'territorio', 'nivel',
+  'grupo', 'unidade', 'classe', 'n0', 'n1', 'n2', 'marcador', 'area_ha',
+  'valor_Mg'];
+
+/** Exporta UMA tabela por produto/versão (selectors excluem .geo/system:index). */
+function exportCsv(rows, fileName, description, selectors) {
   if (!rows.length) return;
-  var n = Math.ceil(rows.length / 10) - 1;
-  for (var p = 0; p <= n; p++) {
-    var slice = rows.slice(p * 10, (p + 1) * 10);
-    Export.table.toDrive({
-      collection: ee.FeatureCollection(slice.map(function (r2) {
-        return ee.Feature(null, r2); })),
-      description: description + '_p' + p,
-      folder: C.DRIVE_FOLDER,
-      fileNamePrefix: fileName + (n ? '_part' + p : ''),
-      fileFormat: 'CSV'
-    });
-  }
+  Export.table.toDrive({
+    collection: ee.FeatureCollection(rows.map(function (r2) {
+      return ee.Feature(null, r2); })),
+    description: description,
+    folder: C.DRIVE_FOLDER,
+    fileNamePrefix: fileName,
+    fileFormat: 'CSV',
+    selectors: selectors
+  });
 }
 
 /**
@@ -249,7 +256,8 @@ exports.runForVersion = function (versionId) {
           C.PREFIX + '_' + versionId + '_' + job.p.id + '_' + job.region.slug +
             '_' + YEAR,
           'WS_CARBONO_stats_grassland_' + versionId + '_' + job.p.id + '_' +
-            job.region.slug + '_' + YEAR);
+            job.region.slug + '_' + YEAR,
+          PRODUCT_COLUMNS);
         print('[OK]', ctx, job.p.version, '·', rows.length, 'linhas');
         done++;
         if (done === jobs.length) print('[FIM] versão', versionId, 'completa.');
@@ -262,47 +270,8 @@ exports.runForVersion = function (versionId) {
   });
 };
 
-/** Comparativo dos produtos de UMA versão (padrão: mais recente). */
-exports.compareAll = function (versionId) {
-  versionId = versionId || VERSIONS[VERSIONS.length - 1];
-  if (VERSIONS.indexOf(versionId) < 0) {
-    print('[ERRO] versões disponíveis:', VERSIONS, '· recebido:', versionId);
-    return;
-  }
-  var products = C.PRODUCTS.filter(function (prod) { return prod.version === versionId; });
-  print('MAPBIOMAS-CARBONO · Pantanal Grassland · 3_compare_produtos ·', versionId);
-  var b = biome();
-  var rows = [];
-  var pending = products.length;
-
-  products.forEach(function (p) {
-    reduceFor(p, b).evaluate(function (groups) {
-      groups = normalize(groupsOrEmpty(groups, p.id));
-
-      var tot = { area: 0, valor: 0 };
-      groups.forEach(function (g) {
-        var info = LEG.info(g['classe']);
-        rows.push({ produto: p.id, versao: p.version, ano: YEAR,
-          classe: g['classe'], n0: info.n0, n1: info.n1, marcador: info.n2,
-          area_ha: r(g['sum']), valor_Mg: r(g['sum_1']), unidade: p.unit });
-        tot.area += g['sum']; tot.valor += g['sum_1'];
-      });
-      rows.push({ produto: p.id, versao: p.version, ano: YEAR, classe: '',
-        n0: 'TOTAL', n1: '—', marcador: 'total',
-        area_ha: r(tot.area), valor_Mg: r(tot.valor), unidade: p.unit });
-      pending--;
-      if (pending === 0) {
-        rows.forEach(function (r2) {
-          print(r2.produto, '|', r2.classe, r2.n0, '| área', r2.area_ha,
-            'ha |', r2.valor_Mg, r2.unidade);
-        });
-        exportCsv(rows,
-          'compare_grassland_produtos_' + versionId + '_' + YEAR,
-          'WS_CARBONO_compare_grassland_produtos_' + versionId + '_' + YEAR);
-      }
-    }, function (err) {
-      print('[ERRO]', p.id, String(err).slice(0, 200));
-      pending--;
-    });
-  });
-};
+/**
+ * O comparativo de produtos é montado OFFLINE no Colab
+ * (statistics_gcn → build_compare_grassland), a partir dos
+ * `stats_grassland_*.csv` (referência: GRASSLAND_REF_VERSION = v02).
+ */

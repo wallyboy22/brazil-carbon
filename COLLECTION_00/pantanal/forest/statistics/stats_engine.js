@@ -6,9 +6,12 @@
  * versão e por scripts ad-hoc no Code Editor.
  *
  * Expõe:
- *   runForVersion(versionId)  → CSV `stats_forest_<v>_<territorio>_2023.csv`
- *                               (níveis n0/n1/marcador/total)
- *   compareAll()              → `compare_forest_versoes_2023.csv` + resumo
+ *   runForVersion(versionId)  → CSV único `stats_forest_<v>_<territorio>_2023.csv`
+ *                               (níveis n0/n1/marcador/total), sem as colunas
+ *                               `.geometry`/`system:index` (selectors no export).
+ *
+ *   O comparativo entre versões (V03–V08) é montado OFFLINE no Colab
+ *   (statistics_gcn/build_compare_forest), a partir dos CSVs desta etapa.
  *
  * Método (molde mapbiomas_solo/collection3/statistics e 2_5_eca_observada):
  *   área_ha  = pixelArea()/10000
@@ -234,20 +237,23 @@ function qaSomas(v, territorio, rows) {
   }
 }
 
-function exportCsv(rows, fileName, description) {
+/** Colunas dos CSVs das estatísticas (export único, sem .geo/system:index). */
+var STATS_COLUMNS = ['version', 'ano', 'territorio', 'nivel', 'grupo',
+  'classe', 'n0', 'n1', 'n2', 'marcador', 'area_ha', 'estoque_Mg',
+  'incerteza_Mg'];
+
+/** Exporta UMA tabela por versão (selectors excluem .geometry/system:index). */
+function exportCsv(rows, fileName, description, selectors) {
   if (!rows.length) return;
-  var n = Math.ceil(rows.length / 10) - 1;
-  for (var p = 0; p <= n; p++) {
-    var slice = rows.slice(p * 10, (p + 1) * 10);
-    Export.table.toDrive({
-      collection: ee.FeatureCollection(slice.map(function (r2) {
-        return ee.Feature(null, r2); })),
-      description: description + '_p' + p,
-      folder: C.DRIVE_FOLDER,
-      fileNamePrefix: fileName + (n ? '_part' + p : ''),
-      fileFormat: 'CSV'
-    });
-  }
+  Export.table.toDrive({
+    collection: ee.FeatureCollection(rows.map(function (r2) {
+      return ee.Feature(null, r2); })),
+    description: description,
+    folder: C.DRIVE_FOLDER,
+    fileNamePrefix: fileName,
+    fileFormat: 'CSV',
+    selectors: selectors
+  });
 }
 
 /**
@@ -270,7 +276,9 @@ exports.runForVersion = function (versionId) {
         qaSomas(job.v, job.region.territorio, rows);
         exportCsv(rows,
           C.PREFIX + '_' + v.id + '_' + job.region.slug + '_' + YEAR,
-          'WS_CARBONO_stats_forest_' + v.id + '_' + job.region.slug + '_' + YEAR);
+          'WS_CARBONO_stats_forest_' + v.id + '_' + job.region.slug + '_' +
+            YEAR,
+          STATS_COLUMNS);
         print('[OK]', v.id, job.region.territorio, '·', rows.length, 'linhas');
         done++;
       }, function (err) {
@@ -281,61 +289,7 @@ exports.runForVersion = function (versionId) {
   });
 };
 
-/** Stack [área_ha, estoque, w2, marcador] para comparativo entre versões. */
-function markerStack(v) {
-  var img = safeMosaic(v);
-  var value = img.select(v.band).rename('valor');
-  var lulc = ee.Image(C.LULC_ASSET).select(C.LULC_BAND)
-    .remap(LEG.FOREST_CLASSES.concat(LEG.GRASSLAND_CLASSES),
-      LEG.FOREST_CLASSES.map(function () { return LEG.MARK_FOREST; })
-        .concat(LEG.GRASSLAND_CLASSES.map(function () { return LEG.MARK_GRASS; })),
-      LEG.MARK_OTHER)
-    .rename('mark');
-  var mask = value.mask().and(lulc.mask());
-  var area = ee.Image.pixelArea().divide(10000).rename('area_ha').updateMask(mask);
-  var stock = value.unmask(0).updateMask(mask);
-  var w2 = v.stdBand
-    ? img.select(v.stdBand).rename('w2').multiply(area).pow(2).updateMask(mask)
-    : ee.Image(0).rename('w2').updateMask(mask);
-  return ee.Image.cat([area, stock, w2, lulc]);
-}
-
-/** Comparativo V03–V08 (florestal × campestre × total) — CSV + gráfico. */
-exports.compareAll = function () {
-  print('MAPBIOMAS-CARBONO · Pantanal Forest · 3_compare_versoes');
-  var b = biome();
-  var rows = [];
-  var pending = C.VERSIONS.length;
-
-  C.VERSIONS.forEach(function (v) {
-    markerStack(v).reduceRegion({
-      reducer: REDUCER, geometry: b, scale: SCALE, maxPixels: 1e13, tileScale: 2
-    }).get('groups').evaluate(function (groups) {
-      groups = normalize(groupsOrEmpty(groups, v.id + ' · ' + ' (compareAll)'));
-      var tot = { area: 0, stock: 0, sq: 0 };
-      groups.forEach(function (g) {
-        var key = String(g['classe']);
-        var label = LEG.N2_LABELS[key] || 'outros';
-        rows.push({ version: v.id, ano: YEAR, marcador: label,
-          area_ha: r(g['sum']), estoque_Mg: r(g['sum_1']),
-          incerteza_Mg: r(Math.sqrt(Math.max(g['sum_2'], 0))) });
-        tot.area += g['sum']; tot.stock += g['sum_1']; tot.sq += g['sum_2'];
-      });
-      rows.push({ version: v.id, ano: YEAR, marcador: 'total',
-        area_ha: r(tot.area), estoque_Mg: r(tot.stock),
-        incerteza_Mg: r(Math.sqrt(Math.max(tot.sq, 0))) });
-      pending--;
-      if (pending === 0) {
-        rows.forEach(function (r2) {
-          print(r2.version, '|', r2.marcador, '| área', r2.area_ha,
-            'ha | estoque', r2.estoque_Mg, 'Mg | ±', r2.incerteza_Mg);
-        });
-        exportCsv(rows, 'compare_forest_versoes_' + YEAR,
-          'WS_CARBONO_compare_forest_versoes_' + YEAR);
-      }
-    }, function (err) {
-      print('[ERRO]', v.id, String(err).slice(0, 200));
-      pending--;
-    });
-  });
-};
+/**
+ * O comparativo entre versões (V03–V08) é montado OFFLINE no Colab
+ * (statistics_gcn → build_compare_forest), a partir dos `stats_forest_*.csv`.
+ */

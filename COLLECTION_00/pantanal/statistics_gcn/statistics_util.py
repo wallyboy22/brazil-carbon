@@ -170,23 +170,9 @@ def load_grassland() -> pd.DataFrame:
     return _read("stats_grassland_*2023*.csv")
 
 
-def load_compare_forest() -> pd.DataFrame:
-    return _read("compare_forest_versoes_2023*.csv")
-
-
-def load_compare_grassland() -> pd.DataFrame:
-    """Comparativo de produtos do GEE; mantém só a versão de referência."""
-    df = _read("compare_grassland_produtos_*_2023*.csv")
-    if "versao" in df.columns:
-        df = df[df["versao"].astype(str) == str(CONF["GRASSLAND_REF_VERSION"])]
-    return df
-
-
 EXPECTED = {
-    "forest": [f"stats_forest_{v}_*" for v in CONF["FOREST_VERSIONS"]] +
-              ["compare_forest_versoes_2023"],
-    "grassland": [f"stats_grassland_*_{p}_*" for p in CONF["GRASSLAND_PRODUCTS"]] +
-                 ["compare_grassland_produtos_*_2023"],
+    "forest": [f"stats_forest_{v}_*" for v in CONF["FOREST_VERSIONS"]],
+    "grassland": [f"stats_grassland_*_{p}_*" for p in CONF["GRASSLAND_PRODUCTS"]],
 }
 
 
@@ -257,3 +243,49 @@ def total_linha(df: pd.DataFrame, value_col: str, keys=("version",)) -> pd.DataF
     t = df[df["nivel"] == "total"].groupby(list(keys) + ["territorio"])[
         value_col].sum()
     return t.reset_index()
+
+
+# ---------------------------------------------------------------------------
+# Comparativos OFFLINE (substituem os antigos compare_*_2023 do GEE)
+# ---------------------------------------------------------------------------
+def build_compare_forest(df: pd.DataFrame) -> pd.DataFrame:
+    """Tabela version × marcador (florestal/campestre/outros + total), a partir
+    do consolidado forest. Espelha o antigo `compare_forest_versoes_2023.csv`."""
+    if df is None or not len(df):
+        return pd.DataFrame()
+    rows = df[df["nivel"].isin(["marcador", "total"])].copy()
+    rows = rows.groupby(["version", "marcador"], as_index=False).agg(
+        area_ha=("area_ha", "sum"),
+        estoque_Mg=("estoque_Mg", "sum"),
+        incerteza_Mg=("incerteza_Mg", "sum"))
+    rows.insert(1, "ano", CONF["YEAR"])
+    return rows[["version", "ano", "marcador", "area_ha", "estoque_Mg",
+                 "incerteza_Mg"]]
+
+
+def build_compare_grassland(df: pd.DataFrame) -> pd.DataFrame:
+    """Tabela produto × classe (+ TOTAL) da versão de referência (v02), a partir
+    do consolidado grassland. Espelha o antigo `compare_grassland_produtos_v02.csv`."""
+    cols = ["produto", "versao", "ano", "classe", "n0", "n1", "marcador",
+            "area_ha", "valor_Mg", "unidade"]
+    if df is None or not len(df):
+        return pd.DataFrame(columns=cols)
+    ref = str(CONF["GRASSLAND_REF_VERSION"])
+    d = df[df["versao"].astype(str) == str(ref)] if "versao" in df.columns else df
+    if not len(d):
+        return pd.DataFrame(columns=cols)
+    out = []
+    for p, grp in d.groupby("produto"):
+        dec = grp[grp["nivel"] == "n0"].copy()
+        if not len(dec):
+            continue
+        dec = dec.assign(produto=p, versao=ref, ano=CONF["YEAR"],
+                         unidade=grp["unidade"].iloc[0])
+        t = grp[grp["nivel"] == "total"]
+        tot = pd.DataFrame([{
+            "produto": p, "versao": ref, "ano": CONF["YEAR"], "classe": "",
+            "n0": "TOTAL", "n1": "—", "marcador": "total",
+            "area_ha": t["area_ha"].sum(), "valor_Mg": t["valor_Mg"].sum(),
+            "unidade": grp["unidade"].iloc[0]}])
+        out.append(pd.concat([dec[cols], tot], ignore_index=True))
+    return pd.concat(out, ignore_index=True) if out else pd.DataFrame(columns=cols)

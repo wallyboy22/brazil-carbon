@@ -7,10 +7,14 @@ Esta pasta é uma **biblioteca `require`** — não roda sozinha. A versão disp
 suas estatísticas pelo próprio fluxo:
 
 ```
-grassland/v01/7_statistics.js  →  engine.runForVersion('v01')  → CSVs por produto
-grassland/v02/7_statistics.js  →  engine.runForVersion('v02')  → CSVs por produto
-                                  engine.compareAll()          → comparativo (v02)
+grassland/v01/7_statistics.js  →  engine.runForVersion('v01')  → CSV único por produto (v01)
+grassland/v02/7_statistics.js  →  engine.runForVersion('v02')  → CSV único por produto (v02)
 ```
+
+> O **comparativo de produtos** (referência: v02) não é mais exportado no GEE:
+> é montado **offline** no Colab (`statistics_gcn` →
+> `build_compare_grassland`) a partir dos `stats_grassland_*_2023.csv`
+> consolidados.
 
 Mesmo molde do módulo florestal (herdado de
 `mapbiomas_solo/collection3/statistics`): área em ha via `pixelArea`,
@@ -21,7 +25,7 @@ valor = banda × área, agregação por `Reducer.group`, CSV no Drive.
 | Arquivo | Papel |
 |---|---|
 | `0_contract_stats.js` | Contrato: produtos v01/v02, unidades, LULC, território, saída |
-| `stats_engine.js` | Motor: `runForVersion(versionId)` + `compareAll()` + QA de somas |
+| `stats_engine.js` | Motor: `runForVersion(versionId)` + QA de somas |
 
 A **legenda C11** é o módulo compartilhado
 `COLLECTION_00/pantanal/module_lulc_legends.js`.
@@ -55,12 +59,14 @@ A **legenda C11** é o módulo compartilhado
 
 ## Saídas (Drive → `MAPBIOMAS_CARBONO_ESTATISTICAS`)
 
-- `stats_grassland_<versão>_<produto>_<território>_2023.csv` — colunas:
+- `stats_grassland_<versão>_<produto>_<território>_2023.csv` — **1 arquivo por
+  produto/versão** (sem particionamento), colunas:
 
   `produto,versao,ano,territorio,nivel,grupo,classe,n0,n1,n2,marcador,area_ha,valor_Mg,unidade`
 
-  com `nivel` ∈ `n0 | n1 | marcador | total`.
-- `compare_grassland_produtos_v02_2023.csv` — total e por classe, na v02.
+  com `nivel` ∈ `n0 | n1 | marcador | total`. O export usa `selectors` →
+  **sem `.geometry`/`system:index`** no CSV.
+- Comparativo de produtos: montado offline no Colab (ver `statistics_gcn`).
 
 ## Fórmulas
 

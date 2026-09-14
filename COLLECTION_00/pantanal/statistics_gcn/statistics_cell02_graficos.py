@@ -64,7 +64,7 @@ if len(forest):
     u.save_fig(fig, "f2_forest_estoque_por_marcador.png")
 
     # --- f3: comparativo entre versões (marcador florestal e total) ------------
-    cmpf = u.load_compare_forest()
+    cmpf = u.build_compare_forest(forest)
     cmpf = cmpf[cmpf["marcador"].isin(["florestal", "total"])]
     pivc = cmpf.pivot(index="version", columns="marcador", values="estoque_Mg")
     fig, ax = plt.subplots(figsize=(8, 4.5))
@@ -99,7 +99,7 @@ if grassland is not None and len(grassland):
         ax.axis("off")
     u.save_fig(fig, "f4_grassland_produtos.png")
 
-    cmpg = u.load_compare_grassland()
+    cmpg = u.build_compare_grassland(grassland)
     totp = cmpg[cmpg["n0"] == "TOTAL"]
     fig, ax = plt.subplots(figsize=(8, 4.5))
     ax.bar(totp["produto"], totp["valor_Mg"], color=u.CONF["C_GRASS"])

@@ -22,15 +22,17 @@ missing = u.check_presence()
 
 forest = u.load_forest()
 grassland = u.load_grassland()
-cmpf = u.load_compare_forest()
-cmpg = u.load_compare_grassland()
 
 print()
 print(f"[FOREST] {len(forest)} linhas · versões:",
       sorted(forest["version"].unique()) if len(forest) else "—")
 print(f"[GRASSLAND] {len(grassland)} linhas · produtos:",
       sorted(grassland["produto"].unique()) if len(grassland) else "—")
-print(f"[COMPARE] forest {len(cmpf)} · grassland {len(cmpg)} linhas")
+
+# --- comparativos OFFLINE (a partir do consolidado) -------------------------
+cmpf = u.build_compare_forest(forest)
+cmpg = u.build_compare_grassland(grassland)
+print(f"[COMPARE] forest {len(cmpf)} · grassland {len(cmpg)} linhas (offline)")
 
 # --- QA forest ---------------------------------------------------------------
 if len(forest):

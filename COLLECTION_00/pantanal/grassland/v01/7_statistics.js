@@ -5,8 +5,7 @@
  * carbono, 2023) × LULC C11, usando o módulo compartilhado
  * statistics/stats_engine.js (níveis n0/n1/marcador/total por produto;
  * CSVs para MAPBIOMAS_CARBONO_ESTATISTICAS/).
- * O comparativo de produtos é fechado pelo step da v02 (compareAll único —
- * evita exportação duplicada).
+ * O comparativo de produtos é montado OFFLINE no Colab (statistics_gcn).
  ******************************************************************************/
 var engine = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/grassland/statistics/stats_engine.js');

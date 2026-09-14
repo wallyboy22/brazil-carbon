@@ -9,9 +9,13 @@ dispara suas estatísticas pelo próprio fluxo:
 
 ```
 v0X/7_statistics.js  →  require('...:COLLECTION_00/pantanal/forest/statistics/stats_engine.js')
-                         engine.runForVersion('v0X')      → CSV da versão
-                         (v08) engine.compareAll()         → comparativo V03–V08
+                         engine.runForVersion('v0X')      → CSV único da versão
+                                                           (1 arquivo por versão)
 ```
+
+> O **comparativo entre versões** (V03–V08) não é mais exportado no GEE: é
+> montado **offline** no Colab (`statistics_gcn` → `build_compare_forest`) a
+> partir dos `stats_forest_*_2023.csv` consolidados.
 
 Molde herdado de `mapbiomas_solo/collection3/statistics`: área em ha via
 `pixelArea`, estoque = banda × área, agregação por `Reducer.group` e
@@ -22,7 +26,7 @@ exportação de CSV para o Drive.
 | Arquivo | Papel |
 |---|---|
 | `0_contract_stats.js` | Contrato: versões, mosaicos, LULC, território, saída |
-| `stats_engine.js` | Motor: `runForVersion(versionId)` + `compareAll()` + QA de somas |
+| `stats_engine.js` | Motor: `runForVersion(versionId)` + QA de somas |
 | `README.md` | Este documento |
 
 A **legenda C11** é o módulo compartilhado
@@ -39,12 +43,14 @@ florestal/campestre).
 
 ## Saídas (Drive → `MAPBIOMAS_CARBONO_ESTATISTICAS`)
 
-- `stats_forest_<versão>_<território>_2023.csv` — colunas:
+- `stats_forest_<versão>_<território>_2023.csv` — **1 arquivo por versão**
+  (sem particionamento), colunas:
 
   `version,ano,territorio,nivel,grupo,classe,n0,n1,n2,marcador,area_ha,estoque_Mg,incerteza_Mg`
 
   com `nivel` ∈ `n0 | n1 | marcador | total` e QA de somas impresso.
-- `compare_forest_versoes_2023.csv` — total por versão e marcador (v07/v08).
+  O export usa `selectors` → **sem `.geometry`/`system:index`** no CSV.
+- Comparativo entre versões: montado offline no Colab (ver `statistics_gcn`).
 
 ## Fórmulas
 
