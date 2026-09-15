@@ -44,7 +44,7 @@ coberturas (carbono azul, campestres, agropecuária).
   `projects/ee-ipam/assets/ORIGINAIS/IBGE/limite_biomas_IBGE_2026` filtrada por
   `ee.Filter.eq('Bioma', BIOME_NAME)` — `Cerrado` (cerrado + points) e `Pantanal`
   (pantanal). Nota: conferir o valor exato do atributo `Bioma` no asset.
-- **Só saídas**: sem EDA/gráficos (ver `mb_carbon_flow_map.md` na raiz).
+- **Só saídas**: sem EDA/gráficos (ver `mb_carbon_flow_map.md` — arquivo **offline**, não versionado).
 
 ## Pipeline modular v01/v02 (Pantanal)
 
@@ -240,7 +240,7 @@ Diagnóstico: `Map.addLayer(lulc C11, MAPBIOMAS_VIS)` + `addMapBiomasLegend()`.
 
 ## Referência
 
-- Mapeamento completo do notebook → JS: `mb_carbon_flow_map.md` (raiz).
-- Docs de datasets (GEDI L4A v2.1, índice de granules): `docs/` (raiz).
+- Mapeamento completo do notebook → JS: `mb_carbon_flow_map.md` (**offline**, não versionado).
+- Docs de datasets (GEDI L4A v2.1, índice de granules): `docs/` (nesta pasta).
 - Pipeline modular: `pantanal/forest/v01/README.md` e `pantanal/forest/v02/README.md`.
 - Análise offline + registro de experimentos: `pantanal/forest/v01/2_2_data_matriz_analisys/` (pasta **local**, fora do GEE).

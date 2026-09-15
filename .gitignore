@@ -12,4 +12,8 @@ COLLECTION_00/pantanal/forest/v01/2_2_data_matriz_analisys/
 
 # Instruções offline (irmão gêmeo GitHub) — NUNCA subir
 GITHUB_TWIN_OFFLINE.md
+
+# Docs de contexto IA / fluxo notebook→JS — mantidos só localmente
+mb_carbon_flow_map.md
+.opencode/
 __pycache__/
