@@ -7,11 +7,65 @@
 > `PANTANAL_FOREST`, …), abrindo espaço para novas coberturas/projetos.
 > Cada pasta evolui no seu ritmo.
 
+## Fluxo de processamento
+
+**1. Entradas**
+
+- **Dados observados:** GEDI, ICESAT, IFN, CARBONDATA*
+- **Covariáveis:** HLS, ALOS, LULC
+
+**2. Matriz e preparação**
+
+- **Matriz de treinamento:**
+  - `toAsset` → `ee.FeatureCollection`
+  - `toDrive` → `.csv`
+
+**3. Modelagem e calibração**
+
+- **Treinamento:** sorteio de covariáveis e amostras para 5 modelos salvos
+  (`Export.classifier.toAsset()` → `ee.Classifier.load(...)`).
+- **Avaliação e calibração:** Drive + Colab Notebook (GBM × RF × SVM).
+
+**4. Saídas**
+
+- **Predição:** a média dos 5 modelos gera o valor final; o desvio padrão, a incerteza do pixel.
+- **Versões:** geram os mapas/dados finais (ex.: V07).
+- **Avaliação e comparação.**
+
+```mermaid
+graph LR
+    %% Nós de Entrada
+    DO["Dados observados<br/>(GEDI, ICESAT, IFN, CARBONDATA*)"]
+    COV["Covariáveis<br/>(HLS, ALOS, LULC)"]
+
+    %% Matriz
+    MT["Matriz de treinamento<br/>toAsset:ee.FeatureCollection<br/>toDrive: .csv"]
+
+    %% Processamento
+    TR["Treinamento<br/>Sorteio de covariáveis e amostras...<br/>Export.classifier..."]
+    AC["Avaliação e calibração<br/>(Drive + Collab Notebook)"]
+
+    %% Saídas
+    PR["Predição<br/>(média = valor final, desvio = incerteza)"]
+    V["VERSÕES<br/>(V07)"]
+    AV["Avaliação e comparação"]
+
+    %% Conexões
+    DO --> MT
+    COV --> MT
+    MT --> TR
+    MT --> AC
+    TR -.-> AC
+    TR --> PR
+    PR --> V
+    V --> AV
+    AC -.-> AV
+```
+
 ## Scripts por região/bioma (v00)
 
-Os scripts v00 foram **subdivididos por bioma** para o Pantanal divergir do
-Cerrado sem quebrá-lo — **cada um evolui no seu ritmo**. O trade-off aceito:
-~490 linhas do núcleo duplicadas de propósito (independência > DRY).
+Os scripts são organizados por bioma — cada um evolui no seu ritmo. Cada
+bioma pode ter o seu próprio fluxo, inspirado nos existentes ou não.
 
 | Script | Região | Asset base (GEE) | Grids |
 |---|---|---|---|
@@ -50,8 +104,7 @@ coberturas (carbono azul, campestres, agropecuária).
 
 O Pantanal ganhou uma **v01 modular** (`pantanal/forest/v01/`) seguindo o
 padrão do MapBiomas Solo (`collection3/carbon`): pipeline em etapas numeradas
-com módulo de covariáveis compartilhado via `require()`. O Cerrado permanece
-só com v00.
+com módulo de covariáveis compartilhado via `require()`.
 
 | Etapa | Papel | Saídas |
 |---|---|---|
@@ -198,13 +251,13 @@ e estoque de carbono como produtos separados. O arquivo legado
 
 ## Expansão para outras coberturas/usos — decisões (sem scripts por ora)
 
-Só existem scripts de **Floresta** (método GEDI) para Cerrado e Pantanal. As
-demais coberturas ainda não têm script — aguardando definição de método e
-regiões pela equipe. Legenda: **Coleção 11**.
+A estrutura recebe novos biomas e coberturas em pasta própria
+(`COLLECTION_00/<bioma>/`), conforme método e regiões forem definidos.
+Legenda: **Coleção 11**.
 
 | Cobertura/uso | Classes C11 (códigos) | Nível 1 (legenda) | Status |
 |---|---|---|---|
-| Floresta (atual) | 3, 4, 6, 7β, 49 | Floresta | ✅ scripts Cerrado/Pantanal |
+| Floresta | 3, 4, 6, 7β, 49 | Floresta | ✅ cerrado + pantanal |
 | **Carbono azul** | 5 Mangue, 84 Marisma β, 32 Apicum, 49/50 Restingas | Floresta + Veg. Herbácea e Arbustiva | 🕒 método TBD |
 | **Campestres** | 12 Form. Campestre, 77 Form. Herbácea Arbustiva, 11 Campo Alagado/Pantanosa | Veg. Herbácea e Arbustiva | 🕒 método TBD |
 | **Agropecuária** | 15 Pastagem, 18 Agricultura (+ subdivisões N3/N4) | Agropecuária | 🕒 método TBD |

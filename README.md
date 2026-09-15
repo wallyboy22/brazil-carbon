@@ -2,6 +2,35 @@
 
 Scripts do **Google Earth Engine** para o mapeamento de **carbono acima do solo (AGC)** do MapBiomas — Coleção 0 (amostras GEDI) e experimentos.
 
+## Contexto — MapBiomas Carbono
+
+O MapBiomas Carbono está dividido em **3 grupos de trabalho**:
+
+| Grupo | Descrição |
+|---|---|
+| **Repositório de dados** | Compilação de dados primários de campo (parcelas), LiDAR e dados secundários para calibração/validação do modelo, abrangendo estratos lenhosos, gramíneos e herbáceos. |
+| **Mapeamento** | Geração de mapas anuais de carbono da biomassa. Objetivo de longo prazo: criar uma série histórica que identifique a dinâmica por meio do sensoriamento remoto. |
+| **Plataforma** | Desenvolvimento de uma ferramenta online aberta para calcular e divulgar dados sobre estoques de carbono. |
+
+Este repositório corresponde ao grupo de **Mapeamento** — Coleção 0 (amostras GEDI) e experimentos.
+
+## Objetivo Geral
+
+- Mapeamento da série temporal de biomassa no Brasil.
+
+## Objetivos Específicos
+
+- **Desenvolvimento do mapeamento de biomassa com maior precisão para o ano mais recente, com base na metodologia estabelecida.** ⭐
+- Conversão do mapa de biomassa atual para o cenário de biomassa potencial de 1985.
+- Extensão da série temporal mediante a aplicação de técnicas de *bookkeeping*.
+
+## Estrutura de Trabalho
+
+- Divisão em grupos temáticos, organizados por **biomas (vegetação nativa)** e classes de uso (pastagem e agricultura).
+- O mapeamento da vegetação nativa será segmentado em duas etapas distintas:
+  - Mapeamento de formações florestais.
+  - Mapeamento de formações campestres.
+
 ## Relação com o repositório GEE (espelho)
 
 > Este repositório é o **irmão gêmeo (espelho / backup)** do repositório oficial hospedado no **Google Earth Engine**:
