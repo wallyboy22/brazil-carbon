@@ -40,10 +40,9 @@ require('users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/grassland/
 | Pasta | Conteúdo |
 |---|---|
 | `BETA/` | Experimentos e versões beta — `model/`, `mosaicos/` (landtrendr) e `statistics/` (ex.: `toTable-QCN_por_TI`) |
-| `COLLECTION_00/` | **Cofre da Coleção 0** — scripts por bioma e pipeline: `cerrado/forest` · `pantanal/{forest,grassland}` · `docs/` (referência de datasets GEDI) |
+| `COLLECTION_00/` | Coleção 0 — scripts por bioma e pipeline: `cerrado/forest` · `pantanal/{forest,grassland}` · `docs/` (referência de datasets GEDI) |
 
-A **porta de entrada** é o [COLLECTION_00/README.md](COLLECTION_00/README.md) (cofre de conhecimento —
-convenções, versões, assets). A referência de datasets externos fica em [COLLECTION_00/docs/](COLLECTION_00/docs/README.md).
+A referência de datasets externos fica em [COLLECTION_00/docs/](COLLECTION_00/docs/README.md).
 
 ## Licença
 

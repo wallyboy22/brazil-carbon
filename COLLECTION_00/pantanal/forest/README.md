@@ -1,9 +1,5 @@
 # MAPBIOMAS-CARBONO — Pantanal Forest
 
-Diário técnico da evolução da pipeline de biomassa acima do solo (AGC) para o
-Pantanal. Este arquivo registra as decisões, problemas, correções e o estado de
-cada versão.
-
 ## Estado Atual
 
 | Versão | Papel | Estado |
@@ -20,25 +16,19 @@ cada versão.
 
 ## Política de contratos
 
-A partir de set/2026, cada `0_contract.js` é **autossuficiente**: contém
-todos os termos sem `require()` de versão anterior. Ajustes:
+Cada `0_contract.js` é **autossuficiente**: contém todos os termos sem
+`require()` de versão anterior.
 
 - O **bloco comum** (schema de bandas + grade de células espaciais) é a cópia
   literal do v03 (referência/template) — verificados automaticamente pelo
   script `_lint_contracts.js` (temp).
 - Cada **seção** do contrato traz um comentário com a **proveniência**: qual
-  versão tomou aquela decisão e por quê, formando uma série temporal de
-  decisões rastreáveis dentro do próprio arquivo.
-- Versões anteriores (v04–v07) foram reescritas em set/2026 para garantir
-  consistência (PANTANAL_BBOX adicionada em todas as versões; removeram-se
-  erros de drift herdado). Valores finais são idênticos aos contratos
-  originais — a mudança é somente estrutural.
+  versão tomou aquela decisão e por quê.
 
-## Política de covariáveis (set/2026)
+## Política de covariáveis
 
-A partir de set/2026, todas as formulações de covariáveis foram extraídas em
-uma biblioteca compartilhada em `covariate/` (por temas). A política é
-análoga à dos contratos:
+Todas as formulações de covariáveis estão em uma biblioteca compartilhada em
+`covariate/` (por temas):
 
 1. **Cada `0_covariate_source.js` é um arquivo único autossuficiente** — lê o
    próprio contrato + biblioteca `covariate/*`; **não requer outras versões**.
@@ -71,8 +61,6 @@ Características principais:
 - filtros de qualidade GEDI;
 - export de footprints e amostras;
 - pouca separação entre diagnóstico, matriz e modelagem.
-
-A v00 permanece congelada para comparação histórica.
 
 ### v01 — Pipeline modular
 
@@ -181,9 +169,8 @@ stack por célula/ano → COVARIATES/
                      matriz/predição
 ```
 
-Essa arquitetura foi considerada inadequada para o fluxo atual porque adiciona
-uma etapa de exportação e armazenamento de rasters intermediários. A v04 fica
-preservada como experimento e registro de decisão, mas não é a estratégia
+Essa arquitetura foi considerada inadequada porque adiciona uma etapa de
+exportação e armazenamento de rasters intermediários. Não é a estratégia
 principal.
 
 
@@ -302,22 +289,3 @@ PANTANAL_FOREST/V05/MATRIX/
 PANTANAL_FOREST/V05/MODELS/
 PANTANAL_FOREST/V05/PREDICTIONS/
 ```
-
-## Histórico de Publicação
-
-- `55ec00c` — primeira v02 com matriz particionada.
-- `43e5973` — v02 com todas as etapas.
-- `20ff3c4` — mensagens de espera nos exports.
-- `b5360b4` — particionamento espacial da matriz v02.
-- `7c381d4` — validação do footprint antes da matriz.
-- `0e2bb76` — correção do `tileScale`.
-- `f2f8698` — descoberta automática de assets da matriz.
-- `d3f9102` — exclusão de `system:index`.
-- `f7c3ec4` — predição por ano e camada opcional.
-- `ab1b851` — predição por tile, parte e ano.
-- `5bfdf2f` — margem geométrica e redução de prints.
-- `f39ece1` — inauguração da v03.
-- `74c9547` — primeira v04 com cache de covariáveis.
-- `0495fe5` — filtro da v04 pelo polígono oficial.
-- `dba341c` — inauguração da v05 em memória por célula.
-- `02846d7` — seleção server-side de células em v03, v04 e v05.

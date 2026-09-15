@@ -1,8 +1,7 @@
 # pantanal/grassland/v01 — Biomassa, ANPP e carbono
 
-Primeira pipeline de campos/grassland do Pantanal. O protótipo original
-`COLLECTION_00/pantanal/grassland` é preservado separadamente; esta pasta usa a
-mesma decisão metodológica do Pampa, adaptada ao Pantanal.
+Primeira pipeline de campos/grassland do Pantanal. Aplica a decisão
+metodológica do Pampa, adaptada ao Pantanal.
 
 ## Método v01
 

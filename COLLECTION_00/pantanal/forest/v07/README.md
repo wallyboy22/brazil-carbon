@@ -57,7 +57,7 @@ Defina `SMOKE_CELLS` (ids reais da grade impressos no passo 4) para preservar,
 nessas células, as bandas membro `m1..mN` do ensemble no export — auditoria da
 variabilidade entre membros (F25).
 
-## Próximos passos (fora do escopo desta rodada)
+## Próximos passos
 
 - **2019–2022**: pipeline que extrai footprints GEDI por ano (novo) antes de
   ampliar `TRAIN_YEARS`.

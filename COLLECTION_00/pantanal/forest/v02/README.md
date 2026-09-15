@@ -1,7 +1,6 @@
 # pantanal/forest/v02 — Matriz particionada e modelagem
 
 > Evolução completa da v01 para evitar o timeout do export único da matriz de treino.
-> A `v01` permanece congelada como referência.
 
 ## Etapas
 

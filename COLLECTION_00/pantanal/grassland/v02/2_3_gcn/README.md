@@ -1,4 +1,4 @@
-# 2_3_gcn · Calibração da biomassa grassland v02 (offline)
+# 2_3_gcn · Calibração da biomassa grassland v02
 
 Gate offline que **treina o modelo de biomassa com as parcelas de campo** do
 Pantanal e devolve o `biomass_model.json` para o contrato da v02.

@@ -4,9 +4,9 @@
 > `agc_pred_v07_merged_2023` (e v04/v05/v06), com `agbd_std` alto — artefato
 > associado ao PALSAR-2 amostrado **célula a célula** (`.first()`). A v08
 > reconstrói o PALSAR como mosaico global determinístico e adiciona a máscara
-> de nodata do SAR ao treino. v07 permanece concluída e inalterada.
+> de nodata do SAR ao treino.
 
-## 1. Diagnóstico (documentado completo em `v07/../0_contract` + README da cadeia)
+## 1. Diagnóstico
 
 - Sintoma: tiles com carbono alto, região ao redor normal; `agbd_std` alto do
   mesmo lado (os 5 membros discordam → combinação de covariáveis fora do
@@ -87,8 +87,8 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 
 ## 6. Biblioteca de covariáveis (`covariate/`)
 
-A refatoração de set/2026 extraiu todas as formulações de covariáveis em uma
-biblioteca compartilhada em `pantanal/forest/covariate/`. Cada `0_covariate_source.js`
+Todas as formulações de covariáveis estão em uma biblioteca compartilhada em
+`pantanal/forest/covariate/`. Cada `0_covariate_source.js`
 é agora um orquestrador autossuficiente que requer o próprio contrato + biblioteca
 (mas **não outras versões**).
 

@@ -59,7 +59,7 @@ v08/2_3_gcn/figures/f2_correlacao_bandas.png
 | `N_MEMBERS` | 5 | membros do ensemble |
 | `BAND_FRACTION` | 0.8 | ~80% das bandas por membro |
 
-## Próximos passos (fora do escopo desta rodada)
+## Próximos passos
 
 - **Quantificação de toneladas por classe de cobertura**: repetir a estratégia
   desta célula — exportar a mesma matriz, somar `agbd` (e incerteza por

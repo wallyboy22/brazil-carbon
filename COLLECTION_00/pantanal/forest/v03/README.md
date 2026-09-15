@@ -1,8 +1,7 @@
 # pantanal/forest/v03 — Pipeline tipada e espacial
 
 A v03 substitui a estratégia experimental da v02 por uma pipeline com contrato
-explícito de bandas, preflight e exports espaciais pequenos. A v02 permanece
-congelada como histórico de desenvolvimento.
+explícito de bandas, preflight e exports espaciais pequenos.
 
 ## Grafo
 

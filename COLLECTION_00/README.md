@@ -1,11 +1,11 @@
-# COLLECTION_00 — Cofre de conhecimento
+# COLLECTION_00
 
 > Organização dos scripts da Coleção 0 (amostras GEDI para AGC) do MAPBIOMAS-CARBONO.
 >
 > **Convenção de pastas:** `<cobertura>_forest/v<NN>/<script>` — o nome da pasta
 > espelha o balde de asset GEE correspondente (`CERRADO_FOREST`,
 > `PANTANAL_FOREST`, …), abrindo espaço para novas coberturas/projetos.
-> Cada pasta evolui no seu ritmo; versões anteriores ficam congeladas como referência.
+> Cada pasta evolui no seu ritmo.
 
 ## Scripts por região/bioma (v00)
 
@@ -44,7 +44,7 @@ coberturas (carbono azul, campestres, agropecuária).
   `projects/ee-ipam/assets/ORIGINAIS/IBGE/limite_biomas_IBGE_2026` filtrada por
   `ee.Filter.eq('Bioma', BIOME_NAME)` — `Cerrado` (cerrado + points) e `Pantanal`
   (pantanal). Nota: conferir o valor exato do atributo `Bioma` no asset.
-- **Só saídas**: sem EDA/gráficos (ver `mb_carbon_flow_map.md` — arquivo **offline**, não versionado).
+- **Só saídas**: sem EDA/gráficos.
 
 ## Pipeline modular v01/v02 (Pantanal)
 
@@ -58,7 +58,7 @@ só com v00.
 | `0_covariate_source.js` | Módulo `require()`: stack HLS/PALSAR/HAND/ERA5-CWD/LULC C11, filtros GEDI, `ensureFolder()` | — |
 | `1_check_covariates.js` | Diagnóstico: bandas, teste `sampleRegions(3)`, camadas viz | — |
 | `2_data_matrix.js` | Matriz de treino (GEDI + covariáveis) | Asset `SAMPLES/` + `MATRIX/` · Drive CSV (universo p/ análise) quando `EXPORT_TO_DRIVE=true` |
-| `2_2_data_matriz_analisys/` *(offline)* | Análise fora do GEE: EDA, redundância (correlação/thinning/IsolationForest), CV espacial K-fold, RF/GBM/SVR → gate | relatório PASSA/FICA/SAI · registro `EXPERIMENTS.md` |
+| `2_2_data_matriz_analisys/` | Análise fora do GEE: EDA, redundância (correlação/thinning/IsolationForest), CV espacial K-fold, RF/GBM/SVR → gate | relatório PASSA/FICA/SAI · registro `EXPERIMENTS.md` |
 | `3_modelling.js` | Modelo (`MODEL_TYPE` rf/gbm/svm) + predição anual multibanda | Asset `PREDICTIONS/` (+ modelo opcional) · Drive GeoTIFF quando `EXPORT_TO_DRIVE=true` |
 | `4_merge.js` | Stub documentado — integração futura a definir | — |
 
@@ -66,11 +66,6 @@ só com v00.
 > A **análise offline** (`2_2_data_matriz_analisys/`, roda local ou Colab)
 > decide as subversões/versão com métricas baratas; **só o champion dispara o
 > `3_modelling`** (predição massiva, cara).
->
-> 🔒 **Política de versionamento:** no repo GEE online entram **apenas `.js`
-> (incluindo módulos `require()`) e `README.md`**. A pasta
-> `2_2_data_matriz_analisys/` é **ignorada** no online e mantém **próprio `.git`
-> local** — o histórico dela fica versionado localmente, nunca enviado ao GEE.
 
 ### Baldes de assets GEE
 
@@ -83,10 +78,7 @@ Base: `projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FO
 | `PREDICTIONS/` | 🆕 v01/v02 | imagens anuais AGC preditas |
 | `MODELS/` | 🆕 v01/v02 (toggle **off**) | modelos RF via `Export.classifier.toAsset()` |
 
-> Sobre `MODELS`: o GEE suporta salvar/recarregar classificadores
-> (`Export.classifier.toAsset()` + `ee.Classifier.load()`), mas o time não usa
-> essa prática internamente (o Solo retreina a cada run). Por isso o toggle
-> `SAVE_MODEL_TO_ASSET` nasce desligado — fácil de ligar sem inventar padrão.
+> Toggle `SAVE_MODEL_TO_ASSET` desligado por padrão.
 
 Convenções mantidas na v01: flags pessoais `WS_CARBONO_toDrive-` /
 `WS_CARBONO_toAsset-` nas descriptions, estratégia `evaluate()` (sem `getInfo`),
@@ -207,8 +199,8 @@ e estoque de carbono como produtos separados. O arquivo legado
 ## Expansão para outras coberturas/usos — decisões (sem scripts por ora)
 
 Só existem scripts de **Floresta** (método GEDI) para Cerrado e Pantanal. As
-demais coberturas estão **apenas como decisões neste cofre** — nenhum script
-será criado até a equipe definir método e regiões. Legenda: **Coleção 11**.
+demais coberturas ainda não têm script — aguardando definição de método e
+regiões pela equipe. Legenda: **Coleção 11**.
 
 | Cobertura/uso | Classes C11 (códigos) | Nível 1 (legenda) | Status |
 |---|---|---|---|
@@ -217,7 +209,7 @@ será criado até a equipe definir método e regiões. Legenda: **Coleção 11**
 | **Campestres** | 12 Form. Campestre, 77 Form. Herbácea Arbustiva, 11 Campo Alagado/Pantanosa | Veg. Herbácea e Arbustiva | 🕒 método TBD |
 | **Agropecuária** | 15 Pastagem, 18 Agricultura (+ subdivisões N3/N4) | Agropecuária | 🕒 método TBD |
 
-Pendências a decidir (não bloqueiam nada):
+Pendências a decidir:
 - **Método não-florestal**: GEDI L4A não se aplica a biomassa baixa/não-arbórea.
   Opções: campo + ML com o stack atual, ou fatores de estoque/literatura (SEEG).
 - **Regiões iniciais** por cobertura (ex.: carbono azul → zona costeira).
@@ -240,7 +232,5 @@ Diagnóstico: `Map.addLayer(lulc C11, MAPBIOMAS_VIS)` + `addMapBiomasLegend()`.
 
 ## Referência
 
-- Mapeamento completo do notebook → JS: `mb_carbon_flow_map.md` (**offline**, não versionado).
 - Docs de datasets (GEDI L4A v2.1, índice de granules): `docs/` (nesta pasta).
 - Pipeline modular: `pantanal/forest/v01/README.md` e `pantanal/forest/v02/README.md`.
-- Análise offline + registro de experimentos: `pantanal/forest/v01/2_2_data_matriz_analisys/` (pasta **local**, fora do GEE).

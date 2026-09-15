@@ -16,10 +16,6 @@ grassland/v02/7_statistics.js  →  engine.runForVersion('v02')  → CSV único 
 > `build_compare_grassland`) a partir dos `stats_grassland_*_2023.csv`
 > consolidados.
 
-Mesmo molde do módulo florestal (herdado de
-`mapbiomas_solo/collection3/statistics`): área em ha via `pixelArea`,
-valor = banda × área, agregação por `Reducer.group`, CSV no Drive.
-
 ## Arquivos
 
 | Arquivo | Papel |

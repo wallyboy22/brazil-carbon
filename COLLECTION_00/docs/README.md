@@ -1,8 +1,7 @@
 # docs — Documentação de referência de datasets
 
-> Cofre de documentação de **datasets externos** usados pelo MAPBIOMAS-CARBONO
-> (papers, guias oficiais, índices GEE). Não é lugar para scripts nem decisões
-> de projeto — essas vivem nos READMEs das coleções.
+> Documentação de referência de **datasets externos** usados pelo MAPBIOMAS-CARBONO
+> (papers, guias oficiais, índices GEE).
 
 ## Conteúdo
 
@@ -14,4 +13,3 @@
 ## Convenção
 
 - Um arquivo por dataset, nomeado como o título oficial do produto.
-- Datasets novos entram aqui antes de virar dependência de script.

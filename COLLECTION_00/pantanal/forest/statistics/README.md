@@ -17,17 +17,12 @@ v0X/7_statistics.js  →  require('...:COLLECTION_00/pantanal/forest/statistics/
 > montado **offline** no Colab (`statistics_gcn` → `build_compare_forest`) a
 > partir dos `stats_forest_*_2023.csv` consolidados.
 
-Molde herdado de `mapbiomas_solo/collection3/statistics`: área em ha via
-`pixelArea`, estoque = banda × área, agregação por `Reducer.group` e
-exportação de CSV para o Drive.
-
 ## Arquivos
 
 | Arquivo | Papel |
 |---|---|
 | `0_contract_stats.js` | Contrato: versões, mosaicos, LULC, território, saída |
 | `stats_engine.js` | Motor: `runForVersion(versionId)` + QA de somas |
-| `README.md` | Este documento |
 
 A **legenda C11** é o módulo compartilhado
 `COLLECTION_00/pantanal/module_lulc_legends.js` (n0/n1/n2 + marcador
@@ -61,8 +56,7 @@ florestal/campestre).
 
 > Agregação por classe: stack `[área_ha, estoque, w2, classe]` com
 > `ee.Reducer.sum().repeat(3).group({groupField:3})` — a banda de
-> classificação na última posição (padrão comprovado no molde solo e no
-> `2_5_eca_observada`); o `sum` do `.repeat(3)` chega como lista e é
+> classificação na última posição; o `sum` do `.repeat(3)` chega como lista e é
 > normalizado pelo motor.
 
 ## Como rodar
@@ -75,4 +69,3 @@ florestal/campestre).
 
 > A análise (consolidação, figuras, relatório) fica por conta do notebook
 > `pantanal/statistics_gcn/`, que lê os CSVs desta etapa.
-> Legenda C11: nomes herdados do bloco da `v00` (`mb_carbon_agc.js`).

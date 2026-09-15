@@ -58,7 +58,7 @@ Estoque e fluxo são grandezas separadas e não são somados.
    para todo o bioma.
 3. `2_1_amostras_campo_toAsset` — amostra covariáveis nas parcelas e gera a
    **matriz de calibração** (asset + Drive).
-4. `2_3_gcn/*` (offline) — diagnostica a matriz e ajusta o modelo
+4. `2_3_gcn/*` — diagnostica a matriz e ajusta o modelo
    (`biomass_model.json`); copiar coefficients para o contrato.
 5. `2_5_eca_observada` — ε aparente mensal por classe (MOD17 GPP/ΣPARa);
    decide se a εCA do Pampa é substituída (reflexão B6).
