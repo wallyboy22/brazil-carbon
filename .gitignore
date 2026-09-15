@@ -9,4 +9,7 @@ NOTEBOOK_COLLAB_PY.PY
 
 # Análise offline — pasta IGNORADA no GEE (tem próprio .git local)
 COLLECTION_00/pantanal/forest/v01/2_2_data_matriz_analisys/
+
+# Instruções offline (irmão gêmeo GitHub) — NUNCA subir
+GITHUB_TWIN_OFFLINE.md
 __pycache__/
