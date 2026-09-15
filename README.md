@@ -12,7 +12,6 @@ Scripts do **Google Earth Engine** para o mapeamento de **carbono acima do solo 
 > | **Este repositório** | `https://github.com/wallyboy22/brazil-carbon` | **Espelho/backup** para compartilhamento fácil |
 >
 > O GEE é o repositório canônico — edições e commits acontecem lá; este espelho apenas replica o conteúdo.
-> Conteúdo **offline** (Python, CSVs, notebooks, venvs, docs de contexto) **não** faz parte deste repositório.
 
 ## ⚠️ Atenção à estrutura de `require()` — dependência do repositório GEE original
 
@@ -42,17 +41,9 @@ require('users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/grassland/
 |---|---|
 | `BETA/` | Experimentos e versões beta — `model/`, `mosaicos/` (landtrendr) e `statistics/` (ex.: `toTable-QCN_por_TI`) |
 | `COLLECTION_00/` | **Cofre da Coleção 0** — scripts por bioma e pipeline: `cerrado/forest` · `pantanal/{forest,grassland}` · `docs/` (referência de datasets GEDI) |
-| `mb_carbon_flow_map.md` | Mapeamento notebook Python → scripts JS (**offline**, não versionado) |
 
 A **porta de entrada** é o [COLLECTION_00/README.md](COLLECTION_00/README.md) (cofre de conhecimento —
 convenções, versões, assets). A referência de datasets externos fica em [COLLECTION_00/docs/](COLLECTION_00/docs/README.md).
-
-## Conteúdo offline (não versionado)
-
-Ficam **apenas localmente** (fora deste repositório e do GEE): scripts Python/Colab
-(`mb_carbon_agc.py`, notebooks), saídas (`*.csv`, `*.png`), venvs, a análise offline
-`COLLECTION_00/pantanal/forest/v01/2_2_data_matriz_analisys/` (com `.git` local próprio) e a
-pasta de contexto de desenvolvimento por IA (`.opencode/`).
 
 ## Licença
 
