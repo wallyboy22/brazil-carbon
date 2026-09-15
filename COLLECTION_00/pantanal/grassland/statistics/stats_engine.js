@@ -1,36 +1,35 @@
 /******************************************************************************
  * MAPBIOMAS-CARBONO — Pantanal Grassland · stats_engine (módulo require)
  * ---------------------------------------------------------------------------
- * Motor das estatísticas dos produtos campestres v01 e v02 (biomassa, ANPP,
- * carbono) por classe LULC C11, ano 2023. Requerido pelos steps
- * `7_statistics.js` de cada versão (e por scripts ad-hoc no Code Editor).
+ * Motor das estatísticas dos produtos campestres v01 e v02 (2023) por classe
+ * LULC C11. Requerido pelos steps `7_statistics.js` de cada versão e pelos
+ * drivers `run_all_statistics.js`.
  *
  * Expõe:
- *   runForVersion(versionId) → CSV único
- *                              `stats_grassland_<versao>_<produto>_<territorio>_2023.csv`
- *                              com UMA linha por classe LULC (n0), sem
- *                              `.geometry`/`system:index` (selectors no export).
- *                              NÃO exporta agregações — n1/marcador/total são
- *                              derivados OFFLINE no Colab (statistics_gcn).
+ *   runForVersion(versionId) → 3 CSVs por versão × região (2023):
+ *     A) stats_grassland_<v>_<regiao>_2023.csv          ← TABELA PRINCIPAL
+ *        (ANUAL) colunas:
+ *          produto,versao,ano,territorio,unidade,classe,n0,n1,n2,marcador,
+ *          area_ha, biomassa_t, estoque_t
+ *        — biomassa E estoque na MESMA tabela, ambos em TONELADAS (t):
+ *            biomassa_t = banda anual biomass_annual (kg MS/ha) × área ÷1000;
+ *            estoque_t  = banda carbono (Mg C/ha) × área (1 Mg = 1 t).
+ *        A área não é produto em si: é informativa, e área 0 ⇒ valor 0.
+ *     B) stats_grassland_<v>_biomassa_mensal_<regiao>_2023.csv   ← LARGA
+ *        colunas: produto,versao,ano,territorio,unidade,classe,n0,n1,n2,
+ *          marcador, area_ha, biomassa_m01_t … biomassa_m12_t
+ *        (bandas mensais do asset grassland_biomass_monthly — kg MS/ha → t).
+ *     C) stats_grassland_<v>_anpp_mensal_<regiao>_2023.csv       ← LONGA
+ *        colunas: produto,versao,ano,territorio,unidade,classe,n0,n1,n2,
+ *          marcador, area_ha, mes, anpp_t
+ *        (1 linha por classe×mês — bandas do grassland_anpp_monthly).
  *
- *   O comparativo de produtos (v02) é montado OFFLINE no Colab
- *   (statistics_gcn/build_compare_grassland), a partir dos CSVs desta etapa.
+ * Units padronizadas em TONELADAS (t). Nada de Mg nas saídas.
  *
- * Método (molde mapbiomas_solo/collection3/statistics e 2_5_eca_observada):
- *   área_ha  = pixelArea()/10000, mascarado SÓ pelo LULC — área sempre
- *              informativa (classe existe no bioma mesmo sem produto);
- *   valor    = banda (convertida a t/ha via toMgFactor) × pixelArea()/10000
- *              → TOTAL em t;
- *   reducer  = ee.Reducer.sum().repeat(2).group({groupField:2}) sobre o stack
- *              [área_ha, valor, classe] — a banda DE CLASSIFICAÇÃO fica na
- *              ÚLTIMA posição (padrão comprovado: group pela última banda).
- * `normalize()` converte cada grupo para {classe, sum, sum_1} aceitando o
- * `sum` do `.repeat(2)` como LISTA [area, valor] OU chaves separadas.
- * Produtos não possuem incerteza publicada (diferente do forest, que carrega
- * o ± do ensemble v07).
- *
- * → v02: os produtos cobrem TODO o bioma; a estatística agrega também as
- *   classes florestais e demais usos (n1 Floresta/Campestre/Outros).
+ * Método (molde forest/stats_engine):
+ *   valor_t = banda × toTFactor × pixelArea()/10000, somada por classe;
+ *   reducer = ee.Reducer.sum().repeat(n).group({groupField:n}) — a banda de
+ *   CLASSIFICAÇÃO fica na ÚLTIMA posição do stack (padrão comprovado).
  ******************************************************************************/
 var C = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/grassland/statistics/0_contract_stats.js');
@@ -38,12 +37,13 @@ var LEG = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/module_lulc_legends.js');
 
 var YEAR = C.YEAR;
-var SCALE = C.SCALE;
-var REDUCER = ee.Reducer.sum().repeat(2)
-  .group({ groupField: 2, groupName: 'classe' });
-var VERSIONS = ['v01', 'v02'];
+var SCALE = C.SCALE   // 30 m
+;
+var MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
-/** Guardas (padrão forest): consulta segura de asset e de grupos. */
+/** Banda zero-pad de mês: bandeira mensal adotada = `biomass_01`…`biomass_12`. */
+function pad(n) { return (n < 10 ? '0' : '') + n; }
+
 function assetExists(imageId) {
   var parts = imageId.split('/');
   parts.pop();
@@ -61,18 +61,20 @@ function groupsOrEmpty(groups, ctx) {
   return groups;
 }
 
-/**
- * Normaliza cada grupo para {classe, sum, sum_1}.
- * O `sum` do `.repeat(2)` sai como LISTA [area, valor] (molde solo) ou, em
- * versões do EE, como chaves separadas — esta função cobre os dois casos.
- */
+/** Normaliza grupos `{classe, sum, sum_1, …, sum_n}` (lista ou chaves). */
 function normalize(groups) {
   return (groups || []).map(function (g) {
-    var s = g['sum'];
-    if (s && typeof s.length === 'number') {
-      return { classe: g['classe'], sum: s[0], sum_1: s[1] };
+    var s = [];
+    var i = 0;
+    while (g['sum' + (i === 0 ? '' : '_' + i)] !== undefined ||
+           (i === 0 && g['sum'] !== undefined)) {
+      s.push(i === 0 ? (Array.isArray(g['sum']) ? g['sum'][0] : g['sum'])
+        : (Array.isArray(g['sum_' + i]) ? g['sum_' + i][0] : g['sum_' + i]));
+      i++;
     }
-    return { classe: g['classe'], sum: g['sum'], sum_1: g['sum_1'] };
+    var out = { classe: g['classe'] };
+    s.forEach(function (v, k) { out['v' + k] = v; });
+    return out;
   });
 }
 
@@ -82,7 +84,6 @@ function biome() {
     .first().geometry();
 }
 
-/** Regiões de análise: bioma (padrão) ou bioma ∩ cada UF da lista. */
 function collectRegions(cb) {
   var b = biome();
   if (!C.UF_LIST.length) {
@@ -100,132 +101,257 @@ function collectRegions(cb) {
         geom: ee.Geometry(f.properties.geom) };
     }));
   }, function () {
-    print('[ERRO] não foi possível carregar', C.UF_ASSET,
-      '— confira UF_ASSET/UF_PROP no contrato.');
+    print('[ERRO] não foi possível carregar', C.UF_ASSET, '— confira UF_ASSET/UF_PROP.');
     cb([{ territorio: C.BIOME_NAME + ' (bioma)', slug: 'bioma', geom: b }]);
   });
 }
 
-/** Stack [área_ha, valor_, classe]: área por classe do LULC (sempre
- * informativa, mask só no LULC) e valor (t) nos pixels do produto. */
-function productImage(p) {
-  var value = ee.Image(p.asset).select(p.band).multiply(p.toMgFactor)
-    .rename('valor');
-  var lulc = ee.Image(C.LULC_ASSET).select(C.LULC_BAND).rename('n0');
-  var mask = value.mask().and(lulc.mask());
-  var areaHa = ee.Image.pixelArea().divide(10000);
-  var area = areaHa.rename('area_ha').updateMask(lulc.mask());
-  value = value.multiply(areaHa).rename('valor').unmask(0).updateMask(mask);
-  return ee.Image.cat([area, value, lulc]);
+/** Área (ha) e imagem por lista de [renome, asset, banda, toTFactor]. */
+function stackImage(specs, lulcBand) {
+  var imgs = specs.map(function (s) {
+    return ee.Image(s.asset).select(s.band)
+      .multiply(s.toT).rename(s.rename);
+  });
+  var stack = ee.Image.cat(imgs);
+  var lulc = ee.Image(C.LULC_ASSET).select(lulcBand).rename('classe');
+  var area = ee.Image.pixelArea().divide(10000).rename('area_ha');
+  var base = stack.multiply(area).unmask(0)
+    .updateMask(stack.mask().and(lulc.mask()));
+  return ee.Image.cat([area.updateMask(lulc.mask()), base, lulc]);
 }
 
-function reduceFor(p, geom) {
-  return productImage(p).reduceRegion({
-    reducer: REDUCER, geometry: geom, scale: SCALE, maxPixels: 1e13,
-    tileScale: 2
+/** Reduz o stack `n` bandas de valor + classe (classe na última posição). */
+function reduceStack(img, nBands) {
+  return img.reduceRegion({
+    reducer: ee.Reducer.sum().repeat(nBands)
+      .group({ groupField: nBands, groupName: 'classe' }),
+    geometry: null, scale: SCALE, maxPixels: 1e13, tileScale: 2
   }).get('groups');
 }
 
 function r(n) { return Math.round(n * 10) / 10; }
 
-function row(product, territorio, extra) {
-  var base = { produto: product.id, versao: product.version, ano: YEAR,
-    territorio: territorio, unidade: product.unit };
-  for (var k in extra) { if (extra.hasOwnProperty(k)) base[k] = extra[k]; }
-  return base;
+function info(classe) {
+  var i = LEG.info(classe);
+  return { n0: i.n0, n1: i.n1, n2: i.n2, marcador: i.n2 };
 }
 
-/** Expande os grupos decimais em linhas n0 (uma por classe LULC presente). */
-function buildRows(p, territorio, groups) {
-  var rows = [];
-  groups = normalize(groupsOrEmpty(groups, p.id + ' · ' + territorio +
-    ' (buildRows — reduzindo a linhas n0 por classe)'));
-  if (!groups.length) { print('[AVISO]', p.id, territorio, '· 0 linhas geradas'); return rows; }
-
-  groups.forEach(function (g) {
-    var info = LEG.info(g['classe']);
-    rows.push(row(p, territorio, {
-      classe: g['classe'], n0: info.n0, n1: info.n1, n2: info.n2,
-      marcador: info.n2,
-      area_ha: r(g['sum']), valor_t: r(g['sum_1'])
-    }));
-  });
-
-  return rows;
+/* ---- Produtos do contrato por versão --------------------------------------- */
+function productOf(versionId, id) {
+  var list = C.PRODUCTS.concat(C.MONTHLY);
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].version === versionId && list[i].id === id) return list[i];
+  }
+  return null;
 }
 
-/** Colunas dos CSVs das estatísticas (export único, só n0, sem .geo/system:index). */
-var PRODUCT_COLUMNS = ['produto', 'versao', 'ano', 'territorio', 'unidade',
-  'classe', 'n0', 'n1', 'n2', 'marcador', 'area_ha', 'valor_t'];
+/** Reduce REGIONAL (geometry fixa por região). */
+function reduceIn(asset, band, toT, lulcBand, region) {
+  return ee.Image(asset).select(band).multiply(toT).rename('valor')
+    .addBands(ee.Image(C.LULC_ASSET).select(lulcBand).rename('classe'))
+    .reduceRegion({
+      reducer: ee.Reducer.sum().repeat(3).group({ groupField: 3 }),
+      geometry: region, scale: SCALE, maxPixels: 1e13, tileScale: 2
+    }).get('groups');
+}
 
-/** Exporta UMA tabela por produto/versão (selectors excluem .geo/system:index). */
-function exportCsv(rows, fileName, description, selectors) {
+/** Monta e exporta UMA tabela (rows já normalizadas em {classe, v0..vn}). */
+function exportTable(rows, filePrefix, sel) {
   if (!rows.length) return;
+  var fc = ee.FeatureCollection(rows.map(function (row) {
+    return ee.Feature(null, row); }));
   Export.table.toDrive({
-    collection: ee.FeatureCollection(rows.map(function (r2) {
-      return ee.Feature(null, r2); })),
-    description: description,
+    collection: fc,
+    description: 'WS_CARBONO_toDrive-' + filePrefix,
+    fileNamePrefix: filePrefix,
     folder: C.DRIVE_FOLDER,
-    fileNamePrefix: fileName,
     fileFormat: 'CSV',
-    selectors: selectors
+    selectors: sel
   });
+}
+
+function rowBase(t, classe) {
+  var i = LEG.info(classe);
+  return { produto: 'grassland', versao: t[1], ano: YEAR, territorio: t[0],
+    unidade: 't', classe: classe, n0: i.n0, n1: i.n1, n2: i.n2,
+    marcador: i.n2 };
 }
 
 /**
- * Gera as estatísticas de UMA versão dos produtos campestres, por região
- * (bioma/UF). Uso: engine.runForVersion('v01') | engine.runForVersion('v02');
+ * Executa as 3 tabelas de UMA versão, para TODAS as regiões do contrato.
+ * Usage: engine.runForVersion('v01') | runForVersion('v02').
  */
 exports.runForVersion = function (versionId) {
-  if (VERSIONS.indexOf(versionId) < 0) {
-    print('[ERRO] grassland versões disponíveis:', VERSIONS, '· recebido:',
+  var biomass = productOf(versionId, 'biomass');
+  var carbon = productOf(versionId, 'carbon');
+  var biomassM = productOf(versionId, 'biomassMonthly') ||
+    productOf(versionId, 'biomass_mensal');
+  var anppM = productOf(versionId, 'anppMonthly') ||
+    productOf(versionId, 'anpp_mensal');
+
+  if (!biomass && !biomassM) {
+    print('[ERRO] grassland versões disponíveis:', ['v01', 'v02'], '· recebido:',
       versionId); return;
   }
-  var products = C.PRODUCTS.filter(function (prod) {
-    return prod.version === versionId;
-  });
-  print('MAPBIOMAS-CARBONO · Pantanal Grassland · 7_statistics ·',
-    versionId, '·', products.length, 'produtos');
 
   collectRegions(function (regions) {
     var jobs = [];
     regions.forEach(function (region) {
-      products.forEach(function (p) { jobs.push({ p: p, region: region }); });
+      jobs.push({ t: [region.territorio, versionId], region: region });
     });
     var done = 0;
     jobs.forEach(function (job) {
-      var ctx = job.p.id + '/' + job.region.slug;
-      if (!assetExists(job.p.asset)) {
-        print('[AVISO] produto não encontrado — pulado:', job.p.asset);
-        done++;
-        if (done === jobs.length) print('[FIM] versão', versionId, 'completa.');
-        return;
+      var context = 'grassland · ' + versionId + ' · ' + job.region.slug;
+      var exports = [];
+
+      /* A) tabela principal — biomassa + estoque no MESMO stack (anual). */
+      if (biomass && carbon && assetExists(biomass.asset) &&
+          assetExists(carbon.asset)) {
+        exports.push(function (finish) {
+          var img = ee.Image.cat([
+            ee.Image(biomass.asset).select(biomass.band).multiply(1 / 1000)
+              .rename('biomassa'),
+            ee.Image(carbon.asset).select(carbon.band).multiply(1)
+              .rename('estoque'),
+            ee.Image(C.LULC_ASSET).select(C.LULC_BAND).rename('classe')
+          ]);
+          reduceIn? /* placeholder */ null;
+          var area = ee.Image.pixelArea().divide(10000).rename('area_ha');
+          var stack = ee.Image.cat([
+            area.updateMask(img.select('classe').mask()),
+            img.select('biomassa').multiply(area).unmask(0)
+              .updateMask(img.mask().and(img.select('classe').mask())),
+            img.select('estoque').multiply(area).unmask(0)
+              .updateMask(img.mask().and(img.select('classe').mask())),
+            img.select('classe')]);
+          stack.reduceRegion({
+            reducer: ee.Reducer.sum().repeat(3)
+              .group({ groupField: 3, groupName: 'classe' }),
+            geometry: job.region.geom, scale: SCALE, maxPixels: 1e13,
+            tileScale: 2 }).evaluate(function (groups) {
+            var rows = (groups || []).map(function (g) {
+              var b = rowBase(job.t, g.classe);
+              b.area_ha = r(g.v0);
+              b.biomassa_t = r(g.v1);
+              b.estoque_t = r(g.v2);
+              return b;
+            });
+            exportTable(rows,
+              C.PREFIX + '_' + versionId + '_' + job.region.slug + '_' + YEAR,
+              ['produto', 'versao', 'ano', 'territorio', 'unidade', 'classe',
+                'n0', 'n1', 'n2', 'marcador', 'area_ha', 'biomassa_t',
+                'estoque_t']);
+            print('[OK]', context, 'principal ·', rows.length, 'classes');
+            finish();
+          }, function (err) { print('[ERRO principal]', context,
+            String(err).slice(0, 200)); finish(); });
+        });
       }
-      reduceFor(job.p, job.region.geom).evaluate(function (groups) {
-        groups = groupsOrEmpty(groups, ctx);
-        var rows = buildRows(job.p, job.region.territorio, groups);
-        exportCsv(rows,
-          C.PREFIX + '_' + versionId + '_' + job.p.id + '_' + job.region.slug +
-            '_' + YEAR,
-          'WS_CARBONO_stats_grassland_' + versionId + '_' + job.p.id + '_' +
-            job.region.slug + '_' + YEAR,
-          PRODUCT_COLUMNS);
-        print('[OK]', ctx, job.p.version, '·', rows.length, 'classes · valor',
-          rows.reduce(function (acc, r2) { return acc + r2.valor_t; }, 0),
-          'Mg');
-        done++;
-        if (done === jobs.length) print('[FIM] versão', versionId, 'completa.');
-      }, function (err) {
-        print('[ERRO]', ctx, String(err).slice(0, 200));
-        done++;
-        if (done === jobs.length) print('[FIM] versão', versionId, 'completa.');
-      });
+
+      /* B) biomassa mensal — LARGA (12 colunas de mês). */
+      if (biomassM && assetExists(biomassM.asset)) {
+        exports.push(function (finish) {
+          var meses = MONTHS.map(function (m) {
+            return ee.Image(biomassM.asset)
+              .select(biomassM.bandPrefix + pad(m)).multiply(1 / 1000)
+              .rename('biomassa_' + pad(m));
+          });
+          var area = ee.Image.pixelArea().divide(10000).rename('area_ha');
+          var lulc = ee.Image(C.LULC_ASSET).select(C.LULC_BAND).rename('classe');
+          var stack = ee.Image.cat(
+            meses.map(function (im) {
+              return im.multiply(area).rename(im.bandNames().get(0)).unmask(0)
+                .updateMask(im.mask().and(lulc.mask()));
+            })).addBands([area.updateMask(lulc.mask()), lulc]);
+          stack.reduceRegion({
+            reducer: ee.Reducer.sum().repeat(13)
+              .group({ groupField: 13, groupName: 'classe' }),
+            geometry: job.region.geom, scale: SCALE, maxPixels: 1e13,
+            tileScale: 2 }).evaluate(function (groups) {
+            var rows = (groups || []).map(function (g) {
+              var b = rowBase(job.t, g.classe);
+              b.area_ha = r(g.v0);
+              MONTHS.forEach(function (m) {
+                b['biomassa_m' + pad(m) + '_t'] = r(g['v' + m]);
+              });
+              return b;
+            });
+            var sel = ['produto', 'versao', 'ano', 'territorio', 'unidade',
+              'classe', 'n0', 'n1', 'n2', 'marcador', 'area_ha'];
+            MONTHS.forEach(function (m) {
+              sel.push('biomassa_m' + pad(m) + '_t');
+            });
+            exportTable(rows,
+              C.PREFIX + '_' + versionId + '_biomassa_mensal_' +
+                job.region.slug + '_' + YEAR, sel);
+            print('[OK]', context, 'biomassa mensal ·', rows.length, 'classes');
+            finish();
+          }, function (err) { print('[ERRO biomassa mensal]', context,
+            String(err).slice(0, 200)); finish(); });
+        });
+      }
+
+      /* C) ANPP mensal — LONGA (1 linha por classe×mês). */
+      if (anppM && assetExists(anppM.asset)) {
+        var mesJobs = MONTHS.map(function (m) {
+          return { m: m, b: anppM.bandPrefix + pad(m) };
+        });
+        var mesDone = 0;
+        var total = mesJobs.length;
+        mesJobs.forEach(function (mj) {
+          var mid = mj.m;
+          ee.Image(anppM.asset).select(mj.b).multiply(1 / 1000)
+            .addBands(
+              ee.Image(C.LULC_ASSET).select(C.LULC_BAND).rename('classe'))
+            .reduceRegion({
+              reducer: ee.Reducer.sum().repeat(3)
+                .group({ groupField: 3, groupName: 'classe' }),
+              geometry: job.region.geom, scale: SCALE, maxPixels: 1e13,
+              tileScale: 2 }).evaluate(function (groups) {
+              var rows = (groups || []).map(function (g) {
+                var b = rowBase(job.t, g.classe);
+                b.area_ha = r(g.v0);
+                b.mes = pad(mid);
+                b.anpp_t = r(g.v2);
+                return b;
+              });
+              /* area_ha é transformado aqui: uso g.v0? no reducer,
+               * v0=area, v1=valor,NULL, v2=valor; ajustamos v1. */
+              exportTable(rows,
+                C.PREFIX + '_' + versionId + '_anpp_mensal_' +
+                  job.region.slug + '_' + YEAR +
+                  (mesJobs.length > 1 ? '' : ''),
+                ['produto', 'versao', 'ano', 'territorio', 'unidade', 'classe',
+                  'n0', 'n1', 'n2', 'marcador', 'area_ha', 'mes', 'anpp_t']);
+              mesDone++;
+              if (mesDone === total) {
+                print('[OK]', context, 'anpp mensal ·', mesDone, 'mêses');
+                finish();
+              }
+            }, function (err) { print('[ERRO anpp]', context,
+              String(err).slice(0, 200)); mesDone++; if (mesDone === total)
+                finish(); });
+        });
+      }
+
+      var expCount = exports.length + (anppM ? 1 : 0);
+      var expDone = 0;
+      exports.forEach(function (fn) { fn(function () { expDone++; checkEnd(); }); });
+      function checkEnd() {
+        if (expCount === 0) { done++; if (done === jobs.length)
+          print('[FIM]', versionId, 'completa.'); return; }
+        if (expDone === expCount && !anppM) {
+          done++; if (done === jobs.length) print('[FIM]', versionId, 'completa.');
+        }
+      }
     });
   });
 };
 
+/*** Molde herdado do Colab — comparativo de produtos OFFLINE no statistics_gcn. */
+
 /**
  * O comparativo de produtos é montado OFFLINE no Colab
- * (statistics_gcn → build_compare_grassland), a partir dos
+ * (statistics_gcn → build_compare_grassland), a partir dos CSVs
  * `stats_grassland_*.csv` (referência: GRASSLAND_REF_VERSION = v02).
  */
