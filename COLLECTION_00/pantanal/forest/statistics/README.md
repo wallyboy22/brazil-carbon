@@ -1,6 +1,6 @@
 # Pantanal Forest — Estatísticas (módulo `require`)
 
-Estatísticas de **AGC (agbd, Mg/ha)** por classe de uso e cobertura (MapBiomas
+Estatísticas de **AGC (agbd, t/ha)** por classe de uso e cobertura (MapBiomas
 **Coleção 11**) para as versões V03–V08 da cadeia florestal, ano **2023**
 (único ano previsto por todas as versões).
 
@@ -46,7 +46,7 @@ florestal/campestre).
 - `stats_forest_<versão>_<território>_2023.csv` — **1 arquivo por versão**
   (sem particionamento), colunas:
 
-  `version,ano,territorio,nivel,grupo,classe,n0,n1,n2,marcador,area_ha,estoque_Mg,incerteza_Mg`
+  `version,ano,territorio,nivel,grupo,classe,n0,n1,n2,marcador,area_ha,estoque_t,incerteza_t`
 
   com `nivel` ∈ `n0 | n1 | marcador | total` e QA de somas impresso.
   O export usa `selectors` → **sem `.geometry`/`system:index`** no CSV.
@@ -55,8 +55,8 @@ florestal/campestre).
 ## Fórmulas
 
 - área_ha = `pixelArea()/10000`
-- estoque_Mg = `prediction_2023 (Mg/ha) × área_ha`
-- incerteza_Mg (v07/v08, ensemble) = `√( Σ (agbd_std_2023 × área_ha)² )`;
+- estoque_t = `prediction_2023 (t/ha) × área_ha`
+- incerteza_t (v07/v08, ensemble) = `√( Σ (agbd_std_2023 × área_ha)² )`;
   versões sem banda `agbd_std` saem com incerteza `0`.
 
 > Agregação por classe: stack `[área_ha, estoque, w2, classe]` com

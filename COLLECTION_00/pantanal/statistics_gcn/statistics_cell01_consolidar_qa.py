@@ -36,7 +36,7 @@ print(f"[COMPARE] forest {len(cmpf)} · grassland {len(cmpg)} linhas (offline)")
 
 # --- QA forest ---------------------------------------------------------------
 if len(forest):
-    problems = u.qa_somas(forest, "estoque_Mg", ["version", "territorio"])
+    problems = u.qa_somas(forest, "estoque_t", ["version", "territorio"])
     problems += u.qa_territorios(forest, u.CONF["FOREST_VERSIONS"])
     for p in problems:
         print("[QA !]", p)
@@ -48,7 +48,7 @@ if len(forest):
 
 # --- QA grassland ------------------------------------------------------------
 if len(grassland):
-    problems = u.qa_somas(grassland, "valor_Mg", ["produto", "territorio"])
+    problems = u.qa_somas(grassland, "valor_t", ["produto", "territorio"])
     for p in problems:
         print("[QA !]", p)
     if not problems:

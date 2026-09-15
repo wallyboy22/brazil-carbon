@@ -8,15 +8,19 @@
  * Expõe:
  *   runForVersion(versionId) → CSV único
  *                              `stats_grassland_<versao>_<produto>_<territorio>_2023.csv`
- *                              (níveis n0/n1/marcador/total por produto), sem
+ *                              com UMA linha por classe LULC (n0), sem
  *                              `.geometry`/`system:index` (selectors no export).
+ *                              NÃO exporta agregações — n1/marcador/total são
+ *                              derivados OFFLINE no Colab (statistics_gcn).
  *
  *   O comparativo de produtos (v02) é montado OFFLINE no Colab
  *   (statistics_gcn/build_compare_grassland), a partir dos CSVs desta etapa.
  *
  * Método (molde mapbiomas_solo/collection3/statistics e 2_5_eca_observada):
- *   área_ha  = pixelArea()/10000
- *   valor    = banda (convertida a Mg/ha via toMgFactor) × área_ha
+ *   área_ha  = pixelArea()/10000, mascarado SÓ pelo LULC — área sempre
+ *              informativa (classe existe no bioma mesmo sem produto);
+ *   valor    = banda (convertida a t/ha via toMgFactor) × pixelArea()/10000
+ *              → TOTAL em t;
  *   reducer  = ee.Reducer.sum().repeat(2).group({groupField:2}) sobre o stack
  *              [área_ha, valor, classe] — a banda DE CLASSIFICAÇÃO fica na
  *              ÚLTIMA posição (padrão comprovado: group pela última banda).
@@ -102,14 +106,16 @@ function collectRegions(cb) {
   });
 }
 
-/** Stack [área_ha, valor_Mg, classe] mascarado por classe ∩ valor. */
+/** Stack [área_ha, valor_, classe]: área por classe do LULC (sempre
+ * informativa, mask só no LULC) e valor (t) nos pixels do produto. */
 function productImage(p) {
   var value = ee.Image(p.asset).select(p.band).multiply(p.toMgFactor)
     .rename('valor');
   var lulc = ee.Image(C.LULC_ASSET).select(C.LULC_BAND).rename('n0');
   var mask = value.mask().and(lulc.mask());
-  var area = ee.Image.pixelArea().divide(10000).rename('area_ha').updateMask(mask);
-  value = value.unmask(0).updateMask(mask);
+  var areaHa = ee.Image.pixelArea().divide(10000);
+  var area = areaHa.rename('area_ha').updateMask(lulc.mask());
+  value = value.multiply(areaHa).rename('valor').unmask(0).updateMask(mask);
   return ee.Image.cat([area, value, lulc]);
 }
 
@@ -122,88 +128,35 @@ function reduceFor(p, geom) {
 
 function r(n) { return Math.round(n * 10) / 10; }
 
-function row(product, territorio, grupo, nivel, extra) {
+function row(product, territorio, extra) {
   var base = { produto: product.id, versao: product.version, ano: YEAR,
-    territorio: territorio, nivel: nivel, grupo: grupo, unidade: product.unit };
+    territorio: territorio, unidade: product.unit };
   for (var k in extra) { if (extra.hasOwnProperty(k)) base[k] = extra[k]; }
   return base;
 }
 
-function sumBy(groups, getKey) {
-  var acc = {};
-  groups.forEach(function (g) {
-    var key = getKey(g['classe']);
-    acc[key] = acc[key] || { area: 0, valor: 0 };
-    acc[key].area += g['sum'];
-    acc[key].valor += g['sum_1'];
-  });
-  return acc;
-}
-
-var N1_ORDER = ['Floresta', 'Campestre', 'Outros'];
-var MARKER_ORDER = [LEG.MARK_FOREST, LEG.MARK_GRASS, LEG.MARK_OTHER];
-
+/** Expande os grupos decimais em linhas n0 (uma por classe LULC presente). */
 function buildRows(p, territorio, groups) {
   var rows = [];
-  groups = normalize(groupsOrEmpty(groups, p.id + ' · ' + territorio));
+  groups = normalize(groupsOrEmpty(groups, p.id + ' · ' + territorio +
+    ' (buildRows — reduzindo a linhas n0 por classe)'));
+  if (!groups.length) { print('[AVISO]', p.id, territorio, '· 0 linhas geradas'); return rows; }
 
   groups.forEach(function (g) {
     var info = LEG.info(g['classe']);
-    rows.push(row(p, territorio, g['classe'], 'n0', {
+    rows.push(row(p, territorio, {
       classe: g['classe'], n0: info.n0, n1: info.n1, n2: info.n2,
       marcador: info.n2,
-      area_ha: r(g['sum']), valor_Mg: r(g['sum_1'])
+      area_ha: r(g['sum']), valor_t: r(g['sum_1'])
     }));
   });
-
-  var byN1 = sumBy(groups, function (code) { return LEG.info(code).n1; });
-  N1_ORDER.forEach(function (label) {
-    if (!byN1[label]) return;
-    var a = byN1[label];
-    rows.push(row(p, territorio, label, 'n1', {
-      classe: '', n0: '', n1: label, n2: '', marcador: '',
-      area_ha: r(a.area), valor_Mg: r(a.valor)
-    }));
-  });
-
-  var byMark = sumBy(groups, function (code) { return LEG.info(code).marcador; });
-  MARKER_ORDER.forEach(function (mark) {
-    var key = String(mark);
-    if (!byMark[key]) return;
-    var a = byMark[key];
-    var label = LEG.N2_LABELS[key];
-    rows.push(row(p, territorio, label, 'marcador', {
-      classe: '', n0: '', n1: LEG.N1_LABELS[key], n2: label, marcador: label,
-      area_ha: r(a.area), valor_Mg: r(a.valor)
-    }));
-  });
-
-  var tot = sumBy(groups, function () { return 1 })['1'];
-  rows.push(row(p, territorio, 'TOTAL', 'total', {
-    classe: '', n0: '—', n1: '—', n2: '—', marcador: 'total',
-    area_ha: r(tot.area), valor_Mg: r(tot.valor)
-  }));
 
   return rows;
 }
 
-/** QA de somas: n1 = total e decimal = total (imprime avisos). */
-function qaSomas(product, territorio, rows) {
-  var dec = 0, total = null;
-  rows.forEach(function (r) {
-    if (r.nivel === 'n0') { dec += r.valor_Mg; }
-    if (r.nivel === 'total') { total = r.valor_Mg; }
-  });
-  if (!total) { print('[QA !]', product.id, territorio, 'sem linha TOTAL'); return; }
-  if (Math.abs(dec - total) > 1) {
-    print('[QA !]', product.id, territorio, 'decimal ≠ total:', dec, 'vs', total);
-  }
-}
-
-/** Colunas dos CSVs das estatísticas (export único, sem .geo/system:index). */
-var PRODUCT_COLUMNS = ['produto', 'versao', 'ano', 'territorio', 'nivel',
-  'grupo', 'unidade', 'classe', 'n0', 'n1', 'n2', 'marcador', 'area_ha',
-  'valor_Mg'];
+/** Colunas dos CSVs das estatísticas (export único, só n0, sem .geo/system:index). */
+var PRODUCT_COLUMNS = ['produto', 'versao', 'ano', 'territorio', 'unidade',
+  'classe', 'n0', 'n1', 'n2', 'marcador', 'area_ha', 'valor_t'];
 
 /** Exporta UMA tabela por produto/versão (selectors excluem .geo/system:index). */
 function exportCsv(rows, fileName, description, selectors) {
@@ -251,14 +204,15 @@ exports.runForVersion = function (versionId) {
       reduceFor(job.p, job.region.geom).evaluate(function (groups) {
         groups = groupsOrEmpty(groups, ctx);
         var rows = buildRows(job.p, job.region.territorio, groups);
-        qaSomas(job.p, job.region.territorio, rows);
         exportCsv(rows,
           C.PREFIX + '_' + versionId + '_' + job.p.id + '_' + job.region.slug +
             '_' + YEAR,
           'WS_CARBONO_stats_grassland_' + versionId + '_' + job.p.id + '_' +
             job.region.slug + '_' + YEAR,
           PRODUCT_COLUMNS);
-        print('[OK]', ctx, job.p.version, '·', rows.length, 'linhas');
+        print('[OK]', ctx, job.p.version, '·', rows.length, 'classes · valor',
+          rows.reduce(function (acc, r2) { return acc + r2.valor_t; }, 0),
+          'Mg');
         done++;
         if (done === jobs.length) print('[FIM] versão', versionId, 'completa.');
       }, function (err) {

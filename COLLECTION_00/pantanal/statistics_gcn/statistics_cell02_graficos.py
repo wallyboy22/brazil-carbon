@@ -5,7 +5,7 @@ Célula 02 · Biblioteca de figuras das estatísticas.
 Rodar em Colab após a cell01.
 
 Figuras (salvas na MESMA pasta de output no Drive, FIG_DIR):
-  f1_forest_estoque_por_classe.png    estoque (Mg) por classe C11, por versão
+  f1_forest_estoque_por_classe.png    estoque (t) por classe C11, por versão
   f2_forest_estoque_por_marcador.png  florestal × campestre × outros, por versão
   f3_forest_compare_versoes.png       total e florestal por versão (v00→v07)
   f4_grassland_produtos.png           biomassa × ANPP × carbono por marcador
@@ -35,22 +35,22 @@ X = np.arange(len(VEC))
 # --- f1: estoque por classe decimal (n0), agrupado por versão -----------------
 if len(forest):
     n0 = forest[forest["nivel"] == "n0"]
-    order = (n0.groupby("classe")["estoque_Mg"].sum()).sort_values().index
+    order = (n0.groupby("classe")["estoque_t"].sum()).sort_values().index
     cls = [u.n0_label(c) for c in order]
     fig, ax = plt.subplots(figsize=(12, max(4, 0.42 * len(cls))))
     for i, v in enumerate(VEC):
-        vals = n0[n0["version"] == v].set_index("classe")["estoque_Mg"]
+        vals = n0[n0["version"] == v].set_index("classe")["estoque_t"]
         ax.barh(cls, [vals.get(c, 0) for c in order], label=v,
                 color=plt.cm.viridis(i / max(len(VEC) - 1, 1)),
                 height=0.8 / len(VEC) - 0.04 if len(VEC) > 1 else 0.8)
-    ax.set(xlabel="estoque (Mg)", title="f1 · estoque de AGC por classe C11 (2023)")
+    ax.set(xlabel="estoque (t)", title="f1 · estoque de AGC por classe C11 (2023)")
     ax.grid(axis="x", alpha=0.3)
     ax.legend(ncols=len(VEC))
     u.save_fig(fig, "f1_forest_estoque_por_classe.png")
 
     # --- f2: marcador florestal/campestre/outros por versão --------------------
     piv = (forest[forest["nivel"] == "marcador"]
-           .groupby(["version", "marcador"])["estoque_Mg"].sum().unstack(fill_value=0))
+           .groupby(["version", "marcador"])["estoque_t"].sum().unstack(fill_value=0))
     cols = ["florestal", "campestre", "outros"]
     cols = [c for c in cols if c in piv.columns]
     fig, ax = plt.subplots(figsize=(9, 4.5))
@@ -58,7 +58,7 @@ if len(forest):
     for c in cols:
         ax.bar(piv.index, piv[c], bottom=bottom, label=c)
         bottom += piv[c].values
-    ax.set(xlabel="versão", ylabel="estoque (Mg)",
+    ax.set(xlabel="versão", ylabel="estoque (t)",
            title="f2 · estoque por marcador (florestal × campestre × outros)")
     ax.legend()
     u.save_fig(fig, "f2_forest_estoque_por_marcador.png")
@@ -66,27 +66,27 @@ if len(forest):
     # --- f3: comparativo entre versões (marcador florestal e total) ------------
     cmpf = u.build_compare_forest(forest)
     cmpf = cmpf[cmpf["marcador"].isin(["florestal", "total"])]
-    pivc = cmpf.pivot(index="version", columns="marcador", values="estoque_Mg")
+    pivc = cmpf.pivot(index="version", columns="marcador", values="estoque_t")
     fig, ax = plt.subplots(figsize=(8, 4.5))
     pivc.plot(ax=ax, marker="o", color={c: u.CONF[k] for c, k in
              [("florestal", "C_FOREST"), ("total", "C_RED")]})
-    ax.set(xlabel="versão", ylabel="estoque (Mg)",
+    ax.set(xlabel="versão", ylabel="estoque (t)",
            title="f3 · comparativo florestal(101) e total por versão (2023)")
     u.save_fig(fig, "f3_forest_compare_versoes.png")
 
 # --- f4/f5: grassland ---------------------------------------------------------
 if grassland is not None and len(grassland):
-    prod_label = {"biomass": "biomassa (Mg MS)", "anpp": "ANPP (Mg MS/ano)",
-                  "carbon": "carbono (Mg C)"}
+    prod_label = {"biomass": "biomassa (t MS)", "anpp": "ANPP (t MS/ano)",
+                  "carbon": "carbono (t C)"}
     marc = grassland[grassland["nivel"] == "marcador"]
     fig, axes = plt.subplots(2, 2, figsize=(11, 8))
     axes = axes.ravel()
     for i, p in enumerate(grassland["produto"].unique()):
         d = marc[marc["produto"] == p]
         tot = grassland[(grassland["produto"] == p) &
-                        (grassland["nivel"] == "total")]["valor_Mg"].sum()
+                        (grassland["nivel"] == "total")]["valor_t"].sum()
         ax = axes[i]
-        ax.bar(d["marcador"], d["valor_Mg"], color=[u.CONF["C_GRASS"],
+        ax.bar(d["marcador"], d["valor_t"], color=[u.CONF["C_GRASS"],
                 u.CONF["C_OTHER"]])
         ax.axhline(tot, color=u.CONF["C_RED"], ls="--", lw=1)
         ax.set(title=f"{p} · total {tot:.0f} {prod_label.get(p, '')}",
@@ -102,7 +102,7 @@ if grassland is not None and len(grassland):
     cmpg = u.build_compare_grassland(grassland)
     totp = cmpg[cmpg["n0"] == "TOTAL"]
     fig, ax = plt.subplots(figsize=(8, 4.5))
-    ax.bar(totp["produto"], totp["valor_Mg"], color=u.CONF["C_GRASS"])
+    ax.bar(totp["produto"], totp["valor_t"], color=u.CONF["C_GRASS"])
     ax.set(xlabel="produto", ylabel="Mg",
            title=f"f5 · grassland {ref} — total por produto (2023)")
     u.save_fig(fig, "f5_grassland_compare_menu.png")

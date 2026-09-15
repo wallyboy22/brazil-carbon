@@ -45,24 +45,24 @@ A **legenda C11** é o módulo compartilhado
 
 | Produto | Asset | Banda | Unidade bruta | Conversão |
 |---|---|---|---|---|
-| biomassa | `BIOMASS/grassland_biomass_annual_v01_2023` | `biomass_annual` | kg MS/ha | ÷1000 → Mg MS |
-| ANPP | `ANPP/grassland_anpp_annual_v01_2023` | `anpp_annual` | kg MS/ha/ano | ÷1000 → Mg MS/ano |
-| carbono | `CARBON/grassland_carbon_stock_v01_2023` | `carbon_stock_MgC_ha` | Mg C/ha | ×1 |
+| biomassa | `BIOMASS/grassland_biomass_annual_v01_2023` | `biomass_annual` | kg MS/ha | ÷1000 → t MS |
+| ANPP | `ANPP/grassland_anpp_annual_v01_2023` | `anpp_annual` | kg MS/ha/ano | ÷1000 → t MS/ano |
+| carbono | `CARBON/grassland_carbon_stock_v01_2023` | `carbon_stock_MgC_ha` | t C/ha | ×1 |
 
 ### v02 (em `PANTANAL_GRASSLAND/V02`)
 
 | Produto | Asset | Banda | Unidade bruta | Conversão |
 |---|---|---|---|---|
-| biomassa | `BIOMASS/grassland_biomass_annual_v02_2023` | `biomass_annual` | kg MS/ha | ÷1000 → Mg MS |
-| ANPP | `ANPP/grassland_anpp_annual_v02_2023` | `anpp_annual` | kg MS/ha/ano | ÷1000 → Mg MS/ano |
-| carbono | `CARBON/grassland_carbon_stock_v02_2023` | `carbon_stock_MgC_ha` | Mg C/ha | ×1 |
+| biomassa | `BIOMASS/grassland_biomass_annual_v02_2023` | `biomass_annual` | kg MS/ha | ÷1000 → t MS |
+| ANPP | `ANPP/grassland_anpp_annual_v02_2023` | `anpp_annual` | kg MS/ha/ano | ÷1000 → t MS/ano |
+| carbono | `CARBON/grassland_carbon_stock_v02_2023` | `carbon_stock_MgC_ha` | t C/ha | ×1 |
 
 ## Saídas (Drive → `MAPBIOMAS_CARBONO_ESTATISTICAS`)
 
 - `stats_grassland_<versão>_<produto>_<território>_2023.csv` — **1 arquivo por
   produto/versão** (sem particionamento), colunas:
 
-  `produto,versao,ano,territorio,nivel,grupo,classe,n0,n1,n2,marcador,area_ha,valor_Mg,unidade`
+  `produto,versao,ano,territorio,nivel,grupo,classe,n0,n1,n2,marcador,area_ha,valor_t,unidade`
 
   com `nivel` ∈ `n0 | n1 | marcador | total`. O export usa `selectors` →
   **sem `.geometry`/`system:index`** no CSV.
@@ -71,7 +71,7 @@ A **legenda C11** é o módulo compartilhado
 ## Fórmulas
 
 - área_ha = `pixelArea()/10000`
-- valor_Mg = `banda (convertida a Mg/ha) × área_ha`
+- valor_t = `banda (convertida a t/ha) × área_ha`
 
 > Biomassa/ANPP não têm incerteza publicada → sem coluna de incerteza
 > (diferente do módulo florestal, que carrega `±` do ensemble v07).

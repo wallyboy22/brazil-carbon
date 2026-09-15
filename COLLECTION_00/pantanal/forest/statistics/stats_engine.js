@@ -1,29 +1,34 @@
 /******************************************************************************
  * MAPBIOMAS-CARBONO — Pantanal Forest · stats_engine (módulo require)
  * ---------------------------------------------------------------------------
- * Motor das estatísticas de AGC (agbd, Mg/ha) por classe LULC C11 para as
+ * Motor das estatísticas de AGC (agbd, t/ha) por classe LULC C11 para as
  * versões V03–V08 (2023). Requerido pelos steps `7_statistics.js` de cada
  * versão e por scripts ad-hoc no Code Editor.
  *
  * Expõe:
  *   runForVersion(versionId)  → CSV único `stats_forest_<v>_<territorio>_2023.csv`
- *                               (níveis n0/n1/marcador/total), sem as colunas
- *                               `.geometry`/`system:index` (selectors no export).
- *
- *   O comparativo entre versões (V03–V08) é montado OFFLINE no Colab
- *   (statistics_gcn/build_compare_forest), a partir dos CSVs desta etapa.
+ *                               com UMA linha por classe LULC (n0), sem as
+ *                               colunas `.geometry`/`system:index` (selectors).
+ *                               NÃO exporta agregações — n1, marcador e total
+ *                               são derivados OFFLINE no Colab (statistics_gcn).
  *
  * Método (molde mapbiomas_solo/collection3/statistics e 2_5_eca_observada):
- *   área_ha  = pixelArea()/10000
- *   estoque  = banda (Mg/ha) × área_ha
+ *   área_ha  = pixelArea()/10000, mascarado SÓ pelo LULC — área sempre
+ *              informativa (classe existe no bioma mesmo sem predição);
+ *   estoque  = banda (t/ha) × pixelArea()/10000  → TOTAL em t;
  *   reducer  = ee.Reducer.sum().repeat(3).group({groupField:3}) sobre o stack
  *              [área_ha, estoque, w2, classe] — a banda de classificação fica
  *              na ÚLTIMA posição (padrão comprovado: group pela última banda);
- *              w2 = (std_ensemble × área_ha)²
+ *              w2 = (std_ensemble × pixelArea)² — apenas nos pixels preditos;
  *   incerteza ± = √(Σ w2) — v07/v08 (banda agbd_std_2023); demais versões: 0.
+ *              A contribuição por pixel é independente (quadrature): o total de
+ *              incerteza de uma classe é a raiz da soma dos quadrados dos
+ *              desvios (std em t/ha × área em ha). Coerente com o estoque em
+ *              Mg (mesmo produto banda × área).
  * `normalize()` converte cada grupo para {classe, sum, sum_1, sum_2} aceitando
  * o `sum` do `.repeat(3)` como LISTA [area, estoque, w2] OU chaves separadas.
- * A partir dos grupos por classe decimal (n0) agregam-se n1, marcador e TOTAL.
+ * Os grupos por classe decimal (n0) são a ÚNICA saída do CSV; agregações
+ * (n1/marcador/total) são montadas offline a partir das linhas n0.
  * Território: bioma + UF opcional (0_contract_stats).
  ******************************************************************************/
 var C = require(
@@ -124,16 +129,18 @@ function collectRegions(cb) {
   });
 }
 
-/** Stack [área_ha, estoque, w2, classe] mascarado por classe ∩ valor. */
+/** Stack [área_ha, estoque, w2, classe]: área por classe do LULC (sempre
+ * informativa, mask só no LULC) e estoque/incerteza nos pixels preditos. */
 function statsImage(v) {
   var img = safeMosaic(v);
   var value = img.select(v.band).rename('valor');
   var lulc = ee.Image(C.LULC_ASSET).select(C.LULC_BAND).rename('n0');
   var mask = value.mask().and(lulc.mask());
-  var area = ee.Image.pixelArea().divide(10000).rename('area_ha').updateMask(mask);
-  var stock = value.unmask(0).updateMask(mask);
+  var areaHa = ee.Image.pixelArea().divide(10000);
+  var area = areaHa.rename('area_ha').updateMask(lulc.mask());
+  var stock = value.multiply(areaHa).rename('estoque').unmask(0).updateMask(mask);
   var w2 = v.stdBand
-    ? img.select(v.stdBand).rename('w2').multiply(area).pow(2).updateMask(mask)
+    ? img.select(v.stdBand).rename('w2').multiply(areaHa).pow(2).updateMask(mask)
     : ee.Image(0).rename('w2').updateMask(mask);
   return ee.Image.cat([area, stock, w2, lulc]);
 }
@@ -147,100 +154,35 @@ function reduceFor(v, geom) {
 
 function r(n) { return Math.round(n * 10) / 10; }
 
-function row(versionId, territorio, grupo, nivel, extra) {
-  var base = { version: versionId, ano: YEAR, territorio: territorio,
-    nivel: nivel, grupo: grupo };
+function row(versionId, territorio, extra) {
+  var base = { version: versionId, ano: YEAR, territorio: territorio };
   for (var k in extra) { if (extra.hasOwnProperty(k)) base[k] = extra[k]; }
   return base;
 }
 
-function sumBy(groups, getKey) {
-  var acc = {};
-  groups.forEach(function (g) {
-    var key = getKey(g['classe']);
-    acc[key] = acc[key] || { area: 0, stock: 0, sq: 0 };
-    acc[key].area += g['sum'];
-    acc[key].stock += g['sum_1'];
-    acc[key].sq += g['sum_2'];
-  });
-  return acc;
-}
-
-/** Expande os grupos decimais em linhas n0/n1(=N1)/marcador/TOTAL. */
+/** Expande os grupos decimais em linhas n0 (uma por classe LULC presente). */
 function buildRows(v, territorio, groups) {
   var rows = [];
   groups = normalize(groupsOrEmpty(groups, v.id + ' · ' + territorio +
-    ' (buildRows — reduzindo a linhas de n0/n1/marcador/total)'));
+    ' (buildRows — reduzindo a linhas n0 por classe)'));
   if (!groups.length) { print('[AVISO]', v.id, territorio, '· 0 linhas geradas'); return rows; }
 
   groups.forEach(function (g) {
     var info = LEG.info(g['classe']);
-    rows.push(row(v.id, territorio, g['classe'], 'n0', {
+    rows.push(row(v.id, territorio, {
       classe: g['classe'], n0: info.n0, n1: info.n1, n2: info.n2,
       marcador: info.n2,
-      area_ha: r(g['sum']), estoque_Mg: r(g['sum_1']),
-      incerteza_Mg: r(Math.sqrt(Math.max(g['sum_2'], 0)))
+      area_ha: r(g['sum']), estoque_t: r(g['sum_1']),
+      incerteza_t: r(Math.sqrt(Math.max(g['sum_2'], 0)))
     }));
   });
-
-  var byN1 = sumBy(groups, function (code) { return LEG.info(code).n1; });
-  var order = ['Floresta', 'Campestre', 'Outros'];
-  order.forEach(function (label) {
-    if (!byN1[label]) return;
-    var a = byN1[label];
-    rows.push(row(v.id, territorio, label, 'n1', {
-      classe: '', n0: '', n1: label, n2: '', marcador: '',
-      area_ha: r(a.area), estoque_Mg: r(a.stock),
-      incerteza_Mg: r(Math.sqrt(Math.max(a.sq, 0)))
-    }));
-  });
-
-  var byMark = sumBy(groups, function (code) { return LEG.info(code).marcador; });
-  [LEG.MARK_FOREST, LEG.MARK_GRASS, LEG.MARK_OTHER].forEach(function (mark) {
-    var key = String(mark);
-    if (!byMark[key]) return;
-    var a = byMark[key];
-    var label = LEG.N2_LABELS[key];
-    rows.push(row(v.id, territorio, label, 'marcador', {
-      classe: '', n0: '', n1: LEG.N1_LABELS[key], n2: label, marcador: label,
-      area_ha: r(a.area), estoque_Mg: r(a.stock),
-      incerteza_Mg: r(Math.sqrt(Math.max(a.sq, 0)))
-    }));
-  });
-
-  var tot = sumBy(groups, function () { return 1 })['1'];
-  rows.push(row(v.id, territorio, 'TOTAL', 'total', {
-    classe: '', n0: '—', n1: '—', n2: '—', marcador: 'total',
-    area_ha: r(tot.area), estoque_Mg: r(tot.stock),
-    incerteza_Mg: r(Math.sqrt(Math.max(tot.sq, 0)))
-  }));
 
   return rows;
 }
 
-/** QA de somas: n1 = total e decimal = total (imprime avisos). */
-function qaSomas(v, territorio, rows) {
-  var n1 = {}, dec = 0, total = null;
-  rows.forEach(function (r) {
-    if (r.nivel === 'n0') { dec += r.estoque_Mg; }
-    if (r.nivel === 'n1') { n1[r.grupo] = r.estoque_Mg; }
-    if (r.nivel === 'total') { total = r.estoque_Mg; }
-  });
-  if (!total) { print('[QA !]', v.id, territorio, 'sem linha TOTAL'); return; }
-  var somaN1 = ['Floresta', 'Campestre', 'Outros']
-    .reduce(function (acc, k) { return acc + (n1[k] || 0); }, 0);
-  if (Math.abs(somaN1 - total) > 1) {
-    print('[QA !]', v.id, territorio, 'n1 ≠ total:', somaN1, 'vs', total);
-  }
-  if (Math.abs(dec - total) > 1) {
-    print('[QA !]', v.id, territorio, 'decimal ≠ total:', dec, 'vs', total);
-  }
-}
-
-/** Colunas dos CSVs das estatísticas (export único, sem .geo/system:index). */
-var STATS_COLUMNS = ['version', 'ano', 'territorio', 'nivel', 'grupo',
-  'classe', 'n0', 'n1', 'n2', 'marcador', 'area_ha', 'estoque_Mg',
-  'incerteza_Mg'];
+/** Colunas dos CSVs das estatísticas (export único, só n0, sem .geo/system:index). */
+var STATS_COLUMNS = ['version', 'ano', 'territorio', 'classe', 'n0', 'n1',
+  'n2', 'marcador', 'area_ha', 'estoque_t', 'incerteza_t'];
 
 /** Exporta UMA tabela por versão (selectors excluem .geometry/system:index). */
 function exportCsv(rows, fileName, description, selectors) {
@@ -273,13 +215,14 @@ exports.runForVersion = function (versionId) {
     jobs.forEach(function (job) {
       reduceFor(job.v, job.region.geom).evaluate(function (groups) {
         var rows = buildRows(job.v, job.region.territorio, groups);
-        qaSomas(job.v, job.region.territorio, rows);
         exportCsv(rows,
           C.PREFIX + '_' + v.id + '_' + job.region.slug + '_' + YEAR,
           'WS_CARBONO_stats_forest_' + v.id + '_' + job.region.slug + '_' +
             YEAR,
           STATS_COLUMNS);
-        print('[OK]', v.id, job.region.territorio, '·', rows.length, 'linhas');
+        print('[OK]', v.id, job.region.territorio, '·', rows.length,
+          'classes · estoque', rows.reduce(function (acc, r2) {
+            return acc + r2.estoque_t; }, 0), 'Mg');
         done++;
       }, function (err) {
         print('[ERRO]', v.id, job.region.territorio, String(err).slice(0, 200));
@@ -292,4 +235,6 @@ exports.runForVersion = function (versionId) {
 /**
  * O comparativo entre versões (V03–V08) é montado OFFLINE no Colab
  * (statistics_gcn → build_compare_forest), a partir dos `stats_forest_*.csv`.
+ * As agregações n1/marcador/total também são derivadas offline (in-memory),
+ * pois o CSV do GEE contém somente as linhas n0 (uma por classe).
  */

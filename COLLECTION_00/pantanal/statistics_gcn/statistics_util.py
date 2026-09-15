@@ -5,8 +5,10 @@ Funções compartilhadas pelas células do notebook de ESTATÍSTICAS
 (pantanal/statistics_gcn/cellNN_*.py).
 
 Papel do statistics_gcn (análise de escritório — leitura de CSVs do Drive):
-  - lê os CSVs exportados pelo GEE (steps `7_statistics.js` das versões)
-  - QA de somas (n0/n1/total, territórios, arquivos ausentes)
+  - lê os CSVs exportados pelo GEE (steps `7_statistics.js` das versões),
+    que contêm UMA linha por classe LULC (nível n0) — SEM agregações
+  - QA (fechamento/territórios, arquivos ausentes, sanidade física)
+  - deriva EM MEMÓRIA as agregações n1/marcador/total (comparativos incluídos)
   - figuras (agregados por classe/marcador/versão/produto)
   - relatório XLSX (abas n0/n1/marcador/total/comparativo) + resumo .md
   - mapas OPCIONAIS (flag FAZER_MAPAS; exige re-computação no Earth Engine)
@@ -160,14 +162,31 @@ def _read(pattern: str) -> pd.DataFrame:
     return pd.concat(frames, ignore_index=True)
 
 
+def _clean_schema(df: pd.DataFrame) -> pd.DataFrame:
+    """Padroniza o schema do consolidado a partir dos CSVs do 7_statistics.js.
+
+    O GEE exporta APENAS o nível n0 (uma linha por classe). Caso sobrem CSVs
+    antigos (com nivel/grupo), mantém somente n0 e normaliza `classe` numérica.
+    """
+    if df is None or not len(df):
+        return pd.DataFrame()
+    if "nivel" in df.columns:
+        df = df[df["nivel"] == "n0"].copy()
+    df = df.drop(columns=[c for c in ("nivel", "grupo") if c in df.columns],
+                 errors="ignore")
+    if "classe" in df.columns:
+        df["classe"] = pd.to_numeric(df["classe"], errors="coerce")
+    return df
+
+
 def load_forest() -> pd.DataFrame:
-    """Concatena stats_forest_*_2023*.csv (níveis n0/n1/marcador/total)."""
-    return _read("stats_forest_*2023*.csv")
+    """Concatena stats_forest_*_2023*.csv (linhas n0 por classe LULC)."""
+    return _clean_schema(_read("stats_forest_*2023*.csv"))
 
 
 def load_grassland() -> pd.DataFrame:
-    """Concatena stats_grassland_*_2023*.csv (por produto)."""
-    return _read("stats_grassland_*2023*.csv")
+    """Concatena stats_grassland_*_2023*.csv (linhas n0 por classe LULC)."""
+    return _clean_schema(_read("stats_grassland_*2023*.csv"))
 
 
 EXPECTED = {
@@ -193,22 +212,39 @@ def check_presence(detect: str | None = None) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# QA de somas (níveis devem fechar dentro de MISSING_TOL)
+# QA de fechamento (agregações derivadas EM MEMÓRIA a partir dos n0)
 # ---------------------------------------------------------------------------
-def qa_somas(df: pd.DataFrame, value_col: str, key_cols: list[str]) -> list[str]:
-    """Valida total == somatório(n0) e total == somatório(n1) por chave."""
-    problems = []
+def qa_fecha(df: pd.DataFrame, value_col: str, key_cols: list[str],
+             area_col: str = "area_ha") -> list[str]:
+    """Valida o fechamento das agregações derivadas das linhas n0 por chave.
+
+    Como o CSV do GEE traz apenas n0 (uma linha por classe), as somas de
+    n1/marcador/total são RECOMPUTADAS aqui — o QA garante que a separação
+    pela legenda (n1/marcador) soma o mesmo que o total, e que classes com
+    área/estoque estão consistentes (sanidade de unidades, valores não nulos).
+    """
+    problems: list[str] = []
+    if not len(df):
+        return problems
     for key, grp in df.groupby(key_cols):
-        n0 = grp[grp["nivel"] == "n0"][value_col].sum()
-        n1 = grp[grp["nivel"] == "n1"][value_col].sum()
-        total_rows = grp[grp["nivel"] == "total"]
-        if total_rows.empty:
-            problems.append(f"{key}: sem linha total")
-            continue
-        total = total_rows[value_col].iloc[0]
-        for label, soma in (("n0", n0), ("n1", n1)):
-            if abs(soma - total) > CONF["MISSING_TOL"]:
-                problems.append(f"{key}: {label} ({soma:.1f}) ≠ total ({total:.1f})")
+        total = grp[value_col].sum()
+        tot_n1 = grp.groupby("n1", dropna=False)[value_col].sum().sum()
+        tot_mark = grp.groupby("marcador", dropna=False)[value_col].sum().sum()
+        if abs(tot_n1 - total) > CONF["MISSING_TOL"]:
+            problems.append(f"{key}: n1 ({tot_n1:.1f}) ≠ total ({total:.1f})")
+        if abs(tot_mark - total) > CONF["MISSING_TOL"]:
+            problems.append(f"{key}: marcador ({tot_mark:.1f}) ≠ total "
+                            f"({total:.1f})")
+        if grp["marcador"].isna().any():
+            problems.append(f"{key}: há classes sem marcador (legenda)")
+        if (grp[value_col] < 0).any() or (grp[area_col] < 0).any():
+            problems.append(f"{key}: valores negativos de {value_col}/área")
+        dens = grp[value_col].sum() / max(grp[area_col].sum(), 1e-6)
+        if grp[area_col].sum() > 0 and dens > CONF["DENSITY_MAX"]:
+            problems.append(f"{key}: densidade média implícita {dens:.0f} "
+                            f"t/ha > {CONF['DENSITY_MAX']} (unidades?)")
+        if grp[area_col].sum() <= 0 and grp[value_col].sum() > 0:
+            problems.append(f"{key}: estoque > 0 sem área")
     return problems
 
 
@@ -220,19 +256,19 @@ def qa_territorios(df: pd.DataFrame, versions: list[str]) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# Agregações prontas para figuras/relatório
+# Agregações prontas para figuras/relatório (derivadas EM MEMÓRIA dos n0)
 # ---------------------------------------------------------------------------
 def pivot_marcador(df: pd.DataFrame, value_col: str,
-                   keys=("version", "marcador")) -> pd.DataFrame:
-    """Pivô nivel=marcador × valor → linhas por chave."""
-    rows = df[df["nivel"] == "marcador"].groupby(list(keys))[value_col].sum()
+                   keys=("version",)) -> pd.DataFrame:
+    """Pivô marcador (florestal/campestre/outros) × valor, somando os n0."""
+    rows = df.groupby(list(keys) + ["marcador"], dropna=False)[value_col].sum()
     return rows.reset_index()
 
 
 def pivot_n0(df: pd.DataFrame, value_col: str,
              keys=("version",)) -> pd.DataFrame:
     """Tabela de classes decimais (col x versão) com n0 e n2."""
-    rows = df[df["nivel"] == "n0"].copy()
+    rows = df.copy()
     rows["n0"] = rows["classe"].apply(n0_label)
     rows["n2"] = rows["classe"].apply(n2_of)
     return rows.pivot_table(index=["n0", "n2"], columns=list(keys),
@@ -240,34 +276,41 @@ def pivot_n0(df: pd.DataFrame, value_col: str,
 
 
 def total_linha(df: pd.DataFrame, value_col: str, keys=("version",)) -> pd.DataFrame:
-    t = df[df["nivel"] == "total"].groupby(list(keys) + ["territorio"])[
-        value_col].sum()
-    return t.reset_index()
+    """Total (n0) por chave × território — sempre derivado, nunca exportado."""
+    return (df.groupby(list(keys) + ["territorio"])[value_col].sum()
+            .reset_index())
 
 
 # ---------------------------------------------------------------------------
-# Comparativos OFFLINE (substituem os antigos compare_*_2023 do GEE)
+# Comparativos OFFLINE (derivados EM MEMÓRIA dos CSVs n0 do GEE)
 # ---------------------------------------------------------------------------
 def build_compare_forest(df: pd.DataFrame) -> pd.DataFrame:
-    """Tabela version × marcador (florestal/campestre/outros + total), a partir
-    do consolidado forest. Espelha o antigo `compare_forest_versoes_2023.csv`."""
+    """Tabela version × marcador (florestal/campestre/outros + total), derivada
+    das linhas n0 do consolidado forest. Espelha o antigo
+    `compare_forest_versoes_2023.csv` do GEE."""
     if df is None or not len(df):
         return pd.DataFrame()
-    rows = df[df["nivel"].isin(["marcador", "total"])].copy()
-    rows = rows.groupby(["version", "marcador"], as_index=False).agg(
+    rows = df.groupby(["version", "marcador"], as_index=False).agg(
         area_ha=("area_ha", "sum"),
-        estoque_Mg=("estoque_Mg", "sum"),
-        incerteza_Mg=("incerteza_Mg", "sum"))
-    rows.insert(1, "ano", CONF["YEAR"])
-    return rows[["version", "ano", "marcador", "area_ha", "estoque_Mg",
-                 "incerteza_Mg"]]
+        estoque_t=("estoque_t", "sum"),
+        incerteza_t=("incerteza_t", "sum"))
+    tot = df.groupby(["version"], as_index=False).agg(
+        area_ha=("area_ha", "sum"),
+        estoque_t=("estoque_t", "sum"),
+        incerteza_t=("incerteza_t", "sum"))
+    tot["marcador"] = "total"
+    out = pd.concat([rows, tot], ignore_index=True)
+    out.insert(1, "ano", CONF["YEAR"])
+    return out[["version", "ano", "marcador", "area_ha", "estoque_t",
+                "incerteza_t"]]
 
 
 def build_compare_grassland(df: pd.DataFrame) -> pd.DataFrame:
-    """Tabela produto × classe (+ TOTAL) da versão de referência (v02), a partir
-    do consolidado grassland. Espelha o antigo `compare_grassland_produtos_v02.csv`."""
+    """Tabela produto × classe (+ TOTAL) da versão de referência (v02),
+    derivada das linhas n0 do consolidado grassland. Espelha o antigo
+    `compare_grassland_produtos_v02.csv` do GEE."""
     cols = ["produto", "versao", "ano", "classe", "n0", "n1", "marcador",
-            "area_ha", "valor_Mg", "unidade"]
+            "area_ha", "valor_t", "unidade"]
     if df is None or not len(df):
         return pd.DataFrame(columns=cols)
     ref = str(CONF["GRASSLAND_REF_VERSION"])
@@ -276,16 +319,15 @@ def build_compare_grassland(df: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame(columns=cols)
     out = []
     for p, grp in d.groupby("produto"):
-        dec = grp[grp["nivel"] == "n0"].copy()
+        dec = grp.copy()
         if not len(dec):
             continue
         dec = dec.assign(produto=p, versao=ref, ano=CONF["YEAR"],
                          unidade=grp["unidade"].iloc[0])
-        t = grp[grp["nivel"] == "total"]
         tot = pd.DataFrame([{
             "produto": p, "versao": ref, "ano": CONF["YEAR"], "classe": "",
             "n0": "TOTAL", "n1": "—", "marcador": "total",
-            "area_ha": t["area_ha"].sum(), "valor_Mg": t["valor_Mg"].sum(),
+            "area_ha": grp["area_ha"].sum(), "valor_t": grp["valor_t"].sum(),
             "unidade": grp["unidade"].iloc[0]}])
         out.append(pd.concat([dec[cols], tot], ignore_index=True))
     return pd.concat(out, ignore_index=True) if out else pd.DataFrame(columns=cols)

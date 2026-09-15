@@ -29,7 +29,7 @@ cmpg = u.build_compare_grassland(grassland)
 
 md = [f"# Resumo das estatísticas · Pantanal · ano {u.CONF['YEAR']}",
       f"\nGerado por `pantanal/statistics_gcn` em Colab.",
-      "\n## Floresta (AGC, Mg/ha → Mg)\n"]
+      "\n## Floresta (AGC, t/ha → Mg)\n"]
 
 xlsx_path = u.out_dir() / f"resumo_pantanal_{u.CONF['YEAR']}.xlsx"
 with pd.ExcelWriter(xlsx_path, engine="openpyxl") as xw:
@@ -41,29 +41,29 @@ with pd.ExcelWriter(xlsx_path, engine="openpyxl") as xw:
                 tab = (d[d["nivel"] == nivel]
                        .groupby(["territorio", "classe", "n0", "marcador"])
                        .agg(area_ha=("area_ha", "sum"),
-                            estoque_Mg=("estoque_Mg", "sum"),
-                            incerteza_Mg=("incerteza_Mg", "sum"))
+                            estoque_t=("estoque_t", "sum"),
+                            incerteza_t=("incerteza_t", "sum"))
                        .reset_index())
                 tab.to_excel(xw, sheet_name=f"{v}_{nivel}", index=False)
             tv = d[d["nivel"] == "total"]
             if len(tv):
-                tot = tv["estoque_Mg"].sum()
+                tot = tv["estoque_t"].sum()
                 fl = forest[(forest["version"] == v) &
                             (forest["nivel"] == "marcador") &
-                            (forest["marcador"] == "florestal")]["estoque_Mg"].sum()
+                            (forest["marcador"] == "florestal")]["estoque_t"].sum()
                 md.append(f"- **v{v}**: total {tot:,.0f} Mg · florestal"
                           f" {fl:,.0f} Mg ({fl / tot * 100:.1f}%)")
         if cmpf is not None and len(cmpf):
             cmpf.to_excel(xw, sheet_name="comparativo_versoes", index=False)
             md.append("\n### Comparativo florestal (101) e total por versão\n")
             for _, r in cmpf[cmpf["marcador"] == "florestal"].iterrows():
-                md.append(f"- {r['version']}: {r['estoque_Mg']:,.0f} Mg"
+                md.append(f"- {r['version']}: {r['estoque_t']:,.0f} Mg"
                           f" (área {r['area_ha']:,.0f} ha)")
     # ---------------- GRASSLAND ----------------
     if grassland is not None and len(grassland):
         md.append(f"\n## Campestre ({ref} — biomassa/ANPP/carbono, 2023)\n")
-        prod_label = {"biomass": "biomassa (Mg MS)", "anpp": "ANPP (Mg MS/ano)",
-                      "carbon": "carbono (Mg C)"}
+        prod_label = {"biomass": "biomassa (t MS)", "anpp": "ANPP (t MS/ano)",
+                      "carbon": "carbono (t C)"}
         for p in grassland["produto"].unique():
             d = grassland[(grassland["produto"] == p) &
                           (grassland["nivel"] == "total")]
@@ -71,13 +71,13 @@ with pd.ExcelWriter(xlsx_path, engine="openpyxl") as xw:
                 tab = (grassland[(grassland["produto"] == p) &
                                  (grassland["nivel"] == nivel)]
                        .groupby(["territorio", "classe", "n0", "n1", "n2"])
-                       .agg(area_ha=("area_ha", "sum"), valor_Mg=("valor_Mg", "sum"))
+                       .agg(area_ha=("area_ha", "sum"), valor_t=("valor_t", "sum"))
                        .reset_index())
                 tab.to_excel(xw, sheet_name=f"{p}_{nivel}", index=False)
-            tot = d["valor_Mg"].sum() if len(d) else 0
+            tot = d["valor_t"].sum() if len(d) else 0
             camp = grassland[(grassland["produto"] == p) &
                              (grassland["nivel"] == "marcador") &
-                             (grassland["marcador"] == "campestre")]["valor_Mg"].sum()
+                             (grassland["marcador"] == "campestre")]["valor_t"].sum()
             md.append(f"- **{p}**: {tot:,.0f} {prod_label.get(p, 'Mg')}"
                       f" · campestre {camp:,.0f} Mg"
                       f" ({camp / tot * 100:.1f}%")
