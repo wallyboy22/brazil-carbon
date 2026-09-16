@@ -525,7 +525,7 @@ exports.defsecInfo = function (mod) {
  * @returns {ee.Image} banda combo (mascarada onde lulc era mascarado)
  */
 exports.comboEncode = function (lulc, defsec) {
-  return lulc.unmask().multiply(10).add(defsec.unmask(0))
+  return lulc.unmask().multiply(10).add(defsec.unmask(0)).toInt()
     .rename('combo').updateMask(lulc.mask());
 };
 
