@@ -6,7 +6,7 @@
  * pelos steps `7_references.js` e por scripts ad-hoc no Code Editor.
  *
  * Expõe:
- *   runAllReferences(opts?) → UM CSV por REF (19 arquivos), com as linhas de
+ *   runAllReferences(opts?) → UM CSV por REF (20 arquivos), com as linhas de
  *   TODOS os biomas combinadas (coluna `territorio` distingue cada um):
  *                    stats_references_<ref_id>_2023.csv
  *

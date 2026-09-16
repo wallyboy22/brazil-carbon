@@ -63,7 +63,7 @@ exports.MAGNITUDES = ['biomassa', 'carbono', 'incerteza',
   'emissao', 'emissao_liquida', 'proporcao'];
 
 // ---------------------------------------------------------------------------
-// CATÁLOGO DE REFERÊNCIAS (19) — espelho do REF_CATALOG do Colab
+// CATÁLOGO DE REFERÊNCIAS (20) — espelho do REF_CATALOG do Colab
 // (cell00 statistics_gcn) e de docs/“Referencias - Mapas de referencia…”.
 //
 // Campos comuns:
@@ -122,6 +122,12 @@ exports.REFERENCES = [
     unit: 't/ha', scale: 30, epoch: '2012', factor_to_c: 0.47,
     pools: [{ band: 'b1', col: 'agb' }], asset: REF_ROOT + '/Z_baccini_30_agb',
     note: 'teto 255 t/ha (saturação, não físico)' }),
+  // ---- Zimbres 2021 (Cerrado, 30 m, RF + máscara de vegetação nativa) --------
+  ref({ id: 'zimbres_agb', fonte: 'Zimbres 2021 · AGB Cerrado (NV)',
+    magnitude: 'biomassa', unit: 't/ha', scale: 30, epoch: '2019',
+    factor_to_c: 0.47, pools: [{ band: 'b1', col: 'agb' }],
+    asset: REF_ROOT + '/Zimbres_2021_AGB_NVmasked_RF_cog-v1',
+    note: 'RF, máscara vegetação nativa; domínio Cerrado (só gera linhas no Cerrado)' }),
   // ---- Avitabile 2016 (fusão Saatchi+Baccini, ~1 km, ano-base 2010) ---------
   ref({ id: 'avitabile_agb', fonte: 'Avitabile 2016 · AGB pan-tropical',
     magnitude: 'biomassa', unit: 't/ha', scale: 928, epoch: '2010',

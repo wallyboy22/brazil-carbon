@@ -915,6 +915,12 @@ REF_CATALOG: list["Ref"] = [
     _r("baccini_agb", f"{REF_ROOT}/Z_baccini_30_agb", "Baccini 2012", "AGB",
        "t/ha", "agb", "2012", ("b1",), 30.0, CARBON_FRACTION,
        note="teto 255 t/ha (saturação, não físico)", magnitude="biomassa"),
+    # ---- Zimbres 2021 (Cerrado, 30 m, RF + máscara de vegetação nativa) -------
+    _r("zimbres_agb", f"{REF_ROOT}/Zimbres_2021_AGB_NVmasked_RF_cog-v1",
+       "Zimbres 2021", "AGB Cerrado (NV)", "t/ha", "agb", "2019", ("b1",),
+       30.0, CARBON_FRACTION,
+       note="RF, máscara vegetação nativa; domínio Cerrado",
+       magnitude="biomassa"),
     # ---- Avitabile 2016 (fusão Saatchi+Baccini, ~1 km, ano-base 2010) --------
     _r("avitabile_agb", f"{REF_ROOT}/Avitabile_AGB_Map", "Avitabile 2016",
        "AGB", "t/ha", "agb", "2010", ("b1",), 928.0, CARBON_FRACTION,
