@@ -74,7 +74,8 @@ MONTHS.forEach(function (month) {
       var epsRatio = g['para_MJ_sum'] > 0
         ? (g['gpp_kgC_sum'] / g['para_MJ_sum']) * 1000 : null;
       rows.push({ ano: YEAR, mes: month, classe: g['classe'], n0: info.n0,
-        n1: info.n1, marcador: info.n2,
+        n1: info.n1, n2: info.n2, natureza: info.natureza,
+        marcador: info.marcador,
         area_ha: Math.round(g['area_ha_sum']),
         gpp_tC_mes: (g['gpp_kgC_sum'] / 1000).toFixed(1),
         para_GJ_mes: (g['para_MJ_sum'] / 1000).toFixed(1),

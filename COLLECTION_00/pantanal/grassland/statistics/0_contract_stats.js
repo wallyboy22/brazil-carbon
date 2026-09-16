@@ -103,8 +103,10 @@ exports.UF_PROP = 'SIGLA';
 exports.UF_NAME = 'UF';
 
 // ---- LULC Coleção 11 ---------------------------------------------------------
+// Asset oficial único (mesmo de forest/statistics e de module_lulc_legends.js).
 exports.LULC_ASSET =
-  'projects/mapbiomas-brazil/assets/lulc/collection11/mapbiomas_collection11_coverage_v1';
+  'projects/mapbiomas-public/assets/brazil/lulc/collection11/' +
+  'mapbiomas_brazil_collection11_coverage_v3';
 exports.LULC_BAND = 'classification_' + exports.YEAR;
 
 // ---- Saída ---------------------------------------------------------------------
