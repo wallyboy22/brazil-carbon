@@ -16,12 +16,13 @@
 | Covariável florestal | ALOS PALSAR-2 | `JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH` | radar/estrutura | 4 b: HH_db, HV_db, HV_HH, RVI | v01 |
 | Covariável florestal | HAND | `users/gena/global-hand/hand-100` | topografia | 2 b: HAND + classes geomorfológicas | v01 |
 | Covariável florestal | ERA5-Land | `ECMWF/ERA5_LAND/MONTHLY_AGGR` | clima | 5 b: CWD (atual/clim/3yr), Tmean, Prec | v01 |
-| Covariável florestal | MapBiomas C11 | `projects/mapbiomas-public/.../coverage_v3` | máscara+legenda | {3,4,6,7,49} / {11,12,50} | v01 |
+| Covariável florestal | MapBiomas C11 | `projects/mapbiomas-public/.../coverage_v3` | máscara+legenda | níveis oficiais 0–4 (módulo `module_lulc_legends.js`) | v01 |
 | Covariável campestre | Landsat C02 L2 | `LANDSAT/LT05\|LE07\|LC08\|LC09/C02/T1_L2` | biomassa | Reflectância (Fonseca) | gv01 |
 | Covariável campestre | MODIS MCD15A3H | `MODIS/061/MCD15A3H` | fPAR | ×0.01 (+QC/interpolação) | gv01 |
 | Covariável campestre | MODIS MCD18A1 | `MODIS/061/MCD18A1` | radiação | DSR → MJ/m²/dia | gv01 |
 | Covariável campestre | MODIS MOD17A2H | `MODIS/061/MOD17A2H` | εCA observada | Gpp ×0.0001 | gv02 |
 | Auxiliar | Limites IBGE | `ee-ipam/.../IBGE` (biomas 2026 · UFs 2025 · municípios 2025) | território/agregação | polígonos | stats |
+| Estatísticas | MapBiomas C11 def_sec | `projects/mapbiomas-public/.../deforestation_secondary_vegetation_v5` | estratificação bioma×classe nas estatísticas | `classification_1987..2025` (0–7) | stats |
 | Referência | Saatchi 2011 (4) · Xu & Saatchi 2021 · Baccini · Avitabile (4) · TCN (5) · Zimbres · fund_amz · QCN (2) | `ee-ipam/.../Biomass_ref_maps` (17) + `CCAL/public/qcn` (2) | benchmark/catálogo | ver `Referencias - ...` | — |
 | Planejado | ICESat-2 · CARBONDATA* | a definir | dados futuros | — | — |
 
@@ -88,6 +89,20 @@
     relativa **%** do estoque — tipo exato a fechar na análise de validação.
   - "versão da predição de biomassa" = tag exata (ex.: `v07`, `v08`,
     `cerrado/forest/v00`) para comparar versões lado a lado.
+- **Classes e níveis LULC (Col. 11) — gestão única** em
+  `pantanal/module_lulc_legends.js` (e espelho `statistics_gcn/lulc_mbc11.py`),
+  derivada dos níveis oficiais do MapBiomas:
+  `n0` = nome detalhado (nível 4 p/ lavouras, nível 2 nas demais) · `n1` =
+  nível 1 (Floresta / Veg. Herbácea e Arbustiva / Área não vegetada /
+  Agropecuária / Corpos D´água) · `n2` = nível 2 · `natureza` = nível 0
+  (Natural/Antrópico) · `marcador` = florestal/campestre/outros derivado de `n1`.
+- **Estatísticas × def_sec (desmatamento/vegetação secundária):** as tabelas
+  principais (`stats_forest_*` e `stats_grassland_*` anual) trazem, por classe,
+  `area_mod{X}_ha` e `estoque_mod{X}_t` (grassland: `biomassa_mod{X}_t`) para
+  `X∈0..7` — ver `DEF_SEC_VEG_LEGEND` (0 Não Observado, 1 Antrópico, 2 Veg.
+  Primária, 3 Veg. Secundária, 4 Desmatamento Primário, 5 Recrescimento,
+  6 Desmatamento Secundário, 7 Outras Transições). Fechamento: `Σ area_mod =
+  área_ha` por classe (def_sec cobre o bioma inteiro).
 
 ## Planejados
 

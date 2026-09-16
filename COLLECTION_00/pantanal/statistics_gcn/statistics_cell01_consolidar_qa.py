@@ -37,22 +37,29 @@ print(f"[COMPARE] forest {len(cmpf)} · grassland {len(cmpg)} linhas (offline)")
 # --- QA forest ---------------------------------------------------------------
 if len(forest):
     problems = u.qa_somas(forest, "estoque_t", ["version", "territorio"])
+    problems += u.qa_defsec(forest, ("version", "territorio"))
     problems += u.qa_territorios(forest, u.CONF["FOREST_VERSIONS"])
     for p in problems:
         print("[QA !]", p)
     if not problems:
-        print("[QA OK] forest: n0 = n1 = total em todas as versões/territórios")
+        print("[QA OK] forest: n0 = n1 = total em todas as versões/territórios"
+              " e def_sec fecha (Σ area_mod = area)")
     out = u.out_dir() / "consolidado_forest_2023.csv"
     forest.to_csv(out, index=False)
     print(f"[OUT] {out}")
 
 # --- QA grassland ------------------------------------------------------------
 if len(grassland):
-    problems = u.qa_somas(grassland, "valor_t", ["produto", "territorio"])
+    problems = []
+    for vc in ("biomassa_t", "estoque_t"):
+        problems += u.qa_somas(grassland, vc,
+                               ["produto", "versao", "territorio"])
+    problems += u.qa_defsec(grassland, ("produto", "versao", "territorio"))
     for p in problems:
         print("[QA !]", p)
     if not problems:
-        print("[QA OK] grassland: n0 = n1 = total em todos os produtos")
+        print("[QA OK] grassland: n0 = n1 = total em todos os produtos"
+              " e def_sec fecha")
     out = u.out_dir() / "consolidado_grassland_2023.csv"
     grassland.to_csv(out, index=False)
     print(f"[OUT] {out}")

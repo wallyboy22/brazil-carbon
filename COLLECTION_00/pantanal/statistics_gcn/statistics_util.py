@@ -48,7 +48,8 @@ CONF = {
     "FOREST_VERSIONS": ["v03", "v04", "v05", "v06", "v07", "v08"],
     "GRASSLAND_PRODUCTS": ["biomass", "anpp", "carbon"],
     "GRASSLAND_REF_VERSION": "v02",  # referência do comparativo de produtos (bioma completo)
-    "MISSING_TOL": 1.0,  # Mg (QA de somas)
+    "MISSING_TOL": 1.0,  # t (QA de somas)
+    "DENSITY_MAX": 400.0,  # t/ha (QA de densidade implícita)
     # --- figuras ---
     "FIGURE_DPI": 120,
     # --- mapas OPCIONAIS (off p/ padrão — recomputam no Earth Engine) ---
@@ -106,44 +107,46 @@ def manifest() -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# Legenda (espelho do módulo GEE COLLECTION_00/pantanal/module_lulc_legends.js)
+# Legenda (oficial C11 — espelho do módulo GEE module_lulc_legends.js;
+# ver lulc_mbc11.py). n0/n1/n2/natureza/marcador derivados dos níveis oficiais.
 # ---------------------------------------------------------------------------
-DECIMAL = {
-    3: "Formação Florestal", 4: "Formação Savânica", 5: "Mangue",
-    6: "Floresta Alagável", 7: "Savana Alagada (beta)", 9: "Silvicultura",
-    11: "Campo Alagado e Área Pantanosa", 12: "Formação Campestre",
-    15: "Pastagem", 18: "Agricultura", 19: "Lavoura Temporária", 20: "Cana",
-    21: "Mosaico de Usos", 23: "Praia, Duna e Areal", 24: "Área Urbanizada",
-    25: "Outras Áreas Não Vegetadas", 29: "Afloramento Rochoso",
-    30: "Mineração", 31: "Aquicultura", 32: "Apicum",
-    33: "Rio, Lago e Oceano", 35: "Dendê", 36: "Lavoura Perene", 39: "Soja",
-    40: "Arroz", 41: "Outras Lavouras Temporárias", 46: "Café",
-    47: "Citrus", 48: "Outras Lavouras Perenes", 49: "Restinga Arbórea",
-    50: "Restinga Herbácea ou Arbustiva", 75: "Usina Fotovoltaica",
-    77: "Formação Herbácea Arbustiva", 84: "Marisma (beta)",
-    91: "Parque eólico (beta)",
-}
+from lulc_mbc11 import (  # noqa: E402
+    C11_ASSET,
+    DEF_SEC_ASSET,
+    DEF_SEC_VEG_LEGEND,
+    DEFSEC_MODS,
+    DEFSEC_TIPOS,
+    LAVOURA_N4_CODES,
+    LULC_NIVEL_0,
+    LULC_NIVEL_1,
+    LULC_NIVEL_2,
+    LULC_NIVEL_3,
+    LULC_NIVEL_4,
+    LULC_NIVEL_1_1,
+    LULC_NIVEIS,
+    defsec_band,
+    defsec_label,
+    defsec_tipo,
+    info,
+    marcador_from_n1,
+    marcador_of,
+    n0_label,
+    n1_of,
+    n2_of,
+    natureza_of,
+)
+
+# Aliases compat (deprecados — não usar em código novo).
+DECIMAL = {c: n0_label(c)
+           for c in sorted(set(LULC_NIVEL_2) | set(LAVOURA_N4_CODES))}
 FOREST_CLASSES = [3, 4, 6, 7, 49]
 GRASSLAND_CLASSES = [11, 12, 50]
-N1_LABELS = {101: "Floresta", 102: "Campestre", 0: "Outros"}
-N2_LABELS = {101: "florestal", 102: "campestre", 0: "outros"}
-
-
-def n0_label(code: float) -> str:
-    return DECIMAL.get(int(code), f"Classe {int(code)}")
-
-
-def n2_of(code: float) -> str:
-    c = int(code)
-    if c in FOREST_CLASSES:
-        return "florestal"
-    if c in GRASSLAND_CLASSES:
-        return "campestre"
-    return "outros"
-
-
-def marcador_of(code: float) -> str:
-    return n2_of(code)
+N1_LABELS = {
+    101: "Floresta", 102: "Campestre", 0: "Outros",
+}
+N2_LABELS = {
+    "florestal": "florestal", "campestre": "campestre", "outros": "outros",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -245,6 +248,78 @@ def qa_fecha(df: pd.DataFrame, value_col: str, key_cols: list[str],
                             f"t/ha > {CONF['DENSITY_MAX']} (unidades?)")
         if grp[area_col].sum() <= 0 and grp[value_col].sum() > 0:
             problems.append(f"{key}: estoque > 0 sem área")
+    return problems
+
+
+def qa_somas(df: pd.DataFrame, value_col: str, key_cols: list[str],
+             area_col: str = "area_ha") -> list[str]:
+    """QA de fechamento das agregações n0 (n1 = total, sem valores nulos).
+
+    Recomputa n1/marcador/total em memória a partir das linhas n0 do CSV do
+    GEE e valida densidade implícita (unidades). Compatível com o cell01.
+    """
+    problems: list[str] = []
+    if not len(df):
+        return problems
+    for key, grp in df.groupby(key_cols):
+        total = grp[value_col].sum()
+        tot_n1 = grp.groupby("n1", dropna=False)[value_col].sum().sum()
+        tot_mark = grp.groupby("marcador", dropna=False)[value_col].sum().sum()
+        if abs(tot_n1 - total) > CONF["MISSING_TOL"]:
+            problems.append(f"{key}: n1 ({tot_n1:.1f}) ≠ total ({total:.1f})")
+        if abs(tot_mark - total) > CONF["MISSING_TOL"]:
+            problems.append(f"{key}: marcador ({tot_mark:.1f}) ≠ total "
+                            f"({total:.1f})")
+        if grp["marcador"].isna().any() or grp["n1"].isna().any():
+            problems.append(f"{key}: há classes sem n1/marcador (legenda)")
+        if (grp[value_col] < 0).any() or (grp[area_col] < 0).any():
+            problems.append(f"{key}: valores negativos de {value_col}/área")
+        dens = grp[value_col].sum() / max(grp[area_col].sum(), 1e-6)
+        if grp[area_col].sum() > 0 and dens > CONF["DENSITY_MAX"]:
+            problems.append(f"{key}: densidade média implícita {dens:.0f} "
+                            f"t/ha > {CONF['DENSITY_MAX']} (unidades?)")
+        if grp[area_col].sum() <= 0 and grp[value_col].sum() > 0:
+            problems.append(f"{key}: {value_col} > 0 sem área")
+    return problems
+
+
+def qa_defsec(df: pd.DataFrame,
+              key_cols: tuple = ("version", "territorio")) -> list[str]:
+    """QA da estratificação def_sec (colunas area_mod{0..7}_ha dos CSVs).
+
+    Para cada classe: Σ área def_sec ≈ área_ha e coerência natureza/marcador
+    (Antrópico ⇒ marcador `outros`; classes Naturais têm mods de vegetação).
+    """
+    problems: list[str] = []
+    if not len(df):
+        return problems
+    mod_cols = sorted(c for c in df.columns if c.startswith("area_mod"))
+    mods = sorted({int(c.split("_")[1].replace("mod", ""))
+                   for c in df.columns if c.startswith("area_mod")})
+    total_val_cols = [c for c in df.columns
+                      if c.endswith("_t") and "_mod" not in c]
+    if not mod_cols:
+        return problems
+    for key, grp in df.groupby(list(key_cols) + ["classe"]):
+        a = grp["area_ha"].sum()
+        a_mod = sum(grp[f"area_mod{m}_ha"].sum() for m in mods)
+        if a > 0 and abs(a_mod - a) / a > 0.02:
+            problems.append(f"{key}: soma area def_sec ({a_mod:.1f} ha) != area "
+                            f"da classe ({a:.1f} ha)")
+        if "natureza" in grp.columns and len(grp):
+            nat = grp["natureza"].iloc[0]
+            mark = grp["marcador"].iloc[0]
+            if nat == "Antrópico" and mark != "outros":
+                problems.append(f"{key}: natureza {nat} com marcador {mark}")
+        for vc in total_val_cols:
+            head = vc[:-2]  # 'estoque_t' → 'estoque'
+            tot = grp[vc].sum()
+            tot_mod = sum(
+                grp[f"{head}_mod{m}_t"].sum()
+                for m in mods if f"{head}_mod{m}_t" in grp.columns)
+            if abs(tot_mod - tot) > CONF["MISSING_TOL"]:
+                problems.append(f"{key}: soma {vc} def_sec ({tot_mod:.1f}) != "
+                                f"total ({tot:.1f})")
     return problems
 
 
