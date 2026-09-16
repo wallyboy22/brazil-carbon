@@ -63,7 +63,12 @@
 
 | Arquivo | Dataset | Uso no projeto |
 |---|---|---|
-| `Referencias - Mapas de referencia (biomassa e carbono).md` | Saatchi 2011 · Baccini 2012 · Avitabile 2016 · Zimbres 2021 | calibração/validação (assets a definir) |
+| `Referencias - Mapas de referencia (biomassa e carbono).md` | Saatchi 2011 · Baccini 2012 · Avitabile 2016 · Zimbres 2021 (+ Xu & Saatchi 2021) | índex dos mapas de referência no asset `ee-ipam/.../Biomass_ref_maps` |
+| `Referencia - Saatchi 2011 (Americas, 1km).md` | `.../Saatchi_2011_america_agb_1km` | benchmark florestal (~1 km) |
+| `Referencia - Xu Saatchi 2021 (tropical, 2000-2019).md` | `.../Saatchi_Xu2021_t10a_cd_ab_pred_corr_2000_2019_v2` | série anual 2000–2019 (paper a identificar) |
+| `Referencia - Baccini 2012 (tropical, 30m).md` | `.../Z_baccini_30_agb` | densidade de carbono tropical (~30 m) |
+| `Referencia - Avitabile 2016 (pan-tropical).md` | `.../Avitabile_AGB_Map` | mapa integrado pan-tropical |
+| `Referencia - Zimbres 2021 (Cerrado, 30m).md` | `.../Zimbres_2021_AGB_NVmasked_RF_cog-v1` | biomassa do Cerrado (RF, NV, 30 m) |
 
 ## Planejados
 
