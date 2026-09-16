@@ -94,7 +94,8 @@
   derivada dos níveis oficiais do MapBiomas:
   `n0` = nome detalhado (nível 4 p/ lavouras, nível 2 nas demais) · `n1` =
   nível 1 (Floresta / Veg. Herbácea e Arbustiva / Área não vegetada /
-  Agropecuária / Corpos D´água) · `n2` = nível 2 · `natureza` = nível 0
+  Agropecuária / Corpos D´água) · `n2` = nível 2 · `n3` = nível 3 (agregação
+  de lavoura) · `n4` = nível 4 (lavoura específica) · `natureza` = nível 0
   (Natural/Antrópico) · `marcador` = florestal/campestre/outros derivado de `n1`.
 - **Estatísticas × def_sec (desmatamento/vegetação secundária):** as tabelas
   principais (`stats_forest_*` e `stats_grassland_*` anual) trazem, por classe,
@@ -103,6 +104,18 @@
   Primária, 3 Veg. Secundária, 4 Desmatamento Primário, 5 Recrescimento,
   6 Desmatamento Secundário, 7 Outras Transições). Fechamento: `Σ area_mod =
   área_ha` por classe (def_sec cobre o bioma inteiro).
+- **Colunas de valor com unidade no nome** (schema unificado desde o módulo
+  `references/statistics`): sufixo `_tC` = toneladas de CARBONO, `_tB` =
+  toneladas de BIOMASSA. Referências só-biomassa emitem as duas
+  (`<pool>_tB` nativa + `<pool>_tC` via fator `CARBON_FRACTION`), garantindo
+  ≥1 coluna comparável em C. A magnitude (biomassa/carbono) e a unidade ficam
+  NO NOME da coluna — sem colunas redundantes de unidade.
+- **Estatísticas de referência (benchmarks + QCN) por bioma:** o módulo
+  `references/statistics` (Contrato 0 + engine + step 7) exporta
+  `stats_references_<ref>_<bioma>_<ano>.csv` com `fonte`, `ref_id`,
+  `territorio`, `ano_lulc`, `ano`, `area_ha`, pools `*_tC|_tB`, `incerteza_tC`
+  e a estratificação def_sec (`area_mod0..7_ha`, `<pool>_mod0..7_tC|_tB`).
+  Consumo OFFLINE no Colab (`statistics_gcn` → cell06), sem Earth Engine.
 
 ## Planejados
 

@@ -37,12 +37,12 @@ Depois, faça download/export dos CSVs para a pasta
 | Ordem | Arquivo | O que faz | Artefatos gerados |
 |------|---------|-----------|-------------------|
 | 1 | `2_3_0_statistics_cell00_util.py` | carrega CONF + funções + catálogo de referências no namespace (rodar SEMPRE primeiro) | (namespace) |
-| 2 | `2_3_1_statistics_cell01_autentication_drive.py` | autentica Earth Engine, monta o Drive, configura `CONF["DRIVE_ROOT"]` | — |
+| 2 | `2_3_1_statistics_cell01_autentication_drive.py` | monta o Google Drive e configura `CONF["DRIVE_ROOT"]` (NÃO autentica Earth Engine) | — |
 | 3 | `2_3_2_statistics_cell02_consolidar_qa.py` | checa arquivos esperados, consolida forest/grassland, QA de somas (n0=n1=total), exporta consolidados | `consolidado_{forest,grassland}_2023.csv` |
 | 4 | `2_3_3_statistics_cell03_graficos.py` | figuras: estoque por classe/marcador/versão (forest) e por produto (grassland) | `f1..f5_*.png` |
 | 5 | `2_3_4_statistics_cell04_relatorio.py` | relatório XLSX (abas n0/n1/marcador/total/comparativo por versão e produto) + resumo .md | `resumo_pantanal_2023.xlsx` + `.md` |
 | 6 | `2_3_5_statistics_cell05_mapas.py` (OPCIONAL) | mapas de AGC v07 e campestre por grade 10 km — só se `CONF["FAZER_MAPAS"]=True` | `mapa_*.png` |
-| 7 | `2_3_6_statistics_cell06_referencia.py` | análise de dados de referência (CCAL) — T1 cross 2023 + T2 melhor ano por classe + resumo | `tabela_cross_2023.csv`, `tabela_melhor_ano_referencia_2023.csv`, `resumo_referencia_2023.md` |
+| 7 | `2_3_6_statistics_cell06_referencia.py` | lê os CSVs de referência (exportados pelo GEE), cruzamento T1 cross 2023 + T2 melhor ano por classe + resumo | `tabela_cross_2023.csv`, `tabela_melhor_ano_referencia_2023.csv`, `resumo_referencia_2023.md` |
 
 > **Esquema de runtime:** rodar `cell00` primeiro; os demais `.py` assumem que
 > `CONF`, `pd`, `fig_dir/out_dir/manifest`, a legenda C11 e o catálogo
@@ -78,7 +78,8 @@ pantanal/statistics_gcn/
 | `GRASSLAND_REF_VERSION` | `v02` | versão de referência do comparativo de produtos |
 | `CARBON_FRACTION` | `0.47` | AGB → C (IPCC default) |
 | `REF_MIN_VALID` | `0.05` | mín. fração de área válida das referências |
-| `REF_FINE_SCALE` | `False` | se True, QCN/Baccini/TCN em escala nativa (mais lento) |
+| `REF_TERRITORIO` | `Pantanal (bioma)` | território filtrado nos CSVs de referência |
+| `REF_BIOME_SLUG` | `pantanal` | slug do bioma nos nomes de arquivo refs |
 | `MISSING_TOL` | `1.0` Mg | tolerância do QA de somas |
 | `FAZER_MAPAS` | `False` | cell05 só roda se `True` |
 

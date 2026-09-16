@@ -5,10 +5,9 @@ Célula 06 · ANÁLISE DOS DADOS DE REFERÊNCIA — cruzes em termos comuns.
 Rodar em Colab APÓS a cell02 (precisa dos consolidados 2023). Usa CONF e os
 componentes de REFERÊNCIA já carregados pela cell00.
 
-O que faz (lendo o Earth Engine — sem re-exportar nada do pipeline):
-  1. computa cada referência (REF_CATALOG) por classe C11/2023 no bioma
-     Pantanal, na escala nativa (ou coarsened via CONF) — cache em
-     OUT_DIR/referencias_por_classe_2023.csv
+O que faz (lendo os CSVs exportados pelo GEE — SEM Earth Engine):
+  1. lê cada referência (REF_CATALOG × bioma) dos `stats_references_*.csv`
+     exportados pelo step `7_references.js`, via load_references_csv()
   2. T1 · tabela_cross_2023.csv — todas as versões (forest V03–V08; grassland
      v02 carbon/biomass) × referências, densidade em t C/ha (ou t MS/ha p/
      biomass), diff e incerteza por classe
@@ -41,25 +40,16 @@ grass = pd.read_csv(grass_path, encoding="utf-8") if grass_path.exists() else No
 print(f"[IN] forest {len(forest)} linhas · grassland "
       f"{len(grass) if grass is not None else 0} linhas")
 
-# --- 1) referências por classe (compute EE + cache) --------------------------
+# --- 1) referências por classe (lê CSVs do GEE + cache em OUT_DIR) ----------
 cache = out_dir() / "referencias_por_classe_2023.csv"
 if cache.exists():
     refs_df = pd.read_csv(cache)
     print(f"[CACHE] {cache} ({len(refs_df)} linhas) — apague o cache para "
-          "recomputar")
+          "reler os CSVs do Drive")
 else:
-    scale_overrides = {}
-    if not CONF["REF_FINE_SCALE"]:
-        coarse = CONF["REF_SCALE_COARSE"]
-        for rid in ("baccini_agb", "qcn_total", "qcn_agb",
-                    "qcnr_total", "qcnr_agb", "tcn_agc", "tcn_total"):
-            scale_overrides[rid] = coarse
-    print("[EE] computando referências por classe C11/2023 no Pantanal ...")
-    print("     escalas:", {r.ref_id: scale_overrides.get(r.ref_id, r.scale)
-                            for r in REF_CATALOG})
-    records = compute_all_references(lulc_year=CONF["YEAR"],
-                                     scale_overrides=scale_overrides)
-    refs_df = refs_to_frame(records)
+    print(f"[CSV] lendo stats_references_*_{CONF['YEAR']}.csv de"
+          f" {csv_dir()} · território: {CONF['REF_TERRITORIO']}")
+    refs_df = load_references_csv(lulc_year=CONF["YEAR"])
     refs_df.to_csv(cache, index=False)
     print(f"[OUT] {cache} ({len(refs_df)} linhas)")
 

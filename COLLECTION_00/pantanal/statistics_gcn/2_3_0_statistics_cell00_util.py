@@ -10,15 +10,16 @@ estrutura de REFERÊNCIA fiquem disponíveis no namespace do runtime para as
 células seguintes (mesmo esquema do gate v08/2_3_gcn — sem script util).
 
 Papel do statistics_gcn (análise de escritório — leitura de CSVs do Drive):
-  - lê os CSVs exportados pelo GEE (steps `7_statistics.js` das versões),
-    que contêm UMA linha por classe LULC (nível n0) — SEM agregações
+  - lê os CSVs exportados pelo GEE (steps `7_statistics.js` das versões e
+    `7_references.js` das referências), que contêm UMA linha por classe LULC
+    (nível n0) — SEM agregações
   - QA (fechamento/territórios, arquivos ausentes, sanidade física)
   - deriva EM MEMÓRIA as agregações n1/marcador/total (comparativos incluídos)
   - figuras (agregados por classe/marcador/versão/produto)
   - relatório XLSX (abas n0/n1/marcador/total/comparativo) + resumo .md
   - mapas OPCIONAIS (flag FAZER_MAPAS; exige re-computação no Earth Engine)
   - análise de dados de REFERÊNCIA (catalogo CCAL + T1 cross 2023 + T2 melhor
-    ano de referência), lendo o Earth Engine diretamente
+    ano de referência), lendo os CSVs exportados pelo GEE — SEM Earth Engine
 
 NÃO recomputa as estatísticas básicas: se um CSV estiver faltando, a cell02
 lista qual step `7_statistics.js` rodar no GEE (e re-exportar para o Drive).
@@ -52,11 +53,11 @@ CONF = {
     "GRASSLAND_REF_VERSION": "v02",  # referência do comparativo de produtos (bioma completo)
     "MISSING_TOL": 1.0,  # t (QA de somas)
     "DENSITY_MAX": 400.0,  # t/ha (QA de densidade implícita)
-    # --- dados de REFERÊNCIA (cell06 — seção REFERÊNCIA desta célula) ---
+    # --- dados de REFERÊNCIA (cell06 — lê CSVs exportados pelo GEE) ---
     "CARBON_FRACTION": 0.47,   # AGB (t) -> C (t), IPCC default (AGB→AGC)
     "REF_MIN_VALID": 0.05,     # mín. fração de área válida p/ comparar ref
-    "REF_FINE_SCALE": False,   # se False, reamostra refs finas p/ REF_SCALE_COARSE
-    "REF_SCALE_COARSE": 110.0, # escala (m) do coarsening p/ QCN/Baccini/TCN
+    "REF_TERRITORIO": "Pantanal (bioma)",  # território filtrado nos CSVs
+    "REF_BIOME_SLUG": "pantanal",          # slug do bioma nos nomes de arquivo
     # --- figuras ---
     "FIGURE_DPI": 120,
     # --- mapas OPCIONAIS (off p/ padrão — recomputam no Earth Engine) ---
@@ -418,14 +419,14 @@ def check_presence(detect: str | None = None) -> list[str]:
     for grp, pats in EXPECTED.items():
         for p in pats:
             if not list(csv_dir().glob(f"{p}*.csv")):
-                missing.append(p)
-    for m in missing:
-        js = "7_statistics.js" if "compare" in m or "stats" in m else ""
-        print(f"[AUSENTE] {m}.csv → rode o step 7_statistics.js no GEE"
-              f" e re-exporte para {csv_dir()}")
+                missing.append((grp, p))
+    for grp, m in missing:
+        js = "7_references.js" if grp == "references" else "7_statistics.js"
+        print(f"[AUSENTE] {m}*.csv → rode o {js} no GEE e re-exporte"
+              f" para {csv_dir()}")
     if not missing:
         print("[OK] todos os arquivos esperados presentes em", csv_dir())
-    return missing
+    return [m for _, m in missing]
 
 
 # ---------------------------------------------------------------------------
@@ -692,8 +693,11 @@ class Ref:
     group: str
     variable: str
     unit: str            # unidade nativa dos valores (t/ha | t C/ha)
-    term: str            # 'agb' | 'agc' | 'bgc' | 'live' | 'total' | 'error'
+    term: str            # 'agb' | 'agc' | 'bgc' | 'cdw' | 'litter' | 'live'
+                         # | 'total' | 'error'
     epoch: str           # '2011' | '2000'... | 'baseline' | '1985'
+    magnitude: str = "carbono"  # 'biomassa' | 'carbono' | 'incerteza'
+                                # (marca o sufixo da coluna: tB / tC)
     bands: tuple = ()    # bandas a computar; tupla de anos p/ Xu (1999 < ano < 2020)
     scale: float = 928.0
     factor_to_c: float = 1.0     # multiplica dens. nativa -> t C/ha
@@ -711,35 +715,37 @@ class Ref:
 
 def _r(ref_id, asset, group, variable, unit, term, epoch, bands=(), scale=928.0,
        factor_to_c=1.0, nodata_le=None, t2_candidate=True, filter_index=None,
-       note=""):
+       note="", magnitude="carbono"):
     return Ref(ref_id=ref_id, asset=asset, group=group, variable=variable,
-               unit=unit, term=term, epoch=epoch, bands=tuple(bands),
-               scale=scale, factor_to_c=factor_to_c, nodata_le=nodata_le,
-               t2_candidate=t2_candidate, filter_index=filter_index, note=note)
+               unit=unit, term=term, epoch=epoch, magnitude=magnitude,
+               bands=tuple(bands), scale=scale, factor_to_c=factor_to_c,
+               nodata_le=nodata_le, t2_candidate=t2_candidate,
+               filter_index=filter_index, note=note)
 
 
 REF_CATALOG: list["Ref"] = [
     # ---- Saatchi 2011 (Américas, ~1 km, florestas) ---------------------------
     _r("saatchi_agb", f"{REF_ROOT}/Saatchi_2011_america_agb_1km", "Saatchi 2011",
        "AGB", "t/ha", "agb", "2011", ("b1",), 928.0, CARBON_FRACTION,
-       note="florestal; 2007-08"),
+       note="florestal; 2007-08", magnitude="biomassa"),
     _r("saatchi_carbon", f"{REF_ROOT}/Saatchi_2011_america_carbon_1km",
        "Saatchi 2011", "AGC", "t C/ha", "agc", "2011", ("b1",), 928.0, 1.0),
     _r("saatchi_bgb", f"{REF_ROOT}/Saatchi_2011_america_bgb_1km", "Saatchi 2011",
        "BGB", "t/ha", "bgc", "2011", ("b1",), 928.0, CARBON_FRACTION,
-       t2_candidate=False, note="pool BGB (contexto)"),
+       t2_candidate=False, note="pool BGB (contexto)", magnitude="biomassa"),
     _r("saatchi_carbon_error",
        f"{REF_ROOT}/Saatchi_2011_america_carbon_error_1km", "Saatchi 2011",
        "erro AGC", "t C/ha", "error", "2011", ("b1",), 928.0, 1.0,
-       t2_candidate=False, note="incerteza da ref"),
+       t2_candidate=False, note="incerteza da ref", magnitude="incerteza"),
     # ---- Baccini 2012 (tropical, ~30 m; teto byte 255) -----------------------
     _r("baccini_agb", f"{REF_ROOT}/Z_baccini_30_agb", "Baccini 2012", "AGB",
        "t/ha", "agb", "2012", ("b1",), 30.0, CARBON_FRACTION,
-       note="teto 255 t/ha (saturação, não físico)"),
+       note="teto 255 t/ha (saturação, não físico)", magnitude="biomassa"),
     # ---- Avitabile 2016 (fusão Saatchi+Baccini, ~1 km, ano-base 2010) --------
     _r("avitabile_agb", f"{REF_ROOT}/Avitabile_AGB_Map", "Avitabile 2016",
        "AGB", "t/ha", "agb", "2010", ("b1",), 928.0, CARBON_FRACTION,
-       nodata_le=-3.4e38, note="sentinela -3.4e38 mascarada"),
+       nodata_le=-3.4e38, note="sentinela -3.4e38 mascarada",
+       magnitude="biomassa"),
     _r("avitabile_carbon_cerr",
        f"{REF_ROOT}/Avitabile_Carbon_AGB_Cerr", "Avitabile 2016",
        "AGC (Cerrado)", "t C/ha", "agc", "2010", ("b1",), 928.0, 1.0,
@@ -752,7 +758,8 @@ REF_CATALOG: list["Ref"] = [
        f"{REF_ROOT}/Avitabile_AGB_Map_Mode_K_2_2", "Avitabile 2016",
        "AGB Mode K (Pantanal)", "t/ha", "agb", "1985", ("total_1985",),
        250.0, CARBON_FRACTION, t2_candidate=False, filter_index="pantanal_rect_total_v2",
-       note="semântica/unidade a confirmar (banco total_1985)"),
+       note="semântica/unidade a confirmar (banco total_1985)",
+       magnitude="biomassa"),
     # ---- Xu & Saatchi 2021 (biomassa viva AGB+BGB, C Mg/ha, 2000–2019, 10 km)
     _r("xu2021", f"{REF_ROOT}/Saatchi_Xu2021_t10a_cd_ab_pred_corr_2000_2019_v2",
        "Xu & Saatchi 2021", "carbono biomassa viva (AGB+BGB)", "t C/ha", "live",
@@ -767,9 +774,9 @@ REF_CATALOG: list["Ref"] = [
     _r("tcn_bgc", f"{REF_ROOT}/TCN_BGC_comAgua_wgs84", "TCN (3ª CN)",
        "BGC", "t C/ha", "bgc", "baseline", ("b1",), 110.0, 1.0, t2_candidate=False),
     _r("tcn_dwc", f"{REF_ROOT}/TCN_DWC_comAgua_wgs84", "TCN (3ª CN)",
-       "DWC", "t C/ha", "bgc", "baseline", ("b1",), 110.0, 1.0, t2_candidate=False),
+       "DWC", "t C/ha", "cdw", "baseline", ("b1",), 110.0, 1.0, t2_candidate=False),
     _r("tcn_litter", f"{REF_ROOT}/TCN_LITTERC_comAgua_wgs84", "TCN (3ª CN)",
-       "LITTER", "t C/ha", "bgc", "baseline", ("b1",), 110.0, 1.0, t2_candidate=False),
+       "LITTER", "t C/ha", "litter", "baseline", ("b1",), 110.0, 1.0, t2_candidate=False),
     # ---- QCN (4ª CN, baseline / alinhada a 1985) ------------------------------
     _r("qcn_total", f"{QCN_ROOT}/qcn_brazil_historical_biomass_carbon_v1",
        "QCN (4ª CN)", "estoque total", "t C/ha", "total", "baseline",
@@ -787,97 +794,88 @@ REF_CATALOG: list["Ref"] = [
 
 REF_BY_ID = {r.ref_id: r for r in REF_CATALOG}
 
-
-# ---- Computação no Earth Engine (por classe C11, bioma Pantanal) -------------
-def _load_ref_image(r: "Ref", key) -> "ee.Image":
-    import ee
-    if r.filter_index:
-        img = ee.Image(ee.ImageCollection(r.asset)
-                       .filter(ee.Filter.eq("system:index", r.filter_index))
-                       .first())
-    else:
-        img = ee.Image(r.asset)
-    band = r.band_for(key)
-    img = img.select(band)
-    if r.nodata_le is not None:
-        img = img.updateMask(img.gt(r.nodata_le))
-    return img
+# Padrões esperados por ref (1 CSV por bioma) — adicionados após REF_BY_ID
+# existir (EXPECTED inicial cobre os produtos).
+EXPECTED.update({
+    "references": [f"stats_references_{rid}_{CONF['REF_BIOME_SLUG']}_"
+                   for rid in REF_BY_ID],
+})
 
 
-def compute_for_biome(r: "Ref", key, lulc_year: int = 2023,
-                      biome: "ee.Geometry" | None = None,
-                      max_pixels: int = int(1e13),
-                      scale_overrides: dict | None = None) -> dict:
-    """Soma por classe C11 (lulc_year) do bioma: área válida, soma e densidade.
+# ---- Leitura dos CSVs exportados pelo GEE (references/statistics) ----------
+# As estatísticas das referências são computadas NO EARTH ENGINE (step
+# 7_references.js) e exportadas 1 arquivo por REF × BIOMA:
+#   stats_references_<ref_id>_<slug_bioma>_2023.csv
+# em CSV_DIR, com UMA linha por classe LULC (n0) e as colunas
+#   fonte, ref_id, territorio, classe, n0, n1, n2, n3, n4, natureza, marcador,
+#   ano_lulc, ano, area_ha, <pool>_tC|_tB, incerteza_tC, area_mod0..7_ha, …
+# O Colab NÃO usa Earth Engine: apenas lê e normaliza para o formato longo
+# `refs_df` (mesmas colunas do antigo refs_to_frame), mantendo o resto da
+# cell06 inalterado.
+def load_references_csv(lulc_year: int = 2023,
+                        territorio: str | None = None) -> "pd.DataFrame":
+    """Lê os CSVs `stats_references_*_<lulc_year>.csv` de CSV_DIR, filtra o
+    território de análise (CONF["REF_TERRITORIO"]) e monta o DataFrame longo:
+    ref_id, band, year, classe, area_ha, total_native, dens_native, ref_term,
+    unit, factor_to_c, epoch, group, variable, t2_candidate.
 
-    Retorna dict com chaves: ref_id, band, year, rows (lista de dicts por
-    classe: classe, area_ha, total_native, dens_native).
+    Regra do valor NATIVO (espelho do engine GEE — a unidade vai no sufixo):
+      magnitude 'biomassa' → coluna <pool>_tB (t de BIOMASSA);
+      'carbono'/'incerteza' → <pool>_tC / incerteza_tC (t de CARBONO).
+    `dens_native` é <pool>_t/area_ha (densidade média na classe).
     """
-    import ee
-    if biome is None:
-        biome = (ee.FeatureCollection(PANTANAL_FC)
-                 .filter(ee.Filter.eq("Bioma", "Pantanal")).geometry())
-    lulc = ee.Image(C11_ASSET).select(f"classification_{lulc_year}").rename("classe")
-    val = _load_ref_image(r, key).rename("val")
-    area = ee.Image.pixelArea().divide(10000).rename("area_ha")
-    stack = ee.Image.cat([val, val.multiply(area), area, lulc])
-    scale = (scale_overrides or {}).get(r.ref_id, r.scale)
-    red = (ee.Reducer.sum().repeat(3)
-           .group(groupField=3, groupName="classe"))
-    res = stack.reduceRegion(reducer=red, geometry=biome, scale=scale,
-                             maxPixels=max_pixels, tileScale=2)
-    raw = res.getInfo()
-    rows = []
-    for g in raw.get("groups") or []:
-        try:
-            s = g["sum"]
-            if isinstance(s, list):
-                s0, s1, s2 = (float(x) for x in s)
-            else:
-                s0 = float(g["sum"]); s1 = float(g["sum_1"]); s2 = float(g["sum_2"])
-        except (KeyError, TypeError, ValueError):
+    territorio = territorio or CONF.get("REF_TERRITORIO", "Pantanal (bioma)")
+    pats = sorted(csv_dir().glob(f"stats_references_*_{lulc_year}.csv"))
+    if not pats:
+        raise FileNotFoundError(
+            f"nenhum stats_references_*_{lulc_year}.csv em {csv_dir()} — "
+            "rode o step 7_references.js no GEE e re-exporte para o Drive.")
+    rows: list[dict] = []
+    for fp in pats:
+        df = pd.read_csv(fp, encoding="utf-8")
+        if "territorio" in df.columns:
+            df = df[df["territorio"] == territorio]
+        if not len(df):
             continue
-        dens = (s1 / s2) if s2 > 0 else 0.0
-        rows.append({"classe": g["classe"], "area_ha": round(s2, 1),
-                     "total_native": round(s1, 1), "dens_native": round(dens, 3)})
-    row_type = "year" if isinstance(key, int) else "band"
-    return {"ref_id": r.ref_id, "band": r.band_for(key), row_type: key,
-            "rows": rows}
-
-
-def compute_all_references(lulc_year: int = 2023, max_pixels: int = int(1e13),
-                           scale_overrides: dict | None = None,
-                           ref_ids: list[str] | None = None) -> list[dict]:
-    """Computa todas as referências (ou um subconjunto por ref_ids)."""
-    out = []
-    for r in REF_CATALOG:
-        if ref_ids is not None and r.ref_id not in ref_ids:
+        rid = str(df["ref_id"].iloc[0])
+        r = REF_BY_ID.get(rid)
+        if r is None:
+            print(f"[AVISO] ref {rid} de {fp.name} fora do REF_CATALOG — "
+                  "ignorado")
             continue
-        for key in r.bands:
-            rec = compute_for_biome(r, key, lulc_year=lulc_year,
-                                    max_pixels=max_pixels,
-                                    scale_overrides=scale_overrides)
-            out.append(rec)
-    return out
-
-
-def refs_to_frame(records: list[dict]) -> "pd.DataFrame":
-    """Converte records de compute_all_references() em DataFrame longo:
-    ref_id, band, year, classe, area_ha, dens_native, total_native, ref_term,
-    unit, factor_to_c, epoch, t2_candidate."""
-    rows = []
-    for rec in records:
-        r = REF_BY_ID[rec["ref_id"]]
-        for row in rec["rows"]:
-            rows.append({**row, "ref_id": r.ref_id, "band": rec["band"],
-                         "year": rec.get("year"), "ref_term": r.term,
-                         "unit": r.unit, "factor_to_c": r.factor_to_c,
-                         "epoch": r.epoch, "group": r.group,
-                         "variable": r.variable,
-                         "t2_candidate": r.t2_candidate})
+        suffix = "tB" if r.magnitude == "biomassa" else "tC"
+        cands = [c for c in df.columns
+                 if c.endswith(f"_{suffix}") and "_mod" not in c
+                 and not c.startswith("area_")]
+        if not cands:
+            print(f"[AVISO] {fp.name}: sem coluna <pool>_{suffix} p/ "
+                  f"{rid} — ignorado")
+            continue
+        vcol = cands[0]
+        is_multi = any(isinstance(b, int) for b in r.bands)
+        for _, row in df.iterrows():
+            area = float(row.get("area_ha") or 0.0)
+            total = float(row.get(vcol) or 0.0)
+            rows.append({
+                "ref_id": rid,
+                "band": (f"b{int(row['ano']) - XU_START_YEAR + 1}"
+                         if is_multi and pd.notna(row.get("ano")) else
+                         (r.bands[0] if r.bands else "")),
+                "year": (int(row["ano"]) if is_multi
+                         and pd.notna(row.get("ano")) else None),
+                "classe": pd.to_numeric(row["classe"], errors="coerce"),
+                "area_ha": round(area, 1),
+                "total_native": round(total, 1),
+                "dens_native": round(total / area, 3) if area > 0 else 0.0,
+                "ref_term": r.term, "unit": r.unit,
+                "factor_to_c": r.factor_to_c, "epoch": r.epoch,
+                "group": r.group, "variable": r.variable,
+                "t2_candidate": r.t2_candidate,
+            })
     df = pd.DataFrame(rows)
     if not df.empty:
         df["classe"] = pd.to_numeric(df["classe"], errors="coerce")
+        df = df.dropna(subset=["classe"])
     return df
 
 
@@ -885,7 +883,7 @@ def refs_to_frame(records: list[dict]) -> "pd.DataFrame":
 # Categorias de referência aceitas por termo de PRODUTO.
 ALLOWED_TERMS = {
     "agc":     ("agc", "live"),      # estoque de carbono acima do solo
-    "carbon":  ("agc", "live", "total"),
+    "carbon":  ("agc", "live", "total", "bgc", "cdw", "litter"),
     "biomass": ("agb",),             # uma única coluna manda no produto
 }
 PRODUCT_TERM = {"forest": "agc", "grassland_carbon": "carbon",

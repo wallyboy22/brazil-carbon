@@ -4,35 +4,27 @@ MAPBIOMAS-CARBONO · Pantanal — 2_3_1_STATISTICS_CELL01_AUTHENTICATION_DRIVE.p
 Célula 01 do Google Colab (gcn = google collab notebook).
 Rode APÓS a 2_3_0 (que carregou CONF + funções no namespace):
 
-  1. autentica o Google Earth Engine (ee.Authenticate + ee.Initialize)
-  2. monta o Google Drive (from google.colab import drive)
-  3. configura CONF["DRIVE_ROOT"] apontando para a pasta de output no Drive
+  1. monta o Google Drive (from google.colab import drive)
+  2. configura CONF["DRIVE_ROOT"] apontando para a pasta de output no Drive
      (a pasta onde ficam os CSVs das estatísticas, as figuras e o relatório)
-  4. adiciona a pasta do statistics_gcn ao sys.path (para rodar as demais
+  3. adiciona a pasta do statistics_gcn ao sys.path (para rodar as demais
      células com %run apontando para o .py no Drive)
+
+As estatísticas (produtos E referências) são computadas NO GEE (steps
+`7_statistics.js` / `7_references.js`) e apenas LIDAS daqui — este notebook
+NÃO autentica nem inicializa o Earth Engine.
 """
 print("=" * 68)
-print("statistics_gcn · cell01 · autenticação Earth Engine + Drive")
+print("statistics_gcn · cell01 · autenticação Drive (sem Earth Engine)")
 print("=" * 68)
 
-# 1) Autenticação do Earth Engine (opcional nesta etapa — só os MAPAS/REF o usam)
-import ee  # noqa: E402
-
-try:
-    ee.Initialize(project="mapbiomas-carbono")
-    print("[EE] já inicializado (project=mapbiomas-carbono)")
-except Exception:
-    ee.Authenticate()
-    ee.Initialize(project="mapbiomas-carbono")
-    print("[EE] autenticado e inicializado")
-
-# 2) Montagem do Google Drive
+# 1) Montagem do Google Drive
 from google.colab import drive  # noqa: E402
 
 drive.mount("/content/drive")
 print("[DRIVE] montado em /content/drive")
 
-# 3) Configuração da pasta de output (CSVs das estatísticas + figuras + relatório)
+# 2) Configuração da pasta de output (CSVs das estatísticas + figuras + relatório)
 DRIVE_ROOT = "/content/drive/MyDrive/mapbiomas_carbono/pantanal"
 
 import sys  # noqa: E402
@@ -48,7 +40,7 @@ if str(DRIVE_ROOT) not in sys.path:
 print(f"[PATH] sys.path += {GCN_DIR} / {DRIVE_ROOT}")
 
 CONF["DRIVE_ROOT"] = DRIVE_ROOT
-CONF["CSV_DIR"] = "estatisticas"      # CSVs do 7_statistics.js (GEE)
+CONF["CSV_DIR"] = "estatisticas"      # CSVs do 7_statistics.js / 7_references.js
 CONF["FIG_DIR"] = "figures"           # biblioteca de figuras
 CONF["OUT_DIR"] = "relatorio"         # XLSX + .md
 
