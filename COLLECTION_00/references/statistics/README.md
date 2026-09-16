@@ -11,8 +11,8 @@ referência do projeto (validação) dispara:
 
 ```
 references/statistics/7_references.js  →  require('...:COLLECTION_00/references/statistics/references_engine.js')
-                                           engine.runAll()   → 1 CSV por REF × BIOMA
-                                                              (19 refs × 6 biomas = 114 arquivos)
+                                           engine.runAllReferences()   → 1 CSV por REF × BIOMA
+                                                                         (19 refs × 6 biomas = 114 arquivos)
 ```
 
 > O **consumo é OFFLINE no Colab** (`statistics_gcn` → cell06): o notebook lê
@@ -23,8 +23,8 @@ references/statistics/7_references.js  →  require('...:COLLECTION_00/reference
 | Arquivo | Papel |
 |---|---|
 | `0_contract_references.js` | Contrato: catálogo (19 refs), biomas, LULC, saída |
-| `references_engine.js` | Motor: `runAll(opts?)` + QA de somas |
-| `7_references.js` | Step: `engine.runAll()` (ou filtros ad-hoc) |
+| `references_engine.js` | Motor: `runAllReferences(opts?)` + QA de somas |
+| `7_references.js` | Step: `engine.runAllReferences()` (ou filtros ad-hoc) |
 
 A **legenda C11** é o módulo compartilhado
 `COLLECTION_00/pantanal/module_lulc_legends.js` (n0/n1/n2/**n3/n4** + marcador
@@ -79,9 +79,9 @@ redundantes de magnitude/unidade — a informação está no sufixo (`tC`/`tB`).
 ## Como rodar
 
 1. No Code Editor, abra `references/statistics/7_references.js` e rode
-   `engine.runAll()` (114 CSVs) — ou subconjuntos:
-   - `engine.runAll({ ref_ids: ['qcnr_total'] })`
-   - `engine.runAll({ biomes: ['pantanal'] })`
+   `engine.runAllReferences()` (114 CSVs) — ou subconjuntos:
+   - `engine.runAllReferences({ ref_ids: ['qcnr_total'] })`
+   - `engine.runAllReferences({ biomes: ['pantanal'] })`
 2. Autorize as exportações para `MAPBIOMAS_CARBONO_ESTATISTICAS`.
 3. No Colab (`statistics_gcn`), `cell00` → `cell01` (Drive) → `cell02`
    (consolida + QA) → `cell06` lê os `stats_references_*` via
