@@ -79,7 +79,6 @@ pantanal/statistics_gcn/
 | `CARBON_FRACTION` | `0.47` | AGB → C (IPCC default) |
 | `REF_MIN_VALID` | `0.05` | mín. fração de área válida das referências |
 | `REF_TERRITORIO` | `Pantanal (bioma)` | território filtrado nos CSVs de referência |
-| `REF_BIOME_SLUG` | `pantanal` | slug do bioma nos nomes de arquivo refs |
 | `MISSING_TOL` | `1.0` Mg | tolerância do QA de somas |
 | `FAZER_MAPAS` | `False` | cell05 só roda se `True` |
 

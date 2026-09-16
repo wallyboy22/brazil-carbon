@@ -11,8 +11,8 @@ referência do projeto (validação) dispara:
 
 ```
 references/statistics/7_references.js  →  require('...:COLLECTION_00/references/statistics/references_engine.js')
-                                           engine.runAllReferences()   → 1 CSV por REF × BIOMA
-                                                                         (19 refs × 6 biomas = 114 arquivos)
+                                           engine.runAllReferences()   → 1 CSV por REF (19 arquivos)
+                                                                         com os 6 biomas combinados
 ```
 
 > O **consumo é OFFLINE no Colab** (`statistics_gcn` → cell06): o notebook lê
@@ -40,8 +40,8 @@ florestal/campestre + `DEF_SEC_ASSET`).
 
 ## Saídas (Drive → `MAPBIOMAS_CARBONO_ESTATISTICAS`)
 
-- `stats_references_<ref_id>_<slug_bioma>_2023.csv` — **1 arquivo por ref ×
-  bioma**. Colunas (todas as refs):
+- `stats_references_<ref_id>_2023.csv` — **1 arquivo por ref**, com as linhas
+  de **todos os 6 biomas** (a coluna `territorio` distingue cada um). Colunas:
 
   ```
   fonte, ref_id, territorio, classe, n0, n1, n2, n3, n4, natureza, marcador,
@@ -79,7 +79,7 @@ redundantes de magnitude/unidade — a informação está no sufixo (`tC`/`tB`).
 ## Como rodar
 
 1. No Code Editor, abra `references/statistics/7_references.js` e rode
-   `engine.runAllReferences()` (114 CSVs) — ou subconjuntos:
+   `engine.runAllReferences()` (19 CSVs) — ou subconjuntos:
    - `engine.runAllReferences({ ref_ids: ['qcnr_total'] })`
    - `engine.runAllReferences({ biomes: ['pantanal'] })`
 2. Autorize as exportações para `MAPBIOMAS_CARBONO_ESTATISTICAS`.

@@ -112,7 +112,8 @@
   NO NOME da coluna — sem colunas redundantes de unidade.
 - **Estatísticas de referência (benchmarks + QCN) por bioma:** o módulo
   `references/statistics` (Contrato 0 + engine + step 7) exporta
-  `stats_references_<ref>_<bioma>_<ano>.csv` com `fonte`, `ref_id`,
+  `stats_references_<ref>_<ano>.csv` (19 arquivos; um por ref, com os 6 biomas
+  combinados — a coluna `territorio` distingue cada um), com `fonte`, `ref_id`,
   `territorio`, `ano_lulc`, `ano`, `area_ha`, pools `*_tC|_tB`, `incerteza_tC`
   e a estratificação def_sec (`area_mod0..7_ha`, `<pool>_mod0..7_tC|_tB`).
   Consumo OFFLINE no Colab (`statistics_gcn` → cell06), sem Earth Engine.
