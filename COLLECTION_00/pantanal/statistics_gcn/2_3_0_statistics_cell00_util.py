@@ -57,7 +57,7 @@ CONF = {
     "CARBON_FRACTION": 0.47,   # AGB (t) -> C (t), IPCC default (AGB→AGC)
     "REF_MIN_VALID": 0.05,     # mín. fração de área válida p/ comparar ref
     "REF_TERRITORIO": "Pantanal (bioma)",  # território filtrado nos CSVs
-    "REF_BIOME_SLUG": "pantanal",          # slug do bioma nos nomes de arquivo
+    # (os CSVs das referências combinam TODOS os biomas numa coluna territorio)
     # --- figuras ---
     "FIGURE_DPI": 120,
     # --- mapas OPCIONAIS (off p/ padrão — recomputam no Earth Engine) ---
@@ -794,24 +794,21 @@ REF_CATALOG: list["Ref"] = [
 
 REF_BY_ID = {r.ref_id: r for r in REF_CATALOG}
 
-# Padrões esperados por ref (1 CSV por bioma) — adicionados após REF_BY_ID
-# existir (EXPECTED inicial cobre os produtos).
+# Padrões esperados por ref (1 CSV com TODOS os biomas) — adicionados após
+# REF_BY_ID existir (EXPECTED inicial cobre os produtos).
 EXPECTED.update({
-    "references": [f"stats_references_{rid}_{CONF['REF_BIOME_SLUG']}_"
-                   for rid in REF_BY_ID],
+    "references": [f"stats_references_{rid}_" for rid in REF_BY_ID],
 })
 
 
 # ---- Leitura dos CSVs exportados pelo GEE (references/statistics) ----------
 # As estatísticas das referências são computadas NO EARTH ENGINE (step
-# 7_references.js) e exportadas 1 arquivo por REF × BIOMA:
-#   stats_references_<ref_id>_<slug_bioma>_2023.csv
-# em CSV_DIR, com UMA linha por classe LULC (n0) e as colunas
+# 7_references.js) e exportadas 1 arquivo por REF, com os SEIS biomas
+# combinados (coluna `territorio`):
+#   stats_references_<ref_id>_2023.csv
+# em CSV_DIR, com UMA linha por classe LULC (n0) × bioma e as colunas
 #   fonte, ref_id, territorio, classe, n0, n1, n2, n3, n4, natureza, marcador,
 #   ano_lulc, ano, area_ha, <pool>_tC|_tB, incerteza_tC, area_mod0..7_ha, …
-# O Colab NÃO usa Earth Engine: apenas lê e normaliza para o formato longo
-# `refs_df` (mesmas colunas do antigo refs_to_frame), mantendo o resto da
-# cell06 inalterado.
 def load_references_csv(lulc_year: int = 2023,
                         territorio: str | None = None) -> "pd.DataFrame":
     """Lê os CSVs `stats_references_*_<lulc_year>.csv` de CSV_DIR, filtra o

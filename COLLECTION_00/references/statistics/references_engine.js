@@ -6,11 +6,12 @@
  * pelos steps `7_references.js` e por scripts ad-hoc no Code Editor.
  *
  * Expõe:
- *   runAllReferences(opts?) → UM CSV por REF × BIOMA (19 refs × 6 biomas =
- *                   114 arquivos em DRIVE_FOLDER):
- *                    stats_references_<ref_id>_<slug_bioma>_2023.csv
+ *   runAllReferences(opts?) → UM CSV por REF (19 arquivos), com as linhas de
+ *   TODOS os biomas combinadas (coluna `territorio` distingue cada um):
+ *                    stats_references_<ref_id>_2023.csv
  *
- * Cada CSV tem UMA linha por classe LULC (nível n0), com as colunas:
+ * Exige de TODO REF uma linha de classe LULC (nível n0) para CADA bioma, com
+ * as colunas:
  *   fonte, ref_id, territorio, classe, n0, n1, n2, n3, n4, natureza, marcador,
  *   ano_lulc, ano, area_ha,
  *   <pool>_tC | <pool>_tB   (pools de estoque; NO SUFIXO vai o marcador da
@@ -140,8 +141,9 @@ function refStack(r, bandName) {
   var defsec = ee.Image(LEG.DEF_SEC_ASSET).select(LEG.defsecBand(YEAR)).unmask(0);
 
   // Imagens nativas por coluna (resolvidas uma única vez por banda).
+  // `bandName` (multi_year: b1..b20) sobrescreve a banda-base do pool.
   var raw = cols.map(function (c) {
-    return { col: c, img: valueImage(r, c.band) };
+    return { col: c, img: valueImage(r, bandName || c.band) };
   });
 
   var valBands = [];
@@ -257,7 +259,6 @@ function exportCsv(rows, fileName, description, selectors) {
 }
 
 /** Região (bioma) do contrato. */
-function regionSlug(biome) { return biome.slug; }
 function regionTerritorio(biome) { return biome.nome + ' (bioma)'; }
 function regionGeom(biome) {
   return ee.FeatureCollection(C.BIOME_FC)
@@ -266,10 +267,12 @@ function regionGeom(biome) {
 }
 
 /**
- * Gera as estatísticas de TODOS os refs × biomas (ou um subconjunto).
+ * Gera as estatísticas de TODOS os refs (ou um subconjunto), combinando os
+ * seis biomas num ÚNICO CSV por ref (linhas distinguidas por `territorio`).
  * Uso: engine.runAllReferences() |
  *      runAllReferences({ ref_ids: ['qcnr_total'], biomes: ['pantanal'] })
- * → 1 CSV por ref × bioma (114 arquivos no modo completo).
+ * → 1 CSV por ref (19 arquivos no modo completo):
+ *   stats_references_<ref_id>_2023.csv
  */
 exports.runAllReferences = function (opts) {
   opts = opts || {};
@@ -280,12 +283,7 @@ exports.runAllReferences = function (opts) {
     return !opts.biomes || opts.biomes.indexOf(b.slug) > -1;
   });
 
-  var jobs = [];
-  refs.forEach(function (r) {
-    biomes.forEach(function (b) { jobs.push({ r: r, b: b }); });
-  });
-
-  var tot = jobs.length;
+  var tot = refs.length;
   var finished = 0;
   function jobDone() {
     finished++;
@@ -294,10 +292,8 @@ exports.runAllReferences = function (opts) {
     }
   }
 
-  jobs.forEach(function (job) {
-    var r = job.r, territory = regionTerritorio(job.b);
-    print('MAPBIOMAS-CARBONO · references · 7_references ·', r.id, '·',
-      territory);
+  refs.forEach(function (r) {
+    print('MAPBIOMAS-CARBONO · references · 7_references ·', r.id);
     if (!assetExists(r.asset)) {
       print('[ERRO] asset não encontrado:', r.asset);
       jobDone(); return;
@@ -305,31 +301,41 @@ exports.runAllReferences = function (opts) {
 
     var years = r.multi_year
       ? range(r.multi_year.start, r.multi_year.end) : [null];
-    var yearDone = 0;
     var allRows = [];
-    years.forEach(function (y) {
-      var bandName = r.multi_year ? bandForYear(r, y) :
-        r.pools[0].band;
-      var ano = r.multi_year ? y : (isNumericEpoch(r.epoch) ? r.epoch : null);
-      reduceFor(r, bandName, regionGeom(job.b)).evaluate(function (groups) {
-        allRows.push.apply(allRows,
-          buildRows(r, territory, ano, groups));
-        yearDone++;
-        if (yearDone === years.length) {
-          var fileName = C.PREFIX + '_' + r.id + '_' +
-            regionSlug(job.b) + '_' + YEAR;
-          exportCsv(allRows, fileName,
-            'WS_CARBONO_stats_references_' + r.id + '_' +
-              regionSlug(job.b) + '_' + YEAR, statsColumns(r));
-          print('[OK]', r.id, territory, '·', allRows.length, 'linhas ·',
-            (allRows.length ? 'export agendado' : 'sem dados'));
-          jobDone();
-        }
-      }, function (err) {
-        print('[ERRO]', r.id, territory,
-          (r.multi_year ? 'ano ' + y + ' ' : ''), String(err).slice(0, 200));
-        yearDone++;
-        if (yearDone === years.length) jobDone();
+    var biomeDone = 0;
+    biomes.forEach(function (b) {
+      var territory = regionTerritorio(b);
+      var geom = regionGeom(b);
+      var yearDone = 0;
+      years.forEach(function (y) {
+        var bandName = r.multi_year ? bandForYear(r, y) :
+          r.pools[0].band;
+        var ano = r.multi_year ? y : (isNumericEpoch(r.epoch) ? r.epoch : null);
+        reduceFor(r, bandName, geom).evaluate(function (groups) {
+          allRows.push.apply(allRows,
+            buildRows(r, territory, ano, groups));
+          yearDone++;
+          if (yearDone === years.length) {
+            biomeDone++;
+            if (biomeDone === biomes.length) {
+              var fileName = C.PREFIX + '_' + r.id + '_' + YEAR;
+              exportCsv(allRows, fileName,
+                'WS_CARBONO_stats_references_' + r.id + '_' + YEAR,
+                statsColumns(r));
+              print('[OK]', r.id, '·', allRows.length, 'linhas ·',
+                'export agendado (' + biomes.length + ' biomas)');
+              jobDone();
+            }
+          }
+        }, function (err) {
+          print('[ERRO]', r.id, territory,
+            (r.multi_year ? 'ano ' + y + ' ' : ''), String(err).slice(0, 200));
+          yearDone++;
+          if (yearDone === years.length) {
+            biomeDone++;
+            if (biomeDone === biomes.length) jobDone();
+          }
+        });
       });
     });
   });

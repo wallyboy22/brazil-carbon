@@ -2,9 +2,10 @@
  * MAPBIOMAS-CARBONO — Referências (validação) · Estatísticas (contrato)
  * ---------------------------------------------------------------------------
  * Estatísticas dos mapas de REFERÊNCIA de biomassa/carbono (benchmarks
- * publicados + QCN) por classe LULC C11. Um CSV por REF × BIOMA (Brasil,
- * 6 biomas IBGE 2026), exportado para o Google Drive e consumido pelos
- * notebooks (`statistics_gcn` / cell06) SEM Earth Engine no Colab.
+ * publicados + QCN) por classe LULC C11. Um CSV por REF (19 arquivos), com os
+ * SEIS biomas combinados (coluna `territorio` distingue cada um), exportado
+ * para o Google Drive e consumido pelos notebooks (`statistics_gcn` / cell06)
+ * SEM Earth Engine no Colab.
  *
  * Convenções (espelho de `pantanal/forest/statistics/0_contract_stats.js`):
  *   - pool = grandeza medida (agb/agc/bgb/bgc/live/total/…); cada referência
