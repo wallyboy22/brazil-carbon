@@ -19,5 +19,13 @@ VERSOES_RESUMO.md
 .opencode/
 __pycache__/
 
-# PDFs de artigos de referência — mantidos só localmente (não versionar)
-COLLECTION_00/docs/Referências de mapeamento/
+# PDFs de artigos de referência — mantidos fora do histórico git (GEE tem limite
+# de 30 MiB); publicados somente no GitHub via branch `docs/github-pdfs`
+COLLECTION_00/docs/Referências de mapeamento/Avitabile et al. - 2016 - An integrated pan-tropical biomass map using multiple reference datasets.pdf
+COLLECTION_00/docs/Referências de mapeamento/Baccini et al. - 2012 - Estimated carbon dioxide emissions from tropical deforestation improved by carbon-density maps.pdf
+COLLECTION_00/docs/Referências de mapeamento/baccini2017.pdf
+COLLECTION_00/docs/Referências de mapeamento/EBA.pdf
+COLLECTION_00/docs/Referências de mapeamento/RR_4CN_LU_4_LULUCF_2021-01-27.pdf
+COLLECTION_00/docs/Referências de mapeamento/Saatchi et al. - 2011 - Benchmark map of forest carbon stocks in tropical regions across three continents.pdf
+COLLECTION_00/docs/Referências de mapeamento/xu_saatchi2021.pdf
+COLLECTION_00/docs/Referências de mapeamento/Zimbres_etal_2021.pdf
