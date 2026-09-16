@@ -25,12 +25,17 @@
  *                                sempre existe ≥1 coluna comparável em C;
  *   - magnitude 'incerteza'    → a própria coluna é `Incerteza (t C)`.
  *
- * Método:
+ * Método (padrão comprovado — SEM banda derivada como groupField):
  *   área_ha  = pixelArea()/10000, mascarado SÓ pelo LULC;
  *   pool     = banda (t/ha ou t C/ha) × pixelArea()/10000 × fator;
- *   combo    = lulc * 10 + def_sec (module_lulc_legends :: comboEncode/
- *             comboDecode) — banda única de classificação na ÚLTIMA posição;
- *   reducer  = ee.Reducer.sum().repeat(N).group({groupField:N});
+ *   def_sec  = banda classification_<ano> (unmask(0)); estratificação por
+ *              colunas mod (área, pools) × (def_sec 0..7), Σ def_sec = total;
+ *   reducer  = ee.Reducer.sum().repeat(9·(1+k)).group({groupField:9·(1+k)})
+ *              sobre o stack [área, pools, (área, pools)×mod0..7, classe] —
+ *              a banda de classificação é o LULC CRU (select+rename) na
+ *              ÚLTIMA posição; cada grupo = CLASSE; as combinações
+ *              classe × def_sec são expandidas no buildRows client-side
+ *              (combinações com área = 0 são descartadas).
  *   Xu (multi_year) = 1 reduce POR ano (banda `b<i>`, i = ano-1999), linhas
  *             combinadas num ÚNICO CSV com a coluna `ano`.
  ******************************************************************************/
@@ -74,7 +79,7 @@ function normalize(groups) {
         i++;
       }
     }
-    return { code: g['combo'], sums: s };
+    return { code: g['classe'], sums: s };
   });
 }
 
@@ -129,45 +134,45 @@ function valueImage(r, band) {
   return img;
 }
 
-/** Número de bandas de valor do stack (área + pools) — sem mods. */
-function nValue(k) { return 1 + k; }
-
 /**
- * Stack [area_ha, <pools>, combo]:
- *   - área sempre informativa (máscara só no LULC);
- *   - pools somam nos pixels válidos (ref × LULC);
- *   - combo = lulc*10 + def_sec (classe × def_sec numa banda só).
+ * Stack [área, pools, (área, pools)×mod0..7, classe]:
+ *   - área/pools base como hoje (máscaras lulc / ref×lulc);
+ *   - colunas mod = mesma banda mascarada por def_sec.eq(m) (Σ mods = total);
+ *   - banda FINAL = LULC cru (select+rename), integer — grupo do reducer.
+ * A derivada (banda `combo`) NÃO é usada como groupField (cliente legado do
+ * Code Editor retorna groups=null p/ banda derivada).
  */
 function refStack(r, bandName) {
   var cols = emitCols(r);
   var lulc = ee.Image(C.LULC_ASSET).select(C.LULC_BAND).rename('classe');
   var area = ee.Image.pixelArea().divide(10000);
+  var areaHa = area.rename('area_ha').updateMask(lulc.mask());
   var defsec = ee.Image(LEG.DEF_SEC_ASSET).select(LEG.defsecBand(YEAR)).unmask(0);
 
-  // Imagens nativas por coluna (resolvidas uma única vez por banda).
-  // `bandName` (multi_year: b1..b20) sobrescreve a banda-base do pool.
-  var raw = cols.map(function (c) {
-    return { col: c, img: valueImage(r, bandName || c.band) };
+  var pools = cols.map(function (c) {
+    var img = valueImage(r, bandName || c.band);
+    return img.multiply(area).multiply(c.mult)
+      .unmask(0).updateMask(img.mask().and(lulc.mask()));
   });
 
-  var valBands = [];
-  raw.forEach(function (x) {
-    var v = x.img.multiply(area).multiply(x.col.mult)
-      .unmask(0).updateMask(x.img.mask().and(lulc.mask()));
-    valBands.push(v.rename(colName(x.col)));
+  var base = [areaHa].concat(pools);
+  var mods = [];
+  LEG.DEFSEC_MODS.forEach(function (m) {
+    var cond = defsec.eq(m);
+    base.forEach(function (bnd, i) {
+      mods.push(bnd.updateMask(cond).rename(
+        i === 0 ? 'area_mod' + m : 'pool_mod' + m + '_' + i));
+    });
   });
-
-  return ee.Image.cat(
-    [area.rename('area_ha').updateMask(lulc.mask())]
-      .concat(valBands).concat([LEG.comboEncode(lulc, defsec)]));
+  return ee.Image.cat(base.concat(mods).concat([lulc]));
 }
 
 function reduceFor(r, bandName, geom) {
-  var stack = refStack(r, bandName);
-  var n = nValue(emitCols(r).length);
-  return stack.reduceRegion({
-    reducer: ee.Reducer.sum().repeat(n).group({
-      groupField: n, groupName: 'combo' }),
+  var base = 1 + emitCols(r).length;
+  var n = base * (1 + LEG.DEFSEC_MODS.length);
+  return refStack(r, bandName).reduceRegion({
+    reducer: ee.Reducer.sum().repeat(n)
+      .group({ groupField: n, groupName: 'classe' }),
     geometry: geom, scale: r.scale, maxPixels: 1e13, tileScale: 2
   }).get('groups');
 }
@@ -186,8 +191,12 @@ function bandForYear(r, y) {
   return r.multi_year ? 'b' + (y - r.multi_year.start + 1) : null;
 }
 
-/** Expande os grupos combinados (lulc×def_sec) em linhas de combinação. */
+/** Expande os grupos (CLASSE) em linhas de combinação (classe × def_sec),
+ * usando as colunas mod (Σ def_sec = total) e descartando combinações com
+ * área = 0 (paridade com o formato combo). */
 function buildRows(refInfo, territorio, ano, groups) {
+  var cols = emitCols(refInfo);
+  var base = 1 + cols.length;
   var rows = [];
   groups = normalize(groupsOrEmpty(groups, refInfo.id + ' · ' + territorio +
     (refInfo.multi_year ? ' · ano ' + ano : '') +
@@ -195,27 +204,31 @@ function buildRows(refInfo, territorio, ano, groups) {
   if (!groups.length) { print('[AVISO]', refInfo.id, territorio,
     (refInfo.multi_year ? 'ano ' + ano : ''), '· 0 linhas geradas'); return rows; }
 
-  var cols = emitCols(refInfo);
   groups.forEach(function (g) {
     var s = g.sums;
-    var info = LEG.comboInfo(g.code);
-    var rowData = row(refInfo, territorio, ano, {
-      classe: info.classe,
-      'cobertura (n0)': info.n0,
-      'cobertura (n1)': info.n1,
-      'cobertura (n2)': info.n2,
-      'cobertura (n3)': info.n3,
-      'cobertura (n4)': info.n4,
-      'Desmatamento e vegetação secundária': info.def_sec,
-      'Área (ha)': r(s[0])
+    var info = LEG.info(g.code);
+    LEG.DEFSEC_MODS.forEach(function (m, j) {
+      var off = base + j * base;
+      var areaMod = s[off];
+      if (areaMod <= 0) return;
+      var rowData = row(refInfo, territorio, ano, {
+        classe: g.code,
+        'cobertura (n0)': info.n0,
+        'cobertura (n1)': info.n1,
+        'cobertura (n2)': info.n2,
+        'cobertura (n3)': info.n3,
+        'cobertura (n4)': info.n4,
+        'Desmatamento e vegetação secundária': LEG.defsecInfo(m).label,
+        'Área (ha)': r(areaMod)
+      });
+      cols.forEach(function (c, i) {
+        rowData[colName(c)] = r(s[off + 1 + i]);
+      });
+      if (refInfo.magnitude !== 'incerteza') {
+        rowData['Incerteza (t C)'] = 0;
+      }
+      rows.push(rowData);
     });
-    cols.forEach(function (c, j) {
-      rowData[colName(c)] = r(s[1 + j]);
-    });
-    if (refInfo.magnitude !== 'incerteza') {
-      rowData['Incerteza (t C)'] = 0;
-    }
-    rows.push(rowData);
   });
   return rows;
 }

@@ -11,18 +11,20 @@
  *                               colunas em formato gráfico pronto para gráficos.
  *
  * Estratificação por desmatamento/vegetação secundária (def_sec, C11):
- *   combina LULC e def_sec numa BANDA ÚNICA `combo = lulc * 10 + def_sec`
- *   (module_lulc_legends :: comboEncode/comboDecode).  Cada grupo vira uma
- *   linha no CSV com a coluna `Desmatamento e vegetação secundária` rotulada
- *   por extenso (não-utiliza colunas `area_mod`/`estoque_mod`).
+ *   banda classification_<ano> (unmask(0)); na redução o def_sec entra como
+ *   COLUNAS MOD (área_modX/estoque_modX, X = 0..7) — Σ def_sec = total; as
+ *   combinações (classe × def_sec) são expandidas cliente-side no buildRows
+ *   (linha por combinação, coluna `Desmatamento e vegetação secundária` por
+ *   extenso). O groupField é a banda LULC CRUA (padrão comprovado — banda
+ *   derivada no group retorna groups=null no Code Editor).
  *
  * Método:
  *   área_ha  = pixelArea()/10000, mascarado SÓ pelo LULC;
  *   estoque  = banda (t/ha) × pixelArea()/10000  → TOTAL em t;
  *   w2       = (std_ensemble × pixelArea)² — apenas nos pixels preditos;
- *   combo    = lulc * 10 + def_sec, mascarado por lulc.mask();
- *   reducer  = ee.Reducer.sum().repeat(3).group({groupField:3}) sobre o
- *              stack [área, estoque, w2, combo];
+ *   reducer  = ee.Reducer.sum().repeat(19).group({groupField:19}) sobre o
+ *              stack [área, estoque, w2, (área_modX, estoque_modX)×8, n0]
+ *              — a banda de classificação (LULC cru) na ÚLTIMA posição;
  *   incerteza ± = √(Σ w2) — v07/v08; demais: 0.
  * Colunas CSV: version, ano, territorio, classe, cobertura (n0..n4),
  *   Desmatamento e vegetação secundária, Área (ha), Estoque de carbono (t),
@@ -37,9 +39,9 @@ var LEG = require(
 var YEAR = C.YEAR;
 var SCALE = C.SCALE;
 var BASE = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST';
-var N_VALUE = 3; // área, estoque, w2
+var N_VALUE = 3 + 2 * LEG.DEFSEC_MODS.length; // área, estoque, w2 + (área_mod, estoque_mod)×8
 var REDUCER = ee.Reducer.sum().repeat(N_VALUE)
-  .group({ groupField: N_VALUE, groupName: 'combo' });
+  .group({ groupField: N_VALUE, groupName: 'classe' });
 
 /**
  * Verifica se um asset IMAGE existe (por pasta de asset).
@@ -87,7 +89,7 @@ function groupsOrEmpty(groups, ctx) {
  * Normaliza cada grupo para {code, sums:[...]}.
  * O `sum` do `.repeat(N_VALUE)` sai como LISTA (molde solo) ou, em versões do
  * EE, como chaves separadas (sum/sum_1/…) — esta função cobre os dois casos.
- * `code` é o valor da banda `combo` (lulc*10 + def_sec) do groupName.
+ * `code` é o valor da banda `classe` (LULC cru) do groupName.
  */
 function normalize(groups) {
   return (groups || []).map(function (g) {
@@ -102,7 +104,7 @@ function normalize(groups) {
         i++;
       }
     }
-    return { code: g['combo'], sums: s };
+    return { code: g['classe'], sums: s };
   });
 }
 
@@ -136,9 +138,10 @@ function collectRegions(cb) {
   });
 }
 
-/** Stack [área_ha, estoque, w2, combo]: área por classe do LULC (sempre
- * informativa, mask só no LULC), estoque/incerteza nos pixels preditos e
- * combo = lulc*10 + def_sec (agrupa classe × def_sec numa banda só). */
+/** Stack [área_ha, estoque, w2, (área_modX, estoque_modX)×8, n0]: área por
+ * classe do LULC (sempre informativa, mask só no LULC), estoque/incerteza nos
+ * pixels preditos e estratificação def_sec em COLUNAS MOD (Σ def_sec = total).
+ * A banda de classificação é o LULC CRU (n0), na ÚLTIMA posição. */
 function statsImage(v) {
   var img = safeMosaic(v);
   var value = img.select(v.band).rename('valor');
@@ -151,8 +154,13 @@ function statsImage(v) {
   var w2 = v.stdBand
     ? img.select(v.stdBand).rename('w2').multiply(areaHa).pow(2).updateMask(mask)
     : ee.Image(0).rename('w2').updateMask(mask);
-  var combo = LEG.comboEncode(lulc, defsec);
-  return ee.Image.cat([area, stock, w2, combo]);
+  var mods = [];
+  LEG.DEFSEC_MODS.forEach(function (m) {
+    var cond = defsec.eq(m);
+    mods.push(area.updateMask(cond).rename('area_mod' + m),
+      stock.updateMask(cond).rename('estoque_mod' + m));
+  });
+  return ee.Image.cat([area, stock, w2].concat(mods).concat([lulc]));
 }
 
 function reduceFor(v, geom) {
@@ -170,9 +178,11 @@ function row(versionId, territorio, extra) {
   return base;
 }
 
-/** Expande os grupos combinados (lulc×def_sec) em linhas de combinação.
- * Colunas: cobertura (n0..n4), Desmatamento e vegetação secundária (por
- * extenso), Área (ha), Estoque de carbono (t), Incerteza do estoque (t). */
+/** Expande os grupos (CLASSE, lulc cru) em linhas de combinação
+ * (classe × def_sec) usando as colunas mod (Σ def_sec = total) e descartando
+ * combinações com área = 0. Colunas: cobertura (n0..n4), Desmatamento e
+ * vegetação secundária (por extenso), Área (ha), Estoque de carbono (t),
+ * Incerteza do estoque (t). */
 function buildRows(v, territorio, groups) {
   var rows = [];
   groups = normalize(groupsOrEmpty(groups, v.id + ' · ' + territorio +
@@ -181,19 +191,25 @@ function buildRows(v, territorio, groups) {
 
   groups.forEach(function (g) {
     var s = g.sums;
-    var info = LEG.comboInfo(g.code);
-    rows.push(row(v.id, territorio, {
-      classe: info.classe,
-      'cobertura (n0)': info.n0,
-      'cobertura (n1)': info.n1,
-      'cobertura (n2)': info.n2,
-      'cobertura (n3)': info.n3,
-      'cobertura (n4)': info.n4,
-      'Desmatamento e vegetação secundária': info.def_sec,
-      'Área (ha)': r(s[0]),
-      'Estoque de carbono (t)': r(s[1]),
-      'Incerteza do estoque (t)': r(Math.sqrt(Math.max(s[2], 0)))
-    }));
+    var info = LEG.info(g.code);
+    var incerteza = r(Math.sqrt(Math.max(s[2], 0)));
+    LEG.DEFSEC_MODS.forEach(function (m, j) {
+      var off = 3 + j * 2;
+      var areaMod = s[off];
+      if (areaMod <= 0) return;
+      rows.push(row(v.id, territorio, {
+        classe: g.code,
+        'cobertura (n0)': info.n0,
+        'cobertura (n1)': info.n1,
+        'cobertura (n2)': info.n2,
+        'cobertura (n3)': info.n3,
+        'cobertura (n4)': info.n4,
+        'Desmatamento e vegetação secundária': LEG.defsecInfo(m).label,
+        'Área (ha)': r(areaMod),
+        'Estoque de carbono (t)': r(s[off + 1]),
+        'Incerteza do estoque (t)': incerteza
+      }));
+    });
   });
 
   return rows;

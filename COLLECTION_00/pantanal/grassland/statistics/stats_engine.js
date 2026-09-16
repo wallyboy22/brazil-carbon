@@ -24,12 +24,14 @@
  *
  * Units padronizadas em TONELADAS (t). Nada de Mg nas saídas.
  *
- * Método:
- *   valor_t = banda × toTFactor × pixelArea()/10000, somada por combinação;
- *   combo   = lulc * 10 + def_sec (module_lulc_legends :: comboEncode/
- *             comboDecode) — agrupa classe × def_sec numa banda única, ficando
- *             na ÚLTIMA posição do stack (padrão comprovado de groupField);
- *   reducer = ee.Reducer.sum().repeat(n).group({groupField:n, groupName:'combo'}).
+ * Método (padrão comprovado — SEM banda derivada como groupField):
+ *   valor_t = banda × toTFactor × pixelArea()/10000, somada por classe;
+ *   def_sec como COLUNAS MOD (área, valor)×0..7 (Σ def_sec = total);
+ *   reducer = ee.Reducer.sum().repeat(9·k).group({groupField:9·k}) sobre o
+ *             stack [área, valores, (área, valores)×mod0..7, classe] — a banda
+ *             de classificação é o LULC CRU na ÚLTIMA posição (banda derivada
+ *             como groupField retorna groups=null no Code Editor); as
+ *             combinações (classe × def_sec) são expandidas client-side.
  ******************************************************************************/
 var C = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/grassland/statistics/0_contract_stats.js');
@@ -40,7 +42,7 @@ var YEAR = C.YEAR;
 var SCALE = C.SCALE   // 30 m
 ;
 var MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-var N_VALUE = 3; // principal: área, biomassa, estoque
+var N_VALUE = 3 * (1 + LEG.DEFSEC_MODS.length); // principal: área, biomassa, estoque + (área, biomassa, estoque)×mods
 
 /** Banda zero-pad de mês: bandeira mensal adotada = `biomass_01`…`biomass_12`. */
 function pad(n) { return (n < 10 ? '0' : '') + n; }
@@ -131,15 +133,14 @@ function exportTable(rows, filePrefix, sel) {
   });
 }
 
-/** Base de linha por código `combo` (classe × def_sec), colunas prontas p/ gráfico. */
-function comboRowBase(t, code) {
-  var info = LEG.comboInfo(code);
+/** Base de linha por CLASSE LULC (identificadores + cobertura n0..n4). */
+function rowBase(t, code) {
+  var info = LEG.info(code);
   return { produto: 'grassland', versao: t[1], ano: YEAR, territorio: t[0],
-    unidade: 't', classe: info.classe,
+    unidade: 't', classe: code,
     'cobertura (n0)': info.n0, 'cobertura (n1)': info.n1,
     'cobertura (n2)': info.n2, 'cobertura (n3)': info.n3,
-    'cobertura (n4)': info.n4,
-    'Desmatamento e vegetação secundária': info.def_sec };
+    'cobertura (n4)': info.n4 };
 }
 
 /* ---- Colunas (selectors) dos 3 CSVs (nomes prontos p/ gráfico) ------------ */
@@ -153,36 +154,55 @@ var SEL_MENSAL = ['produto', 'versao', 'ano', 'territorio', 'unidade', 'classe',
   'cobertura (n4)', 'Desmatamento e vegetação secundária', 'período',
   'Área (ha)'];
 
-/** Reduz o stack mensal [área_ha, valor_t, combo] por combinação (classe×def_sec). */
+/** Reduz o stack mensal [área_ha, valor_t, (área, valor)×mod0..7, classe] por
+ * CLASSE (lulc cru); combinações classe × def_sec expandidas client-side. */
 function reduceMonthly(product, month, region) {
   var lulc = ee.Image(C.LULC_ASSET).select(C.LULC_BAND).rename('classe');
   var defsec = ee.Image(LEG.DEF_SEC_ASSET).select(LEG.defsecBand(YEAR)).unmask(0);
-  var combo = LEG.comboEncode(lulc, defsec);
   var valor = ee.Image(product.asset).select(product.bandPrefix + pad(month))
     .multiply(1 / 1000).rename('valor'); // kg → t
   var mask = valor.mask().and(lulc.mask());
-  var stack = ee.Image.cat([
+  var base = [
     areaMasked(lulc),
     valor.multiply(ee.Image.pixelArea()).divide(10000).rename('valor_t')
-      .unmask(0).updateMask(mask),
-    combo]);
-  return stack.reduceRegion({
-    reducer: ee.Reducer.sum().repeat(2)
-      .group({ groupField: 2, groupName: 'combo' }),
+      .unmask(0).updateMask(mask)];
+  var mods = [];
+  LEG.DEFSEC_MODS.forEach(function (m) {
+    var cond = defsec.eq(m);
+    base.forEach(function (bnd, i) {
+      mods.push(bnd.updateMask(cond).rename(
+        i === 0 ? 'area_mod' + m : 'valor_mod' + m));
+    });
+  });
+  var n = 2 * (1 + LEG.DEFSEC_MODS.length); // 18
+  return ee.Image.cat(base.concat(mods).concat([lulc])).reduceRegion({
+    reducer: ee.Reducer.sum().repeat(n)
+      .group({ groupField: n, groupName: 'classe' }),
     geometry: region.geom, scale: SCALE, maxPixels: 1e13, tileScale: 2
   }).get('groups');
 }
 
-/** Expande grupos de um mês em linhas longas (coluna `período` YYYY_MM). */
+/** Expande grupos (CLASSE) de um mês em linhas longas (coluna `período`
+ * YYYY_MM), uma por combinação classe × def_sec (drop de área = 0). */
 function rowsOfMonth(groups, t, mes, valueCol) {
-  return (groups || []).map(function (g) {
+  var rows = [];
+  (groups || []).forEach(function (g) {
     var s = sumsOf(g);
-    var b = comboRowBase(t, g.combo);
-    b['período'] = YEAR + '_' + pad(mes);
-    b['Área (ha)'] = r(s[0]);
-    b[valueCol] = r(s[1]);
-    return b;
+    var baseRow = rowBase(t, g.classe);
+    LEG.DEFSEC_MODS.forEach(function (m, j) {
+      var off = 2 + j * 2;
+      var areaMod = s[off];
+      if (areaMod <= 0) return;
+      var b = {};
+      Object.keys(baseRow).forEach(function (k) { b[k] = baseRow[k]; });
+      b['Desmatamento e vegetação secundária'] = LEG.defsecInfo(m).label;
+      b['período'] = YEAR + '_' + pad(mes);
+      b['Área (ha)'] = r(areaMod);
+      b[valueCol] = r(s[off + 1]);
+      rows.push(b);
+    });
   });
+  return rows;
 }
 
 /**
@@ -213,7 +233,7 @@ exports.runForVersion = function (versionId) {
       var tableExports = [];
 
       /* A) tabela principal — biomassa + estoque no MESMO stack (anual),
-       * estrato por combo (classe × def_sec). */
+       * estrato por COLUNAS MOD (classe × def_sec expandida client-side). */
       if (biomass && carbon && assetExists(biomass.asset) &&
           assetExists(carbon.asset)) {
         tableExports.push(function (finish) {
@@ -225,25 +245,44 @@ exports.runForVersion = function (versionId) {
           var defsec = ee.Image(LEG.DEF_SEC_ASSET).select(LEG.defsecBand(YEAR))
             .unmask(0);
           var predMask = biomassa.mask().and(estoque.mask()).and(lulc.mask());
-          var stack = ee.Image.cat([
-            areaMasked(lulc),
+          var area = areaMasked(lulc);
+          var base = [
+            area,
             biomassa.multiply(ee.Image.pixelArea()).divide(10000)
               .rename('biomassa_t').unmask(0).updateMask(predMask),
             estoque.multiply(ee.Image.pixelArea()).divide(10000)
-              .rename('estoque_t').unmask(0).updateMask(predMask),
-            LEG.comboEncode(lulc, defsec)]);
+              .rename('estoque_t').unmask(0).updateMask(predMask)];
+          var mods = [];
+          LEG.DEFSEC_MODS.forEach(function (m) {
+            var cond = defsec.eq(m);
+            base.forEach(function (bnd, i) {
+              mods.push(bnd.updateMask(cond).rename(
+                i === 0 ? 'area_mod' + m :
+                (i === 1 ? 'biomassa_mod' + m : 'estoque_mod' + m)));
+            });
+          });
+          var stack = ee.Image.cat(base.concat(mods).concat([lulc]));
           stack.reduceRegion({
             reducer: ee.Reducer.sum().repeat(N_VALUE)
-              .group({ groupField: N_VALUE, groupName: 'combo' }),
+              .group({ groupField: N_VALUE, groupName: 'classe' }),
             geometry: job.region.geom, scale: SCALE, maxPixels: 1e13,
             tileScale: 2 }).evaluate(function (groups) {
-            var rows = (groups || []).map(function (g) {
+            var rows = [];
+            (groups || []).forEach(function (g) {
               var s = sumsOf(g);
-              var b = comboRowBase(job.t, g.combo);
-              b['Área (ha)'] = r(s[0]);
-              b['Biomassa (t)'] = r(s[1]);
-              b['Estoque de carbono (t)'] = r(s[2]);
-              return b;
+              var baseRow = rowBase(job.t, g.classe);
+              LEG.DEFSEC_MODS.forEach(function (m, j) {
+                var off = 3 + j * 3;
+                var areaMod = s[off];
+                if (areaMod <= 0) return;
+                var b = {};
+                Object.keys(baseRow).forEach(function (k) { b[k] = baseRow[k]; });
+                b['Desmatamento e vegetação secundária'] = LEG.defsecInfo(m).label;
+                b['Área (ha)'] = r(areaMod);
+                b['Biomassa (t)'] = r(s[off + 1]);
+                b['Estoque de carbono (t)'] = r(s[off + 2]);
+                rows.push(b);
+              });
             });
             exportTable(rows,
               C.PREFIX + '_' + versionId + '_' + job.region.slug + '_' + YEAR,
