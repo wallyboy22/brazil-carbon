@@ -15,5 +15,9 @@ GITHUB_TWIN_OFFLINE.md
 
 # Docs de contexto IA / fluxo notebook→JS — mantidos só localmente
 mb_carbon_flow_map.md
+VERSOES_RESUMO.md
 .opencode/
 __pycache__/
+
+# PDFs de artigos de referência — mantidos só localmente (não versionar)
+COLLECTION_00/docs/Referências de mapeamento/

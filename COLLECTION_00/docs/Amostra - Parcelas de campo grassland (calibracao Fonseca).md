@@ -21,6 +21,6 @@ pipeline campestre (grassland v02).
 ## Notas do projeto
 
 - Sem `FIELD.ASSET`, a pipeline roda com **coeficientes provisórios do Pampa** e
-  **clamp [0.3, 12] Mg/ha**, avisando no console.
+  **clamp [0.3, 12] t/ha**, avisando no console.
 - Enquanto não há fit, a εCA e a fração de carbono também permanecem hipóteses
   provisórias do Pampa.
