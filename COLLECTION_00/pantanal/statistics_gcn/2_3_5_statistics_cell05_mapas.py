@@ -1,27 +1,25 @@
 """
-MAPBIOMAS-CARBONO · Pantanal — STATISTICS_CELL04_MAPAS.py
-=========================================================
-Célula 04 (OPCIONAL) · Mapas espaciais das estatísticas.
-Rodar em Colab após a cell03 — somente se statistics_util.CONF["FAZER_MAPAS"]
+MAPBIOMAS-CARBONO · Pantanal — 2_3_5_STATISTICS_CELL05_MAPAS.py
+================================================================
+Célula 05 (OPCIONAL) · Mapas espaciais das estatísticas (usa CONF + fig_dir
+da cell00). Rodar em Colab após a cell04 — somente se CONF["FAZER_MAPAS"]
 estiver True.
 
-Diferente das células 01–03, ESTA célula consulta o Earth Engine: calcula a
+Diferente das células 02–04, ESTA célula consulta o Earth Engine: calcula a
 MÉDIA de AGC 2023 (v07) e a FRAÇÃO campestre (C11: 11/12/50) por grade de
 GRID_M (default 10 km), recortados no bioma, e salva dois PNG em FIG_DIR.
-Requer EE autenticado (cell00) e os assets v07/LULC existentes.
+Requer EE autenticado (cell01) e os assets v07/LULC existentes.
 
-Para desligar por completo, deixe FAZER_MAPAS=False (padrão) — sem custo.
+Para desligar por completo, deixe CONF["FAZER_MAPAS"]=False (padrão).
 """
-import statistics_util as u
-
 print("=" * 68)
-print("statistics_gcn · cell04 · mapas (opcional)")
+print("statistics_gcn · cell05 · mapas (opcional)")
 print("=" * 68)
 
-if not u.CONF["FAZER_MAPAS"]:
+if not CONF["FAZER_MAPAS"]:
     print("[OFF] FAZER_MAPAS=False (padrão). Nada a fazer.")
-    print("      Para ativar: statistics_util.CONF['FAZER_MAPAS'] = True")
-    print("      acima desta célula e rode novamente (custa uma redução no EE).")
+    print("      Para ativar: CONF['FAZER_MAPAS'] = True acima desta célula")
+    print("      e rode novamente (custa uma redução no EE).")
     print("=" * 68)
     raise SystemExit(0)
 
@@ -45,12 +43,12 @@ LULC = ee.Image("projects/mapbiomas-public/assets/brazil/lulc/collection11/"
 def thumb(img, params, name):
     url = img.getThumbURL(params)
     pil = Image.open(io.BytesIO(requests.get(url).content))
-    out = u.fig_dir() / name
+    out = fig_dir() / name
     pil.save(out)
     print(f"[FIG] {out}")
 
 
-g = u.CONF["GRID_M"]
+g = CONF["GRID_M"]
 coarse = (ee.Image.pixelArea().multiply(0).add(1).reproject("EPSG:4326", None,
            800).reduceResolution(ee.Reducer.mean(), maxPixels=1024)
           .reproject("EPSG:4326", None, g).clip(BIOME))
@@ -65,5 +63,5 @@ thumb(agc, {"min": 0, "max": 350, "palette": ["#0b4463", "#1a9850", "#fee08b"]},
       f"mapa_agc_v07_grid_{g // 1000}km.png")
 thumb(camp, {"min": 0, "max": 1, "palette": ["#ffffff", "#2b83ba"]},
       f"mapa_campestre_v01_grid_{g // 1000}km.png")
-print(f"[OK] grid de {g // 1000} km — mapas salvos em {u.fig_dir()}")
+print(f"[OK] grid de {g // 1000} km — mapas salvos em {fig_dir()}")
 print("=" * 68)
