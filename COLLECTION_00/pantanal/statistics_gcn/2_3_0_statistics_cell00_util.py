@@ -11,8 +11,8 @@ células seguintes (mesmo esquema do gate v08/2_3_gcn — sem script util).
 
 Papel do statistics_gcn (análise de escritório — leitura de CSVs do Drive):
   - lê os CSVs exportados pelo GEE (steps `7_statistics.js` das versões e
-    `7_references.js` das referências), que contêm UMA linha por classe LULC
-    (nível n0) — SEM agregações
+    `7_references.js` das referências), que contêm UMA linha por COMBINAÇÃO
+    (classe LULC × def_sec; meses nas séries campestres) — SEM agregações
   - QA (fechamento/territórios, arquivos ausentes, sanidade física)
   - deriva EM MEMÓRIA as agregações n1/marcador/total (comparativos incluídos)
   - figuras (agregados por classe/marcador/versão/produto)
@@ -27,6 +27,7 @@ lista qual step `7_statistics.js` rodar no GEE (e re-exportar para o Drive).
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field  # noqa: F401
 from pathlib import Path
 from typing import Optional
@@ -172,6 +173,18 @@ def defsec_label(mod) -> str:
 
 def defsec_tipo(mod) -> str:
     return DEFSEC_TIPOS.get(int(mod), "outro")
+
+
+DEF_SEC_CODE = {v: k for k, v in DEF_SEC_VEG_LEGEND.items()}
+
+
+def defsec_code(label):
+    """Rótulo da legenda def_sec (por extenso) → código 0..7 (-1 se fora)."""
+    if pd.isna(label):
+        return -1
+    if isinstance(label, (int, float, np.integer, np.floating)):
+        return int(label)
+    return DEF_SEC_CODE.get(str(label).strip(), -1)
 
 
 # ---- Legendas oficiais por nível (código → nome) -----------------------------
@@ -372,6 +385,54 @@ def _drop_ee_columns(df: pd.DataFrame) -> pd.DataFrame:
                    errors="ignore")
 
 
+# ---------------------------------------------------------------------------
+# Schema "gráfico-ready" dos CSVs → nomes internos canônicos.
+# O GEE (stats_engine de forest/grassland/references) exporta colunas prontas
+# para gráfico — com espaços/parênteses — e UMA linha por combinação
+# (classe × def_sec):
+#   'cobertura (n0)' → 'n0' · 'Área (ha)' → 'area_ha'
+#   'Estoque de carbono (t)' → 'estoque_t' · … (meses têm a coluna `período`).
+# ---------------------------------------------------------------------------
+GRAPH_COLS = {
+    "cobertura (n0)": "n0",
+    "cobertura (n1)": "n1",
+    "cobertura (n2)": "n2",
+    "cobertura (n3)": "n3",
+    "cobertura (n4)": "n4",
+    "Desmatamento e vegetação secundária": "def_sec",
+    "Área (ha)": "area_ha",
+    "Estoque de carbono (t)": "estoque_t",
+    "Incerteza do estoque (t)": "incerteza_t",
+    "Biomassa (t)": "biomassa_t",
+    "ANPP (t MS/ano)": "anpp_t",
+    "período": "periodo",
+}
+
+# Colunas de VALOR das REFERÊNCIAS têm o stem do pool + unidade no rótulo:
+#   'AGB (t MS)' → agb_tB (biomassa) · 'AGC (t C)' → agc_tC (carbono)
+#   'Incerteza (t C)' → incerteza_tC
+_POOL_RE = re.compile(r"\s*([A-Za-zÀ-ú]+)\s+\((t MS|t C)\)")
+
+
+def _pool_internal(col: str):
+    """Nome interno de uma coluna de pool de referência (retorna None p/ demais)."""
+    m = _POOL_RE.fullmatch(str(col).strip())
+    if not m:
+        return None
+    return f"{m.group(1).lower()}_t{'B' if m.group(2) == 't MS' else 'C'}"
+
+
+def _remap_schema(df: pd.DataFrame) -> pd.DataFrame:
+    """Renomeia colunas gráfico-ready do CSV para nomes internos canônicos."""
+    df = df.rename(columns={k: v for k, v in GRAPH_COLS.items()
+                            if k in df.columns})
+    for c in list(df.columns):
+        ic = _pool_internal(c)
+        if ic:
+            df = df.rename(columns={c: ic})
+    return df
+
+
 def _read(pattern: str) -> pd.DataFrame:
     files = sorted(csv_dir().glob(pattern))
     if not files:
@@ -383,8 +444,11 @@ def _read(pattern: str) -> pd.DataFrame:
 def _clean_schema(df: pd.DataFrame) -> pd.DataFrame:
     """Padroniza o schema do consolidado a partir dos CSVs do 7_statistics.js.
 
-    O GEE exporta APENAS o nível n0 (uma linha por classe). Caso sobrem CSVs
-    antigos (com nivel/grupo), mantém somente n0 e normaliza `classe` numérica.
+    O GEE exporta apenas COMBINAÇÕES (classe × def_sec; `período` nas séries
+    campestres): as colunas `natureza`/`marcador`/`def_sec_code` NÃO vêm do
+    CSV e são derivadas em memória a partir da classe LULC (0_contrato).
+    Caso sobrem CSVs antigos (com nivel/grupo), mantém somente n0 e
+    normaliza `classe` numérica.
     """
     if df is None or not len(df):
         return pd.DataFrame()
@@ -392,8 +456,17 @@ def _clean_schema(df: pd.DataFrame) -> pd.DataFrame:
         df = df[df["nivel"] == "n0"].copy()
     df = df.drop(columns=[c for c in ("nivel", "grupo") if c in df.columns],
                  errors="ignore")
+    df = _remap_schema(df)
     if "classe" in df.columns:
         df["classe"] = pd.to_numeric(df["classe"], errors="coerce")
+    if "def_sec" in df.columns:
+        df["def_sec_code"] = df["def_sec"].map(defsec_code)
+    if "natureza" not in df.columns and "classe" in df.columns:
+        df["natureza"] = df["classe"].map(lambda c: natureza_of(c)
+                                          if pd.notna(c) else None)
+    if "marcador" not in df.columns and "classe" in df.columns:
+        df["marcador"] = df["classe"].map(lambda c: marcador_of(c)
+                                          if pd.notna(c) else None)
     return df
 
 
@@ -403,13 +476,17 @@ def load_forest() -> pd.DataFrame:
 
 
 def load_grassland() -> pd.DataFrame:
-    """Concatena stats_grassland_*_2023*.csv (linhas n0 por classe LULC)."""
+    """Concatena stats_grassland_*_2023*.csv (principal ANUAL + biomassa/ANPP
+    mensais LONGOS — 1 linha por combinação classe × def_sec × mês)."""
     return _clean_schema(_read("stats_grassland_*2023*.csv"))
 
 
+_gv = CONF["GRASSLAND_REF_VERSION"]
 EXPECTED = {
     "forest": [f"stats_forest_{v}_" for v in CONF["FOREST_VERSIONS"]],
-    "grassland": [f"stats_grassland_*_{p}_" for p in CONF["GRASSLAND_PRODUCTS"]],
+    "grassland": [f"stats_grassland_{_gv}_",
+                  f"stats_grassland_{_gv}_biomassa_mensal_",
+                  f"stats_grassland_{_gv}_anpp_mensal_"],
 }
 
 
@@ -430,13 +507,60 @@ def check_presence(detect: str | None = None) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
+# Grassland: tabela principal LONGA por produto (biomass/carbon/anpp)
+# ---------------------------------------------------------------------------
+def expand_grass_product(df: pd.DataFrame) -> pd.DataFrame:
+    """Deriva o produto semântico das células 03/04/06 a partir do schema do
+    NOVO grassland engine (principal ANUAL + mensais LONGOS).
+
+    O CSV do GEE traz `produto='grassland'` em TODAS as linhas; aqui pivota
+    em longo por produto de análise:
+      - principal (sem `periodo`) → 'biomass' (Biomassa (t)) E 'carbon'
+        (Estoque de carbono (t)) — 2 linhas pela mesma combinação;
+      - biomassa MENSAL descartada (o anual já cobre o comparativo);
+      - anpp MENSAL → 'anpp' (soma dos meses feita por por_classe).
+    """
+    if df is None or not len(df):
+        return pd.DataFrame()
+    df = df.copy()
+    if "periodo" not in df.columns:
+        df["periodo"] = pd.NA
+    annual = df[df["periodo"].isna()].copy()
+    monthly = df[df["periodo"].notna()].copy()
+    longa = []
+    if len(annual):
+        for p, active_col in (("biomass", "biomassa_t"),
+                              ("carbon", "estoque_t")):
+            if active_col not in annual.columns:
+                continue
+            part = annual.copy()
+            part["produto"] = p
+            for c in ("estoque_t", "biomassa_t", "anpp_t"):
+                if c in part.columns and c != active_col:
+                    part[c] = pd.NA
+            longa.append(part)
+    if len(monthly):
+        anpp = monthly[monthly["anpp_t"].notna()].copy()
+        if len(anpp):
+            anpp["produto"] = "anpp"
+            for c in ("estoque_t", "biomassa_t"):
+                if c in anpp.columns:
+                    anpp[c] = pd.NA
+            longa.append(anpp)
+    if not longa:
+        return pd.DataFrame()
+    out = pd.concat(longa, ignore_index=True)
+    return out[out["produto"].isin(["biomass", "carbon", "anpp"])]
+
+
+# ---------------------------------------------------------------------------
 # QA de fechamento (agregações derivadas EM MEMÓRIA a partir dos n0)
 # ---------------------------------------------------------------------------
 def qa_fecha(df: pd.DataFrame, value_col: str, key_cols: list[str],
              area_col: str = "area_ha") -> list[str]:
-    """Valida o fechamento das agregações derivadas das linhas n0 por chave.
+    """Valida o fechamento das agregações derivadas das combinações por chave.
 
-    Como o CSV do GEE traz apenas n0 (uma linha por classe), as somas de
+    Como o CSV do GEE traz apenas combinações (classe × def_sec), as somas de
     n1/marcador/total são RECOMPUTADAS aqui — o QA garante que a separação
     pela legenda (n1/marcador) soma o mesmo que o total, e que classes com
     área/estoque estão consistentes (sanidade de unidades, valores não nulos).
@@ -498,41 +622,53 @@ def qa_somas(df: pd.DataFrame, value_col: str, key_cols: list[str],
 
 def qa_defsec(df: pd.DataFrame,
               key_cols: tuple = ("version", "territorio")) -> list[str]:
-    """QA da estratificação def_sec (colunas area_mod{0..7}_ha dos CSVs).
+    """QA da estratificação def_sec no NOVO schema (1 linha por combinação
+    classe × def_sec, rótulo por extenso na coluna `def_sec`).
 
-    Para cada classe: Σ área def_sec ≈ área_ha e coerência natureza/marcador
-    (Antrópico ⇒ marcador `outros`; classes Naturais têm mods de vegetação).
+    Verifica por chave(×classe,×mês):
+      - rótulos def_sec válidos (DEF_SEC_VEG_LEGEND) e sem DUPLICIDADE de
+        combinação (classe × def_sec dentro do mesmo `período`);
+      - sem área/valores nulos ou negativos;
+      - coerência natureza/marcador (Antrópico ⇒ marcador `outros`);
+      - alerta quando 'Não Observado' (def_sec=0) domina (>50 % da área).
     """
     problems: list[str] = []
-    if not len(df):
+    if not len(df) or "def_sec" not in df.columns:
         return problems
-    mod_cols = sorted(c for c in df.columns if c.startswith("area_mod"))
-    mods = sorted({int(c.split("_")[1].replace("mod", ""))
-                   for c in df.columns if c.startswith("area_mod")})
-    total_val_cols = [c for c in df.columns
-                      if c.endswith("_t") and "_mod" not in c]
-    if not mod_cols:
-        return problems
+    if "def_sec_code" not in df.columns:
+        df = df.assign(def_sec_code=df["def_sec"].map(defsec_code))
+    vcols = [c for c in ("estoque_t", "biomassa_t", "anpp_t")
+             if c in df.columns]
     for key, grp in df.groupby(list(key_cols) + ["classe"]):
-        a = grp["area_ha"].sum()
-        a_mod = sum(grp[f"area_mod{m}_ha"].sum() for m in mods)
-        if a > 0 and abs(a_mod - a) / a > 0.02:
-            problems.append(f"{key}: soma area def_sec ({a_mod:.1f} ha) != area "
-                            f"da classe ({a:.1f} ha)")
+        if "periodo" in grp.columns:
+            partes = [pg for _, pg in grp.groupby(
+                grp["periodo"].fillna("__anual__"), dropna=False)]
+        else:
+            partes = [grp]
+        dups = sum(pg["def_sec"].duplicated().sum() for pg in partes)
+        if dups:
+            problems.append(f"{key}: {dups} combinações def_sec duplicadas "
+                            "(classe × def_sec × mês)")
+        unknown = grp[grp["def_sec_code"] < 0]
+        if len(unknown):
+            labels = ", ".join(sorted({str(v) for v in unknown["def_sec"]}))
+            problems.append(f"{key}: rótulos def_sec fora da legenda: {labels}")
+        if grp["area_ha"].isna().any() or (grp["area_ha"] < 0).any():
+            problems.append(f"{key}: área nula/negativa em combinação def_sec")
+        for vc in vcols:
+            if grp[vc].isna().any():
+                problems.append(f"{key}: nulos em {vc}")
+            if (grp[vc] < 0).any():
+                problems.append(f"{key}: valores negativos em {vc}")
         if "natureza" in grp.columns and len(grp):
             nat = grp["natureza"].iloc[0]
             mark = grp["marcador"].iloc[0]
             if nat == "Antrópico" and mark != "outros":
                 problems.append(f"{key}: natureza {nat} com marcador {mark}")
-        for vc in total_val_cols:
-            head = vc[:-2]  # 'estoque_t' → 'estoque'
-            tot = grp[vc].sum()
-            tot_mod = sum(
-                grp[f"{head}_mod{m}_t"].sum()
-                for m in mods if f"{head}_mod{m}_t" in grp.columns)
-            if abs(tot_mod - tot) > CONF["MISSING_TOL"]:
-                problems.append(f"{key}: soma {vc} def_sec ({tot_mod:.1f}) != "
-                                f"total ({tot:.1f})")
+        no = grp[grp["def_sec_code"] == 0]["area_ha"].sum()
+        a = grp["area_ha"].sum()
+        if a > 0 and no / a > 0.5:
+            problems.append(f"{key}: 'Não Observado' cobre {no / a:.0%} da área")
     return problems
 
 
@@ -570,12 +706,54 @@ def total_linha(df: pd.DataFrame, value_col: str, keys=("version",)) -> pd.DataF
 
 
 # ---------------------------------------------------------------------------
+# Colapso de combinações (classe × def_sec; e meses, quando presente) em
+# UMA linha por classe — regra de agregação:
+#   área/valor = soma · incerteza = QUADRATURA (sqrt Σ ι²)
+# ---------------------------------------------------------------------------
+_PART_KEYS = ("produto", "versao", "version", "territorio", "classe", "n0",
+              "n1", "n2", "n3", "n4", "marcador", "natureza", "ano")
+_SUM_COLS = ("area_ha", "estoque_t", "biomassa_t", "anpp_t")
+
+
+def por_classe(df: "pd.DataFrame") -> "pd.DataFrame":
+    """Colapsa as linhas de combinação (classe × def_sec; × mês quando
+    presente) em UMA linha por classe.
+
+    Regras:
+      - Área e valores numéricos somam ao longo das combinações/meses;
+      - Incerteza (t) agrega em **quadratura** — sqrt(Σ ι²) —;
+      - colunas categóricas (n0–n4, marcador, …) mantêm o valor da 1ª linha.
+    """
+    if df is None or not len(df):
+        return df
+    keys = [k for k in _PART_KEYS if k in df.columns]
+    sum_agg = {c: "sum" for c in _SUM_COLS if c in df.columns}
+    out = df.groupby(keys, dropna=False).agg(**sum_agg).reset_index()
+    # Primeiras colunas categóricas não-chave (territorio, unidade …)
+    for c in ("unidade",):
+        if c in df.columns and c not in keys:
+            out[c] = (df.groupby(keys, dropna=False)[c]
+                      .first().reset_index(drop=True))
+    if "incerteza_t" in df.columns:
+        inc = (df.groupby(keys, dropna=False)["incerteza_t"]
+               .apply(lambda s: np.sqrt(np.sum(
+                   np.square(pd.to_numeric(s, errors="coerce").fillna(0)))))
+               .rename("incerteza_t")
+               .reset_index())
+        out = out.drop(columns=["incerteza_t"], errors="ignore")
+        out = out.merge(inc, on=keys, how="left")
+    return out
+
+
+# ---------------------------------------------------------------------------
 # Comparativos OFFLINE (derivados EM MEMÓRIA dos CSVs n0 do GEE)
 # ---------------------------------------------------------------------------
 def build_compare_forest(df: pd.DataFrame) -> pd.DataFrame:
     """Tabela version × marcador (florestal/campestre/outros + total), derivada
-    das linhas n0 do consolidado forest. Espelha o antigo
-    `compare_forest_versoes_2023.csv` do GEE."""
+    das combinações (classe × def_sec) do consolidado forest.
+    Espelha o antigo `compare_forest_versoes_2023.csv` do GEE.
+    Incerteza agrega via SOMA DIRETA (tratada como toneladas ao cruzar classes).
+    """
     if df is None or not len(df):
         return pd.DataFrame()
     rows = df.groupby(["version", "marcador"], as_index=False).agg(
@@ -593,7 +771,9 @@ def build_compare_forest(df: pd.DataFrame) -> pd.DataFrame:
                 "incerteza_t"]]
 
 
-# Coluna de valor por produto campestre (schema real do GEE grassland).
+# Coluna de valor por PRODUTO SEMÂNTICO do consolidado (gerado pelo
+# expand_grass_product: 'biomass'/'carbon'/'anpp' — o CSV do GEE traz
+# produto='grassland' em todas as linhas).
 GRASS_VALUE_COL = {"biomass": "biomassa_t", "carbon": "estoque_t",
                    "anpp": "anpp_t"}
 GRASS_PRODUCT_LABEL = {"biomass": "biomassa (t MS)", "anpp": "ANPP (t MS/ano)",
@@ -607,33 +787,27 @@ def grass_value_col(produto) -> str:
 
 def build_compare_grassland(df: pd.DataFrame) -> pd.DataFrame:
     """Tabela produto × classe (+ TOTAL) da versão de referência (v02),
-    derivada das linhas n0 do consolidado grassland. Espelha o antigo
-    `compare_grassland_produtos_v02.csv` do GEE.
+    derivada do consolidado grassland NOVO schema (já em longo por produto
+    semântico: 'biomass'/'carbon'/'anpp').
 
-    Coluna de valor por produto: biomass→biomassa_t, carbon→estoque_t,
-    anpp→anpp_t (agregado sobre os meses).
+    Colapsa combinações (classe × def_sec) e, no caso ANPP, também os meses
+    (via `por_classe` — incerteza quadratura quando disponível).
     """
     cols = ["produto", "versao", "ano", "territorio", "unidade", "classe",
             "n0", "n1", "marcador", "area_ha", "valor_t"]
     if df is None or not len(df):
         return pd.DataFrame(columns=cols)
     ref = str(CONF["GRASSLAND_REF_VERSION"])
-    d = df[df["versao"].astype(str) == str(ref)] if "versao" in df.columns else df
+    d = df[df["versao"].astype(str) == ref].copy() if "versao" in df.columns else df.copy()
     if not len(d):
         return pd.DataFrame(columns=cols)
     out = []
-    for p, grp in d.groupby("produto"):
+    for p in ("biomass", "carbon", "anpp"):
         vc = grass_value_col(p)
-        sub = grp.drop_duplicates(subset=["classe"]).copy() if vc != "anpp_t" \
-            else grp.copy()
-        if vc == "anpp_t" and "mes" in sub.columns:
-            agg = (sub.groupby(["classe", "n0", "n1", "marcador"],
-                               as_index=False, dropna=False)
-                   .agg(area_ha=("area_ha", "first"),
-                        anpp_t=("anpp_t", "sum"),
-                        territorio=("territorio", "first"),
-                        unidade=("unidade", "first")))
-            sub = agg
+        sub = d[d["produto"] == p].copy()
+        if not len(sub):
+            continue
+        sub = por_classe(sub)
         if not len(sub):
             continue
         dec = pd.DataFrame({
@@ -806,20 +980,24 @@ EXPECTED.update({
 # 7_references.js) e exportadas 1 arquivo por REF, com os SEIS biomas
 # combinados (coluna `territorio`):
 #   stats_references_<ref_id>_2023.csv
-# em CSV_DIR, com UMA linha por classe LULC (n0) × bioma e as colunas
-#   fonte, ref_id, territorio, classe, n0, n1, n2, n3, n4, natureza, marcador,
-#   ano_lulc, ano, area_ha, <pool>_tC|_tB, incerteza_tC, area_mod0..7_ha, …
+# em CSV_DIR, com UMA linha por COMBINAÇÃO (classe LULC × def_sec) × bioma e
+# as colunas
+#   fonte, ref_id, territorio, classe, cobertura (n0..n4),
+#   Desmatamento e vegetação secundária, ano_lulc, ano, Área (ha),
+#   <pool> (t C | t MS), [Incerteza (t C)]
 def load_references_csv(lulc_year: int = 2023,
                         territorio: str | None = None) -> "pd.DataFrame":
     """Lê os CSVs `stats_references_*_<lulc_year>.csv` de CSV_DIR, filtra o
-    território de análise (CONF["REF_TERRITORIO"]) e monta o DataFrame longo:
+    território de análise (CONF["REF_TERRITORIO"]) e monta o DataFrame longo
+    com UMA linha por CLASSE (combinações classe × def_sec COLAPSADAS):
     ref_id, band, year, classe, area_ha, total_native, dens_native, ref_term,
     unit, factor_to_c, epoch, group, variable, t2_candidate.
 
     Regra do valor NATIVO (espelho do engine GEE — a unidade vai no sufixo):
       magnitude 'biomassa' → coluna <pool>_tB (t de BIOMASSA);
       'carbono'/'incerteza' → <pool>_tC / incerteza_tC (t de CARBONO).
-    `dens_native` é <pool>_t/area_ha (densidade média na classe).
+    `total_native`/`area_ha` somam as combinações da classe e `dens_native` é
+    <pool>_t/area_ha (densidade média na classe).
     """
     territorio = territorio or CONF.get("REF_TERRITORIO", "Pantanal (bioma)")
     pats = sorted(csv_dir().glob(f"stats_references_*_{lulc_year}.csv"))
@@ -830,6 +1008,7 @@ def load_references_csv(lulc_year: int = 2023,
     rows: list[dict] = []
     for fp in pats:
         df = pd.read_csv(fp, encoding="utf-8")
+        df = _remap_schema(df)   # colunas gráfico → internas (agb_tB/agc_tC…)
         if "territorio" in df.columns:
             df = df[df["territorio"] == territorio]
         if not len(df):
@@ -842,8 +1021,7 @@ def load_references_csv(lulc_year: int = 2023,
             continue
         suffix = "tB" if r.magnitude == "biomassa" else "tC"
         cands = [c for c in df.columns
-                 if c.endswith(f"_{suffix}") and "_mod" not in c
-                 and not c.startswith("area_")]
+                 if c.endswith(f"_{suffix}") and not c.startswith("area_")]
         if not cands:
             print(f"[AVISO] {fp.name}: sem coluna <pool>_{suffix} p/ "
                   f"{rid} — ignorado")
@@ -861,18 +1039,33 @@ def load_references_csv(lulc_year: int = 2023,
                 "year": (int(row["ano"]) if is_multi
                          and pd.notna(row.get("ano")) else None),
                 "classe": pd.to_numeric(row["classe"], errors="coerce"),
-                "area_ha": round(area, 1),
-                "total_native": round(total, 1),
-                "dens_native": round(total / area, 3) if area > 0 else 0.0,
+                "area_ha": area,
+                "total_native": total,
                 "ref_term": r.term, "unit": r.unit,
                 "factor_to_c": r.factor_to_c, "epoch": r.epoch,
                 "group": r.group, "variable": r.variable,
                 "t2_candidate": r.t2_candidate,
             })
     df = pd.DataFrame(rows)
-    if not df.empty:
-        df["classe"] = pd.to_numeric(df["classe"], errors="coerce")
-        df = df.dropna(subset=["classe"])
+    if df.empty:
+        return df
+    # Colapsa as combinações da MESMA classe (área/pool somam; metadados 1º).
+    df = (df.groupby(["ref_id", "band", "classe"], dropna=False)
+          .agg(area_ha=("area_ha", "sum"),
+               total_native=("total_native", "sum"),
+               year=("year", "first"), ref_term=("ref_term", "first"),
+               unit=("unit", "first"), factor_to_c=("factor_to_c", "first"),
+               epoch=("epoch", "first"), group=("group", "first"),
+               variable=("variable", "first"),
+               t2_candidate=("t2_candidate", "first"))
+          .reset_index())
+    df["classe"] = pd.to_numeric(df["classe"], errors="coerce")
+    df = df.dropna(subset=["classe"])
+    df["area_ha"] = df["area_ha"].round(1)
+    df["total_native"] = df["total_native"].round(1)
+    df["dens_native"] = np.where(df["area_ha"] > 0,
+                                 df["total_native"] / df["area_ha"], 0.0)
+    df["dens_native"] = df["dens_native"].round(3)
     return df
 
 
@@ -905,14 +1098,17 @@ def product_lines(forest: "pd.DataFrame", grassland: "pd.DataFrame",
                   year: int = 2023) -> "pd.DataFrame":
     """Linhas produto×versão×classe com densidade e incerteza (2023).
 
-    forest    → produto='forest'   dens = estoque_t/area_ha (t C/ha), term 'agc'
-    grassland → 'grassland_carbon' dens = estoque_t/area_ha (t C/ha)
-                'grassland_biomass' dens = biomassa_t/area_ha (t MS/ha)
+    Colapsa as combinações (classe × def_sec; e mês p/ grassland via
+    `por_classe` — incerteza em quadratura) em UMA linha por classe:
+      forest    → produto='forest'   dens = estoque_t/area_ha (t C/ha), term 'agc'
+      grassland → 'grassland_carbon' dens = estoque_t/area_ha (t C/ha)
+                  'grassland_biomass' dens = biomassa_t/area_ha (t MS/ha)
     (ANPP fica fora — fluxo, sem referência de estoque.)
     """
     rows = []
     if forest is not None and len(forest):
         f = forest[forest["ano"] == year] if "ano" in forest else forest
+        f = por_classe(f)
         rows.append(pd.DataFrame({
             "produto": "forest", "versao": f["version"].astype(str),
             "classe": pd.to_numeric(f["classe"], errors="coerce"),
@@ -926,7 +1122,10 @@ def product_lines(forest: "pd.DataFrame", grassland: "pd.DataFrame",
         g = g[g["produto"].isin(["carbon", "biomass"])].copy()
         for pname, pproduto, vcol in (("grassland_carbon", "carbon", "estoque_t"),
                                       ("grassland_biomass", "biomass", "biomassa_t")):
-            sub = g[g["produto"] == pproduto]
+            sub = g[g["produto"] == pproduto].copy()
+            if "periodo" in sub.columns:
+                sub = sub[sub["periodo"].isna()]
+            sub = por_classe(sub)
             rows.append(pd.DataFrame({
                 "produto": pname, "versao": sub["versao"].astype(str),
                 "classe": pd.to_numeric(sub["classe"], errors="coerce"),

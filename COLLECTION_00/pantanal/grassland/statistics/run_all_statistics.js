@@ -6,7 +6,8 @@
  * `require` e com os mesmos prefixos/folder do motor compartilhado:
  *
  *   · motor:   statistics/stats_engine.js (require path abaixo)
- *   · saída:   MAPBIOMAS_CARBONO_ESTATISTICAS · `stats_grassland_<v>_<produto>_<regiao>_2023.csv`
+ *   · saída:   MAPBIOMAS_CARBONO_ESTATISTICAS · `stats_grassland_<v>_<regiao>_2023.csv`
+ *              (+ `_biomassa_mensal_` / `_anpp_mensal_` longos)
  *
  * Substitui rodar `v0X/7_statistics.js` um a um. Uso no Code Editor: só rodar.
  * O comparativo entre produtos/versões (v02) é montado OFFLINE no Colab

@@ -19,12 +19,12 @@ print("=" * 68)
 missing = check_presence()
 
 forest = load_forest()
-grassland = load_grassland()
+grassland = expand_grass_product(load_grassland())
 
 print()
 print(f"[FOREST] {len(forest)} linhas · versões:",
       sorted(forest["version"].unique()) if len(forest) else "—")
-print(f"[GRASSLAND] {len(grassland)} linhas · produtos:",
+print(f"[GRASSLAND] {len(grassland)} linhas (longo por produto) · produtos:",
       sorted(grassland["produto"].unique()) if len(grassland) else "—")
 
 # --- comparativos OFFLINE (a partir do consolidado) -------------------------
@@ -40,8 +40,8 @@ if len(forest):
     for p in problems:
         print("[QA !]", p)
     if not problems:
-        print("[QA OK] forest: n0 = n1 = total em todas as versões/territórios"
-              " e def_sec fecha (Σ area_mod = area)")
+        print("[QA OK] forest: n1/marcador = total em todas as versões/"
+              "territórios e combinações def_sec coerentes")
     out = out_dir() / "consolidado_forest_2023.csv"
     forest.to_csv(out, index=False)
     print(f"[OUT] {out}")
@@ -49,15 +49,16 @@ if len(forest):
 # --- QA grassland ------------------------------------------------------------
 if len(grassland):
     problems = []
-    for vc in ("biomassa_t", "estoque_t"):
-        problems += qa_somas(grassland, vc,
+    for p in grassland["produto"].unique():
+        vc = grass_value_col(p)
+        problems += qa_somas(grassland[grassland["produto"] == p], vc,
                              ["produto", "versao", "territorio"])
     problems += qa_defsec(grassland, ("produto", "versao", "territorio"))
     for p in problems:
         print("[QA !]", p)
     if not problems:
-        print("[QA OK] grassland: n0 = n1 = total em todos os produtos"
-              " e def_sec fecha")
+        print("[QA OK] grassland: n1/marcador = total em todos os produtos"
+              " e combinações def_sec coerentes")
     out = out_dir() / "consolidado_grassland_2023.csv"
     grassland.to_csv(out, index=False)
     print(f"[OUT] {out}")

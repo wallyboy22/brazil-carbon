@@ -11,7 +11,8 @@ Gera, em OUT_DIR:
   resumo_pantanal_2023.md — sumário textual (totais, marcador, QA)
 
 Todas as abas agregadas (n1/marcador/total) são derivadas EM MEMÓRIA das
-linhas n0 do consolidado — o CSV do GEE é somente n0.
+linhas de combinação (classe × def_sec; e meses p/ ANPP) do consolidado —
+o CSV do GEE é somente por combinação.
 """
 import pandas as pd
 
@@ -77,10 +78,10 @@ with pd.ExcelWriter(xlsx_path, engine="openpyxl") as xw:
         for p in grassland["produto"].unique():
             d = grassland[grassland["produto"] == p]
             vc = grass_value_col(p)
-            if vc == "anpp_t" and "mes" in d.columns:
+            if vc == "anpp_t" and "periodo" in d.columns:
                 d = (d.groupby(["territorio", "classe", "n0", "n1", "n2",
                                 "marcador"], dropna=False)
-                     .agg(area_ha=("area_ha", "first"),
+                     .agg(area_ha=("area_ha", "sum"),
                           anpp_t=("anpp_t", "sum")).reset_index())
             rows = d.rename(columns={vc: "valor_t"})
             tot = rows["valor_t"].sum()

@@ -7,33 +7,26 @@
  *
  * Expõe:
  *   runForVersion(versionId)  → CSV único `stats_forest_<v>_<territorio>_2023.csv`
- *                               com UMA linha por classe LULC (n0), sem as
- *                               colunas `.geometry`/`system:index` (selectors).
- *                               NÃO exporta agregações — n1, marcador e total
- *                               são derivados OFFLINE no Colab (statistics_gcn).
+ *                               com UMA linha por combinação (classe LULC × def_sec),
+ *                               colunas em formato gráfico pronto para gráficos.
  *
  * Estratificação por desmatamento/vegetação secundária (def_sec, C11):
- *   cada linha de classe traz também área e estoque por mod def_sec (0..7)
- *   nas colunas `area_mod{X}_ha` e `estoque_mod{X}_t` — ver
- *   module_lulc_legends.js :: DEF_SEC_VEG_LEGEND. A banda usada é
- *   `classification_<ano>` de DEF_SEC_ASSET (cobre o bioma inteiro).
+ *   combina LULC e def_sec numa BANDA ÚNICA `combo = lulc * 10 + def_sec`
+ *   (module_lulc_legends :: comboEncode/comboDecode).  Cada grupo vira uma
+ *   linha no CSV com a coluna `Desmatamento e vegetação secundária` rotulada
+ *   por extenso (não-utiliza colunas `area_mod`/`estoque_mod`).
  *
- * Método (molde mapbiomas_solo/collection3/statistics e 2_5_eca_observada):
- *   área_ha  = pixelArea()/10000, mascarado SÓ pelo LULC — área sempre
- *              informativa (classe existe no bioma mesmo sem predição);
+ * Método:
+ *   área_ha  = pixelArea()/10000, mascarado SÓ pelo LULC;
  *   estoque  = banda (t/ha) × pixelArea()/10000  → TOTAL em t;
- *   area_modX/estoque_modX = idem, mascarados também por def_sec.eq(X)
- *              (def_sec.unmask(0) ⇒ Σ área_mod0..7 = área_ha);
- *   reducer  = ee.Reducer.sum().repeat(19).group({groupField:19}) sobre o
- *              stack [área, estoque, w2, (área_modX, estoque_modX)×8, classe]
- *              — a banda de classificação fica na ÚLTIMA posição (padrão
- *              comprovado: group pela última banda);
- *              w2 = (std_ensemble × pixelArea)² — apenas nos pixels preditos;
- *   incerteza ± = √(Σ w2) — v07/v08 (banda agbd_std_2023); demais versões: 0.
- * `normalize()` converte cada grupo para {classe, sums:[...]} aceitando o
- * `sum` do `.repeat(19)` como LISTA OU chaves separadas (sum/sum_1/…).
- * Os grupos por classe decimal (n0) são a ÚNICA saída do CSV; agregações
- * (n1/marcador/total) são montadas offline a partir das linhas n0.
+ *   w2       = (std_ensemble × pixelArea)² — apenas nos pixels preditos;
+ *   combo    = lulc * 10 + def_sec, mascarado por lulc.mask();
+ *   reducer  = ee.Reducer.sum().repeat(3).group({groupField:3}) sobre o
+ *              stack [área, estoque, w2, combo];
+ *   incerteza ± = √(Σ w2) — v07/v08; demais: 0.
+ * Colunas CSV: version, ano, territorio, classe, cobertura (n0..n4),
+ *   Desmatamento e vegetação secundária, Área (ha), Estoque de carbono (t),
+ *   Incerteza do estoque (t).
  * Território: bioma + UF opcional (0_contract_stats).
  ******************************************************************************/
 var C = require(
@@ -44,10 +37,9 @@ var LEG = require(
 var YEAR = C.YEAR;
 var SCALE = C.SCALE;
 var BASE = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST';
-var MODS = LEG.DEFSEC_MODS; // [0..7]
-var N_VALUE = 3 + 2 * MODS.length; // área, estoque, w2 + (área_mod, estoque_mod)×8
+var N_VALUE = 3; // área, estoque, w2
 var REDUCER = ee.Reducer.sum().repeat(N_VALUE)
-  .group({ groupField: N_VALUE, groupName: 'classe' });
+  .group({ groupField: N_VALUE, groupName: 'combo' });
 
 /**
  * Verifica se um asset IMAGE existe (por pasta de asset).
@@ -92,9 +84,10 @@ function groupsOrEmpty(groups, ctx) {
 }
 
 /**
- * Normaliza cada grupo para {classe, sums:[...]}.
+ * Normaliza cada grupo para {code, sums:[...]}.
  * O `sum` do `.repeat(N_VALUE)` sai como LISTA (molde solo) ou, em versões do
  * EE, como chaves separadas (sum/sum_1/…) — esta função cobre os dois casos.
+ * `code` é o valor da banda `combo` (lulc*10 + def_sec) do groupName.
  */
 function normalize(groups) {
   return (groups || []).map(function (g) {
@@ -109,7 +102,7 @@ function normalize(groups) {
         i++;
       }
     }
-    return { classe: g['classe'], sums: s };
+    return { code: g['combo'], sums: s };
   });
 }
 
@@ -143,9 +136,9 @@ function collectRegions(cb) {
   });
 }
 
-/** Stack [área_ha, estoque, w2, (área_modX, estoque_modX)×8, classe]: área por
- * classe do LULC (sempre informativa, mask só no LULC), estoque/incerteza nos
- * pixels preditos e estratificação def_sec (unmask(0) ⇒ Σ área_modX = área). */
+/** Stack [área_ha, estoque, w2, combo]: área por classe do LULC (sempre
+ * informativa, mask só no LULC), estoque/incerteza nos pixels preditos e
+ * combo = lulc*10 + def_sec (agrupa classe × def_sec numa banda só). */
 function statsImage(v) {
   var img = safeMosaic(v);
   var value = img.select(v.band).rename('valor');
@@ -158,16 +151,8 @@ function statsImage(v) {
   var w2 = v.stdBand
     ? img.select(v.stdBand).rename('w2').multiply(areaHa).pow(2).updateMask(mask)
     : ee.Image(0).rename('w2').updateMask(mask);
-  var modBands = [];
-  MODS.forEach(function (m) {
-    var cond = defsec.eq(m);
-    modBands.push(
-      areaHa.rename('area_mod' + m).updateMask(lulc.mask()).updateMask(cond),
-      value.multiply(areaHa).rename('estoque_mod' + m).unmask(0)
-        .updateMask(mask).updateMask(cond)
-    );
-  });
-  return ee.Image.cat([area, stock, w2].concat(modBands).concat([lulc]));
+  var combo = LEG.comboEncode(lulc, defsec);
+  return ee.Image.cat([area, stock, w2, combo]);
 }
 
 function reduceFor(v, geom) {
@@ -185,42 +170,42 @@ function row(versionId, territorio, extra) {
   return base;
 }
 
-/** Expande os grupos decimais em linhas n0 (uma por classe LULC presente).
- * Colunas def_sec (`area_modX_ha`/`estoque_modX_t`) derivadas de sums[3+2k]. */
+/** Expande os grupos combinados (lulc×def_sec) em linhas de combinação.
+ * Colunas: cobertura (n0..n4), Desmatamento e vegetação secundária (por
+ * extenso), Área (ha), Estoque de carbono (t), Incerteza do estoque (t). */
 function buildRows(v, territorio, groups) {
   var rows = [];
   groups = normalize(groupsOrEmpty(groups, v.id + ' · ' + territorio +
-    ' (buildRows — reduzindo a linhas n0 por classe)'));
+    ' (buildRows — reduzindo a linhas por combinação classe × def_sec)'));
   if (!groups.length) { print('[AVISO]', v.id, territorio, '· 0 linhas geradas'); return rows; }
 
   groups.forEach(function (g) {
     var s = g.sums;
-    var info = LEG.info(g['classe']);
-    var rowData = row(v.id, territorio, {
-      classe: g['classe'], n0: info.n0, n1: info.n1, n2: info.n2,
-      n3: LEG.n3Of(g['classe']), n4: LEG.n4Of(g['classe']),
-      natureza: info.natureza, marcador: info.marcador,
-      area_ha: r(s[0]), estoque_t: r(s[1]),
-      incerteza_t: r(Math.sqrt(Math.max(s[2], 0)))
-    });
-    MODS.forEach(function (m, k) {
-      rowData['area_mod' + m + '_ha'] = r(s[3 + 2 * k]);
-      rowData['estoque_mod' + m + '_t'] = r(s[4 + 2 * k]);
-    });
-    rows.push(rowData);
+    var info = LEG.comboInfo(g.code);
+    rows.push(row(v.id, territorio, {
+      classe: info.classe,
+      'cobertura (n0)': info.n0,
+      'cobertura (n1)': info.n1,
+      'cobertura (n2)': info.n2,
+      'cobertura (n3)': info.n3,
+      'cobertura (n4)': info.n4,
+      'Desmatamento e vegetação secundária': info.def_sec,
+      'Área (ha)': r(s[0]),
+      'Estoque de carbono (t)': r(s[1]),
+      'Incerteza do estoque (t)': r(Math.sqrt(Math.max(s[2], 0)))
+    }));
   });
 
   return rows;
 }
 
-/** Colunas dos CSVs das estatísticas (export único, só n0, sem .geo/system:index). */
+/** Colunas dos CSVs das estatísticas (export único, só combinações,
+ * sem .geo/system:index). Nomes já prontos para gráfico. */
 function statsColumns() {
-  var cols = ['version', 'ano', 'territorio', 'classe', 'n0', 'n1', 'n2',
-    'n3', 'n4', 'natureza', 'marcador', 'area_ha', 'estoque_t', 'incerteza_t'];
-  MODS.forEach(function (m) {
-    cols.push('area_mod' + m + '_ha', 'estoque_mod' + m + '_t');
-  });
-  return cols;
+  return ['version', 'ano', 'territorio', 'classe',
+    'cobertura (n0)', 'cobertura (n1)', 'cobertura (n2)', 'cobertura (n3)',
+    'cobertura (n4)', 'Desmatamento e vegetação secundária',
+    'Área (ha)', 'Estoque de carbono (t)', 'Incerteza do estoque (t)'];
 }
 
 /** Exporta UMA tabela por versão (selectors excluem .geometry/system:index). */
@@ -260,8 +245,8 @@ exports.runForVersion = function (versionId) {
             YEAR,
           statsColumns());
         print('[OK]', v.id, job.region.territorio, '·', rows.length,
-          'classes · estoque', rows.reduce(function (acc, r2) {
-            return acc + r2.estoque_t; }, 0), 'Mg');
+          'combinações · estoque', rows.reduce(function (acc, r2) {
+            return acc + r2['Estoque de carbono (t)']; }, 0), 'Mg');
         done++;
       }, function (err) {
         print('[ERRO]', v.id, job.region.territorio, String(err).slice(0, 200));
@@ -274,6 +259,7 @@ exports.runForVersion = function (versionId) {
 /**
  * O comparativo entre versões (V03–V08) é montado OFFLINE no Colab
  * (statistics_gcn → build_compare_forest), a partir dos `stats_forest_*.csv`.
- * As agregações n1/marcador/total também são derivadas offline (in-memory),
- * pois o CSV do GEE contém somente as linhas n0 (uma por classe).
+ * O CSV do GEE contém UMA linha por combinação (classe × def_sec); as
+ * agregações n0→n1, marcador e total são derivadas offline (in-memory),
+ * somando as combinações por classe.
  */

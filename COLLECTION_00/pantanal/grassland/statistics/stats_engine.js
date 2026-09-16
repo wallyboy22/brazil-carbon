@@ -8,28 +8,28 @@
  * Expõe:
  *   runForVersion(versionId) → 3 CSVs por versão × região (2023):
  *     A) stats_grassland_<v>_<regiao>_2023.csv          ← TABELA PRINCIPAL
- *        (ANUAL) colunas:
- *          produto,versao,ano,territorio,unidade,classe,n0,n1,n2,natureza,
- *          marcador, area_ha, biomassa_t, estoque_t
- *          + estratificação def_sec (desmatamento/veg. secundária, C11):
- *            area_mod0..7_ha, biomassa_mod0..7_t, estoque_mod0..7_t
+ *        (ANUAL, LONGA) 1 linha por combinação (classe × def_sec):
+ *          produto,versao,ano,territorio,unidade,classe,cobertura (n0..n4),
+ *          Desmatamento e vegetação secundária, Área (ha),
+ *          Biomassa (t), Estoque de carbono (t)
  *        — biomassa E estoque na MESMA tabela, ambos em TONELADAS (t):
  *            biomassa_t = banda anual biomass_annual (kg MS/ha) × área ÷1000;
  *            estoque_t  = banda carbono (Mg C/ha) × área (1 Mg = 1 t).
- *        A área não é produto em si: é informativa, e área 0 ⇒ valor 0.
- *     B) stats_grassland_<v>_biomassa_mensal_<regiao>_2023.csv   ← LARGA
- *        (bandas mensais do asset grassland_biomass_monthly — kg MS/ha → t).
+ *     B) stats_grassland_<v>_biomassa_mensal_<regiao>_2023.csv   ← LONGA
+ *        1 linha por combinação × mês, com a coluna `período` (YYYY_MM):
+ *          …, período, Área (ha), Biomassa (t)
  *     C) stats_grassland_<v>_anpp_mensal_<regiao>_2023.csv       ← LONGA
- *        (1 linha por classe×mês — bandas do grassland_anpp_monthly).
+ *        1 linha por combinação × mês, com a coluna `período` (YYYY_MM):
+ *          …, período, Área (ha), ANPP (t MS/ano)
  *
  * Units padronizadas em TONELADAS (t). Nada de Mg nas saídas.
  *
- * Método (molde forest/stats_engine):
- *   valor_t = banda × toTFactor × pixelArea()/10000, somada por classe;
- *   reducer = ee.Reducer.sum().repeat(n).group({groupField:n}) — a banda de
- *   CLASSIFICAÇÃO fica na ÚLTIMA posição do stack (padrão comprovado).
- *   Estratificação def_sec: `def_sec.unmask(0)` + máscara por mod ⇒
- *   Σ área_mod0..7 = área_ha da classe (def_sec cobre o bioma inteiro).
+ * Método:
+ *   valor_t = banda × toTFactor × pixelArea()/10000, somada por combinação;
+ *   combo   = lulc * 10 + def_sec (module_lulc_legends :: comboEncode/
+ *             comboDecode) — agrupa classe × def_sec numa banda única, ficando
+ *             na ÚLTIMA posição do stack (padrão comprovado de groupField);
+ *   reducer = ee.Reducer.sum().repeat(n).group({groupField:n, groupName:'combo'}).
  ******************************************************************************/
 var C = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/grassland/statistics/0_contract_stats.js');
@@ -40,8 +40,7 @@ var YEAR = C.YEAR;
 var SCALE = C.SCALE   // 30 m
 ;
 var MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-var MODS = LEG.DEFSEC_MODS; // [0..7]
-var N_VALUE = 3 + 3 * MODS.length; // principal: área, biomassa, estoque + mods×3
+var N_VALUE = 3; // principal: área, biomassa, estoque
 
 /** Banda zero-pad de mês: bandeira mensal adotada = `biomass_01`…`biomass_12`. */
 function pad(n) { return (n < 10 ? '0' : '') + n; }
@@ -53,31 +52,6 @@ function assetExists(imageId) {
     var r = ee.data.listAssets(parts.join('/'));
     return (r.assets || []).some(function (a) { return a.id === imageId; });
   } catch (e) { return false; }
-}
-
-function groupsOrEmpty(groups, ctx) {
-  if (!groups || typeof groups.forEach !== 'function') {
-    print('[AVISO] sem dados (produto ausente ou sem interseção):', ctx);
-    return [];
-  }
-  return groups;
-}
-
-/** Normaliza grupos `{classe, sum, sum_1, …, sum_n}` (lista ou chaves). */
-function normalize(groups) {
-  return (groups || []).map(function (g) {
-    var s = [];
-    var i = 0;
-    while (g['sum' + (i === 0 ? '' : '_' + i)] !== undefined ||
-           (i === 0 && g['sum'] !== undefined)) {
-      s.push(i === 0 ? (Array.isArray(g['sum']) ? g['sum'][0] : g['sum'])
-        : (Array.isArray(g['sum_' + i]) ? g['sum_' + i][0] : g['sum_' + i]));
-      i++;
-    }
-    var out = { classe: g['classe'] };
-    s.forEach(function (v, k) { out['v' + k] = v; });
-    return out;
-  });
 }
 
 /**
@@ -125,27 +99,10 @@ function collectRegions(cb) {
   });
 }
 
-/** Área (ha) e imagem por lista de [renome, asset, banda, toTFactor]. */
-function stackImage(specs, lulcBand) {
-  var imgs = specs.map(function (s) {
-    return ee.Image(s.asset).select(s.band)
-      .multiply(s.toT).rename(s.rename);
-  });
-  var stack = ee.Image.cat(imgs);
-  var lulc = ee.Image(C.LULC_ASSET).select(lulcBand).rename('classe');
-  var area = ee.Image.pixelArea().divide(10000).rename('area_ha');
-  var base = stack.multiply(area).unmask(0)
-    .updateMask(stack.mask().and(lulc.mask()));
-  return ee.Image.cat([area.updateMask(lulc.mask()), base, lulc]);
-}
-
-/** Reduz o stack `n` bandas de valor + classe (classe na última posição). */
-function reduceStack(img, nBands) {
-  return img.reduceRegion({
-    reducer: ee.Reducer.sum().repeat(nBands)
-      .group({ groupField: nBands, groupName: 'classe' }),
-    geometry: null, scale: SCALE, maxPixels: 1e13, tileScale: 2
-  }).get('groups');
+/** Área (ha) é mascarada SÓ pelo LULC (sempre informativa). */
+function areaMasked(lulc) {
+  return ee.Image.pixelArea().divide(10000).rename('area_ha')
+    .updateMask(lulc.mask());
 }
 
 function r(n) { return Math.round(n * 10) / 10; }
@@ -174,12 +131,58 @@ function exportTable(rows, filePrefix, sel) {
   });
 }
 
-function rowBase(t, classe) {
-  var i = LEG.info(classe);
+/** Base de linha por código `combo` (classe × def_sec), colunas prontas p/ gráfico. */
+function comboRowBase(t, code) {
+  var info = LEG.comboInfo(code);
   return { produto: 'grassland', versao: t[1], ano: YEAR, territorio: t[0],
-    unidade: 't', classe: classe, n0: i.n0, n1: i.n1, n2: i.n2,
-    n3: LEG.n3Of(classe), n4: LEG.n4Of(classe),
-    natureza: i.natureza, marcador: i.marcador };
+    unidade: 't', classe: info.classe,
+    'cobertura (n0)': info.n0, 'cobertura (n1)': info.n1,
+    'cobertura (n2)': info.n2, 'cobertura (n3)': info.n3,
+    'cobertura (n4)': info.n4,
+    'Desmatamento e vegetação secundária': info.def_sec };
+}
+
+/* ---- Colunas (selectors) dos 3 CSVs (nomes prontos p/ gráfico) ------------ */
+var SEL_A = ['produto', 'versao', 'ano', 'territorio', 'unidade', 'classe',
+  'cobertura (n0)', 'cobertura (n1)', 'cobertura (n2)', 'cobertura (n3)',
+  'cobertura (n4)', 'Desmatamento e vegetação secundária',
+  'Área (ha)', 'Biomassa (t)', 'Estoque de carbono (t)'];
+
+var SEL_MENSAL = ['produto', 'versao', 'ano', 'territorio', 'unidade', 'classe',
+  'cobertura (n0)', 'cobertura (n1)', 'cobertura (n2)', 'cobertura (n3)',
+  'cobertura (n4)', 'Desmatamento e vegetação secundária', 'período',
+  'Área (ha)'];
+
+/** Reduz o stack mensal [área_ha, valor_t, combo] por combinação (classe×def_sec). */
+function reduceMonthly(product, month, region) {
+  var lulc = ee.Image(C.LULC_ASSET).select(C.LULC_BAND).rename('classe');
+  var defsec = ee.Image(LEG.DEF_SEC_ASSET).select(LEG.defsecBand(YEAR)).unmask(0);
+  var combo = LEG.comboEncode(lulc, defsec);
+  var valor = ee.Image(product.asset).select(product.bandPrefix + pad(month))
+    .multiply(1 / 1000).rename('valor'); // kg → t
+  var mask = valor.mask().and(lulc.mask());
+  var stack = ee.Image.cat([
+    areaMasked(lulc),
+    valor.multiply(ee.Image.pixelArea()).divide(10000).rename('valor_t')
+      .unmask(0).updateMask(mask),
+    combo]);
+  return stack.reduceRegion({
+    reducer: ee.Reducer.sum().repeat(2)
+      .group({ groupField: 2, groupName: 'combo' }),
+    geometry: region.geom, scale: SCALE, maxPixels: 1e13, tileScale: 2
+  }).get('groups');
+}
+
+/** Expande grupos de um mês em linhas longas (coluna `período` YYYY_MM). */
+function rowsOfMonth(groups, t, mes, valueCol) {
+  return (groups || []).map(function (g) {
+    var s = sumsOf(g);
+    var b = comboRowBase(t, g.combo);
+    b['período'] = YEAR + '_' + pad(mes);
+    b['Área (ha)'] = r(s[0]);
+    b[valueCol] = r(s[1]);
+    return b;
+  });
 }
 
 /**
@@ -207,173 +210,114 @@ exports.runForVersion = function (versionId) {
     var done = 0;
     jobs.forEach(function (job) {
       var context = 'grassland · ' + versionId + ' · ' + job.region.slug;
-      var exports = [];
+      var tableExports = [];
 
       /* A) tabela principal — biomassa + estoque no MESMO stack (anual),
-       * estratificada por def_sec (área/biomassa/estoque por mod 0..7). */
+       * estrato por combo (classe × def_sec). */
       if (biomass && carbon && assetExists(biomass.asset) &&
           assetExists(carbon.asset)) {
-        exports.push(function (finish) {
+        tableExports.push(function (finish) {
           var biomassa = ee.Image(biomass.asset).select(biomass.band)
             .multiply(1 / 1000).rename('biomassa');
           var estoque = ee.Image(carbon.asset).select(carbon.band)
             .multiply(1).rename('estoque');
           var lulc = ee.Image(C.LULC_ASSET).select(C.LULC_BAND).rename('classe');
-          var predMask = biomassa.mask().and(estoque.mask()).and(lulc.mask());
-          var area = ee.Image.pixelArea().divide(10000);
           var defsec = ee.Image(LEG.DEF_SEC_ASSET).select(LEG.defsecBand(YEAR))
             .unmask(0);
-          var modBands = [];
-          MODS.forEach(function (m) {
-            var cond = defsec.eq(m);
-            modBands.push(
-              area.rename('area_mod' + m).updateMask(lulc.mask())
-                .updateMask(cond),
-              biomassa.multiply(area).rename('biomassa_mod' + m).unmask(0)
-                .updateMask(predMask).updateMask(cond),
-              estoque.multiply(area).rename('estoque_mod' + m).unmask(0)
-                .updateMask(predMask).updateMask(cond)
-            );
-          });
-          var stack = ee.Image.cat(
-            [area.rename('area_ha').updateMask(lulc.mask()),
-             biomassa.multiply(area).rename('biomassa_t').unmask(0)
-               .updateMask(predMask),
-             estoque.multiply(area).rename('estoque_t').unmask(0)
-               .updateMask(predMask)]
-              .concat(modBands).concat([lulc]));
+          var predMask = biomassa.mask().and(estoque.mask()).and(lulc.mask());
+          var stack = ee.Image.cat([
+            areaMasked(lulc),
+            biomassa.multiply(ee.Image.pixelArea()).divide(10000)
+              .rename('biomassa_t').unmask(0).updateMask(predMask),
+            estoque.multiply(ee.Image.pixelArea()).divide(10000)
+              .rename('estoque_t').unmask(0).updateMask(predMask),
+            LEG.comboEncode(lulc, defsec)]);
           stack.reduceRegion({
             reducer: ee.Reducer.sum().repeat(N_VALUE)
-              .group({ groupField: N_VALUE, groupName: 'classe' }),
+              .group({ groupField: N_VALUE, groupName: 'combo' }),
             geometry: job.region.geom, scale: SCALE, maxPixels: 1e13,
             tileScale: 2 }).evaluate(function (groups) {
             var rows = (groups || []).map(function (g) {
               var s = sumsOf(g);
-              var b = rowBase(job.t, g.classe);
-              b.area_ha = r(s[0]);
-              b.biomassa_t = r(s[1]);
-              b.estoque_t = r(s[2]);
-              MODS.forEach(function (m, k) {
-                b['area_mod' + m + '_ha'] = r(s[3 + 3 * k]);
-                b['biomassa_mod' + m + '_t'] = r(s[4 + 3 * k]);
-                b['estoque_mod' + m + '_t'] = r(s[5 + 3 * k]);
-              });
+              var b = comboRowBase(job.t, g.combo);
+              b['Área (ha)'] = r(s[0]);
+              b['Biomassa (t)'] = r(s[1]);
+              b['Estoque de carbono (t)'] = r(s[2]);
               return b;
-            });
-            var sel = ['produto', 'versao', 'ano', 'territorio', 'unidade',
-              'classe', 'n0', 'n1', 'n2', 'n3', 'n4', 'natureza', 'marcador',
-              'area_ha', 'biomassa_t', 'estoque_t'];
-            MODS.forEach(function (m) {
-              sel.push('area_mod' + m + '_ha', 'biomassa_mod' + m + '_t',
-                'estoque_mod' + m + '_t');
             });
             exportTable(rows,
               C.PREFIX + '_' + versionId + '_' + job.region.slug + '_' + YEAR,
-              sel);
-            print('[OK]', context, 'principal ·', rows.length, 'classes');
+              SEL_A);
+            print('[OK]', context, 'principal ·', rows.length, 'combinações');
             finish();
           }, function (err) { print('[ERRO principal]', context,
             String(err).slice(0, 200)); finish(); });
         });
       }
 
-      /* B) biomassa mensal — LARGA (12 colunas de mês). */
+      /* B) biomassa mensal — LONGA (1 linha por combinação × mês),
+       * coluna `período` YYYY_MM + estrato def_sec. */
       if (biomassM && assetExists(biomassM.asset)) {
-        exports.push(function (finish) {
-          var meses = MONTHS.map(function (m) {
-            return ee.Image(biomassM.asset)
-              .select(biomassM.bandPrefix + pad(m)).multiply(1 / 1000)
-              .rename('biomassa_' + pad(m));
+        tableExports.push(function (finish) {
+          var rows = [];
+          var done = 0;
+          MONTHS.forEach(function (m) {
+            reduceMonthly(biomassM, m, job.region).evaluate(function (groups) {
+              rows.push.apply(rows, rowsOfMonth(groups, job.t, m,
+                'Biomassa (t)'));
+              done++;
+              if (done === MONTHS.length) {
+                exportTable(rows,
+                  C.PREFIX + '_' + versionId + '_biomassa_mensal_' +
+                    job.region.slug + '_' + YEAR,
+                  SEL_MENSAL.concat(['Biomassa (t)']));
+                print('[OK]', context, 'biomassa mensal ·', rows.length,
+                  'combinações ·', done, 'mêses · período 2023_01..2023_12');
+                finish();
+              }
+            }, function (err) { print('[ERRO biomassa mensal]', context,
+              String(err).slice(0, 200)); done++; if (done === MONTHS.length)
+                finish(); });
           });
-          var area = ee.Image.pixelArea().divide(10000).rename('area_ha');
-          var lulc = ee.Image(C.LULC_ASSET).select(C.LULC_BAND).rename('classe');
-          var stack = ee.Image.cat(
-            meses.map(function (im) {
-              return im.multiply(area).rename(im.bandNames().get(0)).unmask(0)
-                .updateMask(im.mask().and(lulc.mask()));
-            })).addBands([area.updateMask(lulc.mask()), lulc]);
-          stack.reduceRegion({
-            reducer: ee.Reducer.sum().repeat(13)
-              .group({ groupField: 13, groupName: 'classe' }),
-            geometry: job.region.geom, scale: SCALE, maxPixels: 1e13,
-            tileScale: 2 }).evaluate(function (groups) {
-            var rows = (groups || []).map(function (g) {
-              var s = sumsOf(g);
-              var b = rowBase(job.t, g.classe);
-              b.area_ha = r(s[12]);   // banda area_ha fica por último no stack
-              MONTHS.forEach(function (m) {
-                b['biomassa_m' + pad(m) + '_t'] = r(s[m - 1]);
-              });
-              return b;
-            });
-            var sel = ['produto', 'versao', 'ano', 'territorio', 'unidade',
-              'classe', 'n0', 'n1', 'n2', 'n3', 'n4', 'natureza', 'marcador',
-              'area_ha'];  // biomassa_mensal
-            MONTHS.forEach(function (m) {
-              sel.push('biomassa_m' + pad(m) + '_t');
-            });
-            exportTable(rows,
-              C.PREFIX + '_' + versionId + '_biomassa_mensal_' +
-                job.region.slug + '_' + YEAR, sel);
-            print('[OK]', context, 'biomassa mensal ·', rows.length, 'classes');
-            finish();
-          }, function (err) { print('[ERRO biomassa mensal]', context,
-            String(err).slice(0, 200)); finish(); });
         });
       }
 
-      /* C) ANPP mensal — LONGA (1 linha por classe×mês). */
+      /* C) ANPP mensal — LONGA (1 linha por combinação × mês),
+       * coluna `período` YYYY_MM + estrato def_sec. */
       if (anppM && assetExists(anppM.asset)) {
-        var mesJobs = MONTHS.map(function (m) {
-          return { m: m, b: anppM.bandPrefix + pad(m) };
-        });
-        var mesDone = 0;
-        var total = mesJobs.length;
-        mesJobs.forEach(function (mj) {
-          var mid = mj.m;
-          ee.Image(anppM.asset).select(mj.b).multiply(1 / 1000).rename('valor')
-            .addBands([ee.Image.pixelArea().divide(10000).rename('area_ha')])
-            .addBands(
-              ee.Image(C.LULC_ASSET).select(C.LULC_BAND).rename('classe'))
-            .reduceRegion({
-              reducer: ee.Reducer.sum().repeat(2)
-                .group({ groupField: 2, groupName: 'classe' }),
-              geometry: job.region.geom, scale: SCALE, maxPixels: 1e13,
-              tileScale: 2 }).evaluate(function (groups) {
-              var rows = (groups || []).map(function (g) {
-                var s = sumsOf(g);
-                var b = rowBase(job.t, g.classe);
-                b.area_ha = r(s[1]);
-                b.mes = pad(mid);
-                b.anpp_t = r(s[0]);
-                return b;
-              });
-              exportTable(rows,
-                C.PREFIX + '_' + versionId + '_anpp_mensal_' +
-                  job.region.slug + '_' + YEAR +
-                  (mesJobs.length > 1 ? '' : ''),
-                ['produto', 'versao', 'ano', 'territorio', 'unidade', 'classe',
-                  'n0', 'n1', 'n2', 'n3', 'n4', 'natureza', 'marcador',
-                  'area_ha', 'mes',
-                  'anpp_t']);
-              mesDone++;
-              if (mesDone === total) {
-                print('[OK]', context, 'anpp mensal ·', mesDone, 'mêses');
+        tableExports.push(function (finish) {
+          var rows = [];
+          var done = 0;
+          MONTHS.forEach(function (m) {
+            reduceMonthly(anppM, m, job.region).evaluate(function (groups) {
+              rows.push.apply(rows, rowsOfMonth(groups, job.t, m,
+                'ANPP (t MS/ano)'));
+              done++;
+              if (done === MONTHS.length) {
+                exportTable(rows,
+                  C.PREFIX + '_' + versionId + '_anpp_mensal_' +
+                    job.region.slug + '_' + YEAR,
+                  SEL_MENSAL.concat(['ANPP (t MS/ano)']));
+                print('[OK]', context, 'anpp mensal ·', rows.length,
+                  'combinações ·', done, 'mêses · período 2023_01..2023_12');
                 finish();
               }
             }, function (err) { print('[ERRO anpp]', context,
-              String(err).slice(0, 200)); mesDone++; if (mesDone === total)
+              String(err).slice(0, 200)); done++; if (done === MONTHS.length)
                 finish(); });
+          });
         });
       }
 
-      var expCount = exports.length + (anppM ? 1 : 0);
+      var expCount = tableExports.length;
       var expDone = 0;
-      exports.forEach(function (fn) { fn(function () { expDone++; checkEnd(); }); });
+      tableExports.forEach(function (fn) {
+        fn(function () { expDone++; checkEnd(); });
+      });
       function checkEnd() {
         if (expCount === 0) { done++; if (done === jobs.length)
           print('[FIM]', versionId, 'completa.'); return; }
-        if (expDone === expCount && !anppM) {
+        if (expDone === expCount) {
           done++; if (done === jobs.length) print('[FIM]', versionId, 'completa.');
         }
       }

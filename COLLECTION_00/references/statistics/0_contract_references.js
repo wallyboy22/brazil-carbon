@@ -15,9 +15,13 @@
  *     Refs só-biomassa emitem as DUAS (<pool>_tB nativa + <pool>_tC via
  *     CARBON_FRACTION) e refs de carbono emitem apenas <pool>_tC — garantindo
  *     que todo ref de estoque tenha ≥1 coluna no comparador comum (t C).
- *   - nível mínimo por linha de classe: n0..n4, natureza, marcador,
- *     ano_lulc, ano (do ref), area_ha, pools (<pool>_tC|_tB), incerteza_tC e
- *     mods def_sec (area_mod0..7_ha + <pool>_mod0..7_tC|_tB).
+ *   - nível mínimo por linha de combinação (classe × def_sec): n0..n4,
+ *     Desmatamento e vegetação secundária (rótulo por extenso), ano_lulc,
+ *     ano (do ref), Área (ha) e pools `<pool> (t C)` / `<pool> (t MS)`
+ *     (biomassa emite os dois rótulos; carbono apenas `(t C)`) + coluna
+ *     `Incerteza (t C)` (0 quando a ref não tem erro). SEM colunas mod.
+ *     Cada linha corresponde a UMA COMBINAÇÃO (lulc×def_sec) — sem
+ *     agregações (o Colab soma/estratifica offline).
  *   - estrato LULC: coleção 11, banda classification_<YEAR>; def_sec:
  *     module_lulc_legends.js (same asset/bandas).
  *   - unidades SEMPRE toneladas (t): valor × pixelArea()/10000.

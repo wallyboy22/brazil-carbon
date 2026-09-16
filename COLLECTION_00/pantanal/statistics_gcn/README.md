@@ -29,6 +29,29 @@ analisa. Se faltar arquivo, a `cell02` indica qual step rodar:
 > são montados **offline** por este notebook (`build_compare_forest` /
 > `build_compare_grassland`), a partir dos CSVs consolidados.
 
+## Schema dos CSVs do GEE (formato "gráfico-ready")
+
+Os steps `7_statistics.js` exportam **UMA linha por COMBINAÇÃO (classe LULC ×
+def_sec)**, com colunas prontas para gráfico (espaços/parênteses) — SEM linhas
+agregadas:
+
+- **forest** — `version, ano, territorio, classe, cobertura (n0..n4),
+  Desmatamento e vegetação secundária, Área (ha), Estoque de carbono (t),
+  Incerteza do estoque (t)`.
+- **grassland** — principal/ANUAL (`produto, versao, ano, territorio, unidade,
+  classe, cobertura (n0..n4), Desmatamento e vegetação secundária, Área (ha),
+  Biomassa (t), Estoque de carbono (t)`) + mensais LONGOS com a coluna
+  `período` (`YYYY_MM`: biomassa `Biomassa (t)` e ANPP `ANPP (t MS/ano)`).
+- **references** — `fonte, ref_id, territorio, classe, cobertura (n0..n4),
+  Desmatamento e vegetação secundária, ano_lulc, ano, Área (ha),
+  <pool> (t C | t MS)` (+ `Incerteza (t C)`).
+
+A `cell00` faz o remap desses nomes para os internos (`n0..n4, area_ha,
+estoque_t, biomassa_t, anpp_t, def_sec …`) e deriva em memória
+`natureza`/`marcador`/`def_sec_code` a partir da classe LULC. As agregações
+(classe/marcador/total) e a incerteza combinada (em **quadratura**:
+`sqrt(Σ ι²)` ao colapsar combinações) são feitas offline via `por_classe`.
+
 Depois, faça download/export dos CSVs para a pasta
 `DRIVE_ROOT/estatisticas/`.
 
@@ -38,9 +61,9 @@ Depois, faça download/export dos CSVs para a pasta
 |------|---------|-----------|-------------------|
 | 1 | `2_3_0_statistics_cell00_util.py` | carrega CONF + funções + catálogo de referências no namespace (rodar SEMPRE primeiro) | (namespace) |
 | 2 | `2_3_1_statistics_cell01_autentication_drive.py` | monta o Google Drive e configura `CONF["DRIVE_ROOT"]` (NÃO autentica Earth Engine) | — |
-| 3 | `2_3_2_statistics_cell02_consolidar_qa.py` | checa arquivos esperados, consolida forest/grassland, QA de somas (n0=n1=total), exporta consolidados | `consolidado_{forest,grassland}_2023.csv` |
+| 3 | `2_3_2_statistics_cell02_consolidar_qa.py` | checa arquivos esperados, consolida forest/grassland (grassland pivota em longo por produto), QA de somas e das combinações def_sec, exporta consolidados | `consolidado_{forest,grassland}_2023.csv` |
 | 4 | `2_3_3_statistics_cell03_graficos.py` | figuras: estoque por classe/marcador/versão (forest) e por produto (grassland) | `f1..f5_*.png` |
-| 5 | `2_3_4_statistics_cell04_relatorio.py` | relatório XLSX (abas n0/n1/marcador/total/comparativo por versão e produto) + resumo .md | `resumo_pantanal_2023.xlsx` + `.md` |
+| 5 | `2_3_4_statistics_cell04_relatorio.py` | relatório XLSX (abas classe/marcador/total/comparativo por versão e produto) + resumo .md | `resumo_pantanal_2023.xlsx` + `.md` |
 | 6 | `2_3_5_statistics_cell05_mapas.py` (OPCIONAL) | mapas de AGC v07 e campestre por grade 10 km — só se `CONF["FAZER_MAPAS"]=True` | `mapa_*.png` |
 | 7 | `2_3_6_statistics_cell06_referencia.py` | lê os CSVs de referência (exportados pelo GEE), cruzamento T1 cross 2023 + T2 melhor ano por classe + resumo | `tabela_cross_2023.csv`, `tabela_melhor_ano_referencia_2023.csv`, `resumo_referencia_2023.md` |
 

@@ -10,8 +10,9 @@
  *   · saída:     MAPBIOMAS_CARBONO_ESTATISTICAS · `stats_forest_<v>_<regiao>_2023.csv`
  *
  * Substitui rodar `v0X/7_statistics.js` um a um. Uso no Code Editor: só rodar.
- * As agregações n1/marcador/total continuam OFFLINE no Colab (statistics_gcn),
- * a partir destes mesmos CSVs n0.
+ * As agregações classe/marcador/total (e natureza/marcador) são derivadas
+ * OFFLINE no Colab (statistics_gcn · cell00 `por_classe`), a partir destes
+ * mesmos CSVs de combinações (classe × def_sec).
  ******************************************************************************/
 var C = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/statistics/0_contract_stats.js');

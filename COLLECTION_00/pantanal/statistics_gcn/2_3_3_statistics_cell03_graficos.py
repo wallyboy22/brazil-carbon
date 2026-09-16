@@ -11,8 +11,9 @@ Figuras (salvas na MESMA pasta de output no Drive, FIG_DIR):
   f4_grassland_produtos.png           biomassa × ANPP × carbono por marcador
   f5_grassland_compare_menu.png       total e campestre por produto (barra)
 
-Todas as agregações (n1/marcador/total) são derivadas EM MEMÓRIA das linhas
-n0 do consolidado (o CSV do GEE não traz linhas agregadas).
+Todas as agregações (classe/marcador/total) são derivadas EM MEMÓRIA das
+linhas de combinação (classe × def_sec; e meses p/ ANPP) do consolidado —
+o CSV do GEE não traz linhas agregadas.
 """
 import numpy as np
 import pandas as pd  # noqa: F401
@@ -39,7 +40,8 @@ if len(forest):
     cls = [n0_label(c) for c in order]
     fig, ax = plt.subplots(figsize=(12, max(4, 0.42 * len(cls))))
     for i, v in enumerate(VEC):
-        vals = forest[forest["version"] == v].set_index("classe")["estoque_t"]
+        fs = por_classe(forest[forest["version"] == v])
+        vals = fs.set_index("classe")["estoque_t"]
         ax.barh(cls, [vals.get(c, 0) for c in order], label=v,
                 color=plt.cm.viridis(i / max(len(VEC) - 1, 1)),
                 height=0.8 / len(VEC) - 0.04 if len(VEC) > 1 else 0.8)
@@ -83,7 +85,7 @@ if grassland is not None and len(grassland):
     for i, p in enumerate(produtos):
         g = grassland[grassland["produto"] == p]
         vc = grass_value_col(p)
-        if vc == "anpp_t" and "mes" in g.columns:
+        if vc == "anpp_t" and "periodo" in g.columns:
             deagg = (g.groupby(["classe", "marcador"], dropna=False)
                      .agg(anpp_t=("anpp_t", "sum")).reset_index())
         else:

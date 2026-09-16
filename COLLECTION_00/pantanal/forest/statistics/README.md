@@ -39,11 +39,15 @@ florestal/campestre).
 ## Saídas (Drive → `MAPBIOMAS_CARBONO_ESTATISTICAS`)
 
 - `stats_forest_<versão>_<território>_2023.csv` — **1 arquivo por versão**
-  (sem particionamento), colunas:
+  (sem particionamento), formato "gráfico-ready": **uma linha por COMBINAÇÃO
+  (classe LULC × def_sec)**, colunas:
 
-  `version,ano,territorio,nivel,grupo,classe,n0,n1,n2,marcador,area_ha,estoque_t,incerteza_t`
+  `version,ano,territorio,classe,cobertura (n0..n4),Desmatamento e vegetação
+  secundária,Área (ha),Estoque de carbono (t),Incerteza do estoque (t)`
 
-  com `nivel` ∈ `n0 | n1 | marcador | total` e QA de somas impresso.
+  A estratificação def_sec é rotulada por extenso (ver `DEF_SEC_VEG_LEGEND`);
+  `natureza`/`marcador` e as agregações (classe/marcador/total) são derivadas
+  OFF-LINE no Colab (`por_classe`). QA de somas impresso pelo motor.
   O export usa `selectors` → **sem `.geometry`/`system:index`** no CSV.
 - Comparativo entre versões: montado offline no Colab (ver `statistics_gcn`).
 
@@ -51,13 +55,13 @@ florestal/campestre).
 
 - área_ha = `pixelArea()/10000`
 - estoque_t = `prediction_2023 (t/ha) × área_ha`
-- incerteza_t (v07/v08, ensemble) = `√( Σ (agbd_std_2023 × área_ha)² )`;
-  versões sem banda `agbd_std` saem com incerteza `0`.
+- incerteza_t (v07/v08, ensemble) = `√( Σ (agbd_std_2023 × área_ha)² )` por
+  combinação (quadratura); versões sem banda `agbd_std` saem com incerteza `0`.
 
-> Agregação por classe: stack `[área_ha, estoque, w2, classe]` com
-> `ee.Reducer.sum().repeat(3).group({groupField:3})` — a banda de
-> classificação na última posição; o `sum` do `.repeat(3)` chega como lista e é
-> normalizado pelo motor.
+> Agregação por combinação `combo = lulc*10 + def_sec`: stack `[área_ha,
+> estoque, w2, combo]` com `ee.Reducer.sum().repeat(3).group({groupField:3})`
+> — a banda `combo` na última posição; o `sum` do `.repeat(3)` chega como lista
+> e é normalizado pelo motor.
 
 ## Como rodar
 

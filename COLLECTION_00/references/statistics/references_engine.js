@@ -10,31 +10,29 @@
  *   TODOS os biomas combinadas (coluna `territorio` distingue cada um):
  *                    stats_references_<ref_id>_2023.csv
  *
- * Exige de TODO REF uma linha de classe LULC (nível n0) para CADA bioma, com
- * as colunas:
- *   fonte, ref_id, territorio, classe, n0, n1, n2, n3, n4, natureza, marcador,
- *   ano_lulc, ano, area_ha,
- *   <pool>_tC | <pool>_tB   (pools de estoque; NO SUFIXO vai o marcador da
- *                            unidade: tC = tonelada de CARBONO, tB = de BIOMASSA),
- *   incerteza_tC,           (erro da ref, quando existe — cc saatchi_carbon_error)
- *   area_mod0..7_ha, <pool>_mod0..7_tC|_tB  (estratificação def_sec).
+ * Exige de TODO REF uma linha de combinação (classe LULC × def_sec) para CADA
+ * bioma, com as colunas:
+ *   fonte, ref_id, territorio, classe, cobertura (n0..n4),
+ *   Desmatamento e vegetação secundária, ano_lulc, ano,
+ *   Área (ha), <pool> (t C) | <pool> (t MS)  (pools de estoque; a unidade
+ *                    em t C vs t MS sai no RÓTULO da coluna),
+ *   Incerteza (t C)   (erro da ref, quando existe — cc saatchi_carbon_error)
  *
  * REGRA UNIDADE (comparador comum garantido por construção):
- *   - magnitude 'carbono'      → só <pool>_tC (a banda JÁ é t C/ha);
- *   - magnitude 'biomassa'     → <pool>_tB (nativa, t/ha → t) E <pool>_tC
- *                                (= nativa × CARBON_FRACTION) — sempre existe
- *                                ≥1 coluna comparável em C;
- *   - magnitude 'incerteza'    → a própria coluna é `incerteza_tC`.
+ *   - magnitude 'carbono'      → só <pool> (t C) (a banda JÁ é t C/ha);
+ *   - magnitude 'biomassa'     → <pool> (t MS) (nativa, t/ha → t) E
+ *                                <pool> (t C) (= nativa × CARBON_FRACTION) —
+ *                                sempre existe ≥1 coluna comparável em C;
+ *   - magnitude 'incerteza'    → a própria coluna é `Incerteza (t C)`.
  *
- * Método (molde forest/stats_engine.js):
+ * Método:
  *   área_ha  = pixelArea()/10000, mascarado SÓ pelo LULC;
  *   pool     = banda (t/ha ou t C/ha) × pixelArea()/10000 × fator;
- *   def_sec  = module_lulc_legends.js :: DEF_SEC_ASSET, bandas
- *              classification_<ano> — `unmask(0)` ⇒ Σ área_mod0..7 = área_ha;
- *   reducer  = ee.Reducer.sum().repeat(N).group({groupField:N}) — a banda de
- *              classificação fica na ÚLTIMA posição do stack;
+ *   combo    = lulc * 10 + def_sec (module_lulc_legends :: comboEncode/
+ *             comboDecode) — banda única de classificação na ÚLTIMA posição;
+ *   reducer  = ee.Reducer.sum().repeat(N).group({groupField:N});
  *   Xu (multi_year) = 1 reduce POR ano (banda `b<i>`, i = ano-1999), linhas
- *              combinadas num ÚNICO CSV com a coluna `ano`.
+ *             combinadas num ÚNICO CSV com a coluna `ano`.
  ******************************************************************************/
 var C = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/references/statistics/0_contract_references.js');
@@ -42,7 +40,6 @@ var LEG = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/module_lulc_legends.js');
 
 var YEAR = C.YEAR;
-var MODS = LEG.DEFSEC_MODS; // [0..7]
 
 /** Verifica se um asset IMAGE existe (por pasta de asset). */
 function assetExists(imageId) {
@@ -63,7 +60,7 @@ function groupsOrEmpty(groups, ctx) {
   return groups;
 }
 
-/** Normaliza cada grupo para {classe, sums:[...]} (lista OU chaves sum/sum_1…). */
+/** Normaliza cada grupo para {code, sums:[...]} (lista OU chaves sum/sum_1…). */
 function normalize(groups) {
   return (groups || []).map(function (g) {
     var s;
@@ -77,16 +74,22 @@ function normalize(groups) {
         i++;
       }
     }
-    return { classe: g['classe'], sums: s };
+    return { code: g['combo'], sums: s };
   });
 }
+
+/** Rótulo gráfico de um stem/pool (agb → 'AGB', total → 'Total', …). */
+var POOL_LABEL = {
+  agb: 'AGB', agc: 'AGC', bgb: 'BGB', bgc: 'BGC', live: 'Live',
+  total: 'Total', cdw: 'CDW', litter: 'Litter', incerteza: 'Incerteza'
+};
 
 /**
  * Colunas de VALOR que o ref emite (cada uma vira um total em t no CSV).
  * pool = {band, col}; stem = nome do pool; suffix = marcador de unidade
  * ('tC' carbono | 'tB' biomassa). Para 'biomassa' emite as DUAS
  * (<stem>_tB nativa e <stem>_tC convertida); p/ 'carbono' só <stem>_tC;
- * p/ 'incerteza' a coluna é `incerteza_tC`.
+ * p/ 'incerteza' a coluna é `Incerteza (t C)`.
  */
 function emitCols(r) {
   var out = [];
@@ -104,10 +107,11 @@ function emitCols(r) {
   return out;
 }
 
-/** Nome da coluna de valor de uma emissão (<stem>_t<C|B>). */
-function colName(c) { return c.stem + '_' + c.suffix; }
-/** Nome da coluna def_sec de uma emissão (<stem>_mod<m>_t<C|B>). */
-function colModName(c, m) { return c.stem + '_mod' + m + '_' + c.suffix; }
+/** Nome GRÁFICO da coluna de uma emissão ('AGB (t MS)', 'AGC (t C)', …). */
+function colName(c) {
+  var label = POOL_LABEL[c.stem] || c.stem.toUpperCase();
+  return label + ' (' + (c.suffix === 'tB' ? 't MS' : 't C') + ')';
+}
 
 /** Resolve o ee.Image de um pool/value band (asset direto ou filter_index). */
 function valueImage(r, band) {
@@ -125,14 +129,14 @@ function valueImage(r, band) {
   return img;
 }
 
-/** Número de bandas de valor do stack (área + pools + 8×(área_mod+pools_mod)). */
-function nValue(k) { return 1 + k + MODS.length * (1 + k); }
+/** Número de bandas de valor do stack (área + pools) — sem mods. */
+function nValue(k) { return 1 + k; }
 
 /**
- * Stack [area_ha, <pools>, (area_modX, <pools>_modX)×8, classe]:
+ * Stack [area_ha, <pools>, combo]:
  *   - área sempre informativa (máscara só no LULC);
  *   - pools somam nos pixels válidos (ref × LULC);
- *   - def_sec.unmask(0) ⇒ área_mod fecha com a área da classe.
+ *   - combo = lulc*10 + def_sec (classe × def_sec numa banda só).
  */
 function refStack(r, bandName) {
   var cols = emitCols(r);
@@ -153,21 +157,9 @@ function refStack(r, bandName) {
     valBands.push(v.rename(colName(x.col)));
   });
 
-  var modBands = [];
-  MODS.forEach(function (m) {
-    var cond = defsec.eq(m);
-    modBands.push(
-      area.rename('area_mod' + m).updateMask(lulc.mask()).updateMask(cond));
-    raw.forEach(function (x) {
-      modBands.push(x.img.multiply(area).multiply(x.col.mult)
-        .unmask(0).updateMask(x.img.mask().and(lulc.mask()))
-        .rename(colModName(x.col, m)).updateMask(cond));
-    });
-  });
-
   return ee.Image.cat(
     [area.rename('area_ha').updateMask(lulc.mask())]
-      .concat(valBands).concat(modBands).concat([lulc]));
+      .concat(valBands).concat([LEG.comboEncode(lulc, defsec)]));
 }
 
 function reduceFor(r, bandName, geom) {
@@ -175,7 +167,7 @@ function reduceFor(r, bandName, geom) {
   var n = nValue(emitCols(r).length);
   return stack.reduceRegion({
     reducer: ee.Reducer.sum().repeat(n).group({
-      groupField: n, groupName: 'classe' }),
+      groupField: n, groupName: 'combo' }),
     geometry: geom, scale: r.scale, maxPixels: 1e13, tileScale: 2
   }).get('groups');
 }
@@ -194,53 +186,49 @@ function bandForYear(r, y) {
   return r.multi_year ? 'b' + (y - r.multi_year.start + 1) : null;
 }
 
-/** Expande os grupos decimais em linhas n0 (uma por classe LULC presente). */
+/** Expande os grupos combinados (lulc×def_sec) em linhas de combinação. */
 function buildRows(refInfo, territorio, ano, groups) {
   var rows = [];
   groups = normalize(groupsOrEmpty(groups, refInfo.id + ' · ' + territorio +
     (refInfo.multi_year ? ' · ano ' + ano : '') +
-    ' (buildRows — reduzindo a linhas n0 por classe)'));
+    ' (buildRows — reduzindo a linhas por combinação classe × def_sec)'));
   if (!groups.length) { print('[AVISO]', refInfo.id, territorio,
     (refInfo.multi_year ? 'ano ' + ano : ''), '· 0 linhas geradas'); return rows; }
 
   var cols = emitCols(refInfo);
-  var k = cols.length;
   groups.forEach(function (g) {
     var s = g.sums;
-    var info = LEG.info(g['classe']);
+    var info = LEG.comboInfo(g.code);
     var rowData = row(refInfo, territorio, ano, {
-      classe: g['classe'], n0: info.n0, n1: info.n1, n2: info.n2,
-      n3: LEG.n3Of(g['classe']), n4: LEG.n4Of(g['classe']),
-      natureza: info.natureza, marcador: info.marcador,
-      area_ha: r(s[0])
+      classe: info.classe,
+      'cobertura (n0)': info.n0,
+      'cobertura (n1)': info.n1,
+      'cobertura (n2)': info.n2,
+      'cobertura (n3)': info.n3,
+      'cobertura (n4)': info.n4,
+      'Desmatamento e vegetação secundária': info.def_sec,
+      'Área (ha)': r(s[0])
     });
     cols.forEach(function (c, j) {
       rowData[colName(c)] = r(s[1 + j]);
     });
-    rowData['incerteza_tC'] = refInfo.magnitude === 'incerteza'
-      ? r(s[1]) : 0;
-    MODS.forEach(function (m, mi) {
-      var offset = 1 + k + mi * (1 + k);
-      rowData['area_mod' + m + '_ha'] = r(s[offset]);
-      cols.forEach(function (c, j) {
-        rowData[colModName(c, m)] = r(s[offset + 1 + j]);
-      });
-    });
+    if (refInfo.magnitude !== 'incerteza') {
+      rowData['Incerteza (t C)'] = 0;
+    }
     rows.push(rowData);
   });
   return rows;
 }
 
-/** Colunas dos CSVs das referências (export único, só n0, sem .geo/system:index). */
+/** Colunas dos CSVs das referências (export único, só combinações,
+ * sem .geo/system:index). Nomes prontos p/ gráfico. */
 function statsColumns(refInfo) {
-  var cols = ['fonte', 'ref_id', 'territorio', 'classe', 'n0', 'n1', 'n2',
-    'n3', 'n4', 'natureza', 'marcador', 'ano_lulc', 'ano', 'area_ha'];
+  var cols = ['fonte', 'ref_id', 'territorio', 'classe',
+    'cobertura (n0)', 'cobertura (n1)', 'cobertura (n2)', 'cobertura (n3)',
+    'cobertura (n4)', 'Desmatamento e vegetação secundária',
+    'ano_lulc', 'ano', 'Área (ha)'];
   emitCols(refInfo).forEach(function (c) { cols.push(colName(c)); });
-  cols.push('incerteza_tC');
-  MODS.forEach(function (m) {
-    cols.push('area_mod' + m + '_ha');
-    emitCols(refInfo).forEach(function (c) { cols.push(colModName(c, m)); });
-  });
+  if (refInfo.magnitude !== 'incerteza') cols.push('Incerteza (t C)');
   return cols;
 }
 
