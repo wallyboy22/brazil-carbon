@@ -7,9 +7,11 @@
  * CSVs para MAPBIOMAS_CARBONO_ESTATISTICAS/.
  *
  * Uso (Code Editor):
- *   engine.runAll();                              → 19 refs × 6 biomas (114)
- *   engine.runAll({ ref_ids: ['qcnr_total'] });   → refs selecionados
- *   engine.runAll({ biomes: ['pantanal'] });      → biomas selecionados
+ *   engine.runAllReferences();                     → 19 refs × 6 biomas (114)
+ *   engine.runAllReferences({ ref_ids: [...] });   → refs selecionados
+ *   engine.runAllReferences({ biomes: ['pantanal'] }); → biomas selecionados
+ *
+ * (ou substitua a última linha por um subconjunto acima e desse Run.)
  *
  * Os CSVs são consumidos OFFLINE pelo Colab (statistics_gcn → cell06),
  * SEM Earth Engine no notebook.
@@ -17,4 +19,4 @@
 var engine = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/references/statistics/references_engine.js');
 
-engine.runAll();
+engine.runAllReferences();

@@ -6,7 +6,7 @@
  * pelos steps `7_references.js` e por scripts ad-hoc no Code Editor.
  *
  * Expõe:
- *   runAll(opts?) → UM CSV por REF × BIOMA (19 refs × 6 biomas =
+ *   runAllReferences(opts?) → UM CSV por REF × BIOMA (19 refs × 6 biomas =
  *                   114 arquivos em DRIVE_FOLDER):
  *                    stats_references_<ref_id>_<slug_bioma>_2023.csv
  *
@@ -267,10 +267,11 @@ function regionGeom(biome) {
 
 /**
  * Gera as estatísticas de TODOS os refs × biomas (ou um subconjunto).
- * Uso: engine.runAll() | runAll({ ref_ids: ['qcnr_total'], biomes: ['pantanal'] })
+ * Uso: engine.runAllReferences() |
+ *      runAllReferences({ ref_ids: ['qcnr_total'], biomes: ['pantanal'] })
  * → 1 CSV por ref × bioma (114 arquivos no modo completo).
  */
-exports.runAll = function (opts) {
+exports.runAllReferences = function (opts) {
   opts = opts || {};
   var refs = C.REFERENCES.filter(function (r) {
     return !opts.ref_ids || opts.ref_ids.indexOf(r.id) > -1;

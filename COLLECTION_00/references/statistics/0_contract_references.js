@@ -81,11 +81,16 @@ var REF_ROOT = 'projects/ee-ipam/assets/CCAL/DATASETS/Biomass_ref_maps';
 var QCN_ROOT = 'projects/ee-ipam/assets/CCAL/public/qcn';
 
 function ref(o) {
-  return {
-    factor_to_c: o.factor_to_c || 1, t2_candidate: o.t2 === undefined ? true : o.t2,
-    nodata_le: o.nodata_le || null, filter_index: o.filter_index || null,
-    multi_year: o.multi_year || null, note: o.note || '', ...o
-  };
+  var r = {};
+  Object.keys(o).forEach(function (k) { r[k] = o[k]; });
+  if (r.factor_to_c === undefined) r.factor_to_c = 1;
+  if (r.t2 === undefined) r.t2 = true;
+  r.t2_candidate = r.t2;
+  if (r.nodata_le === undefined) r.nodata_le = null;
+  if (r.filter_index === undefined) r.filter_index = null;
+  if (r.multi_year === undefined) r.multi_year = null;
+  if (r.note === undefined) r.note = '';
+  return r;
 }
 
 exports.REFERENCES = [
