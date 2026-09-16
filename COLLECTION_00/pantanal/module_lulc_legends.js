@@ -451,6 +451,16 @@ exports.n2Of = function (code) {
   return clampPlain(exports.LULC_NIVEL_2, code);
 };
 
+/** Nível 3 oficial (agregação de lavoura: temporária/perene). */
+exports.n3Of = function (code) {
+  return clampPlain(exports.LULC_NIVEL_3, code);
+};
+
+/** Nível 4 oficial (lavoura específica: soja, cana, arroz, algodão…). */
+exports.n4Of = function (code) {
+  return clampPlain(exports.LULC_NIVEL_4, code);
+};
+
 /** Natureza (nível 0 oficial): Natural | Antrópico | Não observado. */
 exports.naturezaOf = function (code) {
   return clampPlain(exports.LULC_NIVEL_0, code);

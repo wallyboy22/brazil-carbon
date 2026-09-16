@@ -198,6 +198,7 @@ function buildRows(v, territorio, groups) {
     var info = LEG.info(g['classe']);
     var rowData = row(v.id, territorio, {
       classe: g['classe'], n0: info.n0, n1: info.n1, n2: info.n2,
+      n3: LEG.n3Of(g['classe']), n4: LEG.n4Of(g['classe']),
       natureza: info.natureza, marcador: info.marcador,
       area_ha: r(s[0]), estoque_t: r(s[1]),
       incerteza_t: r(Math.sqrt(Math.max(s[2], 0)))
@@ -215,7 +216,7 @@ function buildRows(v, territorio, groups) {
 /** Colunas dos CSVs das estatísticas (export único, só n0, sem .geo/system:index). */
 function statsColumns() {
   var cols = ['version', 'ano', 'territorio', 'classe', 'n0', 'n1', 'n2',
-    'natureza', 'marcador', 'area_ha', 'estoque_t', 'incerteza_t'];
+    'n3', 'n4', 'natureza', 'marcador', 'area_ha', 'estoque_t', 'incerteza_t'];
   MODS.forEach(function (m) {
     cols.push('area_mod' + m + '_ha', 'estoque_mod' + m + '_t');
   });

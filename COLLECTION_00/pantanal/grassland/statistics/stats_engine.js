@@ -178,6 +178,7 @@ function rowBase(t, classe) {
   var i = LEG.info(classe);
   return { produto: 'grassland', versao: t[1], ano: YEAR, territorio: t[0],
     unidade: 't', classe: classe, n0: i.n0, n1: i.n1, n2: i.n2,
+    n3: LEG.n3Of(classe), n4: LEG.n4Of(classe),
     natureza: i.natureza, marcador: i.marcador };
 }
 
@@ -260,8 +261,8 @@ exports.runForVersion = function (versionId) {
               return b;
             });
             var sel = ['produto', 'versao', 'ano', 'territorio', 'unidade',
-              'classe', 'n0', 'n1', 'n2', 'natureza', 'marcador', 'area_ha',
-              'biomassa_t', 'estoque_t'];
+              'classe', 'n0', 'n1', 'n2', 'n3', 'n4', 'natureza', 'marcador',
+              'area_ha', 'biomassa_t', 'estoque_t'];
             MODS.forEach(function (m) {
               sel.push('area_mod' + m + '_ha', 'biomassa_mod' + m + '_t',
                 'estoque_mod' + m + '_t');
@@ -306,7 +307,8 @@ exports.runForVersion = function (versionId) {
               return b;
             });
             var sel = ['produto', 'versao', 'ano', 'territorio', 'unidade',
-              'classe', 'n0', 'n1', 'n2', 'natureza', 'marcador', 'area_ha'];
+              'classe', 'n0', 'n1', 'n2', 'n3', 'n4', 'natureza', 'marcador',
+              'area_ha'];  // biomassa_mensal
             MONTHS.forEach(function (m) {
               sel.push('biomassa_m' + pad(m) + '_t');
             });
@@ -351,7 +353,8 @@ exports.runForVersion = function (versionId) {
                   job.region.slug + '_' + YEAR +
                   (mesJobs.length > 1 ? '' : ''),
                 ['produto', 'versao', 'ano', 'territorio', 'unidade', 'classe',
-                  'n0', 'n1', 'n2', 'natureza', 'marcador', 'area_ha', 'mes',
+                  'n0', 'n1', 'n2', 'n3', 'n4', 'natureza', 'marcador',
+                  'area_ha', 'mes',
                   'anpp_t']);
               mesDone++;
               if (mesDone === total) {
