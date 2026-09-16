@@ -4,6 +4,27 @@
 > MAPBIOMAS-CARBONO: datasets externos (catálogo GEE/papers), dados internos do
 > projeto e fontes planejadas. Fichas enxutas com o uso exato no repositório.
 
+## Resumo do pipeline
+
+| Categoria | Dataset | Asset GEE | Papel | Bandas/derivados | Desde |
+|---|---|---|---|---|---|
+| Observado (amostra) | GEDI L4A AGBD v2.1 | `LARSE/GEDI/GEDI04_A_002` | amostras de AGC | `agbd`, `agbd_se` | v00 |
+| Observado (amostra) | GEDI L4A table index | `LARSE/GEDI/GEDI04_A_002_INDEX` | descoberta de granules | `table_id`, `time_start/end` | v00 |
+| Observado (campo) | IFN — padrão BR | `ee-ipam/.../IFN_2026_BR_PLOTS-v13` · `IFN_2026_BR_Field_plots` | covariáveis + validação | biomassa de parcela | v00/v07 |
+| Observado (campo) | Parcelas grassland | `c.FIELD.ASSET` (`biomass_kg_ha`) | reestima Fonseca | biomassa de parcela | gv02 |
+| Covariável florestal | NASA HLS v2 | `NASA/HLS/HLSL30/v002` + `HLSS30/v002` | óptico | 24 b: Fmask+7 índices+P10/P50/P90/AMP | v01 |
+| Covariável florestal | ALOS PALSAR-2 | `JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH` | radar/estrutura | 4 b: HH_db, HV_db, HV_HH, RVI | v01 |
+| Covariável florestal | HAND | `users/gena/global-hand/hand-100` | topografia | 2 b: HAND + classes geomorfológicas | v01 |
+| Covariável florestal | ERA5-Land | `ECMWF/ERA5_LAND/MONTHLY_AGGR` | clima | 5 b: CWD (atual/clim/3yr), Tmean, Prec | v01 |
+| Covariável florestal | MapBiomas C11 | `projects/mapbiomas-public/.../coverage_v3` | máscara+legenda | {3,4,6,7,49} / {11,12,50} | v01 |
+| Covariável campestre | Landsat C02 L2 | `LANDSAT/LT05\|LE07\|LC08\|LC09/C02/T1_L2` | biomassa | Reflectância (Fonseca) | gv01 |
+| Covariável campestre | MODIS MCD15A3H | `MODIS/061/MCD15A3H` | fPAR | ×0.01 (+QC/interpolação) | gv01 |
+| Covariável campestre | MODIS MCD18A1 | `MODIS/061/MCD18A1` | radiação | DSR → MJ/m²/dia | gv01 |
+| Covariável campestre | MODIS MOD17A2H | `MODIS/061/MOD17A2H` | εCA observada | Gpp ×0.0001 | gv02 |
+| Auxiliar | Limites IBGE | `ee-ipam/.../IBGE` (biomas 2026 · UFs 2025 · municípios 2025) | território/agregação | polígonos | stats |
+| Referência | Saatchi · Baccini · Avitabile · Zimbres | a definir | benchmark | assets pendentes | — |
+| Planejado | ICESat-2 · CARBONDATA* | a definir | dados futuros | — | — |
+
 ## Externos — covariáveis florestais (stack 36 bandas)
 
 | Arquivo | Dataset | Uso no projeto |
