@@ -118,19 +118,27 @@ function productOf(versionId, id) {
   return null;
 }
 
-/** Monta e exporta UMA tabela (rows já normalizadas em {classe, v0..vn}). */
+/** Monta e exporta UMA tabela (rows já normalizadas em {classe, v0..vn}).
+ * Valores `undefined` são convertidos em '' para nunca estourar
+ * "Can't encode object: undefined"; erro de encode é registrado com contexto. */
 function exportTable(rows, filePrefix, sel) {
   if (!rows.length) return;
-  var fc = ee.FeatureCollection(rows.map(function (row) {
-    return ee.Feature(null, row); }));
-  Export.table.toDrive({
-    collection: fc,
-    description: 'WS_CARBONO_toDrive-' + filePrefix,
-    fileNamePrefix: filePrefix,
-    folder: C.DRIVE_FOLDER,
-    fileFormat: 'CSV',
-    selectors: sel
-  });
+  var fc = ee.FeatureCollection(rows.map(function (r) {
+    var o = {};
+    Object.keys(r).forEach(function (k) { o[k] = (r[k] === undefined ? '' : r[k]); });
+    return ee.Feature(null, o); }));
+  try {
+    Export.table.toDrive({
+      collection: fc,
+      description: 'WS_CARBONO_toDrive-' + filePrefix,
+      fileNamePrefix: filePrefix,
+      folder: C.DRIVE_FOLDER,
+      fileFormat: 'CSV',
+      selectors: sel
+    });
+  } catch (e) {
+    print('[ERRO export]', filePrefix, String(e).slice(0, 200));
+  }
 }
 
 /** Base de linha por CLASSE LULC (identificadores + cobertura n0..n4). */

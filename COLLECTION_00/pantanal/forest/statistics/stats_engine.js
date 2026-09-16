@@ -224,18 +224,28 @@ function statsColumns() {
     'Área (ha)', 'Estoque de carbono (t)', 'Incerteza do estoque (t)'];
 }
 
-/** Exporta UMA tabela por versão (selectors excluem .geometry/system:index). */
+/** Exporta UMA tabela por versão (selectors excluem .geometry/system:index).
+ * Valores `undefined` são convertidos em '' para nunca estourar
+ * "Can't encode object: undefined"; erro de encode é registrado com contexto. */
 function exportCsv(rows, fileName, description, selectors) {
   if (!rows.length) return;
-  Export.table.toDrive({
-    collection: ee.FeatureCollection(rows.map(function (r2) {
-      return ee.Feature(null, r2); })),
-    description: description,
-    folder: C.DRIVE_FOLDER,
-    fileNamePrefix: fileName,
-    fileFormat: 'CSV',
-    selectors: selectors
-  });
+  var fc = ee.FeatureCollection(rows.map(function (r2) {
+    var o = {};
+    Object.keys(r2).forEach(function (k) { o[k] = (r2[k] === undefined ? '' : r2[k]); });
+    return ee.Feature(null, o);
+  }));
+  try {
+    Export.table.toDrive({
+      collection: fc,
+      description: description,
+      folder: C.DRIVE_FOLDER,
+      fileNamePrefix: fileName,
+      fileFormat: 'CSV',
+      selectors: selectors
+    });
+  } catch (e) {
+    print('[ERRO export]', fileName, String(e).slice(0, 200));
+  }
 }
 
 /**

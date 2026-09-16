@@ -490,6 +490,8 @@ exports.info = function (code) {
     n0: exports.n0Of(code),
     n1: n1,
     n2: exports.n2Of(code),
+    n3: exports.n3Of(code),
+    n4: exports.n4Of(code),
     natureza: exports.naturezaOf(code),
     marcador: exports.marcadorFromN1(n1)
   };
