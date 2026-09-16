@@ -50,6 +50,11 @@ CONF = {
     "GRASSLAND_REF_VERSION": "v02",  # referência do comparativo de produtos (bioma completo)
     "MISSING_TOL": 1.0,  # t (QA de somas)
     "DENSITY_MAX": 400.0,  # t/ha (QA de densidade implícita)
+    # --- dados de REFERÊNCIA (cell05 — referencia_mbc11.py) ---
+    "CARBON_FRACTION": 0.47,   # AGB (t) -> C (t), IPCC default (AGB→AGC)
+    "REF_MIN_VALID": 0.05,     # mín. fração de área válida p/ comparar ref
+    "REF_FINE_SCALE": False,   # se False, reamostra refs finas p/ REF_SCALE_COARSE
+    "REF_SCALE_COARSE": 110.0, # escala (m) do coarsening p/ QCN/Baccini/TCN
     # --- figuras ---
     "FIGURE_DPI": 120,
     # --- mapas OPCIONAIS (off p/ padrão — recomputam no Earth Engine) ---
