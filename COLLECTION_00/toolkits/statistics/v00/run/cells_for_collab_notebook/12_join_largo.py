@@ -43,9 +43,9 @@ def _prep(df):
             df[c] = df[c].astype(str)
     if "classe" in df.columns:
         df["classe"] = pd.to_numeric(df["classe"], errors="coerce")
-    # sentinela de nodata (ex.: TCN ~ -9.22e17) → NaN
+    # sentinela de nodata (ex.: TCN/grassland ~ ±9.22e17) → NaN
     num = df.select_dtypes(include=[np.number]).columns
-    df[num] = df[num].mask(df[num] <= -1e30)
+    df[num] = df[num].mask(df[num].abs() >= 1e15)
     return df
 
 

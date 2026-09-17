@@ -97,6 +97,10 @@ def _clean_schema(df: pd.DataFrame) -> pd.DataFrame:
     df = _remap_products(df)
     if "classe" in df.columns:
         df["classe"] = pd.to_numeric(df["classe"], errors="coerce")
+    # sentinela de nodata dos produtos (ex.: grassland ~ ±9.22e17) → NaN
+    for c in ("area_ha", "estoque_t", "biomassa_t", "anpp_t", "incerteza_t"):
+        if c in df.columns:
+            df.loc[df[c].abs() >= 1e15, c] = np.nan
     if "def_sec" in df.columns:
         df["def_sec_code"] = df["def_sec"].map(defsec_code)
     if "natureza" not in df.columns and "classe" in df.columns:

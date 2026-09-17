@@ -122,8 +122,8 @@ def load_references_csv(lulc_year: int = 2023,
                t2_candidate=("t2_candidate", "first"))
           .reset_index())
     df["area_ha"] = df["area_ha"].round(1)
-    # sentinela de nodata (ex.: TCN ~ -9.22e17) → NaN
-    df.loc[df["total_native"] <= -1e30, "total_native"] = np.nan
+    # sentinela de nodata (ex.: TCN ~ ±9.22e17) → NaN
+    df.loc[df["total_native"].abs() >= 1e15, "total_native"] = np.nan
     df["total_native"] = df["total_native"].round(1)
     df["dens_native"] = np.where(df["area_ha"] > 0,
                                  df["total_native"] / df["area_ha"], 0.0)

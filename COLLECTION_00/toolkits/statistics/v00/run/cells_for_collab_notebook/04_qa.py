@@ -89,7 +89,9 @@ def qa_defsec(df: pd.DataFrame,
         if grp["area_ha"].isna().any() or (grp["area_ha"] < 0).any():
             problems.append(f"{key}: área nula/negativa em combinação def_sec")
         for vc in vcols:
-            if grp[vc].isna().any():
+            # só valida a coluna ATIVA do grupo (nas tabelas longas por produto
+            # as demais colunas de valor ficam NaN por construção)
+            if grp[vc].notna().any() and grp[vc].isna().any():
                 problems.append(f"{key}: nulos em {vc}")
             if (grp[vc] < 0).any():
                 problems.append(f"{key}: valores negativos em {vc}")
