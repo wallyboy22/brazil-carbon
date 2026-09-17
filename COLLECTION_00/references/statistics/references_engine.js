@@ -287,22 +287,23 @@ function rowsFC(refInfo, bandName, ano, geom, D) {
   var nBands = cols.length;
   var source = refInfo.fonte;
   var rid = refInfo.id;
-  var anoVal = (ano === null || ano === undefined) ? '' : ee.Number(ano);
+  var anoVal = (ano === null || ano === undefined) ? ''
+    : (typeof ano === 'number') ? ee.Number(ano) : ano;
   var groups = ee.List(reduceFor(refInfo, bandName, geom));
 
   function expandTerritory(tEl) {
     var td = ee.Dictionary(tEl);
     var terCode = ee.Number(td.get('territory'));
-    var biomeName = ee.String(D.biome.get(terCode.divide(100).floor().format()));
-    var ufSigla = ee.String(D.sigla.get(terCode.mod(100).format()));
-    var ufNome = ee.String(D.nome.get(terCode.mod(100).format()));
+    var biomeName = ee.String(D.biome.get(terCode.divide(100).floor().format(), ''));
+    var ufSigla = ee.String(D.sigla.get(terCode.mod(100).format(), ''));
+    var ufNome = ee.String(D.nome.get(terCode.mod(100).format(), ''));
     var territorio = biomeName.cat(' (bioma)');
 
     function expandClass(gEl) {
       var gd = ee.Dictionary(gEl);
       var s = ee.List(gd.get('sum'));
       var cls = ee.Number(gd.get('classe'));
-      var info = ee.Dictionary(D.info.get(cls.format()));
+      var info = ee.Dictionary(D.info.get(cls.format(), {}));
 
       function one(j) {
         var off = base + j * base;
