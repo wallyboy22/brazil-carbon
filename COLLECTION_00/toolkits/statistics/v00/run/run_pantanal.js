@@ -20,11 +20,27 @@ var PANTANAL = require(
 var engine = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/engine/engine.js');
 
+print('======================================================================');
+print('MAPBIOMAS-CARBONO · estatísticas · processamento em andamento.');
+print('As tasks são agendadas agora, mas podem levar alguns minutos para');
+print('aparecer no Task Manager (aba "Tasks"). Aguarde — não rode de novo.');
+print('======================================================================');
 print('MAPBIOMAS-CARBONO ·', PANTANAL.BIOME_NAME,
   '· estatísticas (floresta + campos)');
 print('  · forest    :',
   PANTANAL.FOREST.VERSIONS.map(function (x) { return x.id; }).join(', '));
 print('  · grassland :', PANTANAL.GRASSLAND.VERSIONS.join(', '));
 
-engine.runForest(PANTANAL.FOREST);
-engine.runGrassland(PANTANAL.GRASSLAND);
+var pending = 2;
+function scopeDone() {
+  pending--;
+  if (pending === 0) {
+    print('======================================================================');
+    print('[FIM] Tasks agendadas. Aguarde alguns minutos e confira o Task Manager;');
+    print('ao concluírem, os CSVs aparecem no Drive em MAPBIOMAS_CARBONO_ESTATISTICAS/.');
+    print('======================================================================');
+  }
+}
+
+engine.runForest(PANTANAL.FOREST, null, scopeDone);
+engine.runGrassland(PANTANAL.GRASSLAND, null, scopeDone);

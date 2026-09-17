@@ -27,4 +27,15 @@ var C = require(
 var engine = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/engine/engine.js');
 
-engine.runReferences(C);
+print('======================================================================');
+print('MAPBIOMAS-CARBONO · estatísticas de REFERÊNCIA · processamento em andamento.');
+print('As tasks são agendadas agora, mas podem levar alguns minutos para');
+print('aparecer no Task Manager (aba "Tasks"). Aguarde — não rode de novo.');
+print('======================================================================');
+
+engine.runReferences(C, null, function () {
+  print('======================================================================');
+  print('[FIM] Tasks agendadas. Aguarde alguns minutos e confira o Task Manager;');
+  print('ao concluírem, os CSVs aparecem no Drive em MAPBIOMAS_CARBONO_ESTATISTICAS/.');
+  print('======================================================================');
+});

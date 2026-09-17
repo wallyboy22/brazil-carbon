@@ -261,8 +261,9 @@ function refRows(contract, refInfo, bandName, ano, geom, D) {
  * Uso: engine.runReferences(contract) |
  *      engine.runReferences(contract, { ref_ids: ['zimbres_agb'] }) |
  *      engine.runReferences(contract, { biomes: ['cerrado'] })
+ * `done` (opcional) é chamado ao final do agendamento (após todas as refs).
  */
-exports.runReferences = function (contract, opts) {
+exports.runReferences = function (contract, opts, done) {
   opts = opts || {};
   setupTerritory(contract);
   var refs = contract.REFERENCES.filter(function (r) {
@@ -327,6 +328,7 @@ exports.runReferences = function (contract, opts) {
         jobDone(false);
       }
     });
+    if (done) done(scheduled, tot);
   });
 };
 
@@ -423,8 +425,9 @@ function forestRows(contract, v, geom, D) {
  * Gera as estatísticas florestais. Sem `versionId`, roda todas as versões do
  * contrato (V03–V08); com `versionId`, apenas a versão indicada.
  * Uso: engine.runForest(contract) | engine.runForest(contract, 'v07').
+ * `done` (opcional) é chamado ao final do agendamento (após todas as versões).
  */
-exports.runForest = function (contract, versionId) {
+exports.runForest = function (contract, versionId, done) {
   setupTerritory(contract);
   var versions = versionId
     ? contract.VERSIONS.filter(function (x) { return x.id === versionId; })
@@ -432,6 +435,7 @@ exports.runForest = function (contract, versionId) {
   if (!versions.length) {
     print('[ERRO] versão desconhecida:', versionId, '— disponíveis:',
       contract.VERSIONS.map(function (x) { return x.id; }).join(', '));
+    if (done) done(0, 0);
     return;
   }
   var slug = 'bioma';
@@ -439,6 +443,7 @@ exports.runForest = function (contract, versionId) {
   T.loadTerritories(function () {
     var D = T.buildLabelDicts(LEG);
     var geom = T.regionGeom(contract.BIOME_NAME);
+    var scheduled = 0;
     versions.forEach(function (v) {
       print('MAPBIOMAS-CARBONO ·', contract.BIOME_NAME, 'Forest · 7_statistics ·', v.id);
       var fileName = contract.PREFIX + '_' + v.id + '_' + slug + '_' + contract.YEAR;
@@ -453,10 +458,14 @@ exports.runForest = function (contract, versionId) {
         });
         print('[OK]', v.id, '· export IMEDIATO agendado (', contract.BIOME_NAME,
           '· contagem de linhas você confere na task/CSV).');
+        scheduled++;
       } catch (e) {
         print('[ERRO export]', fileName, String(e).slice(0, 200));
       }
     });
+    print('[FIM]', contract.BIOME_NAME, 'Forest ·', scheduled, 'de',
+      versions.length, 'exports agendados imediatos.');
+    if (done) done(scheduled, versions.length);
   });
 };
 
@@ -607,8 +616,9 @@ function grassRowsPrincipal(contract, versionId, biomass, carbon, geom, D) {
  * principal (anual), biomassa mensal e ANPP mensal. Região = bioma; a
  * diferenciação por UF sai da banda `territory` nas colunas UF/Unidade
  * Federativa. Exports agendados IMEDIATAMENTE (sem evaluate).
+ * `done` (opcional) é chamado ao final do agendamento (após todas as versões).
  */
-exports.runGrassland = function (contract, versionId) {
+exports.runGrassland = function (contract, versionId, done) {
   setupTerritory(contract);
   var versions = versionId ? [versionId] : contract.VERSIONS;
 
@@ -616,6 +626,7 @@ exports.runGrassland = function (contract, versionId) {
     var D = T.buildLabelDicts(LEG);
     var geom = T.regionGeom(contract.BIOME_NAME);
     var slug = 'bioma';
+    var totalScheduled = 0;
 
     versions.forEach(function (vid) {
       var biomass = productOf(contract, vid, 'biomass');
@@ -706,7 +717,11 @@ exports.runGrassland = function (contract, versionId) {
       }
 
       print('[FIM]', vid, '·', scheduled, 'de 3 exports agendados imediatos.');
+      totalScheduled += scheduled;
     });
+    print('[FIM] grassland ·', versions.join(', '), '·', totalScheduled,
+      'exports agendados imediatos.');
+    if (done) done(totalScheduled);
   });
 };
 
