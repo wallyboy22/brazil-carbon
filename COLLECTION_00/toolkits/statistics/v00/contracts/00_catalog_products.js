@@ -73,13 +73,13 @@ exports.GRASSLAND_PRODUCTS = [
 ];
 
 exports.GRASSLAND_MONTHLY = [
-  mensalP('v01', 'biomass', 'Biomassa mensal (MS)',
+  mensalP('v01', 'biomass_mensal', 'Biomassa mensal (MS)',
     'BIOMASS', 'grassland_biomass_monthly', 'biomass_', 't'),
-  mensalP('v01', 'anpp', 'ANPP mensal',
+  mensalP('v01', 'anpp_mensal', 'ANPP mensal',
     'ANPP', 'grassland_anpp_monthly', 'anpp_', 't'),
-  mensalP('v02', 'biomass', 'Biomassa mensal (MS) — v02 bioma',
+  mensalP('v02', 'biomass_mensal', 'Biomassa mensal (MS) — v02 bioma',
     'BIOMASS', 'grassland_biomass_monthly', 'biomass_', 't'),
-  mensalP('v02', 'anpp', 'ANPP mensal — v02 bioma',
+  mensalP('v02', 'anpp_mensal', 'ANPP mensal — v02 bioma',
     'ANPP', 'grassland_anpp_monthly', 'anpp_', 't')
 ];
 

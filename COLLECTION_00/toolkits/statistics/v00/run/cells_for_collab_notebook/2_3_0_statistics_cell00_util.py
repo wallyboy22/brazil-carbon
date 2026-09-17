@@ -408,10 +408,9 @@ GRAPH_COLS = {
     "período": "periodo",
 }
 
-# Colunas de VALOR das REFERÊNCIAS têm o stem do pool + unidade no rótulo:
-#   'AGB (t MS)' → agb_tB (biomassa) · 'AGC (t C)' → agc_tC (carbono)
-#   'Incerteza (t C)' → incerteza_tC
-_POOL_RE = re.compile(r"\s*([A-Za-zÀ-ú]+)\s+\((t MS|t C)\)")
+# Colunas de VALOR das REFERÊNCIAS têm o stem do pool + unidade no rótulo,
+# opcionalmente prefixadas pelo autor: 'AGB (t MS)' ou 'Zimbres 2021 AGB (t C)'.
+_POOL_RE = re.compile(r"^(?:.*\s)?([A-Za-zÀ-ú]+)\s+\((t MS|t C)\)$")
 
 
 def _pool_internal(col: str):
@@ -423,13 +422,19 @@ def _pool_internal(col: str):
 
 
 def _remap_schema(df: pd.DataFrame) -> pd.DataFrame:
-    """Renomeia colunas gráfico-ready do CSV para nomes internos canônicos."""
+    """Renomeia colunas gráfico-ready do CSV para nomes internos canônicos.
+
+    Compatibilidade: o CSV não traz mais a coluna `territorio`; ela é derivada
+    de `Bioma` (ex.: 'Pantanal' → 'Pantanal (bioma)') para o restante do código.
+    """
     df = df.rename(columns={k: v for k, v in GRAPH_COLS.items()
                             if k in df.columns})
     for c in list(df.columns):
         ic = _pool_internal(c)
         if ic:
             df = df.rename(columns={c: ic})
+    if "territorio" not in df.columns and "Bioma" in df.columns:
+        df["territorio"] = df["Bioma"].astype(str) + " (bioma)"
     return df
 
 
@@ -471,8 +476,31 @@ def _clean_schema(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def load_forest() -> pd.DataFrame:
-    """Concatena stats_forest_*_2023*.csv (linhas n0 por classe LULC)."""
-    return _clean_schema(_read("stats_forest_*2023*.csv"))
+    """Carrega o CSV LARGO florestal (stats_forest_*2023*.csv) e o desmembra em
+    formato longo por versão, a partir das colunas '<vXX> Estoque (t)' e
+    '<vXX> Incerteza (t)'. CSVs antigos (1 arquivo por versão, coluna
+    `version`) seguem suportados."""
+    df = _read("stats_forest_*2023*.csv")
+    if not len(df):
+        return pd.DataFrame()
+    est_re = re.compile(r"^(v\d+)\s+Estoque \(t\)$")
+    est_cols = [c for c in df.columns if est_re.match(str(c))]
+    if not est_cols:
+        return _clean_schema(df)  # schema antigo
+    frames = []
+    for c in est_cols:
+        v = est_re.match(str(c)).group(1)
+        part = df.copy()
+        part["version"] = v
+        part["estoque_t"] = part[c]
+        inc = f"{v} Incerteza (t)"
+        part["incerteza_t"] = part[inc] if inc in df.columns else pd.NA
+        frames.append(part)
+    long = pd.concat(frames, ignore_index=True)
+    drop = est_cols + [c for c in df.columns
+                       if re.fullmatch(r"v\d+\s+Incerteza \(t\)", str(c))]
+    long = long.drop(columns=drop, errors="ignore")
+    return _clean_schema(long)
 
 
 def load_grassland() -> pd.DataFrame:
@@ -483,7 +511,8 @@ def load_grassland() -> pd.DataFrame:
 
 _gv = CONF["GRASSLAND_REF_VERSION"]
 EXPECTED = {
-    "forest": [f"stats_forest_{v}_" for v in CONF["FOREST_VERSIONS"]],
+    # forest agora é UMA tabela larga (todas as versões em colunas)
+    "forest": ["stats_forest_"],
     "grassland": [f"stats_grassland_{_gv}_",
                   f"stats_grassland_{_gv}_biomassa_mensal_",
                   f"stats_grassland_{_gv}_anpp_mensal_"],

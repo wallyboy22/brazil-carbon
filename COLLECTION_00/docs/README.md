@@ -115,10 +115,10 @@
 - **Estatísticas de referência (benchmarks + QCN) por bioma:** o toolkit
   `toolkits/statistics/v00` (catálogo + contrato + engine + driver) exporta
   `stats_references_<ref>_<ano>.csv` (20 arquivos; um por ref, com os 6 biomas
-  combinados — a coluna `territorio` distingue cada um), com `fonte`, `ref_id`,
-  `territorio`, classe, cobertura `(n0..n4)`, `Desmatamento e vegetação
-  secundária`, `ano_lulc`, `ano`, `Área (ha)`, pools `(t C)|(t MS)` e
-  `Incerteza (t C)`.
+  combinados — colunas `Bioma`/`UF`/`Unidade Federativa`), com `fonte`, `ref_id`,
+  classe, cobertura `(n0..n4)`, `Desmatamento e vegetação secundária`,
+  `ano_lulc`, `ano`, `Área (ha)`, `<Autor> <pool> (t C | t MS)` e
+  `<Autor> Incerteza (t C)`.
   Consumo OFFLINE no Colab (`run/cells_for_collab_notebook/` → cell06), sem Earth Engine.
 
 ## Planejados

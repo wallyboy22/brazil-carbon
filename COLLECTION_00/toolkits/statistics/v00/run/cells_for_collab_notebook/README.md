@@ -33,20 +33,25 @@ analisa. Se faltar arquivo, a `cell02` indica qual step rodar:
 
 ## Schema dos CSVs do GEE (formato "gráfico-ready")
 
-Os steps `7_statistics.js` exportam **UMA linha por COMBINAÇÃO (classe LULC ×
-def_sec)**, com colunas prontas para gráfico (espaços/parênteses) — SEM linhas
-agregadas:
+Os drivers exportam **UMA linha por COMBINAÇÃO (classe LULC × def_sec)**, com
+colunas prontas para gráfico (espaços/parênteses) — SEM linhas agregadas.
+O território é SEMPRE bioma × UF (`Bioma`, `UF`, `Unidade Federativa`); a
+coluna `territorio` foi removida. Todas as tabelas têm a coluna `ecossistema`
+(`florestal` | `campestre` | `referencia`).
 
-- **forest** — `version, ano, territorio, classe, cobertura (n0..n4),
-  Desmatamento e vegetação secundária, Área (ha), Estoque de carbono (t),
-  Incerteza do estoque (t)`.
-- **grassland** — principal/ANUAL (`produto, versao, ano, territorio, unidade,
-  classe, cobertura (n0..n4), Desmatamento e vegetação secundária, Área (ha),
+- **forest** (LARGO) — `ecossistema, Bioma, UF, Unidade Federativa, classe,
+  cobertura (n0..n4), Desmatamento e vegetação secundária, ano_lulc,
+  Área (ha)` + uma coluna por versão: `v03 Estoque (t)` … `v08 Estoque (t)` e
+  `v07 Incerteza (t)` / `v08 Incerteza (t)` (só versões com ensemble).
+- **grassland** (separado por versão) — principal/ANUAL (`ecossistema, produto,
+  versao, ano, Bioma, UF, Unidade Federativa, unidade, classe,
+  cobertura (n0..n4), Desmatamento e vegetação secundária, Área (ha),
   Biomassa (t), Estoque de carbono (t)`) + mensais LONGOS com a coluna
   `período` (`YYYY_MM`: biomassa `Biomassa (t)` e ANPP `ANPP (t MS/ano)`).
-- **references** — `fonte, ref_id, territorio, classe, cobertura (n0..n4),
-  Desmatamento e vegetação secundária, ano_lulc, ano, Área (ha),
-  <pool> (t C | t MS)` (+ `Incerteza (t C)`).
+- **references** (1 CSV por ref) — `ecossistema, fonte, ref_id, Bioma, UF,
+  Unidade Federativa, classe, cobertura (n0..n4), Desmatamento e vegetação
+  secundária, ano_lulc, ano, Área (ha), <Autor> <pool> (t C | t MS)`
+  (+ `<Autor> Incerteza (t C)`).
 
 A `cell00` faz o remap desses nomes para os internos (`n0..n4, area_ha,
 estoque_t, biomassa_t, anpp_t, def_sec …`) e deriva em memória
@@ -68,6 +73,7 @@ Depois, faça download/export dos CSVs para a pasta
 | 5 | `2_3_4_statistics_cell04_relatorio.py` | relatório XLSX (abas classe/marcador/total/comparativo por versão e produto) + resumo .md | `resumo_pantanal_2023.xlsx` + `.md` |
 | 6 | `2_3_5_statistics_cell05_mapas.py` (OPCIONAL) | mapas de AGC v07 e campestre por grade 10 km — só se `CONF["FAZER_MAPAS"]=True` | `mapa_*.png` |
 | 7 | `2_3_6_statistics_cell06_referencia.py` | lê os CSVs de referência (exportados pelo GEE), cruzamento T1 cross 2023 + T2 melhor ano por classe + resumo | `tabela_cross_2023.csv`, `tabela_melhor_ano_referencia_2023.csv`, `resumo_referencia_2023.md` |
+| 8 | `2_3_7_statistics_cell07_join_largo.py` | junta as tabelas exportadas SEPARADAS (forest largo + grassland por versão + refs) numa tabela LARGA por `(Bioma, UF, classe, def_sec)` | `consolidado_largo_2023.csv` |
 
 > **Esquema de runtime:** rodar `cell00` primeiro; os demais `.py` assumem que
 > `CONF`, `pd`, `fig_dir/out_dir/manifest`, a legenda C11 e o catálogo
@@ -85,6 +91,7 @@ toolkits/statistics/v00/run/cells_for_collab_notebook/
 ├── 2_3_4_statistics_cell04_relatorio.py
 ├── 2_3_5_statistics_cell05_mapas.py    # opcional (recomputa médias no EE)
 ├── 2_3_6_statistics_cell06_referencia.py
+├── 2_3_7_statistics_cell07_join_largo.py  # join largo (forest + grassland + refs)
 ├── requirements.txt
 ├── README.md
 └── figures/                            # espelho: baixe as figuras para cá

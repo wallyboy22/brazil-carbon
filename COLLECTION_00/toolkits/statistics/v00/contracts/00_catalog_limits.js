@@ -5,14 +5,14 @@
  * de propriedades consumidos pelo `module_territory.js` e pelos contratos.
  *
  * Assets (padrão IBGE via IPAM):
- *   BIOMES_FC → biomas 2026 (prop `Bioma`; código numérico em `GEOCODE`)
+ *   BIOMES_FC → biomas 2026 (prop de NOME `Bioma`)
  *   UFS_FC    → UFs 2025    (código `CD_UF`, sigla `SIGLA_UF`, nome `NM_UF`)
  *   MUNS_FC   → municípios 2025 (ainda não usado; id a confirmar)
  *
- * Notas de compatibilidade:
- *   · `GEOCODE` é o código numérico padrão (forest/grassland).
- *   · `CD_BIOMA` (1..6) é a prop usada historicamente pelas estatísticas de
- *     REFERÊNCIAS no paint da banda `territory`; mantida como alias.
+ * Nota: o paint do bioma é feito a partir do NOME (`Bioma` → código via
+ * `00_catalog_territories.js`), porque o asset ORIGINAIS não expôs um código
+ * numérico utilizável (GEOCODE/CD_BIOMA saíam vazios — ver
+ * `run/00_diagnose_territories.js`).
  ******************************************************************************/
 
 // ---- Assets de limite --------------------------------------------------------
@@ -24,11 +24,7 @@ exports.UFS_FC =
 exports.MUNS_FC = null;
 
 // ---- Propriedades ------------------------------------------------------------
-exports.BIOME_NAME_PROP = 'Bioma';        // rótulo do bioma (ex.: 'Pantanal')
-exports.BIOME_CODE_PROP = 'GEOCODE';      // código numérico padrão (paint)
-exports.BIOME_CODE_PROP_ALT = 'CD_BIOMA'; // alias histórico (references)
-exports.BIOME_FALLBACK_PROP = 'NM_BIOMA'; // fallback de rótulo (references)
-
+exports.BIOME_NAME_PROP = 'Bioma'; // nome do bioma (ex.: 'Pantanal')
 exports.UF_CODE_PROP = 'CD_UF';
 exports.UF_SIGLA_PROP = 'SIGLA_UF';
 exports.UF_NAME_PROP = 'NM_UF';

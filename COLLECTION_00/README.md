@@ -230,7 +230,7 @@ no toolkit `COLLECTION_00/toolkits/statistics/v00/`:
 
 | Driver | O que gera (Drive `MAPBIOMAS_CARBONO_ESTATISTICAS`) |
 |---|---|
-| `run/run_pantanal.js` | `stats_forest_<v>_bioma_2023.csv` (V03–V08; v07/v08 com incerteza) + `stats_grassland_<v>_<regiao>_2023.csv` (+ `_biomassa_mensal_` / `_anpp_mensal_`) |
+| `run/run_pantanal.js` | `stats_forest_bioma_2023.csv` (tabela LARGA: V03–V08 em colunas; v07/v08 com incerteza) + `stats_grassland_<v>_<regiao>_2023.csv` (+ `_biomassa_mensal_` / `_anpp_mensal_`) |
 | `run/run_references.js` | `stats_references_<ref_id>_2023.csv` (20 refs, 6 biomas) |
 
 - **Legenda C11 única**: `engine/module_legends.js` (n0..n4, natureza,

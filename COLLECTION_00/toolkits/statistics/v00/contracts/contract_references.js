@@ -29,19 +29,13 @@ exports.BIOMES = LIM.BIOMES;
 exports.REFERENCES = REF.REFERENCES;
 
 // ---- Território --------------------------------------------------------------
-// Área de análise = TODOS os biomas (1 CSV por ref; coluna `territorio`).
-// Nota: as referências usam o paint por `CD_BIOMA` (código 1..6) e o rótulo de
-// bioma cai para `NM_BIOMA` quando `Bioma` estiver ausente.
+// Área de análise = TODOS os biomas (1 CSV por ref). O território SEMPRE cruza
+// bioma × UF; os rótulos vêm de dicionários estáticos (00_catalog_territories).
 exports.territory = {
   biomeFc: LIM.BIOMES_FC,
-  biomeCodeProp: LIM.BIOME_CODE_PROP_ALT,   // CD_BIOMA (compat. references)
   biomeNameProp: LIM.BIOME_NAME_PROP,       // Bioma
-  biomeFallbackProp: LIM.BIOME_FALLBACK_PROP, // NM_BIOMA
   ufFc: LIM.UFS_FC,
-  ufCodeProp: LIM.UF_CODE_PROP,             // CD_UF
-  ufSiglaProp: LIM.UF_SIGLA_PROP,           // SIGLA_UF
-  ufNameProp: LIM.UF_NAME_PROP,             // NM_UF
-  ufEnabled: true                           // references sempre pinta UFs
+  ufCodeProp: LIM.UF_CODE_PROP              // CD_UF
 };
 
 // ---- Saída -------------------------------------------------------------------
