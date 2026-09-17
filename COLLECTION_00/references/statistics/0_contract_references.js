@@ -17,9 +17,10 @@
  *     que todo ref de estoque tenha ≥1 coluna no comparador comum (t C).
  *   - nível mínimo por linha de combinação (classe × def_sec): n0..n4,
  *     Desmatamento e vegetação secundária (rótulo por extenso), ano_lulc,
- *     ano (do ref), Área (ha) e pools `<pool> (t C)` / `<pool> (t MS)`
- *     (biomassa emite os dois rótulos; carbono apenas `(t C)`) + coluna
- *     `Incerteza (t C)` (0 quando a ref não tem erro). SEM colunas mod.
+ *     ano (do ref), Área (ha), Bioma, UF, Unidade Federativa e pools
+ *     `<pool> (t C)` / `<pool> (t MS)` (biomassa emite os dois rótulos;
+ *     carbono apenas `(t C)`). Coluna `Incerteza (t C)` APENAS quando a ref
+ *     tem banda de erro (saatchi_carbon_error).
  *     Cada linha corresponde a UMA COMBINAÇÃO (lulc×def_sec) — sem
  *     agregações (o Colab soma/estratifica offline).
  *   - estrato LULC: coleção 11, banda classification_<YEAR>; def_sec:
@@ -51,6 +52,13 @@ exports.BIOMES = [
   { slug: 'pampa',         nome: 'Pampa' },
   { slug: 'pantanal',      nome: 'Pantanal' }
 ];
+exports.BIOME_CODE_PROP = 'GEOCODE';   // prop numérica (paint do engine)
+
+// ---- UFs (padrão IBGE 2025, mesmo asset do fire) ---------------------------
+exports.UF_FC = 'projects/ee-ipam/assets/ORIGINAIS/IBGE/limite_ufs_IBGE_2025';
+exports.UF_CODE_PROP = 'CD_UF';
+exports.UF_SIGLA_PROP = 'SIGLA_UF';
+exports.UF_NAME_PROP = 'NM_UF';
 
 // ---- Saída -------------------------------------------------------------------
 exports.DRIVE_FOLDER = 'MAPBIOMAS_CARBONO_ESTATISTICAS';

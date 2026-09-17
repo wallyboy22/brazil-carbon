@@ -37,28 +37,28 @@ xlsx_path = out_dir() / f"resumo_pantanal_{CONF['YEAR']}.xlsx"
 with pd.ExcelWriter(xlsx_path, engine="openpyxl") as xw:
     # ---------------- FLORESTA ----------------
     if len(forest) and "version" in forest.columns:
+        has_inc = "incerteza_t" in forest.columns
         for v in CONF["FOREST_VERSIONS"]:
             d = forest[forest["version"] == v]
             if not len(d):
                 continue
+            agg = {"area_ha": ("area_ha", "sum"),
+                   "estoque_t": ("estoque_t", "sum")}
+            if has_inc:
+                agg["incerteza_t"] = ("incerteza_t", "sum")
             tab = (d.groupby(["territorio", "classe", "n0"])
-                   .agg(area_ha=("area_ha", "sum"),
-                        estoque_t=("estoque_t", "sum"),
-                        incerteza_t=("incerteza_t", "sum"))
+                   .agg(**agg)
                    .reset_index())
             tab.to_excel(xw, sheet_name=f"{v}_n0", index=False)
             (d.groupby(["territorio", "n1"])
-             .agg(area_ha=("area_ha", "sum"), estoque_t=("estoque_t", "sum"),
-                  incerteza_t=("incerteza_t", "sum"))
+             .agg(**agg)
              .reset_index().to_excel(xw, sheet_name=f"{v}_n1", index=False))
             (d.groupby(["territorio", "marcador"])
-             .agg(area_ha=("area_ha", "sum"), estoque_t=("estoque_t", "sum"),
-                  incerteza_t=("incerteza_t", "sum"))
+             .agg(**agg)
              .reset_index().to_excel(xw, sheet_name=f"{v}_marcador",
                                      index=False))
             (d.groupby(["territorio"])
-             .agg(area_ha=("area_ha", "sum"), estoque_t=("estoque_t", "sum"),
-                  incerteza_t=("incerteza_t", "sum"))
+             .agg(**agg)
              .reset_index().to_excel(xw, sheet_name=f"{v}_total", index=False))
             tot = d["estoque_t"].sum()
             fl = forest[(forest["version"] == v) &

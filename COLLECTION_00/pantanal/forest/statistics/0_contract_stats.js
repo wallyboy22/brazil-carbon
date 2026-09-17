@@ -67,10 +67,11 @@ exports.BIOME_FC = 'projects/ee-ipam/assets/ORIGINAIS/IBGE/limite_biomas_IBGE_20
 exports.BIOME_PROP = 'Bioma';
 exports.BIOME_NAME = 'Pantanal';
 exports.UF_LIST = [];
-/** @todo preencher quando UF_LIST != [] */
-exports.UF_ASSET = 'projects/mapbiomas-brazil/auxiliar/limites/UF_IBGE_2022';
-exports.UF_PROP = 'SIGLA';
+/** @todo preencher quando UF_LIST != [] (ex.: ['MS','MT']) */
+exports.UF_ASSET = 'projects/ee-ipam/assets/ORIGINAIS/IBGE/limite_ufs_IBGE_2025';
+exports.UF_PROP = 'SIGLA_UF';
 exports.UF_NAME = 'UF';
+exports.UF_NAME_PROP = 'NM_UF';   // nome completo da UF (coluna Unidade Federativa)
 
 // ---- LULC Coleção 11 (classificação do ano de análise) ---------------------
 exports.LULC_ASSET =

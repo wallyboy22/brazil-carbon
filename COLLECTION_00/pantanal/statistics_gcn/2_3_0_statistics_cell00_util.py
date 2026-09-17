@@ -988,7 +988,8 @@ EXPECTED.update({
 #   stats_references_<ref_id>_2023.csv
 # em CSV_DIR, com UMA linha por COMBINAÇÃO (classe LULC × def_sec) × bioma e
 # as colunas
-#   fonte, ref_id, territorio, classe, cobertura (n0..n4),
+#   fonte, ref_id, territorio, Bioma, UF, Unidade Federativa, classe,
+#   cobertura (n0..n4),
 #   Desmatamento e vegetação secundária, ano_lulc, ano, Área (ha),
 #   <pool> (t C | t MS), [Incerteza (t C)]
 def load_references_csv(lulc_year: int = 2023,
@@ -1115,13 +1116,14 @@ def product_lines(forest: "pd.DataFrame", grassland: "pd.DataFrame",
     if forest is not None and len(forest):
         f = forest[forest["ano"] == year] if "ano" in forest else forest
         f = por_classe(f)
+        inc = f["incerteza_t"] if "incerteza_t" in f.columns else pd.Series(pd.NA, index=f.index)
         rows.append(pd.DataFrame({
             "produto": "forest", "versao": f["version"].astype(str),
             "classe": pd.to_numeric(f["classe"], errors="coerce"),
             "n0": f["n0"], "n1": f["n1"], "natureza": f["natureza"],
             "marcador": f["marcador"], "area_ha": f["area_ha"],
             "dens_prod": f["estoque_t"] / f["area_ha"].replace(0, pd.NA),
-            "inc_tcha": f["incerteza_t"] / f["area_ha"].replace(0, pd.NA),
+            "inc_tcha": inc / f["area_ha"].replace(0, pd.NA),
             "term": "agc"}))
     if grassland is not None and len(grassland):
         g = grassland[grassland["ano"] == year] if "ano" in grassland else grassland
