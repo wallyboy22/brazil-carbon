@@ -97,6 +97,7 @@ function expandRows(groups, spec) {
         var am = ee.Number(s.get(off));
         var props = spec.one({
           s: s, off: off, am: am, j: j, cls: cls, info: info,
+          codigo: terCode,
           biomeName: biomeName, ufSigla: ufSigla, ufNome: ufNome
         });
         return ee.List(ee.Algorithms.If(am.gt(0), [ee.Feature(null, props)], []));
@@ -158,21 +159,35 @@ function valueImage(r, band) {
   return img;
 }
 
-/** Stack [área, pools, (área, pools)×mod0..7, classe, territory]. */
-function refStack(contract, r, bandName) {
-  var cols = emitCols(r);
+/** Banda do ano de um ref multi_year (Xu): o mais recente <= YEAR. */
+function refBandName(contract, r) {
+  if (!r.multi_year) return null;
+  return bandForYear(r, Math.min(contract.YEAR, r.multi_year.end));
+}
+
+/**
+ * Stack LARGO de um GRUPO de referências: [área, (colunas de valor de cada
+ * ref, na ordem), (…)×8 mods, classe, territory]. A área é compartilhada.
+ * Retorna { image, nBase, colNames } (colNames[i] = nome da coluna de valor i).
+ */
+function groupStack(contract, refs) {
   var lulc = lulcImage(contract).rename('classe');
   var area = ee.Image.pixelArea().divide(10000);
   var areaHa = area.rename('area_ha').updateMask(lulc.mask());
   var defsec = defsecImage(contract);
+  var base = [areaHa];
+  var colNames = [];
 
-  var pools = cols.map(function (c) {
-    var img = valueImage(r, bandName || c.band);
-    return img.multiply(area).multiply(c.mult)
-      .unmask(0).updateMask(img.mask().and(lulc.mask()));
+  refs.forEach(function (r) {
+    var bandName = refBandName(contract, r);
+    emitCols(r).forEach(function (c) {
+      var img = valueImage(r, bandName || c.band);
+      base.push(img.multiply(area).multiply(c.mult)
+        .unmask(0).updateMask(img.mask().and(lulc.mask())));
+      colNames.push(colName(c, r));
+    });
   });
 
-  var base = [areaHa].concat(pools);
   var mods = [];
   LEG.DEFSEC_MODS.forEach(function (m) {
     var cond = defsec.eq(m);
@@ -181,7 +196,11 @@ function refStack(contract, r, bandName) {
         i === 0 ? 'area_mod' + m : 'pool_mod' + m + '_' + i));
     });
   });
-  return ee.Image.cat(base.concat(mods).concat([lulc, T.territoryImage()]));
+  return {
+    image: ee.Image.cat(base.concat(mods).concat([lulc, T.territoryImage()])),
+    nBase: base.length,
+    colNames: colNames
+  };
 }
 
 /** Banda do ano Y para ref multi_year (Xu): `b<i>` com i = Y - start + 1. */
@@ -189,42 +208,34 @@ function bandForYear(r, y) {
   return r.multi_year ? 'b' + (y - r.multi_year.start + 1) : null;
 }
 
-function isNumericEpoch(e) {
-  return e !== null && e !== undefined && /^\d{4}$/.test(String(e));
-}
-
-/** Colunas dos CSVs das referências. */
-function refColumns(refInfo) {
-  var cols = ['ecossistema', 'fonte', 'ref_id', 'Bioma', 'UF',
-    'Unidade Federativa', 'classe']
+/** Colunas do CSV de um grupo de referências. */
+function refColumns(groupRefs) {
+  var cols = ['ecossistema', 'Bioma', 'UF', 'Unidade Federativa',
+    'cod_territorio', 'classe']
     .concat(coberturaCols())
-    .concat(['ano_lulc', 'ano', 'Área (ha)']);
-  emitCols(refInfo).forEach(function (c) { cols.push(colName(c, refInfo)); });
+    .concat(['ano_lulc', 'Área (ha)']);
+  groupRefs.forEach(function (r) {
+    emitCols(r).forEach(function (c) { cols.push(colName(c, r)); });
+  });
   return cols;
 }
 
-/** FeatureCollection servidor-side de um ref × bioma (ano único). */
-function refRows(contract, refInfo, bandName, ano, geom, D) {
+/** FeatureCollection servidor-side de um grupo de refs × bioma. */
+function groupRows(contract, groupRefs, scale, geom, D) {
   var YEAR = contract.YEAR;
-  var cols = emitCols(refInfo);
-  var base = 1 + cols.length;
-  var poolNames = cols.map(function (c) { return colName(c, refInfo); });
-  var nBands = cols.length;
-  var source = refInfo.fonte;
-  var rid = refInfo.id;
-  var anoVal = (ano === null || ano === undefined) ? ''
-    : (typeof ano === 'number') ? ee.Number(ano) : ano;
-  var n = base * (1 + LEG.DEFSEC_MODS.length);
-  var groups = ee.List(reduceStack(refStack(contract, refInfo, bandName), n, geom, refInfo.scale));
+  var g = groupStack(contract, groupRefs);
+  var n = g.nBase * (1 + LEG.DEFSEC_MODS.length);
+  var groups = ee.List(reduceStack(g.image, n, geom, scale));
+  var nBands = g.colNames.length;
 
   return expandRows(groups, {
     info: D.info, biome: D.biome, sigla: D.sigla, nome: D.nome,
-    prefixLen: base, blockLen: base,
+    prefixLen: g.nBase, blockLen: g.nBase,
     one: function (ctx) {
       var props = {
         ecossistema: 'referencia',
-        fonte: source, ref_id: rid,
         Bioma: ctx.biomeName, UF: ctx.ufSigla, 'Unidade Federativa': ctx.ufNome,
+        cod_territorio: ctx.codigo,
         classe: ctx.cls,
         'cobertura (n0)': ctx.info.get('n0'),
         'cobertura (n1)': ctx.info.get('n1'),
@@ -233,11 +244,11 @@ function refRows(contract, refInfo, bandName, ano, geom, D) {
         'cobertura (n4)': ctx.info.get('n4'),
         'Desmatamento e vegetação secundária':
           D.defsec.get(ee.Number(ctx.j).format()),
-        ano_lulc: YEAR, ano: anoVal,
+        ano_lulc: YEAR,
         'Área (ha)': r1(ctx.am)
       };
       for (var i = 0; i < nBands; i++) {
-        props[poolNames[i]] = r1(ee.Number(ctx.s.get(ctx.off + 1 + i)));
+        props[g.colNames[i]] = r1(ee.Number(ctx.s.get(ctx.off + 1 + i)));
       }
       return props;
     }
@@ -245,9 +256,9 @@ function refRows(contract, refInfo, bandName, ano, geom, D) {
 }
 
 /**
- * Gera as estatísticas de TODOS os refs (ou um subconjunto), com os biomas
- * combinados num ÚNICO CSV por ref. Refs multi-ano (Xu) usam UM ano:
- * min(contract.YEAR, multi_year.end) — o mais recente disponível.
+ * Gera as estatísticas das referências AGRUPADAS por família (campo `grupo`),
+ * com UM CSV por grupo (métricas de cada ref em colunas distintas). Refs
+ * multi-ano (Xu) usam UM ano: min(contract.YEAR, multi_year.end).
  * Uso: engine.runReferences(contract) |
  *      engine.runReferences(contract, { ref_ids: ['zimbres_agb'] }) |
  *      engine.runReferences(contract, { biomes: ['cerrado'] })
@@ -282,49 +293,57 @@ exports.runReferences = function (contract, opts, done) {
     return !onlyBiomes || onlyBiomes.indexOf(b.slug) > -1;
   });
   var D = T.buildLabelDicts(LEG);
+  var grupos = contract.GRUPOS || {};
 
-  var tot = refs.length;
-  var scheduled = 0;
+  // Agrupa por família, preservando a ordem de aparição.
+  var byGroup = {};
+  var order = [];
   refs.forEach(function (r) {
-    print('MAPBIOMAS-CARBONO · references · run_references ·', r.id);
-    if (!INFRA.assetExists(r.asset)) {
-      print('[ERRO] asset não encontrado:', r.asset);
+    var g = r.grupo || r.id;
+    if (!byGroup[g]) { byGroup[g] = []; order.push(g); }
+    byGroup[g].push(r);
+  });
+
+  var scheduled = 0;
+  order.forEach(function (g) {
+    var groupRefs = byGroup[g].filter(function (r) {
+      var ok = INFRA.assetExists(r.asset);
+      if (!ok) print('[AVISO] ref', r.id, 'indisponível — ignorada no grupo', g);
+      return ok;
+    });
+    if (!groupRefs.length) {
+      print('[AVISO] grupo', g, 'sem refs disponíveis — ignorado.');
       return;
     }
-    var fcs = [];
-    if (r.multi_year) {
-      var y = Math.min(contract.YEAR, r.multi_year.end);
-      selBiomes.forEach(function (b) {
-        fcs.push(refRows(contract, r, bandForYear(r, y), y, T.regionGeom(b.nome), D));
-      });
-    } else {
-      var ano = isNumericEpoch(r.epoch) ? r.epoch : null;
-      selBiomes.forEach(function (b) {
-        fcs.push(refRows(contract, r, r.pools[0].band, ano, T.regionGeom(b.nome), D));
-      });
-    }
+    var scale = (grupos[g] && grupos[g].scale) || groupRefs[0].scale;
 
+    var fcs = selBiomes.map(function (b) {
+      return groupRows(contract, groupRefs, scale, T.regionGeom(b.nome), D);
+    });
     var fc = fcs[0];
     for (var i = 1; i < fcs.length; i++) fc = fc.merge(fcs[i]);
-    var fileName = contract.PREFIX + '_' + r.id + '_' + contract.YEAR;
+    var fileName = contract.PREFIX + '_' + g + '_' + contract.YEAR;
+    print('MAPBIOMAS-CARBONO · references · run_references · grupo', g,
+      '(' + groupRefs.length, 'refs)');
     try {
       Export.table.toDrive({
         collection: fc,
-        description: 'WS_CARBONO_stats_references_' + r.id + '_' + contract.YEAR,
+        description: 'WS_CARBONO_stats_references_' + g + '_' + contract.YEAR,
         folder: contract.DRIVE_FOLDER,
         fileNamePrefix: fileName,
         fileFormat: 'CSV',
-        selectors: refColumns(r)
+        selectors: refColumns(groupRefs)
       });
-      print('[OK]', r.id, '· export IMEDIATO agendado (',
+      print('[OK]', g, '· export IMEDIATO agendado (',
         selBiomes.length, 'bioma(s)).');
       scheduled++;
     } catch (e) {
       print('[ERRO export]', fileName, String(e).slice(0, 200));
     }
   });
-  print('[FIM] references ·', tot, 'refs ·', scheduled, 'exports agendados imediatos.');
-  if (done) done(scheduled, tot);
+  print('[FIM] references ·', order.length, 'grupos ·', scheduled,
+    'exports agendados imediatos.');
+  if (done) done(scheduled, order.length);
 };
 
 /* ==========================================================================
@@ -403,7 +422,8 @@ function forestWideStack(contract, versions, paths) {
 
 /** Colunas do CSV largo florestal. */
 function forestColumns(versions) {
-  var cols = ['ecossistema', 'Bioma', 'UF', 'Unidade Federativa', 'classe']
+  var cols = ['ecossistema', 'Bioma', 'UF', 'Unidade Federativa',
+    'cod_territorio', 'classe']
     .concat(coberturaCols())
     .concat(['ano_lulc', 'Área (ha)']);
   versions.forEach(function (v) { cols.push(v.id + ' Estoque (t)'); });
@@ -430,6 +450,7 @@ function forestRows(contract, versions, paths, geom, D) {
       var props = {
         ecossistema: 'florestal',
         Bioma: ctx.biomeName, UF: ctx.ufSigla, 'Unidade Federativa': ctx.ufNome,
+        cod_territorio: ctx.codigo,
         classe: ctx.cls,
         'cobertura (n0)': ctx.info.get('n0', ''),
         'cobertura (n1)': ctx.info.get('n1', ''),
@@ -588,12 +609,12 @@ function grassPrincipalStack(contract, biomass, carbon) {
 
 /* ---- Colunas (selectors) dos 3 CSVs (nomes prontos p/ gráfico) ------------ */
 var SEL_A = ['ecossistema', 'produto', 'versao', 'ano', 'Bioma', 'UF',
-  'Unidade Federativa', 'unidade', 'classe']
+  'Unidade Federativa', 'cod_territorio', 'unidade', 'classe']
   .concat(coberturaCols())
   .concat(['Área (ha)', 'Biomassa (t)', 'Estoque de carbono (t)']);
 
 var SEL_MENSAL = ['ecossistema', 'produto', 'versao', 'ano', 'Bioma', 'UF',
-  'Unidade Federativa', 'unidade', 'classe']
+  'Unidade Federativa', 'cod_territorio', 'unidade', 'classe']
   .concat(coberturaCols())
   .concat(['período', 'Área (ha)']);
 
@@ -613,6 +634,7 @@ function grassRowsMonthly(contract, product, month, mes, valueCol, geom, D) {
         ecossistema: 'campestre',
         produto: 'grassland', versao: vId, ano: contract.YEAR,
         Bioma: ctx.biomeName, UF: ctx.ufSigla, 'Unidade Federativa': ctx.ufNome,
+        cod_territorio: ctx.codigo,
         unidade: 't', classe: ctx.cls,
         'cobertura (n0)': ctx.info.get('n0', ''),
         'cobertura (n1)': ctx.info.get('n1', ''),
@@ -644,6 +666,7 @@ function grassRowsPrincipal(contract, versionId, biomass, carbon, geom, D) {
         ecossistema: 'campestre',
         produto: 'grassland', versao: versionId, ano: contract.YEAR,
         Bioma: ctx.biomeName, UF: ctx.ufSigla, 'Unidade Federativa': ctx.ufNome,
+        cod_territorio: ctx.codigo,
         unidade: 't', classe: ctx.cls,
         'cobertura (n0)': ctx.info.get('n0', ''),
         'cobertura (n1)': ctx.info.get('n1', ''),

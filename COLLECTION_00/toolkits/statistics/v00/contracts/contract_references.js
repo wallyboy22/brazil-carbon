@@ -25,8 +25,9 @@ exports.columnSuffix = REF.columnSuffix;
 // ---- Biomas (todos) ----------------------------------------------------------
 exports.BIOMES = LIM.BIOMES;
 
-// ---- Referências (20) --------------------------------------------------------
+// ---- Referências (20) e grupos (famílias) -----------------------------------
 exports.REFERENCES = REF.REFERENCES;
+exports.GRUPOS = REF.GRUPOS;
 
 // ---- Território --------------------------------------------------------------
 // Área de análise = TODOS os biomas (1 CSV por ref). O território SEMPRE cruza

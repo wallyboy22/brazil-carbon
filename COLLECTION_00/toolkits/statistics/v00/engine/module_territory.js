@@ -44,9 +44,10 @@ exports.territoryImage = function () {
 
 /** ee.Dictionary de rótulos (constantes p/ as lambdas do rowsFC). */
 exports.buildLabelDicts = function (leg) {
-  var info = {}, sigla = {}, nome = {}, defsec = {};
+  var info = {}, biome = {}, sigla = {}, nome = {}, defsec = {};
   var infoPlain = leg.infoMap();
   Object.keys(infoPlain).forEach(function (k) { info[k] = infoPlain[k]; });
+  Object.keys(TER.BIOMAS).forEach(function (k) { biome[k] = TER.BIOMAS[k]; });
   Object.keys(TER.UFS).forEach(function (k) {
     sigla[k] = TER.UFS[k].sigla;
     nome[k] = TER.UFS[k].nome;
@@ -55,7 +56,7 @@ exports.buildLabelDicts = function (leg) {
   Object.keys(dlm).forEach(function (k) { defsec[k] = dlm[k]; });
   return {
     info: ee.Dictionary(info),
-    biome: ee.Dictionary(TER.BIOMAS),
+    biome: ee.Dictionary(biome),
     sigla: ee.Dictionary(sigla),
     nome: ee.Dictionary(nome),
     defsec: ee.Dictionary(defsec)
