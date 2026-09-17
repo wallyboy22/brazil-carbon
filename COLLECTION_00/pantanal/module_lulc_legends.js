@@ -490,6 +490,8 @@ exports.info = function (code) {
     n0: exports.n0Of(code),
     n1: n1,
     n2: exports.n2Of(code),
+    n3: exports.n3Of(code),
+    n4: exports.n4Of(code),
     natureza: exports.naturezaOf(code),
     marcador: exports.marcadorFromN1(n1)
   };
@@ -508,6 +510,51 @@ exports.defsecInfo = function (mod) {
     label: clampPlain(exports.DEF_SEC_VEG_LEGEND, m),
     natureza: natureza,
     tipo: exports.DEFSEC_TIPOS[m] !== undefined ? exports.DEFSEC_TIPOS[m] : 'outro'
+  };
+};
+
+// ---------------------------------------------------------------------------
+// Encode/decode de banda combinada (LULC × def_sec)
+// ---------------------------------------------------------------------------
+/**
+ * Gera banda combinada `combo = lulc * 10 + def_sec` para agrupar classe LULC
+ * e desmatamento/vegetação secundária numa ÚNICA banda de classificação.
+ * Pixels com LULC mascarado são mantidos mascarados via `updateMask`.
+ * A banda pode ser usada como groupField do reducer.
+ *
+ * @param {ee.Image} lulc   banda classification_<ano> (classe LULC C11)
+ * @param {ee.Image} defsec banda classification_<ano> do DEF_SEC_ASSET (0..7)
+ * @returns {ee.Image} banda combo (mascarada onde lulc era mascarado)
+ */
+exports.comboEncode = function (lulc, defsec) {
+  return lulc.unmask().multiply(10).add(defsec.unmask(0)).toInt()
+    .rename('combo').updateMask(lulc.mask());
+};
+
+/**
+ * Decodifica um código combo gerado por `comboEncode`.
+ * @param {number} code valor numérico da banda combo
+ * @returns {{classe: number, defsec: number}} classe LULC e módulo def_sec
+ */
+exports.comboDecode = function (code) {
+  return { classe: Math.floor(code / 10), defsec: code % 10 };
+};
+
+/**
+ * Rótulo legível de uma banda combo (classe + def_sec) para uso nas colunas.
+ * @param {number} code código combo
+ * @returns {{n0: string, n1: string, n2: string, n3: string, n4: string,
+ *            classe: number, def_sec: string, natureza: string, marcador: string}}
+ */
+exports.comboInfo = function (code) {
+  var d = exports.comboDecode(code);
+  var info = exports.info(d.classe);
+  var ds = exports.defsecInfo(d.defsec);
+  return {
+    classe: d.classe,
+    n0: info.n0, n1: info.n1, n2: info.n2,
+    n3: exports.n3Of(d.classe), n4: exports.n4Of(d.classe),
+    def_sec: ds.label, natureza: info.natureza, marcador: info.marcador
   };
 };
 

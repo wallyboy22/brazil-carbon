@@ -5,18 +5,21 @@
  * Molde herdado de `mapbiomas_solo/collection3/statistics` (mesmo esqueleto
  * do módulo florestal).
  *
- * Quatro classes de tabelas, 1 CSV por versão × região (2023):
- *   A) stats_grassland_<v>_<regiao>_2023.csv          → principal/ANUAL
- *        colunas: area_ha, biomassa_t, estoque_t   (biomassa + carbono na MESMA
- *        tabela, ambos em TONELADAS; biomassa = banda anual do asset BIOMASS).
- *   B) stats_grassland_<v>_biomassa_mensal_<regiao>_2023.csv → LARGA (12 mêses)
- *        colunas: area_ha, biomassa_m01_t … biomassa_m12_t (bandas mensais do
- *        asset grassland_biomass_monthly_*, kg MS/ha → t).
- *   C) stats_grassland_<v>_anpp_mensal_<regiao>_2023.csv  → LONGA (classe×mês)
- *        colunas: area_ha, classe, n0, n1, n2, marcador, mes, anpp_t
- *        (bandas do asset grassland_anpp_monthly_*, kg MS/ha/mês → t).
- *   D) stats_grassland_<v>_anpp_anual_<regiao>_2023.csv → 1 linha por classe:
- *        colunas: area_ha, classe, n0, n1, n2, marcador, anpp_t (fluxo anual).
+ * Três classes de tabelas (todas LONGAS, 1 CSV por versão × região × 2023):
+ *   A) stats_grassland_<v>_<regiao>_2023.csv            → principal/ANUAL
+ *        colunas: produto,versao,ano,territorio,unidade,classe,
+ *        cobertura (n0..n4), Desmatamento e vegetação secundária, Área (ha),
+ *        Biomassa (t), Estoque de carbono (t)  — biomassa + carbono na MESMA
+ *        tabela, ambos em TONELADAS; biomassa = banda anual do asset BIOMASS.
+ *        UMA linha por COMBINAÇÃO (classe × def_sec).
+ *   B) stats_grassland_<v>_biomassa_mensal_<regiao>_2023.csv → LONGA
+ *        colunas (SEL_MENSAL +): período (YYYY_MM), Área (ha), Biomassa (t)
+ *        — 1 linha por combinação × mês (bandas do asset
+ *        grassland_biomass_monthly_*, kg MS/ha → t).
+ *   C) stats_grassland_<v>_anpp_mensal_<regiao>_2023.csv → LONGA
+ *        colunas (SEL_MENSAL +): período (YYYY_MM), Área (ha), ANPP (t MS/ano)
+ *        — 1 linha por combinação × mês (grassland_anpp_monthly_*).
+ *   (Sem tabela ANPP anual separada: o fluxo anual é somado no Colab.)
  *
  * Unidade de saída padronizada: TONELADAS (t) — sem `Mg` em colunas/labels.
  * (1 Mg = 1 t; bandas kg/ha → t apenas no rótulo e na conversão kg→t.)
@@ -98,9 +101,10 @@ exports.BIOME_FC = 'projects/ee-ipam/assets/ORIGINAIS/IBGE/limite_biomas_IBGE_20
 exports.BIOME_PROP = 'Bioma';
 exports.BIOME_NAME = 'Pantanal';
 exports.UF_LIST = [];
-exports.UF_ASSET = 'projects/mapbiomas-brazil/auxiliar/limites/UF_IBGE_2022';
-exports.UF_PROP = 'SIGLA';
+exports.UF_ASSET = 'projects/ee-ipam/assets/ORIGINAIS/IBGE/limite_ufs_IBGE_2025';
+exports.UF_PROP = 'SIGLA_UF';
 exports.UF_NAME = 'UF';
+exports.UF_NAME_PROP = 'NM_UF';   // nome completo da UF (coluna Unidade Federativa)
 
 // ---- LULC Coleção 11 ---------------------------------------------------------
 // Asset oficial único (mesmo de forest/statistics e de module_lulc_legends.js).

@@ -55,13 +55,23 @@ A **legenda C11** é o módulo compartilhado
 
 ## Saídas (Drive → `MAPBIOMAS_CARBONO_ESTATISTICAS`)
 
-- `stats_grassland_<versão>_<produto>_<território>_2023.csv` — **1 arquivo por
-  produto/versão** (sem particionamento), colunas:
+- `stats_grassland_<versão>_<território>_2023.csv` — **principal/ANUAL**,
+  formato "gráfico-ready": **uma linha por COMBINAÇÃO (classe LULC × def_sec)**,
+  colunas:
 
-  `produto,versao,ano,territorio,nivel,grupo,classe,n0,n1,n2,marcador,area_ha,valor_t,unidade`
+  `produto,versao,ano,territorio,unidade,classe,cobertura (n0..n4),
+  Desmatamento e vegetação secundária,Área (ha),Biomassa (t),Estoque de carbono (t)`
 
-  com `nivel` ∈ `n0 | n1 | marcador | total`. O export usa `selectors` →
-  **sem `.geometry`/`system:index`** no CSV.
+  (`produto` = `grassland` em todas as linhas).
+- `stats_grassland_<versão>_biomassa_mensal_<território>_2023.csv` e
+  `stats_grassland_<versão>_anpp_mensal_<território>_2023.csv` — **mensais
+  LONGOS**, 1 linha por combinação × mês, com a coluna `período`
+  (`YYYY_MM`, ex. `2023_01`) + `Área (ha)` e o valor do produto
+  (`Biomassa (t)` / `ANPP (t MS/ano)`).
+- A estratificação def_sec é rotulada por extenso (`DEF_SEC_VEG_LEGEND`);
+  `natureza`/`marcador`/produto semântico e as agregações são derivadas
+  OFF-LINE no Colab (`expand_grass_product`/`por_classe`). O export usa
+  `selectors` → **sem `.geometry`/`system:index`** no CSV.
 - Comparativo de produtos: montado offline no Colab (ver `statistics_gcn`).
 
 ## Fórmulas

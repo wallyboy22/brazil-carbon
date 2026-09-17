@@ -15,9 +15,14 @@
  *     Refs só-biomassa emitem as DUAS (<pool>_tB nativa + <pool>_tC via
  *     CARBON_FRACTION) e refs de carbono emitem apenas <pool>_tC — garantindo
  *     que todo ref de estoque tenha ≥1 coluna no comparador comum (t C).
- *   - nível mínimo por linha de classe: n0..n4, natureza, marcador,
- *     ano_lulc, ano (do ref), area_ha, pools (<pool>_tC|_tB), incerteza_tC e
- *     mods def_sec (area_mod0..7_ha + <pool>_mod0..7_tC|_tB).
+ *   - nível mínimo por linha de combinação (classe × def_sec): n0..n4,
+ *     Desmatamento e vegetação secundária (rótulo por extenso), ano_lulc,
+ *     ano (do ref), Área (ha), Bioma, UF, Unidade Federativa e pools
+ *     `<pool> (t C)` / `<pool> (t MS)` (biomassa emite os dois rótulos;
+ *     carbono apenas `(t C)`). Coluna `Incerteza (t C)` APENAS quando a ref
+ *     tem banda de erro (saatchi_carbon_error).
+ *     Cada linha corresponde a UMA COMBINAÇÃO (lulc×def_sec) — sem
+ *     agregações (o Colab soma/estratifica offline).
  *   - estrato LULC: coleção 11, banda classification_<YEAR>; def_sec:
  *     module_lulc_legends.js (same asset/bandas).
  *   - unidades SEMPRE toneladas (t): valor × pixelArea()/10000.
@@ -47,6 +52,13 @@ exports.BIOMES = [
   { slug: 'pampa',         nome: 'Pampa' },
   { slug: 'pantanal',      nome: 'Pantanal' }
 ];
+exports.BIOME_CODE_PROP = 'GEOCODE';   // prop numérica (paint do engine)
+
+// ---- UFs (padrão IBGE 2025, mesmo asset do fire) ---------------------------
+exports.UF_FC = 'projects/ee-ipam/assets/ORIGINAIS/IBGE/limite_ufs_IBGE_2025';
+exports.UF_CODE_PROP = 'CD_UF';
+exports.UF_SIGLA_PROP = 'SIGLA_UF';
+exports.UF_NAME_PROP = 'NM_UF';
 
 // ---- Saída -------------------------------------------------------------------
 exports.DRIVE_FOLDER = 'MAPBIOMAS_CARBONO_ESTATISTICAS';
@@ -59,7 +71,7 @@ exports.MAGNITUDES = ['biomassa', 'carbono', 'incerteza',
   'emissao', 'emissao_liquida', 'proporcao'];
 
 // ---------------------------------------------------------------------------
-// CATÁLOGO DE REFERÊNCIAS (19) — espelho do REF_CATALOG do Colab
+// CATÁLOGO DE REFERÊNCIAS (20) — espelho do REF_CATALOG do Colab
 // (cell00 statistics_gcn) e de docs/“Referencias - Mapas de referencia…”.
 //
 // Campos comuns:
@@ -118,6 +130,12 @@ exports.REFERENCES = [
     unit: 't/ha', scale: 30, epoch: '2012', factor_to_c: 0.47,
     pools: [{ band: 'b1', col: 'agb' }], asset: REF_ROOT + '/Z_baccini_30_agb',
     note: 'teto 255 t/ha (saturação, não físico)' }),
+  // ---- Zimbres 2021 (Cerrado, 30 m, RF + máscara de vegetação nativa) --------
+  ref({ id: 'zimbres_agb', fonte: 'Zimbres 2021 · AGB Cerrado (NV)',
+    magnitude: 'biomassa', unit: 't/ha', scale: 30, epoch: '2019',
+    factor_to_c: 0.47, pools: [{ band: 'b1', col: 'agb' }],
+    asset: REF_ROOT + '/Zimbres_2021_AGB_NVmasked_RF_cog-v1',
+    note: 'RF, máscara vegetação nativa; domínio Cerrado (só gera linhas no Cerrado)' }),
   // ---- Avitabile 2016 (fusão Saatchi+Baccini, ~1 km, ano-base 2010) ---------
   ref({ id: 'avitabile_agb', fonte: 'Avitabile 2016 · AGB pan-tropical',
     magnitude: 'biomassa', unit: 't/ha', scale: 928, epoch: '2010',

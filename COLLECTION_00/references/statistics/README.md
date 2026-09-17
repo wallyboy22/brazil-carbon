@@ -41,12 +41,14 @@ florestal/campestre + `DEF_SEC_ASSET`).
 ## Saídas (Drive → `MAPBIOMAS_CARBONO_ESTATISTICAS`)
 
 - `stats_references_<ref_id>_2023.csv` — **1 arquivo por ref**, com as linhas
-  de **todos os 6 biomas** (a coluna `territorio` distingue cada um). Colunas:
+  de **todos os 6 biomas** (a coluna `territorio` distingue cada um). **UMA
+  linha por COMBINAÇÃO (classe LULC × def_sec)**, sem agregações. Colunas
+  (formato "gráfico-ready"):
 
   ```
-  fonte, ref_id, territorio, classe, n0, n1, n2, n3, n4, natureza, marcador,
-  ano_lulc, ano, area_ha, <pool>_tC | <pool>_tB, incerteza_tC,
-  area_mod0..7_ha, <pool>_mod0..7_tC | _tB
+  fonte, ref_id, territorio, classe, cobertura (n0..n4),
+  Desmatamento e vegetação secundária, ano_lulc, ano, Área (ha),
+  <pool> (t C) | <pool> (t MS), [Incerteza (t C)]
   ```
 
   O export usa `selectors` → **sem `.geometry`/`system:index`** no CSV.
@@ -58,23 +60,25 @@ florestal/campestre + `DEF_SEC_ASSET`).
 
 | magnitude | coluna nativa | observação |
 |---|---|---|
-| `carbono` | `<pool>_tC` (t C) | banda já em t C/ha |
-| `biomassa` | `<pool>_tB` (t de biomassa) **e** `<pool>_tC` (= × `CARBON_FRACTION`) | as duas sempre presentes |
-| `incerteza` | `incerteza_tC` | erro da ref (saatchi_carbon_error) |
+| `carbono` | `<pool> (t C)` (t C) | banda já em t C/ha |
+| `biomassa` | `<pool> (t MS)` (t de biomassa) **e** `<pool> (t C)` (= × `CARBON_FRACTION`) | as duas sempre presentes |
+| `incerteza` | `Incerteza (t C)` | erro da ref (saatchi_carbon_error) |
 
-Regra do comparador comum: **todo ref de estoque tem ≥1 coluna `*_tC`** —
-garantida por construção. Refs só-biomassa emitem `<pool>_tB` (nativa, t) e
-`<pool>_tC` (convertida com `CARBON_FRACTION = 0.47`). Não há colunas
-redundantes de magnitude/unidade — a informação está no sufixo (`tC`/`tB`).
+Regra do comparador comum: **todo ref de estoque tem ≥1 coluna `(t C)`** —
+garantida por construção. Refs só-biomassa emitem `<pool> (t MS)` (nativa, t)
+e `<pool> (t C)` (convertida com `CARBON_FRACTION = 0.47`). A unidade sai no
+RÓTULO da coluna (`t C` vs `t MS`) — não há redundância de outra coluna.
 
 ## Fórmulas
 
-- `area_ha` = `pixelArea()/10000`, mascarado **só pelo LULC** (área sempre
+- `Área (ha)` = `pixelArea()/10000`, mascarado **só pelo LULC** (área sempre
   informativa);
-- `<pool>_tC|_tB` = `banda (t/ha ou t C/ha) × pixelArea()/10000 × fator`, nos
-  pixels LULC × ref válidos;
-- `area_mod{X}_ha` / `<pool>_mod{X}_tC|_tB` para `X ∈ 0..7`
-  (`DEF_SEC_VEG_LEGEND`) com `def_sec.unmask(0)` ⇒ `Σ área_mod0..7 = área_ha`.
+- `<pool> (t C|t MS)` = `banda (t/ha ou t C/ha) × pixelArea()/10000 × fator`,
+  nos pixels LULC × ref válidos;
+- agrupamento por combinação `combo = lulc * 10 + def_sec`
+  (`module_lulc_legends :: comboEncode/comboDecode`) — a estratificação
+  def_sec sai num **rótulo** (`Desmatamento e vegetação secundária`), sem
+  colunas `mod`.
 
 ## Como rodar
 
