@@ -231,7 +231,7 @@ no toolkit `COLLECTION_00/toolkits/statistics/v00/`:
 | Driver | O que gera (Drive `MAPBIOMAS_CARBONO_ESTATISTICAS`) |
 |---|---|
 | `run/run_pantanal.js` | `stats_forest_bioma_2023.csv` (tabela LARGA: V03–V08 em colunas; v07/v08 com incerteza) + `stats_grassland_<v>_<regiao>_2023.csv` (+ `_biomassa_mensal_` / `_anpp_mensal_`) |
-| `run/run_references.js` | `stats_references_<ref_id>_2023.csv` (20 refs, 6 biomas) |
+| `run/run_references.js` | `stats_references_<grupo>_2023.csv` (8 grupos de refs, 6 biomas) |
 
 - **Seleção e auto-descoberta**: `run_pantanal.js` e `run_references.js` têm um
   bloco `ONLY` no topo (ex.: `{ forest: 'v07', grassland: null }`,

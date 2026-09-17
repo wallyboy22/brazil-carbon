@@ -4,7 +4,7 @@
  * Motor das estatísticas por classe LULC C11 dos domínios:
  *   runForest(contract, versionId?)      — AGC florestal (V03–V08), tabela LARGA
  *   runGrassland(contract, versionId?)   — produtos campestres (v01–v02)
- *   runReferences(contract, opts?)       — mapas de referência (20 refs)
+ *   runReferences(contract, opts?)       — mapas de referência (17 refs)
  *
  * Método (padrão comprovado — banda `territory` = bioma×UF por paint; grupo
  * aninhado classe → território; expansão classe × def_sec SERVIDOR-SIDE com

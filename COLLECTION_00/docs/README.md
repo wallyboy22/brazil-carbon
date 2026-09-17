@@ -23,7 +23,7 @@
 | Covariável campestre | MODIS MOD17A2H | `MODIS/061/MOD17A2H` | εCA observada | Gpp ×0.0001 | gv02 |
 | Auxiliar | Limites IBGE | `ee-ipam/.../IBGE` (biomas 2026 · UFs 2025 · municípios 2025) | território/agregação | polígonos | stats |
 | Estatísticas | MapBiomas C11 def_sec | `projects/mapbiomas-public/.../deforestation_secondary_vegetation_v5` | estratificação bioma×classe nas estatísticas | `classification_1987..2025` (0–7) | stats |
-| Referência | Saatchi 2011 (4) · Xu & Saatchi 2021 · Baccini · Avitabile (4) · TCN (5) · Zimbres · fund_amz · QCN (2) | `ee-ipam/.../Biomass_ref_maps` (17) + `CCAL/public/qcn` (2) | benchmark/catálogo | ver `Referencias - ...` | — |
+| Referência | Saatchi 2011 (4) · Xu & Saatchi 2021 · Baccini · Avitabile · TCN (5) · Zimbres · fund_amz · QCN (2) | `ee-ipam/.../Biomass_ref_maps` (17) + `CCAL/public/qcn` (2) | benchmark/catálogo | ver `Referencias - ...` | — |
 | Planejado | ICESat-2 · CARBONDATA* | a definir | dados futuros | — | — |
 
 ## Externos — covariáveis florestais (stack 36 bandas)
@@ -114,7 +114,7 @@
   coluna — sem colunas redundantes de unidade.
 - **Estatísticas de referência (benchmarks + QCN) por bioma:** o toolkit
   `toolkits/statistics/v00` (catálogo + contrato + engine + driver) exporta
-  `stats_references_<ref>_<ano>.csv` (20 arquivos; um por ref, com os 6 biomas
+  `stats_references_<grupo>_<ano>.csv` (8 grupos de refs, com os 6 biomas
   combinados — colunas `Bioma`/`UF`/`Unidade Federativa`), com `fonte`, `ref_id`,
   classe, cobertura `(n0..n4)`, `Desmatamento e vegetação secundária`,
   `ano_lulc`, `ano`, `Área (ha)`, `<Autor> <pool> (t C | t MS)` e

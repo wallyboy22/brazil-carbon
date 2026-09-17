@@ -2,7 +2,7 @@
  * MAPBIOMAS-CARBONO — toolkit statistics/v00 · Contrato de REFERÊNCIAS
  * ---------------------------------------------------------------------------
  * Configuração das estatísticas dos mapas de REFERÊNCIA (benchmarks + QCN) por
- * classe LULC C11, para TODOS os biomas do Brasil. O catálogo dos 20 refs vem
+ * classe LULC C11, para TODOS os biomas do Brasil. O catálogo dos 17 refs vem
  * de 00_catalog_references.js; limites/legendas dos catálogos centrais.
  *
  * Consumido por: run/run_references.js → engine.runReferences(contract, opts).
@@ -25,7 +25,7 @@ exports.columnSuffix = REF.columnSuffix;
 // ---- Biomas (todos) ----------------------------------------------------------
 exports.BIOMES = LIM.BIOMES;
 
-// ---- Referências (20) e grupos (famílias) -----------------------------------
+// ---- Referências (17) e grupos (famílias) -----------------------------------
 exports.REFERENCES = REF.REFERENCES;
 exports.GRUPOS = REF.GRUPOS;
 

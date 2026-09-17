@@ -100,29 +100,13 @@ exports.REFERENCES = [
     asset: REF_ROOT + '/Zimbres_2021_AGB_NVmasked_RF_cog-v1',
     note: 'RF, máscara vegetação nativa; domínio Cerrado (só gera linhas no Cerrado)' }),
   // ---- Avitabile 2016 (fusão Saatchi+Baccini, ~1 km, ano-base 2010) ---------
+  // As variantes Carbon_AGB_Cerr/amaz e AGB_Map_Mode_K_2_2 foram removidas:
+  // são a mesma informação já emitida por `avitabile_agb` (AGB (t MS)/(t C)).
   ref({ id: 'avitabile_agb', grupo: 'avitabile', fonte: 'Avitabile 2016 · AGB pan-tropical',
     fonte_curta: 'Avitabile 2016', magnitude: 'biomassa', unit: 't/ha', scale: 928,
     epoch: '2010', factor_to_c: 0.47, nodata_le: -3.4e38,
     pools: [{ band: 'b1', col: 'agb' }], asset: REF_ROOT + '/Avitabile_AGB_Map',
     note: 'sentinela -3.4e38 mascarada' }),
-  ref({ id: 'avitabile_carbon_cerr', grupo: 'avitabile',
-    fonte: 'Avitabile 2016 · AGC (Cerrado)', fonte_curta: 'Avitabile Cerrado',
-    magnitude: 'carbono', unit: 't C/ha', scale: 928, epoch: '2010',
-    nodata_le: -3.4e38, pools: [{ band: 'b1', col: 'agc' }],
-    asset: REF_ROOT + '/Avitabile_Carbon_AGB_Cerr' }),
-  ref({ id: 'avitabile_carbon_amaz', grupo: 'avitabile',
-    fonte: 'Avitabile 2016 · AGC (Amazônia)', fonte_curta: 'Avitabile Amazônia',
-    magnitude: 'carbono', unit: 't C/ha', scale: 928, epoch: '2010',
-    nodata_le: -3.4e38, pools: [{ band: 'b1', col: 'agc' }],
-    asset: REF_ROOT + '/Avitabile_Carbon_AGB_amaz' }),
-  ref({ id: 'avitabile_mode_k_pant', grupo: 'avitabile',
-    fonte: 'Avitabile 2016 · AGB Mode K (Pantanal)',
-    fonte_curta: 'Avitabile Pantanal', magnitude: 'biomassa', unit: 't/ha',
-    scale: 250, epoch: '1985', factor_to_c: 0.47, t2: false,
-    pools: [{ band: 'total_1985', col: 'agb' }],
-    asset: REF_ROOT + '/Avitabile_AGB_Map_Mode_K_2_2',
-    filter_index: 'pantanal_rect_total_v2',
-    note: 'escala do grupo (928); semântica/unidade a confirmar (banda total_1985)' }),
   // ---- Xu & Saatchi 2021 (biomassa viva AGB+BGB, t C/ha, 2000–2019, ~10 km) --
   // Série multi-ano: usa-se UM ano (o mais recente ≤ YEAR do contrato).
   ref({ id: 'xu2021', grupo: 'xu', fonte: 'Xu & Saatchi 2021 · carbono vivo (2000–2019)',

@@ -872,9 +872,7 @@ def build_compare_grassland(df: pd.DataFrame) -> pd.DataFrame:
 #      cruzamento revela esse viés via `fator_impl` (dens_prod / dens_ref).
 #   2. Xu & Saatchi (2021) = carbono de biomassa VIVA (AGB+BGB), 2000–2019
 #      (10 km). Ordem b1..b20 → anos 2000..2019 é PREMISSA (metadado ausente).
-#   3. Avitabile Mode_K Pantanal (banda `total_1985`) tem semântica/unidade a
-#      confirmar — entra no T1 (contexto), fora do T2 (candidato).
-#   4. Referências AGB cobrem vegetação LENHOSA: em classes campestres a área
+#   3. Referências AGB cobrem vegetação LENHOSA: em classes campestres a área
 #      válida (~0%) invalida o cruzamento — QA por `valid_pct`.
 # ---------------------------------------------------------------------------
 CARBON_FRACTION = CONF["CARBON_FRACTION"]  # AGB (t) -> C (t)
@@ -954,20 +952,6 @@ REF_CATALOG: list["Ref"] = [
     _r("avitabile_agb", f"{REF_ROOT}/Avitabile_AGB_Map", "Avitabile 2016",
        "AGB", "t/ha", "agb", "2010", ("b1",), 928.0, CARBON_FRACTION,
        nodata_le=-3.4e38, note="sentinela -3.4e38 mascarada",
-       magnitude="biomassa"),
-    _r("avitabile_carbon_cerr",
-       f"{REF_ROOT}/Avitabile_Carbon_AGB_Cerr", "Avitabile 2016",
-       "AGC (Cerrado)", "t C/ha", "agc", "2010", ("b1",), 928.0, 1.0,
-       nodata_le=-3.4e38),
-    _r("avitabile_carbon_amaz",
-       f"{REF_ROOT}/Avitabile_Carbon_AGB_amaz", "Avitabile 2016",
-       "AGC (Amazônia)", "t C/ha", "agc", "2010", ("b1",), 928.0, 1.0,
-       nodata_le=-3.4e38),
-    _r("avitabile_mode_k_pant",
-       f"{REF_ROOT}/Avitabile_AGB_Map_Mode_K_2_2", "Avitabile 2016",
-       "AGB Mode K (Pantanal)", "t/ha", "agb", "1985", ("total_1985",),
-       250.0, CARBON_FRACTION, t2_candidate=False, filter_index="pantanal_rect_total_v2",
-       note="semântica/unidade a confirmar (banco total_1985)",
        magnitude="biomassa"),
     # ---- Xu & Saatchi 2021 (biomassa viva AGB+BGB, C Mg/ha, 2000–2019, 10 km)
     _r("xu2021", f"{REF_ROOT}/Saatchi_Xu2021_t10a_cd_ab_pred_corr_2000_2019_v2",

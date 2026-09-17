@@ -120,7 +120,6 @@ lines.append("## Flags")
 lines.append("- Xu2021 `b1..b20` -> anos 2000..2019 é PREMISSA (metadado ausente).")
 lines.append("- AGB refs cobrem vegetação LENHOSA; campestre pode ficar sem")
 lines.append("  cobertura (QA `ref_val_pct`).")
-lines.append("- Avitabile Mode_K Pantanal (1985) semântica a confirmar (T2 fora).")
 lines.append("- Produto florestal `fator_impl` mediano ~2 → confere C vs AGB.")
 md = "\n".join(lines) + "\n"
 md_path = out_dir() / "resumo_referencia_2023.md"
