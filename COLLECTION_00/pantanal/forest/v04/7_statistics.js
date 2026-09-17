@@ -1,12 +1,13 @@
 /******************************************************************************
- * MAPBIOMAS-CARBONO — Pantanal Forest v04 · Estatísticas (7)
+ * DEPRECATED — driver movido para o toolkit statistics/v00.
  * ---------------------------------------------------------------------------
- * Dispara as estatísticas de AGC 2023 × LULC C11 para a v04, usando o módulo
- * compartilhado statistics/stats_engine.js (1 linha por COMBINAÇÃO classe ×
- * def_sec, formato gráfico; as agregações são derivadas OFFLINE no
- * statistics_gcn; CSV para MAPBIOMAS_CARBONO_ESTATISTICAS/).
+ * Compatibilidade: estatísticas florestais da v04. Use no código novo:
+ *   run/run_pantanal.js ou engine.runForest(PANTANAL.FOREST, 'v04')
+ * (este arquivo será removido numa limpeza futura)
  ******************************************************************************/
+var P = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/contracts/contract_pantanal.js');
 var engine = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/statistics/stats_engine.js');
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/engine/engine.js');
 
-engine.runForVersion('v04');
+engine.runForest(P.FOREST, 'v04');

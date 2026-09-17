@@ -1,14 +1,14 @@
 /******************************************************************************
- * MAPBIOMAS-CARBONO — Pantanal Forest v08 · Estatísticas (7)
+ * DEPRECATED — driver movido para o toolkit statistics/v00.
  * ---------------------------------------------------------------------------
- * Dispara as estatísticas de AGC 2023 × LULC C11 para a v08 (mediana do
- * ensemble + incerteza agbd_std_2023), usando o módulo compartilhado
- * statistics/stats_engine.js (com fallback de mosaico ausente).
- * CSVs para MAPBIOMAS_CARBONO_ESTATISTICAS/.
- * O comparativo entre versões (V03–V08) é montado OFFLINE no Colab
- * (statistics_gcn).
+ * Compatibilidade: estatísticas florestais da v08 (mediana + incerteza).
+ * Use no código novo:
+ *   run/run_pantanal.js ou engine.runForest(PANTANAL.FOREST, 'v08')
+ * (este arquivo será removido numa limpeza futura)
  ******************************************************************************/
+var P = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/contracts/contract_pantanal.js');
 var engine = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/statistics/stats_engine.js');
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/engine/engine.js');
 
-engine.runForVersion('v08');
+engine.runForest(P.FOREST, 'v08');

@@ -118,5 +118,5 @@ print(f"[ARTEFATOS] {len(manifest())} — baixe/exporte as figuras para cá:")
 for m in manifest():
     print("  ", m)
 print()
-print("[DICA] figuras → COLLECTION_00/pantanal/statistics_gcn/figures/ no repo")
+print("[DICA] figuras → COLLECTION_00/toolkits/statistics/v00/run/cells_for_collab_notebook/figures/ no repo")
 print("=" * 68)

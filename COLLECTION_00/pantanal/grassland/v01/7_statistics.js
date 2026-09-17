@@ -1,14 +1,14 @@
 /******************************************************************************
- * MAPBIOMAS-CARBONO — Pantanal Grassland v01 · Estatísticas (7)
+ * DEPRECATED — driver movido para o toolkit statistics/v00.
  * ---------------------------------------------------------------------------
- * Dispara as estatísticas dos produtos campestres v01 (biomassa, ANPP,
- * carbono, 2023) × LULC C11, usando o módulo compartilhado
- * statistics/stats_engine.js (1 linha por COMBINAÇÃO classe × def_sec,
- * formato gráfico; as agregações são derivadas OFFLINE no statistics_gcn;
- * CSVs para MAPBIOMAS_CARBONO_ESTATISTICAS/).
- * O comparativo de produtos é montado OFFLINE no Colab (statistics_gcn).
+ * Compatibilidade: estatísticas campestres da v01. Use no código novo:
+ *   run/run_pantanal.js ou
+ *   engine.runGrassland(PANTANAL.GRASSLAND, 'v01')
+ * (este arquivo será removido numa limpeza futura)
  ******************************************************************************/
+var P = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/contracts/contract_pantanal.js');
 var engine = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/grassland/statistics/stats_engine.js');
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/engine/engine.js');
 
-engine.runForVersion('v01');
+engine.runGrassland(P.GRASSLAND, 'v01');

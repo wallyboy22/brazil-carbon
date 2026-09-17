@@ -19,11 +19,13 @@ Engine: ele consome os CSVs exportados pelos steps `7_statistics.js`.
 Os CSVs são gerados **no GEE** (steps nas versões). Este notebook só LÊ e
 analisa. Se faltar arquivo, a `cell02` indica qual step rodar:
 
-| Cadeia | Step no GEE |
+| Cadeia | Driver no GEE |
 |---|---|
-| Pantanal Forest V03–V08 | `forest/v0X/7_statistics.js` (1 CSV por versão) |
-| Pantanal Grassland v01 | `grassland/v01/7_statistics.js` |
-| Pantanal Grassland v02 | `grassland/v02/7_statistics.js` |
+| Pantanal Forest V03–V08 | `toolkits/statistics/v00/run/run_pantanal.js` (1 CSV por versão) |
+| Pantanal Grassland v01–v02 | `toolkits/statistics/v00/run/run_pantanal.js` |
+| Referências (benchmarks + QCN) | `toolkits/statistics/v00/run/run_references.js` |
+
+> Os antigos `v0X/7_statistics.js` seguem como stubs de re-export (depreciados).
 
 > Os comparativos entre versões (forest) e entre produtos (grassland, ref. v02)
 > são montados **offline** por este notebook (`build_compare_forest` /
@@ -75,7 +77,7 @@ Depois, faça download/export dos CSVs para a pasta
 ## Mapa de arquivos
 
 ```
-pantanal/statistics_gcn/
+toolkits/statistics/v00/run/cells_for_collab_notebook/
 ├── 2_3_0_statistics_cell00_util.py     # componentes compartilhados (RODAR 1º)
 ├── 2_3_1_statistics_cell01_autentication_drive.py
 ├── 2_3_2_statistics_cell02_consolidar_qa.py
@@ -108,9 +110,9 @@ pantanal/statistics_gcn/
 ## Documentação cruzada
 
 - Dados de referência (17 assets CCAL + QCN/TCN) e fichas: `COLLECTION_00/docs`.
-- Contratos/hardware das estatísticas: `pantanal/forest/statistics/README.md` e
-  `pantanal/grassland/statistics/README.md`.
+- Contratos/motor das estatísticas: `toolkits/statistics/v00/`
+  (`contracts/` + `engine/` + `run/`).
 - Legenda C11 (n0/n1/marcador): módulo GEE
-  `COLLECTION_00/pantanal/module_lulc_legends.js` (estampa espelhada na
-  `cell00` — dicionários `LULC_NIVEL_*` e helpers `n0_label/marcador_of`).
+  `COLLECTION_00/toolkits/statistics/v00/engine/module_legends.js` (estampa
+  espelhada na `cell00` — dicionários `LULC_NIVEL_*` e helpers `n0_label/marcador_of`).
 - As figuras/relatórios gerados espelham as pastas `figures/` deste repo.

@@ -1,26 +1,16 @@
-/****** Adam
- * MAPBIOMAS-CARBONO — Pantanal Grassland · Estatísticas · TODAS as versões (driver)
+/******************************************************************************
+ * DEPRECATED — driver movido para o toolkit statistics/v00.
  * ---------------------------------------------------------------------------
- * Driver ÚNICO da cadeia campestre: itera as versões dos produtos (v01–v02),
- * chamando `stats_engine.runForVersion(versionId)` para cada uma, no mesmo
- * `require` e com os mesmos prefixos/folder do motor compartilhado:
- *
- *   · motor:   statistics/stats_engine.js (require path abaixo)
- *   · saída:   MAPBIOMAS_CARBONO_ESTATISTICAS · `stats_grassland_<v>_<regiao>_2023.csv`
- *              (+ `_biomassa_mensal_` / `_anpp_mensal_` longos)
- *
- * Substitui rodar `v0X/7_statistics.js` um a um. Uso no Code Editor: só rodar.
- * O comparativo entre produtos/versões (v02) é montado OFFLINE no Colab
- * (statistics_gcn), a partir destes mesmos CSVs.
+ * Re-export/execução de compatibilidade. Use no código novo:
+ *   run/run_pantanal.js
+ * (este arquivo será removido numa limpeza futura)
  ******************************************************************************/
+var P = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/contracts/contract_pantanal.js');
 var engine = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/grassland/statistics/stats_engine.js');
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/engine/engine.js');
 
-var VERSIONS = ['v01', 'v02'];
+print('MAPBIOMAS-CARBONO · (deprecated) Pantanal Grassland · estatísticas · TODAS as versões:',
+  P.GRASSLAND.VERSIONS.join(', '));
 
-print('MAPBIOMAS-CARBONO · Pantanal Grassland · estatísticas · TODAS as versões:',
-  VERSIONS.join(', '));
-
-VERSIONS.forEach(function (versionId) {
-  engine.runForVersion(versionId);
-});
+engine.runGrassland(P.GRASSLAND);

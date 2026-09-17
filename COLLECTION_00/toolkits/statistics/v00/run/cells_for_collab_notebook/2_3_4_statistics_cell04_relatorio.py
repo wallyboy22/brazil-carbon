@@ -30,7 +30,7 @@ cmpf = build_compare_forest(forest)
 cmpg = build_compare_grassland(grassland)
 
 md = [f"# Resumo das estatísticas · Pantanal · ano {CONF['YEAR']}",
-      f"\nGerado por `pantanal/statistics_gcn` em Colab.",
+      f"\nGerado por `toolkits/statistics/v00/run/cells_for_collab_notebook` em Colab.",
       "\n## Floresta (AGC, t/ha → Mg)\n"]
 
 xlsx_path = out_dir() / f"resumo_pantanal_{CONF['YEAR']}.xlsx"

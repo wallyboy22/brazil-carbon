@@ -16,7 +16,7 @@
 | Covariável florestal | ALOS PALSAR-2 | `JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH` | radar/estrutura | 4 b: HH_db, HV_db, HV_HH, RVI | v01 |
 | Covariável florestal | HAND | `users/gena/global-hand/hand-100` | topografia | 2 b: HAND + classes geomorfológicas | v01 |
 | Covariável florestal | ERA5-Land | `ECMWF/ERA5_LAND/MONTHLY_AGGR` | clima | 5 b: CWD (atual/clim/3yr), Tmean, Prec | v01 |
-| Covariável florestal | MapBiomas C11 | `projects/mapbiomas-public/.../coverage_v3` | máscara+legenda | níveis oficiais 0–4 (módulo `module_lulc_legends.js`) | v01 |
+| Covariável florestal | MapBiomas C11 | `projects/mapbiomas-public/.../coverage_v3` | máscara+legenda | níveis oficiais 0–4 (módulo `toolkits/statistics/v00/engine/module_legends.js`) | v01 |
 | Covariável campestre | Landsat C02 L2 | `LANDSAT/LT05\|LE07\|LC08\|LC09/C02/T1_L2` | biomassa | Reflectância (Fonseca) | gv01 |
 | Covariável campestre | MODIS MCD15A3H | `MODIS/061/MCD15A3H` | fPAR | ×0.01 (+QC/interpolação) | gv01 |
 | Covariável campestre | MODIS MCD18A1 | `MODIS/061/MCD18A1` | radiação | DSR → MJ/m²/dia | gv01 |
@@ -90,7 +90,8 @@
   - "versão da predição de biomassa" = tag exata (ex.: `v07`, `v08`,
     `cerrado/forest/v00`) para comparar versões lado a lado.
 - **Classes e níveis LULC (Col. 11) — gestão única** em
-  `pantanal/module_lulc_legends.js` (e espelho `statistics_gcn/lulc_mbc11.py`),
+  `toolkits/statistics/v00/engine/module_legends.js` (e espelho no Colab
+  `toolkits/statistics/v00/run/cells_for_collab_notebook/`),
   derivada dos níveis oficiais do MapBiomas:
   `n0` = nome detalhado (nível 4 p/ lavouras, nível 2 nas demais) · `n1` =
   nível 1 (Floresta / Veg. Herbácea e Arbustiva / Área não vegetada /
@@ -106,19 +107,19 @@
   7 Outras Transições). Agrupamento por banda única `combo = lulc*10 + def_sec`;
   fechamento `Σ def_sec = classe` dado por construção (sem colunas `mod`).
 - **Colunas de valor com unidade no rótulo** (schema unificado desde o módulo
-  `references/statistics`): `(t C)` = toneladas de CARBONO, `(t MS)` =
+  `toolkits/statistics/v00`): `(t C)` = toneladas de CARBONO, `(t MS)` =
   toneladas de BIOMASSA. Referências só-biomassa emitem as duas (`<pool> (t MS)`
   nativa + `<pool> (t C)` via fator `CARBON_FRACTION`), garantindo ≥1 coluna
   comparável em C. A magnitude (biomassa/carbono) e a unidade ficam NO NOME da
   coluna — sem colunas redundantes de unidade.
-- **Estatísticas de referência (benchmarks + QCN) por bioma:** o módulo
-  `references/statistics` (Contrato 0 + engine + step 7) exporta
-  `stats_references_<ref>_<ano>.csv` (19 arquivos; um por ref, com os 6 biomas
+- **Estatísticas de referência (benchmarks + QCN) por bioma:** o toolkit
+  `toolkits/statistics/v00` (catálogo + contrato + engine + driver) exporta
+  `stats_references_<ref>_<ano>.csv` (20 arquivos; um por ref, com os 6 biomas
   combinados — a coluna `territorio` distingue cada um), com `fonte`, `ref_id`,
   `territorio`, classe, cobertura `(n0..n4)`, `Desmatamento e vegetação
   secundária`, `ano_lulc`, `ano`, `Área (ha)`, pools `(t C)|(t MS)` e
   `Incerteza (t C)`.
-  Consumo OFFLINE no Colab (`statistics_gcn` → cell06), sem Earth Engine.
+  Consumo OFFLINE no Colab (`run/cells_for_collab_notebook/` → cell06), sem Earth Engine.
 
 ## Planejados
 

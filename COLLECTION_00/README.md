@@ -216,22 +216,32 @@ por célula são exportadas **dentro de uma ImageCollection**
 (`ee.data.createAsset`), e o mosaico anual do `5_merge` sai como irmão da COL,
 nome simples.
 
-### Estatísticas por classe LULC C11 (Pantanal)
+### Estatísticas por classe LULC C11 — toolkit `toolkits/statistics/v00/`
 
-As estatísticas das versões finais (AGC florestal V03–V07 e produtos campestres
-v01) são disparadas **dentro do fluxo de cada versão** pelo step `7_statistics.js`,
-que `require()` o módulo compartilhado `statistics/stats_engine.js` de cada
-ecossistema (contrato em `statistics/0_contract_stats.js`):
+As estatísticas (florestais, campestres e de referência) ficam **encapsuladas**
+no toolkit `COLLECTION_00/toolkits/statistics/v00/`:
 
-| Módulo GEE | Versões | O que gera (Drive `MAPBIOMAS_CARBONO_ESTATISTICAS`) |
-|---|---|---|
-| `pantanal/forest/statistics/` | `v03/7_statistics.js` … `v07/7_statistics.js` | `stats_forest_<v>_<território>_2023.csv` (níveis n0/n1/marcador/total) · v07: + `compare_forest_versoes_2023.csv` |
-| `pantanal/grassland/statistics/` | `v01/7_statistics.js` | `stats_grassland_<produto>_<território>_2023.csv` (biomassa/ANPP/carbono) + `compare_grassland_produtos_2023.csv` |
+| Pasta | Papel |
+|---|---|
+| `contracts/` | catálogos (`00_catalog_limits`, `_landcover`, `_covariates`, `_references`, `_products`) + contrato do bioma (`contract_pantanal.js`, com os escopos `FOREST`/`GRASSLAND`) e de referências (`contract_references.js`) |
+| `engine/` | motor unificado (`engine.js` → `runForest`/`runGrassland`/`runReferences`), território (`module_territory.js`), legendas (`module_legends.js`) e infra (`module_infra.js`) |
+| `run/` | drivers + QA: `run_pantanal.js`, `run_references.js`, `09_catalog_check.js` |
+| `run/cells_for_collab_notebook/` | notebook Colab (offline, sem EE) que consome os CSVs |
 
-- **Legenda C11 única**: `pantanal/module_lulc_legends.js` (n0 decimal, n1,
-  marcador florestal/campestre/outros) — espelho dos nomes do bloco da v00.
-- **Análise fora do GEE**: `pantanal/statistics_gcn/` (notebook Colab) consome
-  os CSVs — QA de somas, figuras, relatório XLSX + `.md` (não recomputa EE).
+| Driver | O que gera (Drive `MAPBIOMAS_CARBONO_ESTATISTICAS`) |
+|---|---|
+| `run/run_pantanal.js` | `stats_forest_<v>_bioma_2023.csv` (V03–V08; v07/v08 com incerteza) + `stats_grassland_<v>_<regiao>_2023.csv` (+ `_biomassa_mensal_` / `_anpp_mensal_`) |
+| `run/run_references.js` | `stats_references_<ref_id>_2023.csv` (20 refs, 6 biomas) |
+
+- **Legenda C11 única**: `engine/module_legends.js` (n0..n4, natureza,
+  marcador) — espelho dos nomes do bloco da v00.
+- **Análise fora do GEE**: `run/cells_for_collab_notebook/` (Colab) consome os
+  CSVs — QA de somas, figuras, relatório XLSX + `.md` (não recomputa EE).
+- **Compatibilidade**: caminhos antigos (`pantanal/forest/statistics/`,
+  `pantanal/grassland/statistics/`, `references/statistics/`,
+  `pantanal/module_lulc_legends.js`, `pantanal/module_infra.js`,
+  `pantanal/statistics_gcn/`) seguem como stubs de re-export e serão removidos
+  numa limpeza futura.
 
 ### `pantanal/grassland/v01` — primeira pipeline não-florestal
 

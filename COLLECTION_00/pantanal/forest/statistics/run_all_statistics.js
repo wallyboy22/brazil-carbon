@@ -1,27 +1,16 @@
-/****** Adam
- * MAPBIOMAS-CARBONO — Pantanal Forest · Estatísticas · TODAS as versões (driver)
+/******************************************************************************
+ * DEPRECATED — driver movido para o toolkit statistics/v00.
  * ---------------------------------------------------------------------------
- * Driver ÚNICO da cadeia florestal: itera `C.VERSIONS` (V03–V08), chamando
- * `stats_engine.runForVersion(v.id)` para cada uma, no mesmo `require` e com
- * os mesmos prefixos/folder do motor compartilhado:
- *
- *   · contratos: statistics/0_contract_stats.js
- *   · motor:     statistics/stats_engine.js (require path abaixo)
- *   · saída:     MAPBIOMAS_CARBONO_ESTATISTICAS · `stats_forest_<v>_<regiao>_2023.csv`
- *
- * Substitui rodar `v0X/7_statistics.js` um a um. Uso no Code Editor: só rodar.
- * As agregações classe/marcador/total (e natureza/marcador) são derivadas
- * OFFLINE no Colab (statistics_gcn · cell00 `por_classe`), a partir destes
- * mesmos CSVs de combinações (classe × def_sec).
+ * Re-export/execução de compatibilidade. Use no código novo:
+ *   run/run_pantanal.js
+ * (este arquivo será removido numa limpeza futura)
  ******************************************************************************/
-var C = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/statistics/0_contract_stats.js');
+var P = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/contracts/contract_pantanal.js');
 var engine = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/statistics/stats_engine.js');
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/engine/engine.js');
 
-print('MAPBIOMAS-CARBONO · Pantanal Forest · estatísticas · TODAS as versões:',
-  C.VERSIONS.map(function (x) { return x.id; }).join(', '));
+print('MAPBIOMAS-CARBONO · (deprecated) Pantanal Forest · estatísticas · TODAS as versões:',
+  P.FOREST.VERSIONS.map(function (x) { return x.id; }).join(', '));
 
-C.VERSIONS.forEach(function (v) {
-  engine.runForVersion(v.id);
-});
+engine.runForest(P.FOREST);
