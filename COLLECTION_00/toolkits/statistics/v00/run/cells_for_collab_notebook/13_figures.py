@@ -1,8 +1,7 @@
 """
-MAPBIOMAS-CARBONO · Pantanal — 2_3_3_STATISTICS_CELL03_GRAFICOS.py
+MAPBIOMAS-CARBONO · toolkit statistics/v00 — 13_figures.py
 ==================================================================
-Célula 03 · Biblioteca de figuras das estatísticas (usa CONF + funções da
-cell00 no namespace). Rodar em Colab após a cell02.
+Etapa 13 · Biblioteca de figuras das estatísticas. Rode após 11_consolidate.
 
 Figuras (salvas na MESMA pasta de output no Drive, FIG_DIR):
   f1_forest_estoque_por_classe.png    estoque (t) por classe C11, por versão
@@ -19,7 +18,7 @@ import numpy as np
 import pandas as pd  # noqa: F401
 
 print("=" * 68)
-print("statistics_gcn · cell03 · figuras")
+print("statistics · 13_figures · figuras")
 print("=" * 68)
 
 forest = pd.read_csv(out_dir() / "consolidado_forest_2023.csv", encoding="utf-8")
@@ -41,7 +40,7 @@ if len(forest):
     fig, ax = plt.subplots(figsize=(12, max(4, 0.42 * len(cls))))
     for i, v in enumerate(VEC):
         fs = por_classe(forest[forest["version"] == v])
-        vals = fs.set_index("classe")["estoque_t"]
+        vals = fs.groupby("classe")["estoque_t"].sum()
         ax.barh(cls, [vals.get(c, 0) for c in order], label=v,
                 color=plt.cm.viridis(i / max(len(VEC) - 1, 1)),
                 height=0.8 / len(VEC) - 0.04 if len(VEC) > 1 else 0.8)
@@ -96,7 +95,7 @@ if grassland is not None and len(grassland):
         ax.bar(marc.index, marc.values, color=[CONF["C_GRASS"], CONF["C_OTHER"]])
         ax.axhline(tot, color=CONF["C_RED"], ls="--", lw=1)
         ax.set(title=f"{p} · total {tot:.0f} {GRASS_PRODUCT_LABEL.get(p, '')}",
-               ylabel="Mg")
+               ylabel="t")
         if len(marc) == 0:
             ax.text(0.5, 0.5, "sem dados", ha="center", va="center", alpha=0.5)
     fig.suptitle(f"f4 · produtos campestres {ref} por marcador (2023)",
@@ -109,7 +108,7 @@ if grassland is not None and len(grassland):
     totp = cmpg[cmpg["n0"] == "TOTAL"]
     fig, ax = plt.subplots(figsize=(8, 4.5))
     ax.bar(totp["produto"], totp["valor_t"], color=CONF["C_GRASS"])
-    ax.set(xlabel="produto", ylabel="Mg",
+    ax.set(xlabel="produto", ylabel="t",
            title=f"f5 · grassland {ref} — total por produto (2023)")
     save_fig(fig, "f5_grassland_compare_menu.png")
 

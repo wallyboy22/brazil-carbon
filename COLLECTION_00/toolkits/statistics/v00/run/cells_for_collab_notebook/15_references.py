@@ -1,25 +1,18 @@
 """
-MAPBIOMAS-CARBONO · Pantanal — 2_3_6_STATISTICS_CELL06_REFERENCIA.py
+MAPBIOMAS-CARBONO · toolkit statistics/v00 — 15_references.py
 ====================================================================
-Célula 06 · ANÁLISE DOS DADOS DE REFERÊNCIA — cruzes em termos comuns.
-Rodar em Colab APÓS a cell02 (precisa dos consolidados 2023). Usa CONF e os
-componentes de REFERÊNCIA já carregados pela cell00.
+Etapa 15 · Análise das REFERÊNCIAS (cruzes T1/T2 por termo). Rode após
+11_consolidate (precisa dos consolidados) e 06_references (catálogo/mapa).
 
-O que faz (lendo os CSVs exportados pelo GEE — SEM Earth Engine):
-  1. lê cada referência (REF_CATALOG × bioma) dos `stats_references_*.csv`
-     exportados pelo step `7_references.js`, via load_references_csv()
-  2. T1 · tabela_cross_2023.csv — todas as versões (forest V03–V08; grassland
-     v02 carbon/biomass) × referências, densidade em t C/ha (ou t MS/ha p/
-     biomass), diff e incerteza por classe
-  3. T2 · tabela_melhor_ano_referencia_2023.csv — ref+época de menor distância
-     de densidade por produto×versão×classe (regra adotada) + fator_impl
-  4. resumo_referencia_2023.md — achados por marcador e flags (AGB→C, cobertura
-     campestre, Xu 2021 b1..b20→ano 2000..2019 como premissa)
-
-Saídas em OUT_DIR (Drive), prontas para exportar.
+Lê os CSVs AGRUPADOS (`stats_references_<grupo>_2023.csv`) via
+load_references_csv() e produz, em OUT_DIR:
+  1. referencias_por_classe_2023.csv (cache) — refs longas por classe
+  2. tabela_cross_2023.csv — produto×versão×classe×referência (T1)
+  3. tabela_melhor_ano_referencia_2023.csv — ref+época de menor distância (T2)
+  4. resumo_referencia_2023.md — achados e flags (AGB→C, cobertura campestre)
 """
 print("=" * 68)
-print("statistics_gcn · cell06 · análise de dados de referência")
+print("statistics · 15_references · análise de dados de referência")
 print("=" * 68)
 
 # Confirma constantes via CONF (fonte única de verdade operacional — a cell00
@@ -82,9 +75,9 @@ print(f"[OUT] {t2_path} ({len(t2)} linhas)")
 lines = []
 lines.append("# MAPBIOMAS-CARBONO Pantanal — análise de dados de referência (2023)")
 lines.append("")
-lines.append("Termos comuns: densidade **t C/ha** por classe (1 Mg = 1 t;")
-lines.append("convertido de AGB com fator %.2f). Biomassa (t MS/ha) comparada"
-             " com AGB (lenhoso)." % CARBON_FRACTION)
+lines.append("Termos comuns: densidade **t C/ha** por classe; biomassa (t MS/ha)")
+lines.append("comparada com AGB (lenhoso). Conversão AGB→C com fator %.2f."
+             % CARBON_FRACTION)
 lines.append("")
 lines.append("## T1 · volumes por marcador × grupo de referência")
 if len(t1):

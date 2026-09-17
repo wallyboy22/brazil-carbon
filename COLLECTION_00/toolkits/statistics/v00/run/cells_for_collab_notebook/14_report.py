@@ -1,8 +1,7 @@
 """
-MAPBIOMAS-CARBONO · Pantanal — 2_3_4_STATISTICS_CELL04_RELATORIO.py
+MAPBIOMAS-CARBONO · toolkit statistics/v00 — 14_report.py
 ===================================================================
-Célula 04 · Relatório consolidado (XLSX + .md) — usa CONF + funções da cell00.
-Rodar em Colab após a cell03.
+Etapa 14 · Relatório consolidado (XLSX + .md). Rode após 13_figures.
 
 Gera, em OUT_DIR:
   resumo_pantanal_2023.xlsx — abas:
@@ -11,13 +10,12 @@ Gera, em OUT_DIR:
   resumo_pantanal_2023.md — sumário textual (totais, marcador, QA)
 
 Todas as abas agregadas (n1/marcador/total) são derivadas EM MEMÓRIA das
-linhas de combinação (classe × def_sec; e meses p/ ANPP) do consolidado —
-o CSV do GEE é somente por combinação.
+linhas de combinação (classe × def_sec; e meses p/ NPP) do consolidado.
 """
 import pandas as pd
 
 print("=" * 68)
-print("statistics_gcn · cell04 · relatório")
+print("statistics · 14_report · relatório")
 print("=" * 68)
 
 forest = pd.read_csv(out_dir() / "consolidado_forest_2023.csv", encoding="utf-8")
@@ -31,7 +29,7 @@ cmpg = build_compare_grassland(grassland)
 
 md = [f"# Resumo das estatísticas · Pantanal · ano {CONF['YEAR']}",
       f"\nGerado por `toolkits/statistics/v00/run/cells_for_collab_notebook` em Colab.",
-      "\n## Floresta (AGC, t/ha → Mg)\n"]
+      "\n## Floresta (carbono acima do solo, t)\n"]
 
 xlsx_path = out_dir() / f"resumo_pantanal_{CONF['YEAR']}.xlsx"
 with pd.ExcelWriter(xlsx_path, engine="openpyxl") as xw:
@@ -63,17 +61,17 @@ with pd.ExcelWriter(xlsx_path, engine="openpyxl") as xw:
             tot = d["estoque_t"].sum()
             fl = forest[(forest["version"] == v) &
                         (forest["marcador"] == "florestal")]["estoque_t"].sum()
-            md.append(f"- **v{v}**: total {tot:,.0f} Mg · florestal"
-                      f" {fl:,.0f} Mg ({fl / tot * 100:.1f}%)")
+            md.append(f"- **{v}**: total {tot:,.0f} t · florestal"
+                      f" {fl:,.0f} t ({fl / tot * 100:.1f}%)")
         if cmpf is not None and len(cmpf):
             cmpf.to_excel(xw, sheet_name="comparativo_versoes", index=False)
             md.append("\n### Comparativo florestal (101) e total por versão\n")
             for _, r in cmpf[cmpf["marcador"] == "florestal"].iterrows():
-                md.append(f"- {r['version']}: {r['estoque_t']:,.0f} Mg"
+                md.append(f"- {r['version']}: {r['estoque_t']:,.0f} t"
                           f" (área {r['area_ha']:,.0f} ha)")
     # ---------------- GRASSLAND ----------------
     if grassland is not None and len(grassland):
-        md.append(f"\n## Campestre ({ref} — biomassa/ANPP/carbono, "
+        md.append(f"\n## Campestre ({ref} — biomassa/NPP/carbono, "
                   f"{CONF['YEAR']})\n")
         for p in grassland["produto"].unique():
             d = grassland[grassland["produto"] == p]
@@ -101,8 +99,8 @@ with pd.ExcelWriter(xlsx_path, engine="openpyxl") as xw:
              .agg(area_ha=("area_ha", "sum"), valor_t=("valor_t", "sum"))
              .reset_index().to_excel(xw, sheet_name=f"{p}_total", index=False))
             md.append(f"- **{p}**: {tot:,.0f} "
-                      f"{GRASS_PRODUCT_LABEL.get(p, 'Mg')}"
-                      f" · campestre {camp:,.0f} Mg"
+                      f"{GRASS_PRODUCT_LABEL.get(p, 't')}"
+                      f" · campestre {camp:,.0f} t"
                       f" ({camp / tot * 100:.1f}%)")
         if cmpg is not None and len(cmpg):
             cmpg.to_excel(xw, sheet_name="comparativo_produtos", index=False)

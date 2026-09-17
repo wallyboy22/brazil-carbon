@@ -1,25 +1,24 @@
 """
-MAPBIOMAS-CARBONO · Pantanal — 2_3_2_STATISTICS_CELL02_CONSOLIDAR_QA.py
+MAPBIOMAS-CARBONO · toolkit statistics/v00 — 11_consolidate.py
 ========================================================================
-Célula 02 · Consolida os CSVs do GEE e valida somas (usa CONF + funções da
-cell00 no namespace). Rodar em Colab após a cell01.
+Etapa 11 · Consolida os CSVs do GEE (LONGO canônico) e valida somas.
 
-O que faz:
-  1. checa quais arquivos esperados existem (e indica o step 7_statistics.js
-     de cada versão a rodar no GEE quando faltar)
-  2. consolida forest (V03–V08) e grassland (v02: biomassa/ANPP/carbono)
+Rode após 10_auth_drive. Usa CONF + funções de 00..06 no namespace.
+
+  1. checa arquivos esperados (indica qual driver rodar no GEE quando faltar)
+  2. consolida forest (todas as versões presentes) e grassland
   3. QA de somas (n0 = n1 = total) e territórios por versão
-  4. salva consolidados em OUT_DIR (consolidado_forest_2023.csv e
-     consolidado_grassland_2023.csv) para reuso nas células seguintes
+  4. salva consolidados LONGO em OUT_DIR (consolidado_forest_2023.csv e
+     consolidado_grassland_2023.csv) — canônicos p/ QA e 15_references
 """
 print("=" * 68)
-print("statistics_gcn · cell02 · consolidação + QA")
+print("statistics · 11_consolidate · consolidação + QA")
 print("=" * 68)
 
 missing = check_presence()
 
-forest = load_forest()
-grassland = expand_grass_product(load_grassland())
+forest = add_data_col(load_forest())
+grassland = add_data_col(expand_grass_product(load_grassland()))
 
 print()
 print(f"[FOREST] {len(forest)} linhas · versões:",
@@ -34,8 +33,8 @@ print(f"[COMPARE] forest {len(cmpf)} · grassland {len(cmpg)} linhas (offline)")
 
 # --- QA forest ---------------------------------------------------------------
 if len(forest):
-    problems = qa_somas(forest, "estoque_t", ["version", "territorio"])
-    problems += qa_defsec(forest, ("version", "territorio"))
+    problems = qa_somas(forest, "estoque_t", ["version", "territorio", "UF"])
+    problems += qa_defsec(forest, ("version", "territorio", "UF"))
     problems += qa_territorios(forest, CONF["FOREST_VERSIONS"])
     for p in problems:
         print("[QA !]", p)
@@ -52,8 +51,8 @@ if len(grassland):
     for p in grassland["produto"].unique():
         vc = grass_value_col(p)
         problems += qa_somas(grassland[grassland["produto"] == p], vc,
-                             ["produto", "versao", "territorio"])
-    problems += qa_defsec(grassland, ("produto", "versao", "territorio"))
+                             ["produto", "versao", "territorio", "UF"])
+    problems += qa_defsec(grassland, ("produto", "versao", "territorio", "UF"))
     for p in problems:
         print("[QA !]", p)
     if not problems:
@@ -67,7 +66,7 @@ if missing:
     print()
     print("[ATENÇÃO] faltam arquivos — rode no GEE os steps indicados e faça o")
     print("          download/export dos CSVs para", csv_dir(),
-          "depois rode a cell02 novamente.")
+          "depois rode a 11_consolidate novamente.")
 print()
 print(f"[ARTEFATOS] {len(manifest())} gerados")
 print("=" * 68)

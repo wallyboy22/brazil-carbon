@@ -1,9 +1,9 @@
 """
-MAPBIOMAS-CARBONO · toolkit statistics/v00 — 2_3_7_STATISTICS_CELL07_JOIN_LARGO.py
+MAPBIOMAS-CARBONO · toolkit statistics/v00 — 12_join_largo.py
 ========================================================================
-Célula 07 · Junta (join) as tabelas exportadas SEPARADAS pelo GEE numa única
+Etapa 12 · Junta (join) as tabelas exportadas SEPARADAS pelo GEE numa única
 tabela LARGA: uma linha por (Bioma, UF, classe, def_sec) e uma coluna por
-métrica. Usa CONF + funções da cell00 no namespace.
+métrica. Usa CONF + funções de 00..06 no namespace.
 
 Fontes:
   · forest      → CSV largo (colunas '<vXX> Biomassa acima do solo (t MS)' /
@@ -18,10 +18,11 @@ O join usa a chave (Bioma, UF, classe, def_sec). Saída:
   OUT_DIR/consolidado_largo_2023.csv
 """
 print("=" * 68)
-print("statistics_gcn · cell07 · join largo")
+print("statistics · 12_join_largo · join largo")
 print("=" * 68)
 
 import re
+import numpy as np
 import pandas as pd
 
 KEY = ["Bioma", "UF", "classe", "def_sec"]
@@ -42,6 +43,9 @@ def _prep(df):
             df[c] = df[c].astype(str)
     if "classe" in df.columns:
         df["classe"] = pd.to_numeric(df["classe"], errors="coerce")
+    # sentinela de nodata (ex.: TCN ~ -9.22e17) → NaN
+    num = df.select_dtypes(include=[np.number]).columns
+    df[num] = df[num].mask(df[num] <= -1e30)
     return df
 
 
@@ -79,7 +83,9 @@ for fp in sorted(csv_dir().glob("stats_references_*2023*.csv")):
     df = _prep(pd.read_csv(fp))
     grupo = fp.stem.replace("stats_references_", "").replace("_2023", "")
     mcols = [c for c in df.columns if c not in NON_METRIC]
-    parts.append(df[[c for c in (KEY + mcols) if c in df.columns]])
+    ren = {c: f"{grupo} {c}" for c in mcols}
+    df = df.rename(columns=ren)
+    parts.append(df[[c for c in (KEY + [ren[c] for c in mcols]) if c in df.columns]])
     print(f"[REF] {grupo}: {len(df)} linhas · {len(mcols)} métrica(s)")
 
 # --- join largo --------------------------------------------------------------
@@ -87,6 +93,7 @@ out = parts[0]
 for p in parts[1:]:
     out = out.merge(p, on=KEY, how="outer")
 out = out.sort_values(KEY).reset_index(drop=True)
+out = add_data_col(out)  # coluna `data` (YYYY-MM-DD) p/ Looker Studio
 
 path = out_dir() / "consolidado_largo_2023.csv"
 out.to_csv(path, index=False)
