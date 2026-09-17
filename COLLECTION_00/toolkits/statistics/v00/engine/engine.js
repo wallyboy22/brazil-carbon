@@ -99,7 +99,6 @@ function expandRows(groups, spec) {
         var am = ee.Number(s.get(off));
         var props = spec.one({
           s: s, off: off, am: am, j: j, cls: cls, info: info,
-          codigo: codigo,
           biomeName: biomeName, ufSigla: ufSigla, ufNome: ufNome
         });
         return ee.List(ee.Algorithms.If(am.gt(0), [ee.Feature(null, props)], []));
@@ -212,8 +211,7 @@ function bandForYear(r, y) {
 
 /** Colunas do CSV de um grupo de referências. */
 function refColumns(groupRefs) {
-  var cols = ['ecossistema', 'Bioma', 'UF', 'Unidade Federativa',
-    'cod_territorio', 'classe']
+  var cols = ['ecossistema', 'Bioma', 'UF', 'Unidade Federativa', 'classe']
     .concat(coberturaCols())
     .concat(['ano_lulc', 'Área (ha)']);
   groupRefs.forEach(function (r) {
@@ -237,7 +235,6 @@ function groupRows(contract, groupRefs, scale, geom, D) {
       var props = {
         ecossistema: 'referencia',
         Bioma: ctx.biomeName, UF: ctx.ufSigla, 'Unidade Federativa': ctx.ufNome,
-        cod_territorio: ctx.codigo,
         classe: ctx.cls,
         'cobertura (n0)': ctx.info.get('n0'),
         'cobertura (n1)': ctx.info.get('n1'),
@@ -424,8 +421,7 @@ function forestWideStack(contract, versions, paths) {
 
 /** Colunas do CSV largo florestal. */
 function forestColumns(versions) {
-  var cols = ['ecossistema', 'Bioma', 'UF', 'Unidade Federativa',
-    'cod_territorio', 'classe']
+  var cols = ['ecossistema', 'Bioma', 'UF', 'Unidade Federativa', 'classe']
     .concat(coberturaCols())
     .concat(['ano_lulc', 'Área (ha)']);
   versions.forEach(function (v) { cols.push(v.id + ' Estoque (t)'); });
@@ -452,7 +448,6 @@ function forestRows(contract, versions, paths, geom, D) {
       var props = {
         ecossistema: 'florestal',
         Bioma: ctx.biomeName, UF: ctx.ufSigla, 'Unidade Federativa': ctx.ufNome,
-        cod_territorio: ctx.codigo,
         classe: ctx.cls,
         'cobertura (n0)': ctx.info.get('n0', ''),
         'cobertura (n1)': ctx.info.get('n1', ''),
@@ -611,12 +606,12 @@ function grassPrincipalStack(contract, biomass, carbon) {
 
 /* ---- Colunas (selectors) dos 3 CSVs (nomes prontos p/ gráfico) ------------ */
 var SEL_A = ['ecossistema', 'produto', 'versao', 'ano', 'Bioma', 'UF',
-  'Unidade Federativa', 'cod_territorio', 'unidade', 'classe']
+  'Unidade Federativa', 'classe']
   .concat(coberturaCols())
   .concat(['Área (ha)', 'Biomassa (t)', 'Estoque de carbono (t)']);
 
 var SEL_MENSAL = ['ecossistema', 'produto', 'versao', 'ano', 'Bioma', 'UF',
-  'Unidade Federativa', 'cod_territorio', 'unidade', 'classe']
+  'Unidade Federativa', 'classe']
   .concat(coberturaCols())
   .concat(['período', 'Área (ha)']);
 
@@ -636,8 +631,7 @@ function grassRowsMonthly(contract, product, month, mes, valueCol, geom, D) {
         ecossistema: 'campestre',
         produto: 'grassland', versao: vId, ano: contract.YEAR,
         Bioma: ctx.biomeName, UF: ctx.ufSigla, 'Unidade Federativa': ctx.ufNome,
-        cod_territorio: ctx.codigo,
-        unidade: 't', classe: ctx.cls,
+        classe: ctx.cls,
         'cobertura (n0)': ctx.info.get('n0', ''),
         'cobertura (n1)': ctx.info.get('n1', ''),
         'cobertura (n2)': ctx.info.get('n2', ''),
@@ -668,8 +662,7 @@ function grassRowsPrincipal(contract, versionId, biomass, carbon, geom, D) {
         ecossistema: 'campestre',
         produto: 'grassland', versao: versionId, ano: contract.YEAR,
         Bioma: ctx.biomeName, UF: ctx.ufSigla, 'Unidade Federativa': ctx.ufNome,
-        cod_territorio: ctx.codigo,
-        unidade: 't', classe: ctx.cls,
+        classe: ctx.cls,
         'cobertura (n0)': ctx.info.get('n0', ''),
         'cobertura (n1)': ctx.info.get('n1', ''),
         'cobertura (n2)': ctx.info.get('n2', ''),
