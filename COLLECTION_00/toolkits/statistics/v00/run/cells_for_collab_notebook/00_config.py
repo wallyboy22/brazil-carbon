@@ -38,6 +38,9 @@ CONF = {
     "GRASSLAND_REF_VERSION": "v02",
     "MISSING_TOL": 1.0,     # t (QA de somas)
     "DENSITY_MAX": 400.0,   # t/ha (QA de densidade implícita)
+    # --- filtro de estrato def_sec (None/[] = sem filtro) ---
+    # rótulos de DEF_SEC_VEG_LEGEND; ex.: ["Vegetação Primária"] (código 2)
+    "DEF_SEC_FILTER": ["Vegetação Primária"],
     # --- dados de REFERÊNCIA (15_references) ---
     "CARBON_FRACTION": 0.47,  # AGB (t) -> C (t), IPCC default
     "REF_MIN_VALID": 0.05,    # mín. fração de área válida p/ comparar ref

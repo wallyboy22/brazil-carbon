@@ -29,6 +29,8 @@ cmpg = build_compare_grassland(grassland)
 
 md = [f"# Resumo das estatísticas · Pantanal · ano {CONF['YEAR']}",
       f"\nGerado por `toolkits/statistics/v00/run/cells_for_collab_notebook` em Colab.",
+      f"\nFiltro def_sec: "
+      f"{', '.join(CONF['DEF_SEC_FILTER']) if CONF.get('DEF_SEC_FILTER') else 'todos'}.",
       "\n## Floresta (carbono acima do solo, t)\n"]
 
 xlsx_path = out_dir() / f"resumo_pantanal_{CONF['YEAR']}.xlsx"

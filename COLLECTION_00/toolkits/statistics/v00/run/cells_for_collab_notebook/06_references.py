@@ -82,6 +82,9 @@ def load_references_csv(lulc_year: int = 2023,
             f"_{lulc_year}", "")
         meta = GRUPO_META.get(grupo, {"group": grupo, "epoch": "?"})
         df = _derive_territorio(pd.read_csv(fp, encoding="utf-8"))
+        if "Desmatamento e vegetação secundária" in df.columns:
+            df["def_sec"] = df["Desmatamento e vegetação secundária"]
+        df = _filter_defsec(df)
         if "territorio" in df.columns:
             df = df[df["territorio"] == territorio]
         if not len(df):

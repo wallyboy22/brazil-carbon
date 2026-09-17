@@ -59,6 +59,17 @@ def _derive_territorio(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _filter_defsec(df: pd.DataFrame) -> pd.DataFrame:
+    """Mantém apenas as linhas cujo `def_sec` esteja em CONF['DEF_SEC_FILTER'].
+
+    Sem filtro (None/[]), devolve o df como está. Ex.: `["Vegetação Primária"]`.
+    """
+    labels = CONF.get("DEF_SEC_FILTER") or []
+    if not labels or "def_sec" not in df.columns:
+        return df
+    return df[df["def_sec"].astype(str).isin([str(x) for x in labels])].copy()
+
+
 def _remap_products(df: pd.DataFrame) -> pd.DataFrame:
     """Renomeia colunas de PRODUTO (forest/grassland) para nomes internos."""
     df = df.rename(columns={k: v for k, v in GRAPH_COLS.items()
@@ -101,6 +112,7 @@ def _clean_schema(df: pd.DataFrame) -> pd.DataFrame:
     for c in ("area_ha", "estoque_t", "biomassa_t", "anpp_t", "incerteza_t"):
         if c in df.columns:
             df.loc[df[c].abs() >= 1e15, c] = np.nan
+    df = _filter_defsec(df)
     if "def_sec" in df.columns:
         df["def_sec_code"] = df["def_sec"].map(defsec_code)
     if "natureza" not in df.columns and "classe" in df.columns:

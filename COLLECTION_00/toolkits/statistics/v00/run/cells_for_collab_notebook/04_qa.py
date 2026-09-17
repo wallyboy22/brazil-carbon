@@ -68,6 +68,9 @@ def qa_defsec(df: pd.DataFrame,
     problems: list[str] = []
     if not len(df) or "def_sec" not in df.columns:
         return problems
+    # com filtro de estrato ativo, só resta 1 def_sec → relaxa as checagens
+    # específicas de def_sec (duplicidade, rótulos, dominância de 'Não Observado')
+    filtered = bool(CONF.get("DEF_SEC_FILTER"))
     if "def_sec_code" not in df.columns:
         df = df.assign(def_sec_code=df["def_sec"].map(defsec_code))
     vcols = [c for c in ("estoque_t", "biomassa_t", "anpp_t")
@@ -78,14 +81,15 @@ def qa_defsec(df: pd.DataFrame,
                 grp["periodo"].fillna("__anual__"), dropna=False)]
         else:
             partes = [grp]
-        dups = sum(pg["def_sec"].duplicated().sum() for pg in partes)
-        if dups:
-            problems.append(f"{key}: {dups} combinações def_sec duplicadas "
-                            "(classe × def_sec × mês)")
-        unknown = grp[grp["def_sec_code"] < 0]
-        if len(unknown):
-            labels = ", ".join(sorted({str(v) for v in unknown["def_sec"]}))
-            problems.append(f"{key}: rótulos def_sec fora da legenda: {labels}")
+        if not filtered:
+            dups = sum(pg["def_sec"].duplicated().sum() for pg in partes)
+            if dups:
+                problems.append(f"{key}: {dups} combinações def_sec duplicadas "
+                                "(classe × def_sec × mês)")
+            unknown = grp[grp["def_sec_code"] < 0]
+            if len(unknown):
+                labels = ", ".join(sorted({str(v) for v in unknown["def_sec"]}))
+                problems.append(f"{key}: rótulos def_sec fora da legenda: {labels}")
         if grp["area_ha"].isna().any() or (grp["area_ha"] < 0).any():
             problems.append(f"{key}: área nula/negativa em combinação def_sec")
         for vc in vcols:
@@ -100,10 +104,11 @@ def qa_defsec(df: pd.DataFrame,
             mark = grp["marcador"].iloc[0]
             if nat == "Antrópico" and mark != "outros":
                 problems.append(f"{key}: natureza {nat} com marcador {mark}")
-        no = grp[grp["def_sec_code"] == 0]["area_ha"].sum()
-        a = grp["area_ha"].sum()
-        if a > 0 and no / a > 0.5:
-            problems.append(f"{key}: 'Não Observado' cobre {no / a:.0%} da área")
+        if not filtered:
+            no = grp[grp["def_sec_code"] == 0]["area_ha"].sum()
+            a = grp["area_ha"].sum()
+            if a > 0 and no / a > 0.5:
+                problems.append(f"{key}: 'Não Observado' cobre {no / a:.0%} da área")
     return problems
 
 

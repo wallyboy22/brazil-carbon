@@ -46,7 +46,7 @@ def _prep(df):
     # sentinela de nodata (ex.: TCN/grassland ~ ±9.22e17) → NaN
     num = df.select_dtypes(include=[np.number]).columns
     df[num] = df[num].mask(df[num].abs() >= 1e15)
-    return df
+    return _filter_defsec(df)
 
 
 # --- base: forest largo ------------------------------------------------------

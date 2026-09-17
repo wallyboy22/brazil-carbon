@@ -6,6 +6,7 @@ NOTEBOOK_COLLAB_PY.PY
 # Saídas locais (CSV, imagens de diagnóstico)
 *.csv
 *.png
+*.xlsx
 
 # Análise offline — pasta IGNORADA no GEE (tem próprio .git local)
 COLLECTION_00/pantanal/forest/v01/2_2_data_matriz_analisys/

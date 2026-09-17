@@ -15,6 +15,9 @@ print("=" * 68)
 print("statistics · 11_consolidate · consolidação + QA")
 print("=" * 68)
 
+_f = CONF.get("DEF_SEC_FILTER")
+print("[FILTRO] def_sec =", ", ".join(_f) if _f else "todos")
+
 missing = check_presence()
 
 forest = add_data_col(load_forest())
