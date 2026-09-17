@@ -6,12 +6,11 @@
  * `getInfo`/`evaluate`. Espelha o padrão da referência do mapbiomas-fire
  * (`territories/bioma_estado.js` + `_shared/legends.js`).
  *
- *   BIOMAS             → código CD_BIOMA (1..6) → nome
- *   BIOMA_CODE_BY_NAME → nome → código (p/ pintar o bioma a partir do nome)
- *   UFS                → CD_UF (11..53) → {sigla, nome}
+ *   BIOMAS → código CD_BIOMA (1..6) → nome
+ *   UFS    → CD_UF (11..53) → {sigla, nome}
  *
- * O diagnóstico `run/00_diagnose_territories.js` confirma o nome exato da
- * propriedade do bioma e os valores de CD_UF/SIGLA_UF/NM_UF do asset.
+ * O diagnóstico `run/00_diagnose_territories.js` confirma o código do bioma
+ * (`CD_BIOMA`) e os valores de CD_UF/SIGLA_UF/NM_UF do asset.
  ******************************************************************************/
 
 // ---- Biomas (IBGE) -----------------------------------------------------------
@@ -22,16 +21,6 @@ exports.BIOMAS = {
   4: 'Mata Atlântica',
   5: 'Pampa',
   6: 'Pantanal'
-};
-
-// nome → código (usado no paint: f.get(<nome>) → número)
-exports.BIOMA_CODE_BY_NAME = {
-  'Amazônia': 1,
-  'Caatinga': 2,
-  'Cerrado': 3,
-  'Mata Atlântica': 4,
-  'Pampa': 5,
-  'Pantanal': 6
 };
 
 // ---- UFs (IBGE — códigos 11..53) --------------------------------------------

@@ -5,14 +5,13 @@
  * bioma×100 + UF e os rótulos Bioma / UF / Unidade Federativa das colunas.
  *
  * Alinhado à referência do mapbiomas-fire:
- *   · bioma pintado a partir do NOME (via `BIOMA_CODE_BY_NAME`) — não depende
- *     de uma prop numérica no asset (que no asset ORIGINAIS saía vazia);
- *   · UF pintada por `CD_UF`;
+ *   · bioma pintado pelo CÓDIGO numérico do asset (`CD_BIOMA`, 1..6);
+ *   · UF pintada pelo CÓDIGO `CD_UF`;
  *   · SEMPRE cruza bioma×UF (não há mais toggle);
  *   · rótulos decodificados por dicionários ESTÁTICOS (sem getInfo/evaluate).
  *
  * API (chamar configure 1× por execução, antes dos runX):
- *   configure(cfg)        — { biomeFc, biomeNameProp, ufFc, ufCodeProp }
+ *   configure(cfg)        — { biomeFc, biomeCodeProp, biomeNameProp, ufFc, ufCodeProp }
  *   territoryImage()      — ee.Image 'territory' (bioma×100 + uf)
  *   buildLabelDicts(leg)  — { info, biome, sigla, nome, defsec } ee.Dictionary
  *   regionGeom(biomeName) — geometria do bioma (por nome)
@@ -29,13 +28,12 @@ function cfg() {
   return _CFG;
 }
 
-/** Banda `territory` = paint(bioma, por nome)×100 + paint(UF, CD_UF). */
+/** Banda `territory` = paint(bioma, código)×100 + paint(UF, código). */
 exports.territoryImage = function () {
   var c = cfg();
-  var codeByName = ee.Dictionary(TER.BIOMA_CODE_BY_NAME);
   var biomeLayer = ee.Image().paint(
     ee.FeatureCollection(c.biomeFc).map(function (f) {
-      return f.set('_b', ee.Number(codeByName.get(f.get(c.biomeNameProp), 0)));
+      return f.set('_b', ee.Number.parse(f.get(c.biomeCodeProp)));
     }), '_b');
   var ufLayer = ee.Image().paint(
     ee.FeatureCollection(c.ufFc).map(function (f) {

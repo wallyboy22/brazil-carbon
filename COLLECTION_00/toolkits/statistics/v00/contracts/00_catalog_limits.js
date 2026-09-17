@@ -9,10 +9,9 @@
  *   UFS_FC    → UFs 2025    (código `CD_UF`, sigla `SIGLA_UF`, nome `NM_UF`)
  *   MUNS_FC   → municípios 2025 (ainda não usado; id a confirmar)
  *
- * Nota: o paint do bioma é feito a partir do NOME (`Bioma` → código via
- * `00_catalog_territories.js`), porque o asset ORIGINAIS não expôs um código
- * numérico utilizável (GEOCODE/CD_BIOMA saíam vazios — ver
- * `run/00_diagnose_territories.js`).
+ * Nota: o paint do bioma usa o CÓDIGO numérico `CD_BIOMA` (1..6) do asset
+ * (o diagnóstico `run/00_diagnose_territories.js` confirmou `CD_BIOMA`/`GEOCODE`
+ * = 1..6); os rótulos vêm do dicionário estático `00_catalog_territories.js`.
  ******************************************************************************/
 
 // ---- Assets de limite --------------------------------------------------------
@@ -24,7 +23,8 @@ exports.UFS_FC =
 exports.MUNS_FC = null;
 
 // ---- Propriedades ------------------------------------------------------------
-exports.BIOME_NAME_PROP = 'Bioma'; // nome do bioma (ex.: 'Pantanal')
+exports.BIOME_CODE_PROP = 'CD_BIOMA'; // código numérico do bioma (1..6)
+exports.BIOME_NAME_PROP = 'Bioma';    // nome do bioma (ex.: 'Pantanal')
 exports.UF_CODE_PROP = 'CD_UF';
 exports.UF_SIGLA_PROP = 'SIGLA_UF';
 exports.UF_NAME_PROP = 'NM_UF';

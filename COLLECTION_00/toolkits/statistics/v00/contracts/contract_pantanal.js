@@ -34,6 +34,7 @@ var BIOME = {
   // Território: SEMPRE cruza bioma × UF (rótulos por dicionário estático).
   territory: {
     biomeFc: LIM.BIOMES_FC,
+    biomeCodeProp: LIM.BIOME_CODE_PROP,       // CD_BIOMA
     biomeNameProp: LIM.BIOME_NAME_PROP,       // Bioma
     ufFc: LIM.UFS_FC,
     ufCodeProp: LIM.UF_CODE_PROP              // CD_UF
