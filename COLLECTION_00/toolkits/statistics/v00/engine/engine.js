@@ -255,12 +255,31 @@ function refRows(contract, refInfo, bandName, ano, geom, D) {
  */
 exports.runReferences = function (contract, opts, done) {
   opts = opts || {};
+  if (typeof opts === 'string') opts = { ref_ids: [opts] };
+  var onlyRefs = opts.ref_ids
+    ? (Array.isArray(opts.ref_ids) ? opts.ref_ids : [opts.ref_ids]) : null;
+  var onlyBiomes = opts.biomes
+    ? (Array.isArray(opts.biomes) ? opts.biomes : [opts.biomes]) : null;
   setupTerritory(contract);
+
+  if (onlyRefs) {
+    var known = contract.REFERENCES.map(function (r) { return r.id; });
+    onlyRefs.forEach(function (id) {
+      if (known.indexOf(id) === -1) print('[AVISO] ref_id desconhecido:', id);
+    });
+  }
+  if (onlyBiomes) {
+    var slugs = contract.BIOMES.map(function (b) { return b.slug; });
+    onlyBiomes.forEach(function (s) {
+      if (slugs.indexOf(s) === -1) print('[AVISO] bioma desconhecido:', s);
+    });
+  }
+
   var refs = contract.REFERENCES.filter(function (r) {
-    return !opts.ref_ids || opts.ref_ids.indexOf(r.id) > -1;
+    return !onlyRefs || onlyRefs.indexOf(r.id) > -1;
   });
   var selBiomes = contract.BIOMES.filter(function (b) {
-    return !opts.biomes || opts.biomes.indexOf(b.slug) > -1;
+    return !onlyBiomes || onlyBiomes.indexOf(b.slug) > -1;
   });
   var D = T.buildLabelDicts(LEG);
 
@@ -312,16 +331,33 @@ exports.runReferences = function (contract, opts, done) {
  * FOREST (tabela LARGA: todas as versões em colunas)
  * ======================================================================== */
 
+/** Aceita seleção posicional (string) OU objeto: { version: 'v07' }. */
+function selVersion(versionId) {
+  if (versionId && typeof versionId === 'object') return versionId.version || null;
+  return versionId || null;
+}
+
 /**
- * Resolve o mosaico de UMA versão, com fallback automático:
+ * Caminho do mosaico de uma versão (auto-descoberta):
  *   1) merge anual exportado (agc_pred_v0X_merged_<ano>);
- *   2) senão, mosaico da ImageCollection PREDICTIONS/COL da própria versão.
+ *   2) senão, ImageCollection PREDICTIONS/COL da própria versão;
+ *   3) senão, null (versão indisponível — ignorada).
  */
-function safeMosaic(contract, v) {
-  if (INFRA.assetExists(v.mosaic)) return ee.Image(v.mosaic);
+function mosaicPath(v) {
+  if (INFRA.assetExists(v.mosaic)) return v.mosaic;
   var colPath = v.mosaic.replace(/\/[^/]+$/, '/COL');
-  print('[AVISO] merge não encontrado — usando COL mosaic de', v.id, '→', colPath);
-  return ee.ImageCollection(colPath)
+  if (INFRA.assetExists(colPath)) return colPath;
+  return null;
+}
+
+/**
+ * Resolve o mosaico de UMA versão a partir do `path` já resolvido por
+ * `mosaicPath` (merge ou COL). Não testa existência de novo.
+ */
+function safeMosaic(contract, v, path) {
+  if (path === v.mosaic) return ee.Image(v.mosaic);
+  print('[AVISO] merge não encontrado — usando COL mosaic de', v.id, '→', path);
+  return ee.ImageCollection(path)
     .filter(ee.Filter.eq('year', contract.YEAR))
     .mosaic()
     .rename([v.band].concat(v.stdBand ? [v.stdBand] : []));
@@ -336,20 +372,20 @@ function stdVersionsOf(versions) {
  * lulc, territory]. A área é compartilhada; cada versão contribui com o
  * estoque total e, quando houver, o w2 = (std×área)².
  */
-function forestWideStack(contract, versions) {
+function forestWideStack(contract, versions, paths) {
   var lulc = lulcImage(contract).rename('n0');
   var areaHa = ee.Image.pixelArea().divide(10000);
   var defsec = defsecImage(contract);
   var base = [areaHa.rename('area_ha').updateMask(lulc.mask())];
 
   versions.forEach(function (v) {
-    var value = safeMosaic(contract, v).select(v.band);
+    var value = safeMosaic(contract, v, paths[v.id]).select(v.band);
     var mask = value.mask().and(lulc.mask());
     base.push(value.multiply(areaHa).rename('estoque_' + v.id)
       .unmask(0).updateMask(mask));
   });
   stdVersionsOf(versions).forEach(function (v) {
-    var img = safeMosaic(contract, v);
+    var img = safeMosaic(contract, v, paths[v.id]);
     var mask = img.select(v.band).mask().and(lulc.mask());
     base.push(img.select(v.stdBand).rename('w2_' + v.id)
       .multiply(areaHa).pow(2).updateMask(mask));
@@ -378,10 +414,10 @@ function forestColumns(versions) {
 }
 
 /** FeatureCollection servidor-side da tabela larga florestal. */
-function forestRows(contract, versions, geom, D) {
+function forestRows(contract, versions, paths, geom, D) {
   var nBase = 1 + versions.length + stdVersionsOf(versions).length;
   var n = nBase * (1 + LEG.DEFSEC_MODS.length);
-  var groups = ee.List(reduceStack(forestWideStack(contract, versions), n, geom, contract.SCALE));
+  var groups = ee.List(reduceStack(forestWideStack(contract, versions, paths), n, geom, contract.SCALE));
   var nVersions = versions.length;
   var std = stdVersionsOf(versions);
   var estCols = versions.map(function (v) { return v.id + ' Estoque (t)'; });
@@ -419,22 +455,44 @@ function forestRows(contract, versions, geom, D) {
 
 /**
  * Gera as estatísticas florestais numa ÚNICA tabela LARGA (todas as versões em
- * colunas). Sem `versionId`, usa todas as versões do contrato (V03–V08); com
- * `versionId`, apenas a indicada. `done` (opcional) ao final do agendamento.
+ * colunas). `versionId` aceita string ('v07') ou objeto ({ version: 'v07' });
+ * sem ele, usa TODAS as versões DISPONÍVEIS (auto-descoberta: merge ou COL;
+ * versões ausentes são ignoradas). `done` (opcional) ao final do agendamento.
  */
 exports.runForest = function (contract, versionId, done) {
   setupTerritory(contract);
-  var versions = versionId
-    ? contract.VERSIONS.filter(function (x) { return x.id === versionId; })
-    : contract.VERSIONS;
+  var sel = selVersion(versionId);
+  var requested;
+  if (sel) {
+    requested = contract.VERSIONS.filter(function (x) { return x.id === sel; });
+    if (!requested.length) {
+      print('[ERRO] versão desconhecida:', sel, '— disponíveis:',
+        contract.VERSIONS.map(function (x) { return x.id; }).join(', '));
+      if (done) done(0, 0);
+      return;
+    }
+  } else {
+    requested = contract.VERSIONS;
+  }
+
+  var paths = {};
+  var versions = [];
+  requested.forEach(function (v) {
+    var p = mosaicPath(v);
+    if (p) { paths[v.id] = p; versions.push(v); }
+    else if (!sel) {
+      print('[AVISO] versão', v.id, 'indisponível (sem merge nem COL) — ignorada.');
+    }
+  });
   if (!versions.length) {
-    print('[ERRO] versão desconhecida:', versionId, '— disponíveis:',
-      contract.VERSIONS.map(function (x) { return x.id; }).join(', '));
+    if (sel) print('[ERRO] versão', sel, 'indisponível (sem merge nem COL).');
+    print('[ERRO] nenhuma versão disponível para exportar.');
     if (done) done(0, 0);
     return;
   }
+
   var slug = 'bioma';
-  var namePart = versionId ? versionId + '_' + slug : slug;
+  var namePart = sel ? sel + '_' + slug : slug;
   var fileName = contract.PREFIX + '_' + namePart + '_' + contract.YEAR;
   print('MAPBIOMAS-CARBONO ·', contract.BIOME_NAME, 'Forest · run_forest ·',
     versions.map(function (v) { return v.id; }).join(', '));
@@ -444,7 +502,7 @@ exports.runForest = function (contract, versionId, done) {
   var scheduled = 0;
   try {
     Export.table.toDrive({
-      collection: forestRows(contract, versions, geom, D),
+      collection: forestRows(contract, versions, paths, geom, D),
       description: 'WS_CARBONO_stats_forest_' + namePart + '_' + contract.YEAR,
       folder: contract.DRIVE_FOLDER,
       fileNamePrefix: fileName,
@@ -609,7 +667,14 @@ function grassRowsPrincipal(contract, versionId, biomass, carbon, geom, D) {
  */
 exports.runGrassland = function (contract, versionId, done) {
   setupTerritory(contract);
-  var versions = versionId ? [versionId] : contract.VERSIONS;
+  var sel = selVersion(versionId);
+  if (sel && contract.VERSIONS.indexOf(sel) === -1) {
+    print('[ERRO] versão desconhecida:', sel, '— disponíveis:',
+      contract.VERSIONS.join(', '));
+    if (done) done(0);
+    return;
+  }
+  var versions = sel ? [sel] : contract.VERSIONS;
   var D = T.buildLabelDicts(LEG);
   var geom = T.regionGeom(contract.BIOME_NAME);
   var slug = 'bioma';

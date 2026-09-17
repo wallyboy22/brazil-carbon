@@ -20,6 +20,13 @@ var PANTANAL = require(
 var engine = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/engine/engine.js');
 
+// Seleção (opcional): null = todas as versões DISPONÍVEIS (auto-descoberta).
+// Ex.: ONLY.forest = 'v07'; ONLY.grassland = 'v02'.
+var ONLY = {
+  forest: null,
+  grassland: null
+};
+
 print('======================================================================');
 print('MAPBIOMAS-CARBONO · estatísticas · processamento em andamento.');
 print('As tasks são agendadas agora, mas podem levar alguns minutos para');
@@ -42,5 +49,5 @@ function scopeDone() {
   }
 }
 
-engine.runForest(PANTANAL.FOREST, null, scopeDone);
-engine.runGrassland(PANTANAL.GRASSLAND, null, scopeDone);
+engine.runForest(PANTANAL.FOREST, ONLY.forest, scopeDone);
+engine.runGrassland(PANTANAL.GRASSLAND, ONLY.grassland, scopeDone);
