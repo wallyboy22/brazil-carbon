@@ -1,5 +1,17 @@
 # MAPBIOMAS-CARBONO — Pantanal Forest
 
+## Semântica do produto
+
+O alvo do modelo é **`agbd`** (above-ground biomass density, Mg/ha) — ver
+`v07/0_contract.js` e `v08/0_contract.js` (`TARGET = 'agbd'`). Portanto o
+produto é **biomassa acima do solo (AGB)**, e **não** carbono. O prefixo
+`agc_pred_*` dos assets é um **misnomer herdado** (a incerteza já usa
+`agbd_std_*`).
+
+Nas estatísticas, a coluna nativa é `Biomassa acima do solo (t MS)` e o carbono
+é derivado no estágio de estatística (`× CARBON_FRACTION = 0,47`), marcado com
+`*`: `Carbono acima do solo (t C)*`. Ver `COLLECTION_00/docs/BAND_NAMING.md`.
+
 ## Estado Atual
 
 | Versão | Papel | Estado |

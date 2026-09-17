@@ -6,12 +6,13 @@ tabela LARGA: uma linha por (Bioma, UF, classe, def_sec) e uma coluna por
 métrica. Usa CONF + funções da cell00 no namespace.
 
 Fontes:
-  · forest      → CSV largo (colunas '<vXX> Estoque (t)' / '<vXX> Incerteza (t)')
-                  → é a BASE da tabela;
-  · grassland   → 1 CSV por versão (tabela principal anual) → colunas
-                  'grassland <v> Biomassa (t)' / '... Estoque de carbono (t)';
-  · references  → 1 CSV por ref (colunas de métrica já prefixadas pelo autor,
-                  ex.: 'Zimbres 2021 AGB (t C)').
+  · forest      → CSV largo (colunas '<vXX> Biomassa acima do solo (t MS)' /
+                  '<vXX> Carbono acima do solo (t C)*') → é a BASE da tabela;
+  · grassland   → 1 CSV por versão (principal anual) → colunas
+                  'grassland <v> Biomassa acima do solo (t MS)' /
+                  '... Carbono acima do solo (t C)';
+  · references  → 1 CSV por FAMÍLIA (colunas de métrica descritivas, ex.:
+                  'Biomassa acima do solo (t MS)', 'Carbono acima do solo (t C)*').
 
 O join usa a chave (Bioma, UF, classe, def_sec). Saída:
   OUT_DIR/consolidado_largo_2023.csv
@@ -62,25 +63,24 @@ for df in _read("stats_grassland_*2023*.csv"):
     df = _prep(df)
     v = str(df["versao"].iloc[0]) if ("versao" in df.columns and len(df)) else "vXX"
     ren = {}
-    if "Biomassa (t)" in df.columns:
-        ren["Biomassa (t)"] = f"grassland {v} Biomassa (t)"
-    if "Estoque de carbono (t)" in df.columns:
-        ren["Estoque de carbono (t)"] = f"grassland {v} Estoque de carbono (t)"
+    for c in ("Biomassa acima do solo (t MS)", "Carbono acima do solo (t C)"):
+        if c in df.columns:
+            ren[c] = f"grassland {v} {c}"
     df = df.rename(columns=ren)
     keep = KEY + [c for c in ren.values() if c in df.columns]
     parts.append(df[keep])
     print(f"[GRASS] {v}: {len(df)} linhas ·", list(ren.values()))
 
-# --- references (colunas de métrica já com o autor) --------------------------
+# --- references (1 CSV por família; colunas de métrica descritivas) ----------
 NON_METRIC = set(KEY + CATS + [
-    "ecossistema", "fonte", "ref_id", "Unidade Federativa",
-    "Desmatamento e vegetação secundária", "ano_lulc", "ano", "Área (ha)"])
-for df in _read("stats_references_*2023*.csv"):
-    df = _prep(df)
-    rid = str(df["ref_id"].iloc[0]) if ("ref_id" in df.columns and len(df)) else "?"
+    "ecossistema", "Unidade Federativa",
+    "Desmatamento e vegetação secundária", "ano_lulc", "Área (ha)"])
+for fp in sorted(csv_dir().glob("stats_references_*2023*.csv")):
+    df = _prep(pd.read_csv(fp))
+    grupo = fp.stem.replace("stats_references_", "").replace("_2023", "")
     mcols = [c for c in df.columns if c not in NON_METRIC]
     parts.append(df[[c for c in (KEY + mcols) if c in df.columns]])
-    print(f"[REF] {rid}: {len(df)} linhas · {len(mcols)} métrica(s)")
+    print(f"[REF] {grupo}: {len(df)} linhas · {len(mcols)} métrica(s)")
 
 # --- join largo --------------------------------------------------------------
 out = parts[0]

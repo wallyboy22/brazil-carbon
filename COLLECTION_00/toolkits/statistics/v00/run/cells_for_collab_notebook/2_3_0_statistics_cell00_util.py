@@ -387,11 +387,11 @@ def _drop_ee_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 # ---------------------------------------------------------------------------
 # Schema "gráfico-ready" dos CSVs → nomes internos canônicos.
-# O GEE (stats_engine de forest/grassland/references) exporta colunas prontas
-# para gráfico — com espaços/parênteses — e UMA linha por combinação
-# (classe × def_sec):
+# Colunas de PRODUTO (forest/grassland):
 #   'cobertura (n0)' → 'n0' · 'Área (ha)' → 'area_ha'
-#   'Estoque de carbono (t)' → 'estoque_t' · … (meses têm a coluna `período`).
+#   'Biomassa acima do solo (t MS)' → 'biomassa_t'
+#   'Carbono acima do solo (t C)' → 'estoque_t'
+#   'Produtividade primária líquida acima do solo (t MS/ano)' → 'anpp_t'
 # ---------------------------------------------------------------------------
 GRAPH_COLS = {
     "cobertura (n0)": "n0",
@@ -401,41 +401,48 @@ GRAPH_COLS = {
     "cobertura (n4)": "n4",
     "Desmatamento e vegetação secundária": "def_sec",
     "Área (ha)": "area_ha",
-    "Estoque de carbono (t)": "estoque_t",
-    "Incerteza do estoque (t)": "incerteza_t",
-    "Biomassa (t)": "biomassa_t",
-    "ANPP (t MS/ano)": "anpp_t",
+    "Biomassa acima do solo (t MS)": "biomassa_t",
+    "Carbono acima do solo (t C)": "estoque_t",
+    "Produtividade primária líquida acima do solo (t MS/ano)": "anpp_t",
     "período": "periodo",
 }
 
-# Colunas de VALOR das REFERÊNCIAS têm o stem do pool + unidade no rótulo,
-# opcionalmente prefixadas pelo autor: 'AGB (t MS)' ou 'Zimbres 2021 AGB (t C)'.
-_POOL_RE = re.compile(r"^(?:.*\s)?([A-Za-zÀ-ú]+)\s+\((t MS|t C)\)$")
+# Colunas de MÉTRICA das REFERÊNCIAS (nome descritivo → stem interno).
+# O `*` marca a métrica derivada NO ESTÁGIO DE ESTATÍSTICA (ex.: AGB→C).
+REF_COL_MAP = {
+    "Biomassa acima do solo (t MS)": "agb_tB",
+    "Carbono acima do solo (t C)*": "agb_tC",
+    "Carbono acima do solo (t C)": "agc_tC",
+    "Biomassa abaixo do solo (t MS)": "bgb_tB",
+    "Carbono abaixo do solo (t C)*": "bgb_tC",
+    "Carbono abaixo do solo (t C)": "bgc_tC",
+    "Carbono na madeira morta (t C)": "cdw_tC",
+    "Carbono na serrapilheira (t C)": "litter_tC",
+    "Carbono vivo (t C)": "live_tC",
+    "Carbono total (t C)": "total_tC",
+    "Incerteza (t C)": "incerteza_tC",
+}
 
 
-def _pool_internal(col: str):
-    """Nome interno de uma coluna de pool de referência (retorna None p/ demais)."""
-    m = _POOL_RE.fullmatch(str(col).strip())
-    if not m:
-        return None
-    return f"{m.group(1).lower()}_t{'B' if m.group(2) == 't MS' else 'C'}"
-
-
-def _remap_schema(df: pd.DataFrame) -> pd.DataFrame:
-    """Renomeia colunas gráfico-ready do CSV para nomes internos canônicos.
-
-    Compatibilidade: o CSV não traz mais a coluna `territorio`; ela é derivada
-    de `Bioma` (ex.: 'Pantanal' → 'Pantanal (bioma)') para o restante do código.
-    """
-    df = df.rename(columns={k: v for k, v in GRAPH_COLS.items()
-                            if k in df.columns})
-    for c in list(df.columns):
-        ic = _pool_internal(c)
-        if ic:
-            df = df.rename(columns={c: ic})
+def _derive_territorio(df: pd.DataFrame) -> pd.DataFrame:
+    """Compatibilidade: o CSV não traz `territorio`; deriva de `Bioma`."""
     if "territorio" not in df.columns and "Bioma" in df.columns:
         df["territorio"] = df["Bioma"].astype(str) + " (bioma)"
     return df
+
+
+def _remap_products(df: pd.DataFrame) -> pd.DataFrame:
+    """Renomeia colunas de PRODUTO (forest/grassland) para nomes internos."""
+    df = df.rename(columns={k: v for k, v in GRAPH_COLS.items()
+                            if k in df.columns})
+    return _derive_territorio(df)
+
+
+def _remap_refs(df: pd.DataFrame) -> pd.DataFrame:
+    """Renomeia as colunas de MÉTRICA das REFERÊNCIAS para nomes internos."""
+    df = df.rename(columns={k: v for k, v in REF_COL_MAP.items()
+                            if k in df.columns})
+    return _derive_territorio(df)
 
 
 def _read(pattern: str) -> pd.DataFrame:
@@ -461,7 +468,7 @@ def _clean_schema(df: pd.DataFrame) -> pd.DataFrame:
         df = df[df["nivel"] == "n0"].copy()
     df = df.drop(columns=[c for c in ("nivel", "grupo") if c in df.columns],
                  errors="ignore")
-    df = _remap_schema(df)
+    df = _remap_products(df)
     if "classe" in df.columns:
         df["classe"] = pd.to_numeric(df["classe"], errors="coerce")
     if "def_sec" in df.columns:
@@ -477,28 +484,33 @@ def _clean_schema(df: pd.DataFrame) -> pd.DataFrame:
 
 def load_forest() -> pd.DataFrame:
     """Carrega o CSV LARGO florestal (stats_forest_*2023*.csv) e o desmembra em
-    formato longo por versão, a partir das colunas '<vXX> Estoque (t)' e
-    '<vXX> Incerteza (t)'. CSVs antigos (1 arquivo por versão, coluna
-    `version`) seguem suportados."""
+    formato longo por versão, a partir das colunas '<vXX> Biomassa acima do solo
+    (t MS)' / '<vXX> Carbono acima do solo (t C)*' e das incertezas. A biomassa
+    é a nativa (`agbd`); o carbono é derivado no stats (mapeado p/ `estoque_t`)."""
     df = _read("stats_forest_*2023*.csv")
     if not len(df):
         return pd.DataFrame()
-    est_re = re.compile(r"^(v\d+)\s+Estoque \(t\)$")
-    est_cols = [c for c in df.columns if est_re.match(str(c))]
-    if not est_cols:
+    bio_re = re.compile(r"^(v\d+)\s+Biomassa acima do solo \(t MS\)$")
+    bio_cols = [c for c in df.columns if bio_re.match(str(c))]
+    if not bio_cols:
         return _clean_schema(df)  # schema antigo
     frames = []
-    for c in est_cols:
-        v = est_re.match(str(c)).group(1)
+    for c in bio_cols:
+        v = bio_re.match(str(c)).group(1)
         part = df.copy()
         part["version"] = v
-        part["estoque_t"] = part[c]
-        inc = f"{v} Incerteza (t)"
-        part["incerteza_t"] = part[inc] if inc in df.columns else pd.NA
+        part["biomassa_t"] = part[c]
+        carb = f"{v} Carbono acima do solo (t C)*"
+        incb = f"{v} Incerteza (t MS)"
+        incc = f"{v} Incerteza (t C)*"
+        part["estoque_t"] = part[carb] if carb in df.columns else pd.NA
+        part["incerteza_t"] = part[incc] if incc in df.columns else pd.NA
+        part["incerteza_tb"] = part[incb] if incb in df.columns else pd.NA
         frames.append(part)
     long = pd.concat(frames, ignore_index=True)
-    drop = est_cols + [c for c in df.columns
-                       if re.fullmatch(r"v\d+\s+Incerteza \(t\)", str(c))]
+    drop_re = re.compile(
+        r"^v\d+\s+(Carbono acima do solo \(t C\)\*|Incerteza \(t (MS|C)\)\*?)$")
+    drop = bio_cols + [c for c in df.columns if drop_re.match(str(c))]
     long = long.drop(columns=drop, errors="ignore")
     return _clean_schema(long)
 
@@ -544,8 +556,9 @@ def expand_grass_product(df: pd.DataFrame) -> pd.DataFrame:
 
     O CSV do GEE traz `produto='grassland'` em TODAS as linhas; aqui pivota
     em longo por produto de análise:
-      - principal (sem `periodo`) → 'biomass' (Biomassa (t)) E 'carbon'
-        (Estoque de carbono (t)) — 2 linhas pela mesma combinação;
+      - principal (sem `periodo`) → 'biomass' (`Biomassa acima do solo
+        (t MS)`) E 'carbon' (`Carbono acima do solo (t C)`) — 2 linhas pela
+        mesma combinação;
       - biomassa MENSAL descartada (o anual já cobre o comparativo);
       - anpp MENSAL → 'anpp' (soma dos meses feita por por_classe).
     """
@@ -805,8 +818,10 @@ def build_compare_forest(df: pd.DataFrame) -> pd.DataFrame:
 # produto='grassland' em todas as linhas).
 GRASS_VALUE_COL = {"biomass": "biomassa_t", "carbon": "estoque_t",
                    "anpp": "anpp_t"}
-GRASS_PRODUCT_LABEL = {"biomass": "biomassa (t MS)", "anpp": "ANPP (t MS/ano)",
-                       "carbon": "carbono (t C)"}
+GRASS_PRODUCT_LABEL = {
+    "biomass": "biomassa acima do solo (t MS)",
+    "anpp": "produtividade primária líquida acima do solo (t MS/ano)",
+    "carbon": "carbono acima do solo (t C)"}
 
 
 def grass_value_col(produto) -> str:
@@ -1028,10 +1043,14 @@ def load_references_csv(lulc_year: int = 2023,
     rows: list[dict] = []
     for fp in pats:
         df = pd.read_csv(fp, encoding="utf-8")
-        df = _remap_schema(df)   # colunas gráfico → internas (agb_tB/agc_tC…)
+        df = _remap_refs(df)   # colunas de métrica → internas (agb_tB/agc_tC…)
         if "territorio" in df.columns:
             df = df[df["territorio"] == territorio]
         if not len(df):
+            continue
+        if "ref_id" not in df.columns:
+            print(f"[AVISO] {fp.name}: tabela AGRUPADA por família (sem "
+                  "ref_id) — análise por ref pendente; arquivo ignorado.")
             continue
         rid = str(df["ref_id"].iloc[0])
         r = REF_BY_ID.get(rid)

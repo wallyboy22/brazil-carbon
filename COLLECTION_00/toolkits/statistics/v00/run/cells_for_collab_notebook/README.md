@@ -35,23 +35,28 @@ analisa. Se faltar arquivo, a `cell02` indica qual step rodar:
 
 Os drivers exportam **UMA linha por COMBINAÇÃO (classe LULC × def_sec)**, com
 colunas prontas para gráfico (espaços/parênteses) — SEM linhas agregadas.
-O território é SEMPRE bioma × UF (`Bioma`, `UF`, `Unidade Federativa`); a
-coluna `territorio` foi removida. Todas as tabelas têm a coluna `ecossistema`
-(`florestal` | `campestre` | `referencia`).
+O território é SEMPRE bioma × UF (`Bioma`, `UF`, `Unidade Federativa`). Todas
+as tabelas têm `ecossistema` (`florestal` | `campestre` | `referencia`).
+As colunas de valor seguem `<Material> <compartimento> (<unidade>)`, com `*`
+quando a métrica é derivada NO ESTÁGIO DE ESTATÍSTICA (ex.: AGB→C). Nomes de
+bandas (inglês) em `COLLECTION_00/docs/BAND_NAMING.md`.
 
 - **forest** (LARGO) — `ecossistema, Bioma, UF, Unidade Federativa, classe,
   cobertura (n0..n4), Desmatamento e vegetação secundária, ano_lulc,
-  Área (ha)` + uma coluna por versão: `v03 Estoque (t)` … `v08 Estoque (t)` e
-  `v07 Incerteza (t)` / `v08 Incerteza (t)` (só versões com ensemble).
+  Área (ha)` + por versão: `v0X Biomassa acima do solo (t MS)`,
+  `v0X Carbono acima do solo (t C)*` e `v0X Incerteza (t MS)` /
+  `v0X Incerteza (t C)*` (só versões com ensemble).
 - **grassland** (separado por versão) — principal/ANUAL (`ecossistema, produto,
-  versao, ano, Bioma, UF, Unidade Federativa, unidade, classe,
-  cobertura (n0..n4), Desmatamento e vegetação secundária, Área (ha),
-  Biomassa (t), Estoque de carbono (t)`) + mensais LONGOS com a coluna
-  `período` (`YYYY_MM`: biomassa `Biomassa (t)` e ANPP `ANPP (t MS/ano)`).
-- **references** (1 CSV por ref) — `ecossistema, fonte, ref_id, Bioma, UF,
-  Unidade Federativa, classe, cobertura (n0..n4), Desmatamento e vegetação
-  secundária, ano_lulc, ano, Área (ha), <Autor> <pool> (t C | t MS)`
-  (+ `<Autor> Incerteza (t C)`).
+  versao, ano, Bioma, UF, Unidade Federativa, classe, cobertura (n0..n4),
+  Desmatamento e vegetação secundária, Área (ha),
+  Biomassa acima do solo (t MS), Carbono acima do solo (t C)`) + mensais LONGOS
+  com a coluna `período` (`YYYY_MM`: `Biomassa acima do solo (t MS)` e
+  `Produtividade primária líquida acima do solo (t MS/ano)`).
+- **references** (1 CSV por FAMÍLIA) — `ecossistema, Bioma, UF, Unidade
+  Federativa, classe, cobertura (n0..n4), Desmatamento e vegetação secundária,
+  ano_lulc, Área (ha)` + as métricas da família (ex.: `Biomassa acima do solo
+  (t MS)`, `Carbono acima do solo (t C)*`, `Carbono abaixo do solo (t C)`,
+  `Carbono na madeira morta (t C)`, `Carbono vivo (t C)`, `Incerteza (t C)`).
 
 A `cell00` faz o remap desses nomes para os internos (`n0..n4, area_ha,
 estoque_t, biomassa_t, anpp_t, def_sec …`) e deriva em memória

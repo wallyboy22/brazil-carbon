@@ -114,34 +114,45 @@ function expandRows(groups, spec) {
  * REFERENCES
  * ======================================================================== */
 
-/** Rótulo gráfico de um stem/pool (agb → 'AGB', total → 'Total', …). */
-var POOL_LABEL = {
-  agb: 'AGB', agc: 'AGC', bgb: 'BGB', bgc: 'BGC', live: 'Live',
-  total: 'Total', cdw: 'CDW', litter: 'Litter', incerteza: 'Incerteza'
+/** Compartimento de cada stem/pool (agb → 'acima do solo', …). */
+var POOL_COMPART = {
+  agb: 'acima do solo', agc: 'acima do solo',
+  bgb: 'abaixo do solo', bgc: 'abaixo do solo',
+  cdw: 'na madeira morta', litter: 'na serrapilheira',
+  live: 'vivo', total: 'total'
 };
 
-/** Colunas de VALOR que o ref emite (cada uma vira um total em t no CSV). */
+/**
+ * Colunas de VALOR que o ref emite (cada uma vira um total em t no CSV).
+ * `derived` marca as conversões feitas NO ESTÁGIO DE ESTATÍSTICA (biomassa→C),
+ * sinalizadas com `*` no nome da coluna.
+ */
 function emitCols(r) {
   var out = [];
   r.pools.forEach(function (pool) {
     if (r.magnitude === 'biomassa') {
-      out.push({ band: pool.band, stem: pool.col, suffix: 'tB', mult: 1 });
+      out.push({ band: pool.band, stem: pool.col, suffix: 'tB', mult: 1,
+        derived: false });
       out.push({ band: pool.band, stem: pool.col, suffix: 'tC',
-        mult: r.factor_to_c });
+        mult: r.factor_to_c, derived: true });
     } else if (r.magnitude === 'incerteza') {
-      out.push({ band: pool.band, stem: 'incerteza', suffix: 'tC', mult: 1 });
+      out.push({ band: pool.band, stem: 'incerteza', suffix: 'tC', mult: 1,
+        derived: false });
     } else { // carbono — banda nativa já em t C/ha
-      out.push({ band: pool.band, stem: pool.col, suffix: 'tC', mult: 1 });
+      out.push({ band: pool.band, stem: pool.col, suffix: 'tC', mult: 1,
+        derived: false });
     }
   });
   return out;
 }
 
-/** Nome GRÁFICO da coluna: '<Autor> <pool> (t MS|t C)'. */
-function colName(c, refInfo) {
-  var label = POOL_LABEL[c.stem] || c.stem.toUpperCase();
-  var src = (refInfo && refInfo.fonte_curta) ? refInfo.fonte_curta + ' ' : '';
-  return src + label + ' (' + (c.suffix === 'tB' ? 't MS' : 't C') + ')';
+/** Nome da coluna de valor: '<Material> <compartimento> (<unidade>)[*]'. */
+function colName(c) {
+  if (c.stem === 'incerteza') return 'Incerteza (t C)';
+  var material = c.suffix === 'tB' ? 'Biomassa' : 'Carbono';
+  var comp = POOL_COMPART[c.stem] || c.stem.toUpperCase();
+  return material + ' ' + comp + ' (' + (c.suffix === 'tB' ? 't MS' : 't C') +
+    ')' + (c.derived ? '*' : '');
 }
 
 /** Resolve o ee.Image de um pool/value band (asset direto ou filter_index). */
@@ -185,7 +196,7 @@ function groupStack(contract, refs) {
       var img = valueImage(r, bandName || c.band);
       base.push(img.multiply(area).multiply(c.mult)
         .unmask(0).updateMask(img.mask().and(lulc.mask())));
-      colNames.push(colName(c, r));
+      colNames.push(colName(c));
     });
   });
 
@@ -215,7 +226,7 @@ function refColumns(groupRefs) {
     .concat(coberturaCols())
     .concat(['ano_lulc', 'Área (ha)']);
   groupRefs.forEach(function (r) {
-    emitCols(r).forEach(function (c) { cols.push(colName(c, r)); });
+    emitCols(r).forEach(function (c) { cols.push(colName(c)); });
   });
   return cols;
 }
@@ -419,14 +430,18 @@ function forestWideStack(contract, versions, paths) {
   return ee.Image.cat(base.concat(mods).concat([lulc, T.territoryImage()]));
 }
 
-/** Colunas do CSV largo florestal. */
+/** Colunas do CSV largo florestal (AGB nativa + carbono* derivada + incertezas). */
 function forestColumns(versions) {
   var cols = ['ecossistema', 'Bioma', 'UF', 'Unidade Federativa', 'classe']
     .concat(coberturaCols())
     .concat(['ano_lulc', 'Área (ha)']);
-  versions.forEach(function (v) { cols.push(v.id + ' Estoque (t)'); });
+  versions.forEach(function (v) {
+    cols.push(v.id + ' Biomassa acima do solo (t MS)');
+    cols.push(v.id + ' Carbono acima do solo (t C)*');
+  });
   stdVersionsOf(versions).forEach(function (v) {
-    cols.push(v.id + ' Incerteza (t)');
+    cols.push(v.id + ' Incerteza (t MS)');
+    cols.push(v.id + ' Incerteza (t C)*');
   });
   return cols;
 }
@@ -438,8 +453,15 @@ function forestRows(contract, versions, paths, geom, D) {
   var groups = ee.List(reduceStack(forestWideStack(contract, versions, paths), n, geom, contract.SCALE));
   var nVersions = versions.length;
   var std = stdVersionsOf(versions);
-  var estCols = versions.map(function (v) { return v.id + ' Estoque (t)'; });
-  var incCols = std.map(function (v) { return v.id + ' Incerteza (t)'; });
+  var cf = contract.CARBON_FRACTION || 0.47;
+  var bioCols = versions.map(function (v) {
+    return v.id + ' Biomassa acima do solo (t MS)';
+  });
+  var carbCols = versions.map(function (v) {
+    return v.id + ' Carbono acima do solo (t C)*';
+  });
+  var incBCols = std.map(function (v) { return v.id + ' Incerteza (t MS)'; });
+  var incCCols = std.map(function (v) { return v.id + ' Incerteza (t C)*'; });
 
   return expandRows(groups, {
     info: D.info, biome: D.biome, sigla: D.sigla, nome: D.nome,
@@ -460,11 +482,14 @@ function forestRows(contract, versions, paths, geom, D) {
         'Área (ha)': r1(ctx.am)
       };
       for (var i = 0; i < nVersions; i++) {
-        props[estCols[i]] = r1(ee.Number(ctx.s.get(ctx.off + 1 + i)));
+        var st = ee.Number(ctx.s.get(ctx.off + 1 + i));
+        props[bioCols[i]] = r1(st);
+        props[carbCols[i]] = r1(st.multiply(cf));
       }
       for (var k = 0; k < std.length; k++) {
-        props[incCols[k]] =
-          r1(ee.Number(ctx.s.get(ctx.off + 1 + nVersions + k)).max(0).sqrt());
+        var sd = ee.Number(ctx.s.get(ctx.off + 1 + nVersions + k)).max(0).sqrt();
+        props[incBCols[k]] = r1(sd);
+        props[incCCols[k]] = r1(sd.multiply(cf));
       }
       return props;
     }
@@ -608,7 +633,8 @@ function grassPrincipalStack(contract, biomass, carbon) {
 var SEL_A = ['ecossistema', 'produto', 'versao', 'ano', 'Bioma', 'UF',
   'Unidade Federativa', 'classe']
   .concat(coberturaCols())
-  .concat(['Área (ha)', 'Biomassa (t)', 'Estoque de carbono (t)']);
+  .concat(['Área (ha)', 'Biomassa acima do solo (t MS)',
+    'Carbono acima do solo (t C)']);
 
 var SEL_MENSAL = ['ecossistema', 'produto', 'versao', 'ano', 'Bioma', 'UF',
   'Unidade Federativa', 'classe']
@@ -671,8 +697,8 @@ function grassRowsPrincipal(contract, versionId, biomass, carbon, geom, D) {
         'Desmatamento e vegetação secundária':
           D.defsec.get(ee.Number(ctx.j).format(), ''),
         'Área (ha)': r1(ctx.am),
-        'Biomassa (t)': r1(ee.Number(ctx.s.get(ctx.off + 1))),
-        'Estoque de carbono (t)': r1(ee.Number(ctx.s.get(ctx.off + 2)))
+        'Biomassa acima do solo (t MS)': r1(ee.Number(ctx.s.get(ctx.off + 1))),
+        'Carbono acima do solo (t C)': r1(ee.Number(ctx.s.get(ctx.off + 2)))
       };
     }
   });
@@ -736,10 +762,10 @@ exports.runGrassland = function (contract, versionId, done) {
     if (biomassM && INFRA.assetExists(biomassM.asset)) {
       var prefixB = contract.PREFIX + '_' + vid + '_biomassa_mensal_' +
         slug + '_' + contract.YEAR;
-      var fcB = grassRowsMonthly(contract, biomassM, 1, 1, 'Biomassa (t)', geom, D);
+      var fcB = grassRowsMonthly(contract, biomassM, 1, 1, 'Biomassa acima do solo (t MS)', geom, D);
       for (var m = 2; m <= 12; m++) {
         fcB = fcB.merge(
-          grassRowsMonthly(contract, biomassM, m, m, 'Biomassa (t)', geom, D));
+          grassRowsMonthly(contract, biomassM, m, m, 'Biomassa acima do solo (t MS)', geom, D));
       }
       try {
         Export.table.toDrive({
@@ -747,7 +773,7 @@ exports.runGrassland = function (contract, versionId, done) {
           description: 'WS_CARBONO_toDrive-' + prefixB,
           fileNamePrefix: prefixB,
           folder: contract.DRIVE_FOLDER, fileFormat: 'CSV',
-          selectors: SEL_MENSAL.concat(['Biomassa (t)'])
+          selectors: SEL_MENSAL.concat(['Biomassa acima do solo (t MS)'])
         });
         print('[OK]', context, 'biomassa mensal · export IMEDIATO agendado.');
         scheduled++;
@@ -760,10 +786,10 @@ exports.runGrassland = function (contract, versionId, done) {
     if (anppM && INFRA.assetExists(anppM.asset)) {
       var prefixC = contract.PREFIX + '_' + vid + '_anpp_mensal_' +
         slug + '_' + contract.YEAR;
-      var fcC = grassRowsMonthly(contract, anppM, 1, 1, 'ANPP (t MS/ano)', geom, D);
+      var fcC = grassRowsMonthly(contract, anppM, 1, 1, 'Produtividade primária líquida acima do solo (t MS/ano)', geom, D);
       for (var k = 2; k <= 12; k++) {
         fcC = fcC.merge(
-          grassRowsMonthly(contract, anppM, k, k, 'ANPP (t MS/ano)', geom, D));
+          grassRowsMonthly(contract, anppM, k, k, 'Produtividade primária líquida acima do solo (t MS/ano)', geom, D));
       }
       try {
         Export.table.toDrive({
@@ -771,7 +797,7 @@ exports.runGrassland = function (contract, versionId, done) {
           description: 'WS_CARBONO_toDrive-' + prefixC,
           fileNamePrefix: prefixC,
           folder: contract.DRIVE_FOLDER, fileFormat: 'CSV',
-          selectors: SEL_MENSAL.concat(['ANPP (t MS/ano)'])
+          selectors: SEL_MENSAL.concat(['Produtividade primária líquida acima do solo (t MS/ano)'])
         });
         print('[OK]', context, 'anpp mensal · export IMEDIATO agendado.');
         scheduled++;

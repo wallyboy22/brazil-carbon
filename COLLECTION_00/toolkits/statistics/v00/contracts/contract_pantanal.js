@@ -55,8 +55,9 @@ exports.FOREST = resolve({
   SCOPE: 'forest',
   VERSIONS: PROD.FOREST,          // V03–V08 (mosaicos anuais + stdBand opcional)
   PREFIX: 'stats_forest',
-  STOCK_UNIT: 'Mg',               // agbd (AGC) em Mg/ha × área_ha
-  UNCERT_MODE: 'sd_ens'           // incerteza = stdDev do ensemble (v07/v08)
+  STOCK_UNIT: 'Mg',               // agbd (biomassa acima do solo) em Mg/ha × área_ha
+  UNCERT_MODE: 'sd_ens',          // incerteza = stdDev do ensemble (v07/v08)
+  CARBON_FRACTION: 0.47           // AGB→C (coluna derivada no estágio de estatística)
 });
 
 exports.GRASSLAND = resolve({

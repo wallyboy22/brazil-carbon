@@ -78,17 +78,19 @@
 
 - **Unidades:** sempre **t/ha** (densidade de biomassa/carbono), **t** (estoque),
   **ha** (área). Nunca usar Mg/ha.
-- **Esquema padrão** de colunas para tabelas-resumo por versão de predição:
-
-  | Ano | Área (ha) | Estoque de C na biomassa acima do solo (t) | Incerteza de C na biomassa acima do solo (%) | versão da predição de biomassa |
-  |---|---|---|---|---|
-
-  - Estoque em **t**; variantes: "abaixo do solo (t)" quando houver BGB;
-    densidade em **t/ha** apenas em saídas por pixel.
-  - **Incerteza:** per-pixel em t/ha (banda `agbd_std_*`); em tabela-resumo
-    relativa **%** do estoque — tipo exato a fechar na análise de validação.
-  - "versão da predição de biomassa" = tag exata (ex.: `v07`, `v08`,
-    `cerrado/forest/v00`) para comparar versões lado a lado.
+- **Nomenclatura das colunas de valor** (`toolkits/statistics/v00`):
+  `<Material> <compartimento> (<unidade>)`, com `*` quando a métrica é derivada
+  **no estágio de estatística** (fora do algoritmo da versão):
+  - `Biomassa acima do solo (t MS)` · `Carbono acima do solo (t C)*`
+  - `Biomassa abaixo do solo (t MS)` · `Carbono abaixo do solo (t C)*`
+  - `Carbono na madeira morta (t C)` · `Carbono na serrapilheira (t C)`
+  - `Carbono vivo (t C)` · `Carbono total (t C)` · `Incerteza (t C)`
+  - **Forest**: `v0X Biomassa acima do solo (t MS)` · `v0X Carbono acima do solo (t C)*`
+    · `v0X Incerteza (t MS)` · `v0X Incerteza (t C)*` (alvo do modelo é `agbd`).
+  - **Grassland**: `Biomassa acima do solo (t MS)` · `Carbono acima do solo (t C)`
+    · `Produtividade primária líquida acima do solo (t MS/ano)`.
+  A magnitude/unidade fica NO NOME da coluna. Nomes de **bandas** (inglês, sem
+  siglas/unidades) em `docs/BAND_NAMING.md`.
 - **Classes e níveis LULC (Col. 11) — gestão única** em
   `toolkits/statistics/v00/engine/module_legends.js` (e espelho no Colab
   `toolkits/statistics/v00/run/cells_for_collab_notebook/`),
@@ -106,19 +108,12 @@
   4 Desmatamento Primário, 5 Recrescimento, 6 Desmatamento Secundário,
   7 Outras Transições). Agrupamento por banda única `combo = lulc*10 + def_sec`;
   fechamento `Σ def_sec = classe` dado por construção (sem colunas `mod`).
-- **Colunas de valor com unidade no rótulo** (schema unificado desde o módulo
-  `toolkits/statistics/v00`): `(t C)` = toneladas de CARBONO, `(t MS)` =
-  toneladas de BIOMASSA. Referências só-biomassa emitem as duas (`<pool> (t MS)`
-  nativa + `<pool> (t C)` via fator `CARBON_FRACTION`), garantindo ≥1 coluna
-  comparável em C. A magnitude (biomassa/carbono) e a unidade ficam NO NOME da
-  coluna — sem colunas redundantes de unidade.
-- **Estatísticas de referência (benchmarks + QCN) por bioma:** o toolkit
+- **Estatísticas de referência (benchmarks + QCN) por família:** o toolkit
   `toolkits/statistics/v00` (catálogo + contrato + engine + driver) exporta
-  `stats_references_<grupo>_<ano>.csv` (8 grupos de refs, com os 6 biomas
-  combinados — colunas `Bioma`/`UF`/`Unidade Federativa`), com `fonte`, `ref_id`,
-  classe, cobertura `(n0..n4)`, `Desmatamento e vegetação secundária`,
-  `ano_lulc`, `ano`, `Área (ha)`, `<Autor> <pool> (t C | t MS)` e
-  `<Autor> Incerteza (t C)`.
+  `stats_references_<grupo>_<ano>.csv` (8 grupos, com os 6 biomas combinados —
+  colunas `Bioma`/`UF`/`Unidade Federativa`), com `ecossistema`, classe,
+  cobertura `(n0..n4)`, `Desmatamento e vegetação secundária`, `ano_lulc`,
+  `Área (ha)` e as métricas por família (nomenclatura acima).
   Consumo OFFLINE no Colab (`run/cells_for_collab_notebook/` → cell06), sem Earth Engine.
 
 ## Planejados
