@@ -15,6 +15,7 @@
 
 // ---- Biomas (IBGE) -----------------------------------------------------------
 exports.BIOMAS = {
+  0: 'Não observado',
   1: 'Amazônia',
   2: 'Caatinga',
   3: 'Cerrado',
@@ -25,6 +26,7 @@ exports.BIOMAS = {
 
 // ---- UFs (IBGE — códigos 11..53) --------------------------------------------
 exports.UFS = {
+  0: { sigla: '', nome: 'Não observado' },
   11: { sigla: 'RO', nome: 'Rondônia' },
   12: { sigla: 'AC', nome: 'Acre' },
   13: { sigla: 'AM', nome: 'Amazonas' },

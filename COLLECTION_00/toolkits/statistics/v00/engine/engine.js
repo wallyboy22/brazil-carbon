@@ -81,10 +81,12 @@ function coberturaCols() {
 function expandRows(groups, spec) {
   function expandTerritory(tEl) {
     var td = ee.Dictionary(tEl);
-    var terCode = ee.Number(td.get('territory'));
-    var biomeName = ee.String(spec.biome.get(terCode.divide(100).floor().format(), ''));
-    var ufSigla = ee.String(spec.sigla.get(terCode.mod(100).format(), ''));
-    var ufNome = ee.String(spec.nome.get(terCode.mod(100).format(), ''));
+    var codigo = ee.Number(td.get('territory')).int();
+    var biomeId = codigo.divide(100).int();
+    var ufId = codigo.mod(100).int();
+    var biomeName = ee.String(spec.biome.get(biomeId, ''));
+    var ufSigla = ee.String(spec.sigla.get(ufId, ''));
+    var ufNome = ee.String(spec.nome.get(ufId, ''));
 
     function expandClass(gEl) {
       var gd = ee.Dictionary(gEl);
@@ -97,7 +99,7 @@ function expandRows(groups, spec) {
         var am = ee.Number(s.get(off));
         var props = spec.one({
           s: s, off: off, am: am, j: j, cls: cls, info: info,
-          codigo: terCode,
+          codigo: codigo,
           biomeName: biomeName, ufSigla: ufSigla, ufNome: ufNome
         });
         return ee.List(ee.Algorithms.If(am.gt(0), [ee.Feature(null, props)], []));
