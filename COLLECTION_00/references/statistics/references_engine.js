@@ -26,7 +26,7 @@
  *                                sempre existe ≥1 coluna comparável em C;
  *   - magnitude 'incerteza'    → a própria coluna é `Incerteza (t C)`.
  *
- * Método (padrão comprovado — banda LULC crua como groupField):
+* Método (padrão comprovado — banda LULC crua como groupField):
  *   área_ha  = pixelArea()/10000, mascarado SÓ pelo LULC;
  *   pool     = banda (t/ha ou t C/ha) × pixelArea()/10000 × fator;
  *   def_sec  = banda classification_<ano> (unmask(0)); estratificação por
@@ -34,15 +34,21 @@
  *   reducer  = ee.Reducer.sum().repeat(9·(1+k))
  *              .group({groupField:9·(1+k), groupName:'classe'})
  *              .group({groupField:9·(1+k)+1, groupName:'territory'})  ← aninhado
- *              sobre o stack [área, pools, (área, pools)×mod0..7, classe,
+ *  sobre o stack [área, pools, (área, pools)×mod0..7, classe,
  *              territory] — a banda de classificação é o LULC CRU (select+
  *              rename) na ÚLTIMA posição de valor; `territory` = paint dos
- *              biomas (CD_BIOMA) ×100 + paint das UFs (CD_UF), agrupada numa
- *              ÚNICA redução sobre o Brasil (nova — sem loop client-side por
- *              bioma; semântica de grupo aninhado validada por spike
- *              2026-09-16). Cada grupo = TERRITÓRIO → CLASSE; combinações
- *              classe × def_sec expandidas no buildRows client-side
- *              (combinações com área = 0 são descartadas).
+ *              biomas (CD_BIOMA) ×100 + paint das UFs (CD_UF). A redução é
+ *              feita POR BIOMA (loop client-side sobre os 6 biomas): reduzir
+ *              o Brasil inteiro numa ÚNICA chamada estourava o limite interno
+ *              do batch e retornava groups NULO para refs de pavimento fino
+ *              (30/110/250 m) — perda silenciosa de dados (bug 2026-09-17,
+ *              fix M1).
+ *   Export IMEDIATO (M2 — spike 2026-09-17): a expansão classe × def_sec roda
+ *              SERVIDOR-SIDE (ee.List.map/flatten, `sum` como lista, dropdown
+ *              de áreas ≤ 0, arredondamento 1 casa) — NENHUM evaluate no
+ *              caminho de export. Cada `Export.table.toDrive` é chamado no
+ *              parse, então TODAS as tasks aparecem de imediato no Task
+ *              Manager e rodam em paralelo na fila batch.
  *   Zimbres (domínio Cerrado): só gera linhas no Cerrado automaticamente.
  *   Xu (multi_year) = 1 reduce POR ano (banda `b<i>`, i = ano-1999), linhas
  *             combinadas num ÚNICO CSV com a coluna `ano`.
@@ -94,20 +100,6 @@ function loadTerritories(cb) {
   });
 }
 
-/** Decodifica um código `territory` (bioma×100+uf) nas colunas do CSV. */
-function decodeTerritory(code) {
-  var biomeId = Math.floor(code / 100);
-  var ufId = code % 100;
-  var biome = _TERRITORY.biomeLabels[biomeId];
-  var uf = _TERRITORY.ufLabels[ufId];
-  return {
-    territorio: (biome || ('Bioma ' + biomeId)) + ' (bioma)',
-    Bioma: biome || String(biomeId),
-    UF: uf ? uf.sigla : '',
-    'Unidade Federativa': uf ? uf.nome : ''
-  };
-}
-
 /** Verifica se um asset IMAGE existe (por pasta de asset). */
 function assetExists(imageId) {
   var parts = imageId.split('/');
@@ -116,40 +108,6 @@ function assetExists(imageId) {
     var r = ee.data.listAssets(parts.join('/'));
     return (r.assets || []).some(function (a) { return a.id === imageId; });
   } catch (e) { return false; }
-}
-
-/** Valida o array de grupos retornado por reduceRegion().get('groups'). */
-function groupsOrEmpty(groups, ctx) {
-  if (!groups || typeof groups.forEach !== 'function') {
-    print('[AVISO] sem dados (provável ref ausente ou sem interseção):', ctx);
-    return [];
-  }
-  return groups;
-}
-
-/** Normaliza os grupos ANINHADOS (territory → classe) para
- *  [{territory, code, sums:[...]}] — aceita `sum` como LISTA (molde solo) ou
- *  chaves separadas sum/sum_1/… (algumas versões do EE). */
-function normalize(groups) {
-  var out = [];
-  (groups || []).forEach(function (t) {
-    var territory = t['territory'];
-    (t['groups'] || []).forEach(function (g) {
-      var s;
-      if (g['sum'] !== undefined && typeof g['sum'].length === 'number') {
-        s = g['sum'];
-      } else {
-        s = [];
-        var i = 0;
-        while (g['sum' + (i === 0 ? '' : '_' + i)] !== undefined) {
-          s.push(g['sum' + (i === 0 ? '' : '_' + i)]);
-          i++;
-        }
-      }
-      out.push({ territory: territory, code: g['classe'], sums: s });
-    });
-  });
-  return out;
 }
 
 /** Rótulo gráfico de um stem/pool (agb → 'AGB', total → 'Total', …). */
@@ -247,60 +205,9 @@ function reduceFor(r, bandName, geom) {
   }).get('groups');
 }
 
-function r(n) { return Math.round(n * 10) / 10; }
-
-function row(refInfo, ter, ano, extra) {
-  var base = { fonte: refInfo.fonte, ref_id: refInfo.id,
-    ano_lulc: YEAR, ano: ano };
-  for (var k in ter) { if (ter.hasOwnProperty(k)) base[k] = ter[k]; }
-  for (var k in extra) { if (extra.hasOwnProperty(k)) base[k] = extra[k]; }
-  return base;
-}
-
 /** Banda do ano Y para ref multi_year (Xu): `b<i>` com i = Y - start + 1. */
 function bandForYear(r, y) {
   return r.multi_year ? 'b' + (y - r.multi_year.start + 1) : null;
-}
-
-/** Expande os grupos (TERRITÓRIO → CLASSE) em linhas de combinação
- * (classe × def_sec), usando as colunas mod (Σ def_sec = total) e descartando
- * combinações com área = 0 (paridade com o formato combo). `ano` é o ano-base
- * do ref (multi_year → ano da série). */
-function buildRows(refInfo, ano, groups) {
-  var cols = emitCols(refInfo);
-  var base = 1 + cols.length;
-  var rows = [];
-  groups = normalize(groupsOrEmpty(groups, refInfo.id +
-    (refInfo.multi_year ? ' · ano ' + ano : '') +
-    ' (buildRows — reduzindo a linhas por combinação classe × def_sec)'));
-  if (!groups.length) { print('[AVISO]', refInfo.id,
-    (refInfo.multi_year ? 'ano ' + ano : ''), '· 0 linhas geradas'); return rows; }
-
-  groups.forEach(function (g) {
-    var s = g.sums;
-    var info = LEG.info(g.code);
-    var ter = decodeTerritory(g.territory);
-    LEG.DEFSEC_MODS.forEach(function (m, j) {
-      var off = base + j * base;
-      var areaMod = s[off];
-      if (areaMod <= 0) return;
-      var rowData = row(refInfo, ter, ano, {
-        classe: g.code,
-        'cobertura (n0)': info.n0,
-        'cobertura (n1)': info.n1,
-        'cobertura (n2)': info.n2,
-        'cobertura (n3)': info.n3,
-        'cobertura (n4)': info.n4,
-        'Desmatamento e vegetação secundária': LEG.defsecInfo(m).label,
-        'Área (ha)': r(areaMod)
-      });
-      cols.forEach(function (c, i) {
-        rowData[colName(c)] = r(s[off + 1 + i]);
-      });
-      rows.push(rowData);
-    });
-  });
-  return rows;
 }
 
 /** Colunas dos CSVs das referências (export único, só combinações,
@@ -317,32 +224,116 @@ function statsColumns(refInfo) {
   return cols;
 }
 
-/** Exporta UMA tabela (selectors excluem .geometry/system:index).
- * Valores `undefined` são convertidos em '' para nunca estourar
- * "Can't encode object: undefined"; erro de encode é registrado com contexto. */
-function exportCsv(rows, fileName, description, selectors) {
-  if (!rows.length) return;
-  var fc = ee.FeatureCollection(rows.map(function (r2) {
-    var o = {};
-    Object.keys(r2).forEach(function (k) { o[k] = (r2[k] === undefined ? '' : r2[k]); });
-    return ee.Feature(null, o);
-  }));
-  try {
-    Export.table.toDrive({
-      collection: fc,
-      description: description,
-      folder: C.DRIVE_FOLDER,
-      fileNamePrefix: fileName,
-      fileFormat: 'CSV',
-      selectors: selectors
-    });
-  } catch (e) {
-    print('[ERRO export]', fileName, String(e).slice(0, 200));
-  }
+/** Geometria de um bioma (recorte por região para a redução por bioma). */
+function regionGeom(biome) {
+  return ee.FeatureCollection(C.BIOME_FC)
+    .filter(ee.Filter.eq(C.BIOME_PROP, biome.nome))
+    .first().geometry();
 }
 
-/** Decodificação de território por código (normalize → decodeTerritory). */
-function regionTerritorio() { return null; } // obsoleto — mantido p/ compat
+/* --------------------------------------------------------------------------
+ * M2 — Montagem SERVIDOR-SIDE das linhas (classes × def_sec), sem evaluate.
+ * Os rótulos (cobertura n0..n4, def_sec, Bioma/UF) são ee.Dictionary com a
+ * fonte única das legendas (LEG) e dos FCs IBGE; as lambdas capturam esses
+ * objetos como CONSTANTES na serialização (funciona no Code Editor legado).
+ * Layout do `sum` (validado por spike 2026-09-17): LISTA por grupo; cada
+ * combinação def_sec j ocupa  base elementos a partir de off = base + j*base;
+ * s[off] = área (ha), s[off+1+i] = pool i. Combinações com área ≤ 0 são
+ * descartadas. Arredondamento 1 casa = paridade com o buildRows legado.
+ * ------------------------------------------------------------------------ */
+
+/** Arredondamento servidor-side (1 casa decimal — espelho do r() legado). */
+function r1(n) { return ee.Number(n).multiply(10).round().divide(10); }
+
+/** Dicionário client-side (código → {n0..n4}) montado das legendas oficiais
+ * (fonte única em LEG.infoMap()). */
+var LEG_INFO_PLAIN = LEG.infoMap();
+
+/** ee.Dictionary de rótulos (constantes p/ as lambdas do rowsFC). */
+function buildLabelDicts() {
+  var info = {}, biome = {}, sigla = {}, nome = {}, defsec = {};
+  Object.keys(LEG_INFO_PLAIN).forEach(function (k) {
+    info[k] = LEG_INFO_PLAIN[k];
+  });
+  Object.keys(_TERRITORY.biomeLabels).forEach(function (k) {
+    biome[k] = _TERRITORY.biomeLabels[k];
+  });
+  Object.keys(_TERRITORY.ufLabels).forEach(function (k) {
+    sigla[k] = _TERRITORY.ufLabels[k].sigla;
+    nome[k] = _TERRITORY.ufLabels[k].nome;
+  });
+  Object.keys(LEG.DEF_SEC_VEG_LEGEND).forEach(function (k) {
+    defsec[k] = LEG.DEF_SEC_VEG_LEGEND[k];
+  });
+  return {
+    info: ee.Dictionary(info),
+    biome: ee.Dictionary(biome),
+    sigla: ee.Dictionary(sigla),
+    nome: ee.Dictionary(nome),
+    defsec: ee.Dictionary(defsec)
+  };
+}
+
+/**
+ * Monta servidor-side a FeatureCollection de linhas (classe × def_sec) de um
+ * ref × bioma × ano, dentro do grafo do EE (export vira task IMEDIATA, sem
+ * evaluate). `D` = dicionários de buildLabelDicts(); espelho byte a byte do
+ * buildRows legado.
+ */
+function rowsFC(refInfo, bandName, ano, geom, D) {
+  var cols = emitCols(refInfo);
+  var base = 1 + cols.length;
+  var poolNames = cols.map(function (c) { return colName(c); });
+  var nBands = cols.length;
+  var source = refInfo.fonte;
+  var rid = refInfo.id;
+  var anoVal = (ano === null || ano === undefined) ? '' : ee.Number(ano);
+  var groups = ee.List(reduceFor(refInfo, bandName, geom));
+
+  function expandTerritory(tEl) {
+    var td = ee.Dictionary(tEl);
+    var terCode = ee.Number(td.get('territory'));
+    var biomeName = ee.String(D.biome.get(terCode.divide(100).floor().format()));
+    var ufSigla = ee.String(D.sigla.get(terCode.mod(100).format()));
+    var ufNome = ee.String(D.nome.get(terCode.mod(100).format()));
+    var territorio = biomeName.cat(' (bioma)');
+
+    function expandClass(gEl) {
+      var gd = ee.Dictionary(gEl);
+      var s = ee.List(gd.get('sum'));
+      var cls = ee.Number(gd.get('classe'));
+      var info = ee.Dictionary(D.info.get(cls.format()));
+
+      function one(j) {
+        var off = base + j * base;
+        var am = ee.Number(s.get(off));
+        var props = {
+          fonte: source, ref_id: rid,
+          territorio: territorio, Bioma: biomeName, UF: ufSigla,
+          'Unidade Federativa': ufNome,
+          classe: cls,
+          'cobertura (n0)': info.get('n0'),
+          'cobertura (n1)': info.get('n1'),
+          'cobertura (n2)': info.get('n2'),
+          'cobertura (n3)': info.get('n3'),
+          'cobertura (n4)': info.get('n4'),
+          'Desmatamento e vegetação secundária':
+            D.defsec.get(ee.Number(j).format()),
+          ano_lulc: YEAR, ano: anoVal,
+          'Área (ha)': r1(am)
+        };
+        for (var i = 0; i < nBands; i++) {
+          props[poolNames[i]] = r1(ee.Number(s.get(off + 1 + i)));
+        }
+        return ee.List(ee.Algorithms.If(am.gt(0), [ee.Feature(null, props)], []));
+      }
+      return ee.List(LEG.DEFSEC_MODS.map(one));
+    }
+    return ee.List(ee.List(td.get('groups')).map(expandClass));
+  }
+
+  return ee.FeatureCollection(ee.List(groups.map(expandTerritory)).flatten());
+}
 
 /**
  * Gera as estatísticas de TODOS os refs (ou um subconjunto), combinando os
@@ -362,56 +353,61 @@ exports.runAllReferences = function (opts) {
   var selBiomes = C.BIOMES.filter(function (b) {
     return !opts.biomes || opts.biomes.indexOf(b.slug) > -1;
   });
-  var selNames = selBiomes.map(function (b) { return b.nome; });
 
   var tot = refs.length;
   var finished = 0;
-  function jobDone() {
+  var scheduled = 0;
+  function jobDone(ok) {
+    if (ok) scheduled++;
     finished++;
     if (finished === tot) {
-      print('[FIM] references ·', finished, '/', tot, 'CSVs agendados.');
+      print('[FIM] references ·', tot, 'refs ·', scheduled,
+        'exports agendados imediatos.');
     }
   }
 
   loadTerritories(function () {
-    var geom = selBiomes.length === C.BIOMES.length
-      ? ee.FeatureCollection(C.BIOME_FC).geometry()
-      : ee.FeatureCollection(C.BIOME_FC)
-        .filter(ee.Filter.inList(C.BIOME_PROP, selNames)).geometry();
-
+    var D = buildLabelDicts();
     refs.forEach(function (r) {
       print('MAPBIOMAS-CARBONO · references · 7_references ·', r.id);
       if (!assetExists(r.asset)) {
         print('[ERRO] asset não encontrado:', r.asset);
-        jobDone(); return;
+        jobDone(false); return;
       }
 
       var years = r.multi_year
         ? range(r.multi_year.start, r.multi_year.end) : [null];
-      var allRows = [];
-      var yearDone = 0;
-      years.forEach(function (y) {
-        var bandName = r.multi_year ? bandForYear(r, y) : r.pools[0].band;
-        var ano = r.multi_year ? y : (isNumericEpoch(r.epoch) ? r.epoch : null);
-        reduceFor(r, bandName, geom).evaluate(function (groups) {
-          allRows.push.apply(allRows, buildRows(r, ano, groups));
-          yearDone++;
-          if (yearDone === years.length) {
-            var fileName = C.PREFIX + '_' + r.id + '_' + YEAR;
-            exportCsv(allRows, fileName,
-              'WS_CARBONO_stats_references_' + r.id + '_' + YEAR,
-              statsColumns(r));
-            print('[OK]', r.id, '·', allRows.length, 'linhas ·',
-              'export agendado (biomas × UFs)');
-            jobDone();
-          }
-        }, function (err) {
-          print('[ERRO]', r.id,
-            (r.multi_year ? 'ano ' + y + ' ' : ''), String(err).slice(0, 200));
-          yearDone++;
-          if (yearDone === years.length) jobDone();
+      var fcs = [];
+      selBiomes.forEach(function (b) {
+        var geom = regionGeom(b);
+        years.forEach(function (y) {
+          var bandName = r.multi_year ? bandForYear(r, y) : r.pools[0].band;
+          var ano = r.multi_year ? y :
+            (isNumericEpoch(r.epoch) ? r.epoch : null);
+          fcs.push(rowsFC(r, bandName, ano, geom, D));
         });
       });
+
+      var fc = fcs[0];
+      for (var i = 1; i < fcs.length; i++) fc = fc.merge(fcs[i]);
+      var fileName = C.PREFIX + '_' + r.id + '_' + YEAR;
+      try {
+        Export.table.toDrive({
+          collection: fc,
+          description: 'WS_CARBONO_stats_references_' + r.id + '_' + YEAR,
+          folder: C.DRIVE_FOLDER,
+          fileNamePrefix: fileName,
+          fileFormat: 'CSV',
+          selectors: statsColumns(r)
+        });
+        print('[OK]', r.id, '· export IMEDIATO agendado (',
+          selBiomes.length, 'bioma(s) ×', years.length, 'ano(s) ·',
+          'contagem de linhas você confere ao final na task/CSV).');
+        jobDone(true);
+      } catch (e) {
+        print('[ERRO export]', fileName, String(e).slice(0, 200));
+        jobDone(false);
+      }
     });
   });
 }

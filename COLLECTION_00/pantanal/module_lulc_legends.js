@@ -514,6 +514,40 @@ exports.defsecInfo = function (mod) {
 };
 
 // ---------------------------------------------------------------------------
+// Dicionários seriais — montagem SERVIDOR-SIDE (M2: exports imediatos)
+// ---------------------------------------------------------------------------
+/** Mapa código → {n0..n4} (classes-folha C11), para construir um
+ *  ee.Dictionary e rotular classes DENTRO de lambdas do EE (sem evaluate).
+ *  n0 = nível 4 p/ lavouras específicas, senão nível 2 (mesma regra do info). */
+exports.infoMap = function () {
+  var out = {};
+  function add(codeStr) {
+    var n = Number(codeStr);
+    if (out[n]) return;
+    var n4 = exports.LULC_NIVEL_4[n];
+    var n2 = exports.LULC_NIVEL_2[n];
+    out[n] = {
+      n0: exports.LAVOURA_N4_CODES.indexOf(n) > -1 && n4 !== undefined ? n4 : n2,
+      n1: exports.LULC_NIVEL_1[n],
+      n2: n2,
+      n3: exports.LULC_NIVEL_3[n],
+      n4: n4
+    };
+  }
+  [exports.LULC_NIVEL_4, exports.LULC_NIVEL_3, exports.LULC_NIVEL_2,
+    exports.LULC_NIVEL_1].forEach(function (dict) {
+    Object.keys(dict).forEach(add);
+  });
+  return out;
+};
+
+/** Mapa def_sec → rótulo por extenso (0..7), fonte única da coluna
+ *  `Desmatamento e vegetação secundária`. */
+exports.defsecLabelMap = function () {
+  return exports.DEF_SEC_VEG_LEGEND;
+};
+
+// ---------------------------------------------------------------------------
 // Encode/decode de banda combinada (LULC × def_sec)
 // ---------------------------------------------------------------------------
 /**

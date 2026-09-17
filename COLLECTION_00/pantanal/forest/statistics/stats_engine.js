@@ -13,10 +13,10 @@
  * Estratificação por desmatamento/vegetação secundária (def_sec, C11):
  *   banda classification_<ano> (unmask(0)); na redução o def_sec entra como
  *   COLUNAS MOD (área_modX/estoque_modX, X = 0..7) — Σ def_sec = total; as
- *   combinações (classe × def_sec) são expandidas cliente-side no buildRows
- *   (linha por combinação, coluna `Desmatamento e vegetação secundária` por
- *   extenso). O groupField é a banda LULC CRUA (padrão comprovado — banda
- *   derivada no group retorna groups=null no Code Editor).
+ *   combinações (classe × def_sec) são expandidas SERVIDOR-SIDE (rowsFC —
+ *   ee.List.map/flatten, export agendado IMEDIATO no parse, sem evaluate;
+ *   M2 spike 2026-09-17). O groupField é a banda LULC CRUA (padrão
+ *   comprovado — banda derivada no group retorna groups=null no Code Editor).
  *
  * Método:
  *   área_ha  = pixelArea()/10000, mascarado SÓ pelo LULC;
@@ -32,9 +32,8 @@
  *   Incerteza: coluna emitida APENAS quando a versão tem banda de incerteza
  *   (v07/v08 — stdBand); v03–v06 ficam sem a coluna.
  * Território: banda `territory` = bioma(GEOCODE)×100+uf(CD_UF), agrupada
- *   por um único reduce (banda derivada paint — validada por spike 2026-09-16).
- *   Bioma/UF/Unidade Federativa decodificados via dicionário por código IBGE
- *   (sem string-match).
+ *   por um único reduce. Bioma/UF/Unidade Federativa decodificados via
+ *   ee.Dictionary por código IBGE (sem string-match, sem evaluate).
  ******************************************************************************/
 var C = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/statistics/0_contract_stats.js');
@@ -92,21 +91,7 @@ function loadTerritories(cb) {
   });
 }
 
-/** Decodifica o código `territory` (bioma×100+uf) nas colunas do CSV.
- * `territorio` mantém o rótulo `Pantanal (bioma)` sempre (D2); `Bioma`/`UF`/
- * `Unidade Federativa` discriminam a região (uf=0 → UF vazia). */
-function decodeTerritory(code) {
-  var biomeId = Math.floor(code / 100);
-  var ufId = code % 100;
-  var biome = _TERRITORY.biomeLabels[biomeId] || (C.BIOME_NAME + ' (bioma)?');
-  var uf = _TERRITORY.ufLabels[ufId];
-  return {
-    territorio: (biome || ('Bioma ' + biomeId)) + ' (bioma)',
-    Bioma: biome || String(biomeId),
-    UF: uf ? uf.sigla : '',
-    'Unidade Federativa': uf ? uf.nome : ''
-  };
-}
+/** Decodificação de território SÓ no servidor (M2): labels por ee.Dictionary. */
 
 /**
  * Verifica se um asset IMAGE existe (por pasta de asset).
@@ -141,54 +126,10 @@ function safeMosaic(v) {
     .rename([v.band].concat(v.stdBand ? [v.stdBand] : []));
 }
 
-/** Valida o array de grupos retornado por reduceRegion().get('groups'). */
-function groupsOrEmpty(groups, ctx) {
-  if (!groups || typeof groups.forEach !== 'function') {
-    print('[AVISO] sem dados (provável mosaico ausente ou sem interseção):', ctx);
-    return [];
-  }
-  return groups;
-}
-
-/**
- * Normaliza os grupos ANINHADOS (territory → classe) para
- * [{territory, code, sums:[...]}].
- * O `sum` do `.repeat(N_VALUE)` sai como LISTA (molde solo) ou, em versões do
- * EE, como chaves separadas (sum/sum_1/…) — esta função cobre os dois casos.
- * `code` é o valor da banda `classe` (LULC cru) do groupName.
- */
-function normalize(groups) {
-  var out = [];
-  (groups || []).forEach(function (t) {
-    var territory = t['territory'];
-    (t['groups'] || []).forEach(function (g) {
-      var s;
-      if (g['sum'] !== undefined && typeof g['sum'].length === 'number') {
-        s = g['sum'];
-      } else {
-        s = [];
-        var i = 0;
-        while (g['sum' + (i === 0 ? '' : '_' + i)] !== undefined) {
-          s.push(g['sum' + (i === 0 ? '' : '_' + i)]);
-          i++;
-        }
-      }
-      out.push({ territory: territory, code: g['classe'], sums: s });
-    });
-  });
-  return out;
-}
-
 function biome() {
   return ee.FeatureCollection(C.BIOME_FC)
     .filter(ee.Filter.eq(C.BIOME_PROP, C.BIOME_NAME))
     .first().geometry();
-}
-
-/** Região de análise: sempre o Pantanal (a discriminação por UF passou a ser
- * pela banda `territory`, não mais por recortes geométricos). */
-function collectRegions(cb) {
-  cb([{ territorio: C.BIOME_NAME + ' (bioma)', slug: 'bioma', geom: biome() }]);
 }
 
 /** Stack [área_ha, estoque, w2, (área_modX, estoque_modX)×8, n0]: área por
@@ -224,55 +165,91 @@ function reduceFor(v, geom) {
   }).get('groups');
 }
 
-function r(n) { return Math.round(n * 10) / 10; }
+/* --------------------------------------------------------------------------
+ * M2 — montagem SERVIDOR-SIDE (export IMEDIATO, sem evaluate; spike
+ * 2026-09-17). Rótulos por ee.Dictionary (fontes: LEG + FCs IBGE) capturados
+ * como constantes nas lambdas; `sum` é LISTA por grupo; combinação def_sec j
+ * ocupa 2 elementos em off = 3 + j*2 (s[off] = área, s[off+1] = estoque);
+ * s[2] = Σ w2 → incerteza ± √ em versões com stdBand. Área ≤ 0 → descartado.
+ * ------------------------------------------------------------------------ */
 
-function row(versionId, ter, extra) {
-  var base = { version: versionId, ano: YEAR };
-  for (var k in ter) { if (ter.hasOwnProperty(k)) base[k] = ter[k]; }
-  for (var k in extra) { if (extra.hasOwnProperty(k)) base[k] = extra[k]; }
-  return base;
+/** Arredondamento servidor-side (1 casa decimal — espelho do r() legado). */
+function r1(n) { return ee.Number(n).multiply(10).round().divide(10); }
+
+/** ee.Dictionary de rótulos (constantes p/ as lambdas do rowsFC). */
+function buildLabelDicts() {
+  var info = {}, biome = {}, sigla = {}, nome = {}, defsec = {};
+  Object.keys(LEG.infoMap()).forEach(function (k) { info[k] = LEG.infoMap()[k]; });
+  Object.keys(_TERRITORY.biomeLabels).forEach(function (k) {
+    biome[k] = _TERRITORY.biomeLabels[k];
+  });
+  Object.keys(_TERRITORY.ufLabels).forEach(function (k) {
+    sigla[k] = _TERRITORY.ufLabels[k].sigla;
+    nome[k] = _TERRITORY.ufLabels[k].nome;
+  });
+  Object.keys(LEG.defsecLabelMap()).forEach(function (k) {
+    defsec[k] = LEG.defsecLabelMap()[k];
+  });
+  return {
+    info: ee.Dictionary(info),
+    biome: ee.Dictionary(biome),
+    sigla: ee.Dictionary(sigla),
+    nome: ee.Dictionary(nome),
+    defsec: ee.Dictionary(defsec)
+  };
 }
 
-/** Expande os grupos (TERRITÓRIO → CLASSE, lulc cru) em linhas de combinação
- * (classe × def_sec) usando as colunas mod (Σ def_sec = total) e descartando
- * combinações com área = 0. Colunas: cobertura (n0..n4), Desmatamento e
- * vegetação secundária (por extenso), Área (ha), Estoque de carbono (t),
- * Bioma, UF, Unidade Federativa e Incerteza do estoque (t) — esta última
- * apenas quando a versão tem banda de incerteza (v.stdBand). */
-function buildRows(v, groups) {
-  var rows = [];
-  groups = normalize(groupsOrEmpty(groups, v.id +
-    ' (buildRows — reduzindo a linhas por combinação classe × def_sec)'));
-  if (!groups.length) { print('[AVISO]', v.id, '· 0 linhas geradas'); return rows; }
+/** FeatureCollection servidor-side das linhas (classe × def_sec) de uma
+ * versão — espelho byte a byte do buildRows legado. */
+function rowsFC(v, geom, D) {
+  var groups = ee.List(reduceFor(v, geom));
+  var vId = v.id;
+  var withStd = !!v.stdBand;
 
-  groups.forEach(function (g) {
-    var s = g.sums;
-    var info = LEG.info(g.code);
-    var ter = decodeTerritory(g.territory);
-    LEG.DEFSEC_MODS.forEach(function (m, j) {
-      var off = 3 + j * 2;
-      var areaMod = s[off];
-      if (areaMod <= 0) return;
-      var extra = {
-        classe: g.code,
-        'cobertura (n0)': info.n0,
-        'cobertura (n1)': info.n1,
-        'cobertura (n2)': info.n2,
-        'cobertura (n3)': info.n3,
-        'cobertura (n4)': info.n4,
-        'Desmatamento e vegetação secundária': LEG.defsecInfo(m).label,
-        'Área (ha)': r(areaMod),
-        'Estoque de carbono (t)': r(s[off + 1])
-      };
-      if (v.stdBand) {
-        extra['Incerteza do estoque (t)'] =
-          r(Math.sqrt(Math.max(s[2], 0)));
+  function expandTerritory(tEl) {
+    var td = ee.Dictionary(tEl);
+    var terCode = ee.Number(td.get('territory'));
+    var biomeName = ee.String(D.biome.get(terCode.divide(100).floor().format(), ''));
+    var ufSigla = ee.String(D.sigla.get(terCode.mod(100).format(), ''));
+    var ufNome = ee.String(D.nome.get(terCode.mod(100).format(), ''));
+    var territorio = biomeName.cat(' (bioma)');
+
+    function expandClass(gEl) {
+      var gd = ee.Dictionary(gEl);
+      var s = ee.List(gd.get('sum'));
+      var cls = ee.Number(gd.get('classe'));
+      var info = ee.Dictionary(D.info.get(cls.format(), {}));
+
+      function one(j) {
+        var off = 3 + j * 2;
+        var am = ee.Number(s.get(off));
+        var props = {
+          version: vId, ano: YEAR,
+          territorio: territorio, Bioma: biomeName, UF: ufSigla,
+          'Unidade Federativa': ufNome,
+          classe: cls,
+          'cobertura (n0)': info.get('n0', ''),
+          'cobertura (n1)': info.get('n1', ''),
+          'cobertura (n2)': info.get('n2', ''),
+          'cobertura (n3)': info.get('n3', ''),
+          'cobertura (n4)': info.get('n4', ''),
+          'Desmatamento e vegetação secundária':
+            D.defsec.get(ee.Number(j).format(), ''),
+          'Área (ha)': r1(am),
+          'Estoque de carbono (t)': r1(ee.Number(s.get(off + 1)))
+        };
+        if (withStd) {
+          props['Incerteza do estoque (t)'] =
+            r1(ee.Number(s.get(2)).max(0).sqrt());
+        }
+        return ee.List(ee.Algorithms.If(am.gt(0), [ee.Feature(null, props)], []));
       }
-      rows.push(row(v.id, ter, extra));
-    });
-  });
+      return ee.List(LEG.DEFSEC_MODS.map(one));
+    }
+    return ee.List(ee.List(td.get('groups')).map(expandClass));
+  }
 
-  return rows;
+  return ee.FeatureCollection(ee.List(groups.map(expandTerritory)).flatten());
 }
 
 /** Colunas dos CSVs das estatísticas (export único, só combinações,
@@ -288,32 +265,10 @@ function statsColumns(v) {
   return cols;
 }
 
-/** Exporta UMA tabela por versão (selectors excluem .geometry/system:index).
- * Valores `undefined` são convertidos em '' para nunca estourar
- * "Can't encode object: undefined"; erro de encode é registrado com contexto. */
-function exportCsv(rows, fileName, description, selectors) {
-  if (!rows.length) return;
-  var fc = ee.FeatureCollection(rows.map(function (r2) {
-    var o = {};
-    Object.keys(r2).forEach(function (k) { o[k] = (r2[k] === undefined ? '' : r2[k]); });
-    return ee.Feature(null, o);
-  }));
-  try {
-    Export.table.toDrive({
-      collection: fc,
-      description: description,
-      folder: C.DRIVE_FOLDER,
-      fileNamePrefix: fileName,
-      fileFormat: 'CSV',
-      selectors: selectors
-    });
-  } catch (e) {
-    print('[ERRO export]', fileName, String(e).slice(0, 200));
-  }
-}
-
 /**
- * Gera as estatísticas de UMA versão (V03–V08), por região (bioma/UF).
+ * Gera as estatísticas de UMA versão (V03–V08). ALL por área Pantanal;
+ * a diferenciação por UF sai da banda `territory` (colunas UF/Unidade
+ * Federativa). Export agendado IMEDIATAMENTE (montagem servidor-side).
  * Uso: engine.runForVersion('v07');
  */
 exports.runForVersion = function (versionId) {
@@ -324,27 +279,24 @@ exports.runForVersion = function (versionId) {
   print('MAPBIOMAS-CARBONO · Pantanal Forest · 7_statistics ·', v.id);
 
   loadTerritories(function () {
-    collectRegions(function (regions) {
-      var jobs = regions.map(function (region) { return { v: v, region: region }; });
-      var done = 0;
-      jobs.forEach(function (job) {
-        reduceFor(job.v, job.region.geom).evaluate(function (groups) {
-          var rows = buildRows(job.v, groups);
-          exportCsv(rows,
-            C.PREFIX + '_' + v.id + '_' + job.region.slug + '_' + YEAR,
-            'WS_CARBONO_stats_forest_' + v.id + '_' + job.region.slug + '_' +
-              YEAR,
-            statsColumns(job.v));
-          print('[OK]', v.id, job.region.territorio, '·', rows.length,
-            'combinações · estoque', rows.reduce(function (acc, r2) {
-              return acc + r2['Estoque de carbono (t)']; }, 0), 'Mg');
-          done++;
-        }, function (err) {
-          print('[ERRO]', v.id, job.region.territorio, String(err).slice(0, 200));
-          done++;
-        });
+    var D = buildLabelDicts();
+    var fc = rowsFC(v, biome(), D);
+    var slug = 'bioma';
+    var fileName = C.PREFIX + '_' + v.id + '_' + slug + '_' + YEAR;
+    try {
+      Export.table.toDrive({
+        collection: fc,
+        description: 'WS_CARBONO_stats_forest_' + v.id + '_' + slug + '_' + YEAR,
+        folder: C.DRIVE_FOLDER,
+        fileNamePrefix: fileName,
+        fileFormat: 'CSV',
+        selectors: statsColumns(v)
       });
-    });
+      print('[OK]', v.id, '· export IMEDIATO agendado (', C.BIOME_NAME,
+        '· contagem de linhas você confere na task/CSV).');
+    } catch (e) {
+      print('[ERRO export]', fileName, String(e).slice(0, 200));
+    }
   });
 };
 
