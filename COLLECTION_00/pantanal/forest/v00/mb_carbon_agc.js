@@ -299,7 +299,9 @@ function onGranulesReady(gridId, grid, aoi, assets, yearUsed) {
   var fcServer = ee.FeatureCollection(assets.map(function (tid) {
     return filterGedi(ee.FeatureCollection(tid), aoi);
   })).flatten();
-
+  
+  print('fcServer',fcServer.limit(10))
+  Map.addLayer(fcServer,{},'fcServer');
   // EVALUATE #2 — baixa o total de pegadas filtradas
   fcServer.size().evaluate(function (total) {
     print('[OK] Pegadas filtradas:', total);
