@@ -1,0 +1,1034 @@
+ecossistema,Bioma,UF,Unidade Federativa,classe,cobertura (n0),cobertura (n1),cobertura (n2),cobertura (n3),cobertura (n4),Desmatamento e vegetação secundária,ano_lulc,Área (ha),Carbono vivo (t C)
+referencia,Amazônia,RO,Rondônia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,533353.6,4.15669361E7
+referencia,Amazônia,RO,Rondônia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,1.08632115E7,1.1819263663E9
+referencia,Amazônia,RO,Rondônia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Outras Transições,2023,24336.0,2252371.9
+referencia,Amazônia,RO,Rondônia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,95391.7,6646337.2
+referencia,Amazônia,RO,Rondônia,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Antrópico,2023,14217.2,1149763.8
+referencia,Amazônia,RO,Rondônia,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Vegetação Primária,2023,524839.7,3.79765546E7
+referencia,Amazônia,RO,Rondônia,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,658957.9,2.69239689E7
+referencia,Amazônia,RO,Rondônia,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,60603.6,3832250.2
+referencia,Amazônia,RO,Rondônia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,9940024.1,5.90872937E8
+referencia,Amazônia,RO,Rondônia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,144990.8,1.05253518E7
+referencia,Amazônia,RO,Rondônia,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,36356.2,1383653.2
+referencia,Amazônia,RO,Rondônia,30,Mineração,Área não vegetada,Mineração,Mineração,Mineração,Antrópico,2023,12125.1,792090.0
+referencia,Amazônia,RO,Rondônia,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,12153.2,1152234.8
+referencia,Amazônia,RO,Rondônia,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,97314.3,8106227.6
+referencia,Amazônia,RO,Rondônia,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,201745.7,5365307.0
+referencia,Amazônia,RO,Rondônia,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,11980.1,941190.7
+referencia,Amazônia,AC,Acre,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,121354.4,1.14459934E7
+referencia,Amazônia,AC,Acre,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,1.39188644E7,1.9371366625E9
+referencia,Amazônia,AC,Acre,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Vegetação Primária,2023,12202.4,1411130.9
+referencia,Amazônia,AC,Acre,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,2115841.9,1.828062066E8
+referencia,Amazônia,AC,Acre,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,36418.4,4734655.4
+referencia,Amazônia,AC,Acre,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,12125.1,357404.3
+referencia,Amazônia,AM,Amazonas,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,232010.5,2.39256739E7
+referencia,Amazônia,AM,Amazonas,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,1.302304133E8,1.64608795117E10
+referencia,Amazônia,AM,Amazonas,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Secundária,2023,49159.9,4708754.9
+referencia,Amazônia,AM,Amazonas,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Outras Transições,2023,36869.3,2990366.3
+referencia,Amazônia,AM,Amazonas,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,36604.1,3807226.5
+referencia,Amazônia,AM,Amazonas,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Vegetação Primária,2023,1.79742842E7,1.7248585584E9
+referencia,Amazônia,AM,Amazonas,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Outras Transições,2023,12284.8,1009078.9
+referencia,Amazônia,AM,Amazonas,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,762307.1,3.51880966E7
+referencia,Amazônia,AM,Amazonas,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,487119.7,2.71720067E7
+referencia,Amazônia,AM,Amazonas,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,1413845.8,1.475667437E8
+referencia,Amazônia,AM,Amazonas,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,109707.5,1.06271299E7
+referencia,Amazônia,AM,Amazonas,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Vegetação Primária,2023,12223.5,1397849.4
+referencia,Amazônia,AM,Amazonas,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,24584.2,0.0
+referencia,Amazônia,AM,Amazonas,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Vegetação Primária,2023,12205.2,902459.6
+referencia,Amazônia,AM,Amazonas,30,Mineração,Área não vegetada,Mineração,Mineração,Mineração,Antrópico,2023,12308.0,1264508.4
+referencia,Amazônia,AM,Amazonas,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,823482.9,6.4136555E7
+referencia,Amazônia,AM,Amazonas,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,3232994.1,2.451311409E8
+referencia,Amazônia,RR,Roraima,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,147595.6,1.35336924E7
+referencia,Amazônia,RR,Roraima,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,1.45028913E7,1.6624676303E9
+referencia,Amazônia,RR,Roraima,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,61490.5,4920499.5
+referencia,Amazônia,RR,Roraima,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Vegetação Primária,2023,2424495.5,1.477172322E8
+referencia,Amazônia,RR,Roraima,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,12287.4,4291.0
+referencia,Amazônia,RR,Roraima,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,873509.4,2.76503226E7
+referencia,Amazônia,RR,Roraima,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,2023,24583.9,390375.4
+referencia,Amazônia,RR,Roraima,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,3430459.8,5.17482455E7
+referencia,Amazônia,RR,Roraima,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,356728.0,3.17299168E7
+referencia,Amazônia,RR,Roraima,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,12301.4,958436.0
+referencia,Amazônia,RR,Roraima,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,24588.5,286643.6
+referencia,Amazônia,RR,Roraima,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,49218.1,2121285.5
+referencia,Amazônia,RR,Roraima,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,98454.9,6709408.8
+referencia,Amazônia,RR,Roraima,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,36872.8,181001.9
+referencia,Amazônia,RR,Roraima,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,36881.5,934339.9
+referencia,Amazônia,PA,Pará,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,2565152.8,2.273283793E8
+referencia,Amazônia,PA,Pará,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,8.49159282E7,1.20589228421E10
+referencia,Amazônia,PA,Pará,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Secundária,2023,98374.8,7649688.6
+referencia,Amazônia,PA,Pará,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Outras Transições,2023,24578.4,2702387.5
+referencia,Amazônia,PA,Pará,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,779998.6,5.24655509E7
+referencia,Amazônia,PA,Pará,5,Mangue,Floresta,Mangue,Mangue,Mangue,Vegetação Primária,2023,216998.5,9954538.3
+referencia,Amazônia,PA,Pará,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Antrópico,2023,61361.3,5329748.4
+referencia,Amazônia,PA,Pará,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Vegetação Primária,2023,4561323.1,3.867752199E8
+referencia,Amazônia,PA,Pará,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Vegetação Secundária,2023,12295.3,1074713.4
+referencia,Amazônia,PA,Pará,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Outras Transições,2023,12296.3,1332119.0
+referencia,Amazônia,PA,Pará,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,73693.9,7024383.9
+referencia,Amazônia,PA,Pará,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,36862.7,824046.0
+referencia,Amazônia,PA,Pará,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,2197352.2,5.63378967E7
+referencia,Amazônia,PA,Pará,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,2023,7557.2,226761.2
+referencia,Amazônia,PA,Pará,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,722429.8,3.17547139E7
+referencia,Amazônia,PA,Pará,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,2.10366041E7,1.34062428E9
+referencia,Amazônia,PA,Pará,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,665413.8,5.44407637E7
+referencia,Amazônia,PA,Pará,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Secundária,2023,12291.0,454040.3
+referencia,Amazônia,PA,Pará,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Outras Transições,2023,12300.6,498112.3
+referencia,Amazônia,PA,Pará,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,24566.8,1698615.7
+referencia,Amazônia,PA,Pará,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,36687.8,5159966.1
+referencia,Amazônia,PA,Pará,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Desmatamento Primário,2023,12289.8,2003090.4
+referencia,Amazônia,PA,Pará,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,73666.1,3013545.1
+referencia,Amazônia,PA,Pará,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Vegetação Primária,2023,36660.4,2098404.4
+referencia,Amazônia,PA,Pará,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Outras Transições,2023,109926.7,5635797.8
+referencia,Amazônia,PA,Pará,30,Mineração,Área não vegetada,Mineração,Mineração,Mineração,Antrópico,2023,24509.1,2079055.4
+referencia,Amazônia,PA,Pará,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,24529.8,611542.8
+referencia,Amazônia,PA,Pará,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,638490.7,3.64361028E7
+referencia,Amazônia,PA,Pará,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,3820771.8,1.974360814E8
+referencia,Amazônia,PA,Pará,35,Dendê,Agropecuária,Agricultura,Lavoura Perene,Dendê,Antrópico,2023,122985.9,9912349.7
+referencia,Amazônia,PA,Pará,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,487847.9,2.43453647E7
+referencia,Amazônia,AP,Amapá,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,1.02439066E7,2.0891893446E9
+referencia,Amazônia,AP,Amapá,5,Mangue,Floresta,Mangue,Mangue,Mangue,Vegetação Primária,2023,33148.3,2724052.0
+referencia,Amazônia,AP,Amapá,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Vegetação Primária,2023,1112447.6,6.9213606E7
+referencia,Amazônia,AP,Amapá,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,61541.2,3633963.1
+referencia,Amazônia,AP,Amapá,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Vegetação Primária,2023,12308.0,884112.9
+referencia,Amazônia,AP,Amapá,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,2251170.1,8.24521001E7
+referencia,Amazônia,AP,Amapá,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,12309.1,369751.2
+referencia,Amazônia,AP,Amapá,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,12306.7,1071031.6
+referencia,Amazônia,AP,Amapá,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,307179.9,1.11967046E7
+referencia,Amazônia,TO,Tocantins,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,47590.7,2068647.6
+referencia,Amazônia,TO,Tocantins,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Outras Transições,2023,12210.6,341191.9
+referencia,Amazônia,TO,Tocantins,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Antrópico,2023,12218.5,678475.2
+referencia,Amazônia,TO,Tocantins,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,2200993.7,5.74951195E7
+referencia,Amazônia,TO,Tocantins,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,10746.1,347327.9
+referencia,Amazônia,TO,Tocantins,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,12226.0,240337.5
+referencia,Amazônia,TO,Tocantins,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,12258.8,359639.8
+referencia,Amazônia,TO,Tocantins,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,24493.0,663202.6
+referencia,Amazônia,TO,Tocantins,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,12215.9,389956.7
+referencia,Amazônia,MA,Maranhão,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,606452.2,2.80394575E7
+referencia,Amazônia,MA,Maranhão,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,3179783.1,2.756855358E8
+referencia,Amazônia,MA,Maranhão,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Secundária,2023,94813.2,3503951.9
+referencia,Amazônia,MA,Maranhão,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,36898.7,1458087.5
+referencia,Amazônia,MA,Maranhão,5,Mangue,Floresta,Mangue,Mangue,Mangue,Vegetação Primária,2023,341639.9,1.21255482E7
+referencia,Amazônia,MA,Maranhão,5,Mangue,Floresta,Mangue,Mangue,Mangue,Outras Transições,2023,12304.7,348930.6
+referencia,Amazônia,MA,Maranhão,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Antrópico,2023,36841.3,949120.5
+referencia,Amazônia,MA,Maranhão,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Vegetação Primária,2023,399471.7,1.42698395E7
+referencia,Amazônia,MA,Maranhão,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,47866.8,2070029.0
+referencia,Amazônia,MA,Maranhão,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,368763.3,5399979.5
+referencia,Amazônia,MA,Maranhão,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,36895.2,929377.4
+referencia,Amazônia,MA,Maranhão,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,5054453.9,1.523099841E8
+referencia,Amazônia,MA,Maranhão,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,221216.8,6491720.2
+referencia,Amazônia,MA,Maranhão,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,12273.0,378401.8
+referencia,Amazônia,MA,Maranhão,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,61472.6,1813842.2
+referencia,Amazônia,MA,Maranhão,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,36548.0,1027407.1
+referencia,Amazônia,MA,Maranhão,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,267120.2,6179592.5
+referencia,Amazônia,MA,Maranhão,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,196311.7,6188210.1
+referencia,Amazônia,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,2191522.4,1.219187258E8
+referencia,Amazônia,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,2.60645463E7,2.602496158E9
+referencia,Amazônia,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Secundária,2023,11950.3,1186490.1
+referencia,Amazônia,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Outras Transições,2023,12090.8,776531.1
+referencia,Amazônia,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,31533.2,826761.0
+referencia,Amazônia,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,327536.1,1.87397137E7
+referencia,Amazônia,MT,Mato Grosso,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Antrópico,2023,204646.1,9330217.2
+referencia,Amazônia,MT,Mato Grosso,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Vegetação Primária,2023,1369797.8,1.010365168E8
+referencia,Amazônia,MT,Mato Grosso,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,31318.3,1352655.1
+referencia,Amazônia,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,34148.0,853737.8
+referencia,Amazônia,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,657692.1,2.02252447E7
+referencia,Amazônia,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,2023,23739.7,583750.7
+referencia,Amazônia,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,127997.6,5687311.5
+referencia,Amazônia,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,1.28533884E7,6.092972756E8
+referencia,Amazônia,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,752563.7,3.71660478E7
+referencia,Amazônia,MT,Mato Grosso,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,83358.8,1500311.3
+referencia,Amazônia,MT,Mato Grosso,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,84399.5,4765391.6
+referencia,Amazônia,MT,Mato Grosso,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Vegetação Primária,2023,12135.9,984156.4
+referencia,Amazônia,MT,Mato Grosso,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,12132.4,415989.1
+referencia,Amazônia,MT,Mato Grosso,25,Outras Áreas não Vegetadas,Área não vegetada,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Antrópico,2023,4053.1,251416.5
+referencia,Amazônia,MT,Mato Grosso,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Vegetação Primária,2023,47483.0,1397374.5
+referencia,Amazônia,MT,Mato Grosso,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Outras Transições,2023,166410.8,5720699.8
+referencia,Amazônia,MT,Mato Grosso,30,Mineração,Área não vegetada,Mineração,Mineração,Mineração,Antrópico,2023,48478.5,1121149.9
+referencia,Amazônia,MT,Mato Grosso,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,36203.0,1647185.3
+referencia,Amazônia,MT,Mato Grosso,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,24161.3,1522531.9
+referencia,Amazônia,MT,Mato Grosso,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,4719377.9,1.857217365E8
+referencia,Amazônia,MT,Mato Grosso,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,331712.6,1.52708929E7
+referencia,Amazônia,MT,Mato Grosso,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,225954.5,9136008.3
+referencia,Cerrado,RO,Rondônia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,34344.7,1609710.9
+referencia,Cerrado,RO,Rondônia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,1320.6,43855.1
+referencia,Cerrado,RO,Rondônia,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,4805.4,170247.4
+referencia,Cerrado,RO,Rondônia,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,14560.7,410074.0
+referencia,Cerrado,PA,Pará,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,7687.7,310527.0
+referencia,Cerrado,PA,Pará,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Vegetação Primária,2023,3760.9,248806.2
+referencia,Cerrado,PA,Pará,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,4048.8,72869.1
+referencia,Cerrado,PA,Pará,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,1715.4,33201.6
+referencia,Cerrado,PA,Pará,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,64759.3,2066850.5
+referencia,Cerrado,PA,Pará,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,5732.7,131451.9
+referencia,Cerrado,PA,Pará,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,2002.8,47418.1
+referencia,Cerrado,PA,Pará,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,429.3,14276.7
+referencia,Cerrado,TO,Tocantins,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,4306.3,96867.6
+referencia,Cerrado,TO,Tocantins,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,5468.9,180478.4
+referencia,Cerrado,TO,Tocantins,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,1676.3,37253.6
+referencia,Cerrado,TO,Tocantins,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,1822.3,35420.5
+referencia,Cerrado,TO,Tocantins,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,107364.6,2730797.4
+referencia,Cerrado,TO,Tocantins,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,3917.1,73636.4
+referencia,Cerrado,MA,Maranhão,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,8144.5,200318.1
+referencia,Cerrado,MA,Maranhão,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,54880.4,1675553.4
+referencia,Cerrado,MA,Maranhão,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,2354.9,65610.8
+referencia,Cerrado,MA,Maranhão,5,Mangue,Floresta,Mangue,Mangue,Mangue,Vegetação Primária,2023,10079.4,207387.9
+referencia,Cerrado,MA,Maranhão,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Vegetação Primária,2023,4287.6,247504.5
+referencia,Cerrado,MA,Maranhão,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,65999.9,1801135.8
+referencia,Cerrado,MA,Maranhão,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,12662.0,277835.3
+referencia,Cerrado,MA,Maranhão,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,8247.0,102536.2
+referencia,Cerrado,MA,Maranhão,50,Restinga herbácea,Vegetação Herbácea e Arbustiva,Restinga herbácea,Restinga herbácea,Restinga herbácea,Vegetação Primária,2023,96.4,852.9
+referencia,Cerrado,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,15799.7,645086.1
+referencia,Cerrado,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,166649.4,7646208.2
+referencia,Cerrado,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,516.2,10472.2
+referencia,Cerrado,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,73496.4,2220579.3
+referencia,Cerrado,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,993.7,23078.1
+referencia,Cerrado,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,33807.4,951883.9
+referencia,Cerrado,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,233.7,6056.7
+referencia,Cerrado,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,83864.4,2103470.2
+referencia,Cerrado,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,21087.1,620812.0
+referencia,Cerrado,MT,Mato Grosso,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,2063.7,57492.7
+referencia,Cerrado,MT,Mato Grosso,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,175345.7,4440146.3
+referencia,Cerrado,MT,Mato Grosso,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,1969.1,68107.2
+referencia,Pantanal,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,15514.2,573398.9
+referencia,Pantanal,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,2546.4,61221.2
+referencia,Pantanal,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,11356.1,310219.6
+referencia,Pantanal,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,31011.7,596984.0
+referencia,Pantanal,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,12115.5,215844.5
+referencia,Caatinga,PI,Piauí,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,831989.6,2.47845407E7
+referencia,Caatinga,PI,Piauí,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,736956.5,2.39663178E7
+referencia,Caatinga,PI,Piauí,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,9520171.9,3.384696983E8
+referencia,Caatinga,PI,Piauí,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,2023,183045.4,6216023.0
+referencia,Caatinga,PI,Piauí,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Outras Transições,2023,11473.6,131449.8
+referencia,Caatinga,PI,Piauí,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,6267.7,165684.4
+referencia,Caatinga,PI,Piauí,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,241034.4,7694217.0
+referencia,Caatinga,PI,Piauí,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,12213.3,387635.6
+referencia,Caatinga,PI,Piauí,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,12110.2,413589.8
+referencia,Caatinga,PI,Piauí,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,24426.5,691675.6
+referencia,Caatinga,CE,Ceará,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,118712.7,2450539.7
+referencia,Caatinga,CE,Ceará,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,606989.1,1.7012101E7
+referencia,Caatinga,CE,Ceará,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Outras Transições,2023,10061.6,118560.9
+referencia,Caatinga,CE,Ceará,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,992564.1,2.62709814E7
+referencia,Caatinga,CE,Ceará,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,1.07265824E7,3.249058597E8
+referencia,Caatinga,CE,Ceará,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,2023,61291.8,1639599.4
+referencia,Caatinga,CE,Ceará,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Outras Transições,2023,12273.0,322193.2
+referencia,Caatinga,CE,Ceará,5,Mangue,Floresta,Mangue,Mangue,Mangue,Vegetação Primária,2023,12196.8,297295.4
+referencia,Caatinga,CE,Ceará,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,1580163.4,3.6510569E7
+referencia,Caatinga,CE,Ceará,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,24530.6,574546.8
+referencia,Caatinga,CE,Ceará,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,72069.4,1689503.3
+referencia,Caatinga,CE,Ceará,23,"Praia, Duna e Areal",Área não vegetada,"Praia, Duna e Areal","Praia, Duna e Areal","Praia, Duna e Areal",Antrópico,2023,9640.9,123375.2
+referencia,Caatinga,CE,Ceará,23,"Praia, Duna e Areal",Área não vegetada,"Praia, Duna e Areal","Praia, Duna e Areal","Praia, Duna e Areal",Vegetação Primária,2023,6796.2,51380.7
+referencia,Caatinga,CE,Ceará,23,"Praia, Duna e Areal",Área não vegetada,"Praia, Duna e Areal","Praia, Duna e Areal","Praia, Duna e Areal",Outras Transições,2023,49598.1,466793.5
+referencia,Caatinga,CE,Ceará,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,76894.9,1578405.5
+referencia,Caatinga,CE,Ceará,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,27014.6,200768.3
+referencia,Caatinga,CE,Ceará,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,12279.2,336328.5
+referencia,Caatinga,CE,Ceará,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,55569.8,657366.0
+referencia,Caatinga,CE,Ceará,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,134209.9,2491998.2
+referencia,Caatinga,CE,Ceará,48,Outras Lavouras Perenes,Agropecuária,Agricultura,Lavoura Perene,Outras Lavouras Perenes,Antrópico,2023,141451.7,3362129.7
+referencia,Caatinga,CE,Ceará,48,Outras Lavouras Perenes,Agropecuária,Agricultura,Lavoura Perene,Outras Lavouras Perenes,Vegetação Primária,2023,12292.1,294904.1
+referencia,Caatinga,RN,Rio Grande do Norte,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,12248.8,352074.9
+referencia,Caatinga,RN,Rio Grande do Norte,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,563350.7,1.32626944E7
+referencia,Caatinga,RN,Rio Grande do Norte,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,2541431.7,6.92534379E7
+referencia,Caatinga,RN,Rio Grande do Norte,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,2023,36774.3,546429.5
+referencia,Caatinga,RN,Rio Grande do Norte,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Outras Transições,2023,7791.5,24079.3
+referencia,Caatinga,RN,Rio Grande do Norte,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,12230.9,379649.1
+referencia,Caatinga,RN,Rio Grande do Norte,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,1323546.0,2.99418574E7
+referencia,Caatinga,RN,Rio Grande do Norte,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,12228.4,382147.0
+referencia,Caatinga,RN,Rio Grande do Norte,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,54583.8,964581.4
+referencia,Caatinga,RN,Rio Grande do Norte,23,"Praia, Duna e Areal",Área não vegetada,"Praia, Duna e Areal","Praia, Duna e Areal","Praia, Duna e Areal",Outras Transições,2023,6251.5,32015.7
+referencia,Caatinga,RN,Rio Grande do Norte,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,29741.0,600028.6
+referencia,Caatinga,RN,Rio Grande do Norte,31,Aquicultura,Corpos D´água,Aquicultura,Aquicultura,Aquicultura,Antrópico,2023,40587.2,252769.7
+referencia,Caatinga,RN,Rio Grande do Norte,31,Aquicultura,Corpos D´água,Aquicultura,Aquicultura,Aquicultura,Outras Transições,2023,12260.7,40019.5
+referencia,Caatinga,RN,Rio Grande do Norte,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,24495.4,413900.5
+referencia,Caatinga,RN,Rio Grande do Norte,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,359461.5,6609322.3
+referencia,Caatinga,RN,Rio Grande do Norte,48,Outras Lavouras Perenes,Agropecuária,Agricultura,Lavoura Perene,Outras Lavouras Perenes,Antrópico,2023,36750.5,506153.5
+referencia,Caatinga,PB,Paraíba,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,12223.5,336379.8
+referencia,Caatinga,PB,Paraíba,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,24444.6,629411.7
+referencia,Caatinga,PB,Paraíba,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Secundária,2023,12226.0,296920.9
+referencia,Caatinga,PB,Paraíba,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,542959.3,1.39840223E7
+referencia,Caatinga,PB,Paraíba,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,2894664.4,9.46787487E7
+referencia,Caatinga,PB,Paraíba,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,2023,73325.2,1908198.1
+referencia,Caatinga,PB,Paraíba,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Outras Transições,2023,12205.2,317843.5
+referencia,Caatinga,PB,Paraíba,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,1619785.8,3.90411288E7
+referencia,Caatinga,PB,Paraíba,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,14950.2,376606.1
+referencia,Caatinga,PB,Paraíba,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,24444.5,611145.1
+referencia,Caatinga,PB,Paraíba,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,12218.5,199860.1
+referencia,Caatinga,PE,Pernambuco,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,12207.9,231358.3
+referencia,Caatinga,PE,Pernambuco,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,840222.8,2.12979924E7
+referencia,Caatinga,PE,Pernambuco,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,5067483.2,1.635781599E8
+referencia,Caatinga,PE,Pernambuco,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,2023,31490.0,716891.9
+referencia,Caatinga,PE,Pernambuco,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,24342.3,449488.7
+referencia,Caatinga,PE,Pernambuco,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,1837352.0,3.70275614E7
+referencia,Caatinga,PE,Pernambuco,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,36546.0,1059856.1
+referencia,Caatinga,PE,Pernambuco,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,12146.4,274928.5
+referencia,Caatinga,PE,Pernambuco,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,48638.6,1244747.3
+referencia,Caatinga,PE,Pernambuco,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,12159.9,100996.6
+referencia,Caatinga,PE,Pernambuco,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,60818.7,308492.2
+referencia,Caatinga,PE,Pernambuco,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,36612.7,595285.4
+referencia,Caatinga,PE,Pernambuco,48,Outras Lavouras Perenes,Agropecuária,Agricultura,Lavoura Perene,Outras Lavouras Perenes,Antrópico,2023,72934.9,2371582.9
+referencia,Caatinga,PE,Pernambuco,77,Formação Herbáceo Arbustiva,Vegetação Herbácea e Arbustiva,Formação Herbáceo Arbustiva,Formação Herbáceo Arbustiva,Formação Herbáceo Arbustiva,Antrópico,2023,12175.9,416332.7
+referencia,Caatinga,PE,Pernambuco,77,Formação Herbáceo Arbustiva,Vegetação Herbácea e Arbustiva,Formação Herbáceo Arbustiva,Formação Herbáceo Arbustiva,Formação Herbáceo Arbustiva,Vegetação Primária,2023,73036.4,1787486.5
+referencia,Caatinga,PE,Pernambuco,77,Formação Herbáceo Arbustiva,Vegetação Herbácea e Arbustiva,Formação Herbáceo Arbustiva,Formação Herbáceo Arbustiva,Formação Herbáceo Arbustiva,Outras Transições,2023,12169.6,210202.4
+referencia,Caatinga,AL,Alagoas,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,12159.9,256131.7
+referencia,Caatinga,AL,Alagoas,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,72874.2,1367540.7
+referencia,Caatinga,AL,Alagoas,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,2023,12146.4,199794.6
+referencia,Caatinga,AL,Alagoas,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,1164948.3,1.69488439E7
+referencia,Caatinga,SE,Sergipe,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,12102.6,248315.2
+referencia,Caatinga,SE,Sergipe,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,97011.7,1972782.6
+referencia,Caatinga,SE,Sergipe,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,2023,12090.8,256365.6
+referencia,Caatinga,SE,Sergipe,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,1003753.2,1.60089576E7
+referencia,Caatinga,SE,Sergipe,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,36299.9,500631.4
+referencia,Caatinga,BA,Bahia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,12040.5,260697.8
+referencia,Caatinga,BA,Bahia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,797463.1,1.98790492E7
+referencia,Caatinga,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,2572959.8,5.68952249E7
+referencia,Caatinga,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,1.76169083E7,4.971145505E8
+referencia,Caatinga,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,2023,540047.0,1.37445041E7
+referencia,Caatinga,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Outras Transições,2023,48341.9,1155510.1
+referencia,Caatinga,BA,Bahia,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,119926.5,2510480.7
+referencia,Caatinga,BA,Bahia,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Secundária,2023,11975.3,198572.1
+referencia,Caatinga,BA,Bahia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,1.0413764E7,1.805025718E8
+referencia,Caatinga,BA,Bahia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,180842.8,3971954.3
+referencia,Caatinga,BA,Bahia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Secundária,2023,11221.1,121202.1
+referencia,Caatinga,BA,Bahia,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,24289.4,623304.8
+referencia,Caatinga,BA,Bahia,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,1087035.1,1.80271391E7
+referencia,Caatinga,BA,Bahia,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Vegetação Primária,2023,24285.8,618285.9
+referencia,Caatinga,BA,Bahia,23,"Praia, Duna e Areal",Área não vegetada,"Praia, Duna e Areal","Praia, Duna e Areal","Praia, Duna e Areal",Outras Transições,2023,24239.2,726647.8
+referencia,Caatinga,BA,Bahia,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,28760.9,576174.3
+referencia,Caatinga,BA,Bahia,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Antrópico,2023,12066.3,270530.8
+referencia,Caatinga,BA,Bahia,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Outras Transições,2023,36052.7,811005.7
+referencia,Caatinga,BA,Bahia,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,48583.9,870021.2
+referencia,Caatinga,BA,Bahia,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,12166.4,408013.3
+referencia,Caatinga,BA,Bahia,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,473365.8,3848880.8
+referencia,Caatinga,BA,Bahia,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,84459.5,1318495.0
+referencia,Caatinga,BA,Bahia,48,Outras Lavouras Perenes,Agropecuária,Agricultura,Lavoura Perene,Outras Lavouras Perenes,Antrópico,2023,48286.0,1507320.4
+referencia,Caatinga,BA,Bahia,77,Formação Herbáceo Arbustiva,Vegetação Herbácea e Arbustiva,Formação Herbáceo Arbustiva,Formação Herbáceo Arbustiva,Formação Herbáceo Arbustiva,Antrópico,2023,72958.4,1521335.1
+referencia,Caatinga,BA,Bahia,77,Formação Herbáceo Arbustiva,Vegetação Herbácea e Arbustiva,Formação Herbáceo Arbustiva,Formação Herbáceo Arbustiva,Formação Herbáceo Arbustiva,Vegetação Primária,2023,425304.6,1.09397465E7
+referencia,Caatinga,MG,Minas Gerais,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,11897.6,234639.5
+referencia,Caatinga,MG,Minas Gerais,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,10497.9,251764.0
+referencia,Caatinga,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,388590.6,7023332.4
+referencia,Caatinga,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,928118.2,1.82173617E7
+referencia,Caatinga,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,2023,11881.1,193223.8
+referencia,Caatinga,MG,Minas Gerais,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,1610959.4,2.53473813E7
+referencia,Caatinga,MG,Minas Gerais,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,52249.5,1013896.6
+referencia,Caatinga,MG,Minas Gerais,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,11892.1,201688.1
+referencia,Caatinga,MG,Minas Gerais,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,11852.9,226059.5
+referencia,Cerrado,MA,Maranhão,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,335.8,10728.0
+referencia,Cerrado,MA,Maranhão,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,3616.0,62540.7
+referencia,Cerrado,PI,Piauí,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,28357.4,824087.5
+referencia,Cerrado,PI,Piauí,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,307903.5,1.03884264E7
+referencia,Cerrado,PI,Piauí,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,712.6,19390.8
+referencia,Cerrado,PI,Piauí,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Vegetação Primária,2023,4107.4,137395.1
+referencia,Cerrado,PI,Piauí,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,48.0,1577.1
+referencia,Cerrado,BA,Bahia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,6183.5,114232.4
+referencia,Cerrado,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,8968.0,162738.5
+referencia,Cerrado,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,222789.5,5019535.3
+referencia,Cerrado,BA,Bahia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,27468.4,476423.3
+referencia,Cerrado,BA,Bahia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,7266.1,159541.8
+referencia,Cerrado,MG,Minas Gerais,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,7328.5,182925.7
+referencia,Cerrado,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,15428.2,281222.0
+referencia,Cerrado,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,105954.1,2101214.7
+referencia,Cerrado,MG,Minas Gerais,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,68683.0,1275826.0
+referencia,Cerrado,MG,Minas Gerais,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,1207.4,27099.8
+referencia,Mata Atlântica,RN,Rio Grande do Norte,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,5666.9,5479.0
+referencia,Mata Atlântica,RN,Rio Grande do Norte,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,3508.5,28742.6
+referencia,Mata Atlântica,RN,Rio Grande do Norte,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,3987.5,54036.3
+referencia,Mata Atlântica,RN,Rio Grande do Norte,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,3790.9,80182.9
+referencia,Mata Atlântica,PB,Paraíba,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,1485.4,30963.5
+referencia,Mata Atlântica,PB,Paraíba,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,335.6,8028.4
+referencia,Mata Atlântica,PB,Paraíba,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,11629.6,300268.0
+referencia,Mata Atlântica,PB,Paraíba,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,3207.9,69019.2
+referencia,Mata Atlântica,PB,Paraíba,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,1246.3,27609.5
+referencia,Mata Atlântica,PB,Paraíba,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,958.4,22621.7
+referencia,Mata Atlântica,PE,Pernambuco,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,5004.3,98032.3
+referencia,Mata Atlântica,PE,Pernambuco,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,52346.3,1202053.7
+referencia,Mata Atlântica,AL,Alagoas,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,32917.5,687197.6
+referencia,Mata Atlântica,AL,Alagoas,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,1191.2,25426.7
+referencia,Mata Atlântica,SE,Sergipe,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,27950.8,584867.1
+referencia,Mata Atlântica,BA,Bahia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,15627.0,399856.4
+referencia,Mata Atlântica,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,6043.4,127749.5
+referencia,Mata Atlântica,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,46730.4,902973.2
+referencia,Mata Atlântica,BA,Bahia,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,2505.2,53926.3
+referencia,Mata Atlântica,BA,Bahia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,94143.9,1693995.3
+referencia,Mata Atlântica,BA,Bahia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,2021.0,43907.0
+referencia,Amazônia,RO,Rondônia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,4291.1,218222.6
+referencia,Amazônia,RO,Rondônia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,31711.4,1931597.5
+referencia,Amazônia,RO,Rondônia,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,2309.3,54630.4
+referencia,Amazônia,PA,Pará,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,17052.0,644089.9
+referencia,Amazônia,PA,Pará,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Vegetação Primária,2023,6091.8,341837.0
+referencia,Amazônia,PA,Pará,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,3809.6,172073.2
+referencia,Amazônia,PA,Pará,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,2023,4591.7,137778.9
+referencia,Amazônia,PA,Pará,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,3110.4,75872.6
+referencia,Amazônia,PA,Pará,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,53162.5,1431396.3
+referencia,Amazônia,PA,Pará,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,7540.2,300814.0
+referencia,Amazônia,PA,Pará,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,5061.3,113485.5
+referencia,Amazônia,PA,Pará,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,14536.4,325339.9
+referencia,Amazônia,TO,Tocantins,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,1244.4,50877.4
+referencia,Amazônia,TO,Tocantins,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,94442.7,2580507.2
+referencia,Amazônia,TO,Tocantins,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,1432.8,46310.4
+referencia,Amazônia,MA,Maranhão,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,19329.5,782403.9
+referencia,Amazônia,MA,Maranhão,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,50907.4,2495665.8
+referencia,Amazônia,MA,Maranhão,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Secundária,2023,3423.1,143644.0
+referencia,Amazônia,MA,Maranhão,5,Mangue,Floresta,Mangue,Mangue,Mangue,Vegetação Primária,2023,3616.8,157118.3
+referencia,Amazônia,MA,Maranhão,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Vegetação Primária,2023,6022.5,195356.1
+referencia,Amazônia,MA,Maranhão,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,1153.8,62371.5
+referencia,Amazônia,MA,Maranhão,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,41333.7,1166434.4
+referencia,Amazônia,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,48908.6,1550961.6
+referencia,Amazônia,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,269468.2,1.21011991E7
+referencia,Amazônia,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,13720.7,313967.2
+referencia,Amazônia,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,17322.2,363086.4
+referencia,Amazônia,MT,Mato Grosso,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Vegetação Primária,2023,427.8,17967.7
+referencia,Amazônia,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,1755.5,30104.2
+referencia,Amazônia,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,15856.6,243346.2
+referencia,Amazônia,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,75238.8,2049262.2
+referencia,Amazônia,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,13939.1,231465.4
+referencia,Amazônia,MT,Mato Grosso,25,Outras Áreas não Vegetadas,Área não vegetada,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Antrópico,2023,7917.7,491139.2
+referencia,Amazônia,MT,Mato Grosso,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,129565.4,3588931.5
+referencia,Amazônia,MT,Mato Grosso,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,5689.2,116154.3
+referencia,Amazônia,MT,Mato Grosso,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,2302.1,84159.9
+referencia,Caatinga,PI,Piauí,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,43787.6,1074683.9
+referencia,Caatinga,PI,Piauí,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,6636.1,240987.0
+referencia,Caatinga,PI,Piauí,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,270563.1,9315147.1
+referencia,Caatinga,PI,Piauí,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,5978.4,158037.4
+referencia,Caatinga,PI,Piauí,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,2850.4,81622.9
+referencia,Caatinga,BA,Bahia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,9488.9,191328.5
+referencia,Caatinga,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,32175.8,758894.1
+referencia,Caatinga,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,188947.9,4373728.2
+referencia,Caatinga,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,2023,1787.7,39039.0
+referencia,Caatinga,BA,Bahia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,59692.4,1230492.8
+referencia,Caatinga,MG,Minas Gerais,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,1399.7,33568.5
+referencia,Caatinga,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,15388.1,336743.5
+referencia,Caatinga,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,58218.5,1239307.5
+referencia,Caatinga,MG,Minas Gerais,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,38527.5,708439.2
+referencia,Caatinga,MG,Minas Gerais,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,7047.9,179607.7
+referencia,Cerrado,RO,Rondônia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,12022.6,303998.0
+referencia,Cerrado,RO,Rondônia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,145771.5,6078753.3
+referencia,Cerrado,RO,Rondônia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,34765.2,1180605.7
+referencia,Cerrado,RO,Rondônia,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,7160.9,253702.0
+referencia,Cerrado,RO,Rondônia,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,21441.6,564527.1
+referencia,Cerrado,PA,Pará,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,65289.0,1598766.3
+referencia,Cerrado,PA,Pará,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,12175.9,149217.1
+referencia,Cerrado,PA,Pará,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,48681.4,1014322.7
+referencia,Cerrado,PA,Pará,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Vegetação Primária,2023,8331.0,551153.1
+referencia,Cerrado,PA,Pará,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,8097.6,145738.3
+referencia,Cerrado,PA,Pará,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,46836.1,999091.6
+referencia,Cerrado,PA,Pará,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,36545.4,652278.5
+referencia,Cerrado,PA,Pará,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,385948.4,9348019.8
+referencia,Cerrado,PA,Pará,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,67291.4,1758015.0
+referencia,Cerrado,PA,Pará,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,22288.3,465060.6
+referencia,Cerrado,PA,Pará,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,36047.1,789685.1
+referencia,Cerrado,TO,Tocantins,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,371317.5,8710962.2
+referencia,Cerrado,TO,Tocantins,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,3506841.3,1.010268711E8
+referencia,Cerrado,TO,Tocantins,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,471785.7,9934162.7
+referencia,Cerrado,TO,Tocantins,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,8824017.7,1.905058499E8
+referencia,Cerrado,TO,Tocantins,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,48613.6,1020179.8
+referencia,Cerrado,TO,Tocantins,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,24256.3,419315.6
+referencia,Cerrado,TO,Tocantins,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,2028637.4,2.48283609E7
+referencia,Cerrado,TO,Tocantins,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,1293838.8,6998229.2
+referencia,Cerrado,TO,Tocantins,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,5690070.2,1.265882861E8
+referencia,Cerrado,TO,Tocantins,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,1617840.9,3.83976365E7
+referencia,Cerrado,TO,Tocantins,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,12153.2,263762.7
+referencia,Cerrado,TO,Tocantins,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,12196.8,238072.8
+referencia,Cerrado,TO,Tocantins,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,24235.5,548443.0
+referencia,Cerrado,TO,Tocantins,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,12114.0,176656.6
+referencia,Cerrado,TO,Tocantins,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,84856.6,1863291.3
+referencia,Cerrado,TO,Tocantins,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,24242.2,728176.3
+referencia,Cerrado,TO,Tocantins,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,920683.4,1.61739727E7
+referencia,Cerrado,TO,Tocantins,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,158045.2,3620606.9
+referencia,Cerrado,TO,Tocantins,40,Arroz,Agropecuária,Agricultura,Lavoura Temporária,Arroz,Antrópico,2023,48390.5,780448.0
+referencia,Cerrado,TO,Tocantins,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,24391.6,487137.2
+referencia,Cerrado,MA,Maranhão,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,617079.9,1.62168792E7
+referencia,Cerrado,MA,Maranhão,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,8220613.1,2.358144041E8
+referencia,Cerrado,MA,Maranhão,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,207648.7,5027828.7
+referencia,Cerrado,MA,Maranhão,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,6268915.6,1.376030617E8
+referencia,Cerrado,MA,Maranhão,5,Mangue,Floresta,Mangue,Mangue,Mangue,Vegetação Primária,2023,88580.7,1902808.7
+referencia,Cerrado,MA,Maranhão,6,Floresta Alagável,Floresta,Floresta Alagável,Floresta Alagável,Floresta Alagável,Vegetação Primária,2023,7949.0,458856.7
+referencia,Cerrado,MA,Maranhão,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,24558.2,410162.0
+referencia,Cerrado,MA,Maranhão,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,39241.7,812661.6
+referencia,Cerrado,MA,Maranhão,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,2023,12149.8,32034.6
+referencia,Cerrado,MA,Maranhão,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,365847.7,5368428.7
+referencia,Cerrado,MA,Maranhão,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,3877362.2,1.040753002E8
+referencia,Cerrado,MA,Maranhão,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,207604.4,5602641.4
+referencia,Cerrado,MA,Maranhão,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,12226.0,250935.8
+referencia,Cerrado,MA,Maranhão,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,121829.9,2410339.7
+referencia,Cerrado,MA,Maranhão,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Vegetação Primária,2023,73193.5,1750856.0
+referencia,Cerrado,MA,Maranhão,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Desmatamento Primário,2023,48918.7,1164407.0
+referencia,Cerrado,MA,Maranhão,23,"Praia, Duna e Areal",Área não vegetada,"Praia, Duna e Areal","Praia, Duna e Areal","Praia, Duna e Areal",Outras Transições,2023,112989.1,561102.1
+referencia,Cerrado,MA,Maranhão,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,12252.9,433341.0
+referencia,Cerrado,MA,Maranhão,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,12228.4,297286.4
+referencia,Cerrado,MA,Maranhão,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,12289.8,315712.9
+referencia,Cerrado,MA,Maranhão,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,84486.5,1605651.2
+referencia,Cerrado,MA,Maranhão,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,744340.7,1.52772682E7
+referencia,Cerrado,MA,Maranhão,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,171068.8,4126145.9
+referencia,Cerrado,MA,Maranhão,50,Restinga herbácea,Vegetação Herbácea e Arbustiva,Restinga herbácea,Restinga herbácea,Restinga herbácea,Vegetação Primária,2023,208870.9,4313391.5
+referencia,Cerrado,PI,Piauí,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,36805.0,975022.5
+referencia,Cerrado,PI,Piauí,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,2055998.0,5.90688538E7
+referencia,Cerrado,PI,Piauí,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,170349.7,3550273.8
+referencia,Cerrado,PI,Piauí,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,8925470.2,2.553037445E8
+referencia,Cerrado,PI,Piauí,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,12218.5,349598.5
+referencia,Cerrado,PI,Piauí,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,36812.6,1185945.6
+referencia,Cerrado,PI,Piauí,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,36748.4,1062931.0
+referencia,Cerrado,PI,Piauí,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,219616.9,5473472.9
+referencia,Cerrado,PI,Piauí,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,49063.4,1362193.5
+referencia,Cerrado,PI,Piauí,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,12266.2,323990.0
+referencia,Cerrado,PI,Piauí,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,194866.3,3922923.2
+referencia,Cerrado,PI,Piauí,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Vegetação Primária,2023,20202.8,547545.3
+referencia,Cerrado,PI,Piauí,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Desmatamento Primário,2023,24316.3,485034.8
+referencia,Cerrado,PI,Piauí,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,12260.7,362162.4
+referencia,Cerrado,PI,Piauí,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,1120343.1,2.07373082E7
+referencia,Cerrado,PI,Piauí,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,24373.0,451597.2
+referencia,Cerrado,PI,Piauí,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,12191.0,260043.9
+referencia,Cerrado,BA,Bahia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,65972.8,1482541.0
+referencia,Cerrado,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,399689.8,3775858.8
+referencia,Cerrado,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,6130370.7,9.21331005E7
+referencia,Cerrado,BA,Bahia,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,12053.5,62737.3
+referencia,Cerrado,BA,Bahia,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,83417.0,325993.5
+referencia,Cerrado,BA,Bahia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,187560.7,3016965.0
+referencia,Cerrado,BA,Bahia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,28716.1,466080.0
+referencia,Cerrado,BA,Bahia,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,108113.0,1301911.5
+referencia,Cerrado,BA,Bahia,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Vegetação Primária,2023,11965.4,94903.8
+referencia,Cerrado,BA,Bahia,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Desmatamento Primário,2023,59896.9,440746.3
+referencia,Cerrado,BA,Bahia,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,12044.9,76966.8
+referencia,Cerrado,BA,Bahia,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,2693949.6,1.26156116E7
+referencia,Cerrado,BA,Bahia,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,72195.1,204758.1
+referencia,Cerrado,BA,Bahia,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,107717.4,866610.0
+referencia,Cerrado,BA,Bahia,62,Algodão,Agropecuária,Agricultura,Lavoura Temporária,Algodão,Antrópico,2023,84257.9,237971.9
+referencia,Cerrado,MG,Minas Gerais,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,577250.3,7359819.7
+referencia,Cerrado,MG,Minas Gerais,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,752091.1,1.52555878E7
+referencia,Cerrado,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,1217550.3,1.74746663E7
+referencia,Cerrado,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,8080612.5,1.320104144E8
+referencia,Cerrado,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,2023,58892.2,1008375.9
+referencia,Cerrado,MG,Minas Gerais,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,936193.5,1.34149713E7
+referencia,Cerrado,MG,Minas Gerais,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Vegetação Primária,2023,175906.3,3239010.4
+referencia,Cerrado,MG,Minas Gerais,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Vegetação Secundária,2023,23513.3,281610.4
+referencia,Cerrado,MG,Minas Gerais,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,11651.6,93965.3
+referencia,Cerrado,MG,Minas Gerais,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,23568.3,217055.9
+referencia,Cerrado,MG,Minas Gerais,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,2023,93160.5,538481.7
+referencia,Cerrado,MG,Minas Gerais,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,620187.3,5870717.6
+referencia,Cerrado,MG,Minas Gerais,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Outras Transições,2023,11544.8,128344.8
+referencia,Cerrado,MG,Minas Gerais,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,1.29200354E7,1.473590734E8
+referencia,Cerrado,MG,Minas Gerais,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,653911.4,8989867.8
+referencia,Cerrado,MG,Minas Gerais,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Outras Transições,2023,11644.7,134347.9
+referencia,Cerrado,MG,Minas Gerais,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,1132463.4,7042534.0
+referencia,Cerrado,MG,Minas Gerais,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Vegetação Primária,2023,58580.4,273450.5
+referencia,Cerrado,MG,Minas Gerais,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,92870.3,972419.4
+referencia,Cerrado,MG,Minas Gerais,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,112243.6,2135930.5
+referencia,Cerrado,MG,Minas Gerais,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Antrópico,2023,23390.5,380171.6
+referencia,Cerrado,MG,Minas Gerais,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Vegetação Primária,2023,231041.7,3923083.9
+referencia,Cerrado,MG,Minas Gerais,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Outras Transições,2023,506915.3,8687247.6
+referencia,Cerrado,MG,Minas Gerais,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,170311.3,1340554.6
+referencia,Cerrado,MG,Minas Gerais,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,11793.9,277527.7
+referencia,Cerrado,MG,Minas Gerais,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,161604.7,1302659.5
+referencia,Cerrado,MG,Minas Gerais,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,1830563.8,1.22277043E7
+referencia,Cerrado,MG,Minas Gerais,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,153793.3,1297008.6
+referencia,Cerrado,MG,Minas Gerais,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,151771.9,1522058.2
+referencia,Cerrado,MG,Minas Gerais,46,Café,Agropecuária,Agricultura,Lavoura Perene,Café,Antrópico,2023,300202.6,4522350.0
+referencia,Cerrado,MG,Minas Gerais,46,Café,Agropecuária,Agricultura,Lavoura Perene,Café,Vegetação Primária,2023,11665.2,141603.3
+referencia,Cerrado,MG,Minas Gerais,47,Citrus,Agropecuária,Agricultura,Lavoura Perene,Citrus,Antrópico,2023,23198.3,255664.0
+referencia,Cerrado,SP,São Paulo,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,270405.0,4920481.7
+referencia,Cerrado,SP,São Paulo,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,11500.0,192700.9
+referencia,Cerrado,SP,São Paulo,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,578041.8,9519138.2
+referencia,Cerrado,SP,São Paulo,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,21541.3,379456.6
+referencia,Cerrado,SP,São Paulo,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,7666.5,80017.2
+referencia,Cerrado,SP,São Paulo,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,519211.5,6254347.0
+referencia,Cerrado,SP,São Paulo,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,3477849.1,4.72117625E7
+referencia,Cerrado,SP,São Paulo,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Vegetação Primária,2023,11522.5,227778.8
+referencia,Cerrado,SP,São Paulo,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,145946.9,2135002.7
+referencia,Cerrado,SP,São Paulo,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,80022.5,981695.7
+referencia,Cerrado,SP,São Paulo,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,43494.0,247434.9
+referencia,Cerrado,SP,São Paulo,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,11566.8,130266.1
+referencia,Cerrado,SP,São Paulo,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,90892.1,629963.9
+referencia,Cerrado,SP,São Paulo,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,517376.0,7295707.6
+referencia,Cerrado,SP,São Paulo,46,Café,Agropecuária,Agricultura,Lavoura Perene,Café,Antrópico,2023,11552.2,257021.3
+referencia,Cerrado,SP,São Paulo,47,Citrus,Agropecuária,Agricultura,Lavoura Perene,Citrus,Antrópico,2023,159288.8,2481354.2
+referencia,Cerrado,PR,Paraná,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,8078.5,166689.7
+referencia,Cerrado,PR,Paraná,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,8933.8,190114.1
+referencia,Cerrado,PR,Paraná,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,91383.5,2002381.4
+referencia,Cerrado,PR,Paraná,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Vegetação Primária,2023,11239.7,405564.8
+referencia,Cerrado,PR,Paraná,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,8977.8,183974.9
+referencia,Cerrado,PR,Paraná,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,147971.3,2084392.1
+referencia,Cerrado,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,574579.1,1.27418125E7
+referencia,Cerrado,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,1005387.2,3.08256457E7
+referencia,Cerrado,MS,Mato Grosso do Sul,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,58229.2,694902.8
+referencia,Cerrado,MS,Mato Grosso do Sul,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,269540.8,8609261.8
+referencia,Cerrado,MS,Mato Grosso do Sul,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,1237695.9,1.09094081E7
+referencia,Cerrado,MS,Mato Grosso do Sul,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Vegetação Primária,2023,11609.8,279156.3
+referencia,Cerrado,MS,Mato Grosso do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,2023,11477.0,108764.6
+referencia,Cerrado,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,1.48161019E7,1.377953204E8
+referencia,Cerrado,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,171629.8,2711347.5
+referencia,Cerrado,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Secundária,2023,11750.4,48398.8
+referencia,Cerrado,MS,Mato Grosso do Sul,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,489292.2,3703922.8
+referencia,Cerrado,MS,Mato Grosso do Sul,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,103216.1,494813.9
+referencia,Cerrado,MS,Mato Grosso do Sul,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,11552.2,234465.6
+referencia,Cerrado,MS,Mato Grosso do Sul,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,11537.4,63856.1
+referencia,Cerrado,MS,Mato Grosso do Sul,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,2915479.2,2.45819707E7
+referencia,Cerrado,MS,Mato Grosso do Sul,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,11737.7,60274.1
+referencia,Cerrado,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,579914.2,1.36259999E7
+referencia,Cerrado,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,4186015.8,1.359443226E8
+referencia,Cerrado,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,749952.6,1.23890285E7
+referencia,Cerrado,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,8016871.5,1.699709346E8
+referencia,Cerrado,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,83166.4,1208255.4
+referencia,Cerrado,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,2573325.9,2.57236567E7
+referencia,Cerrado,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,2023,35829.8,309999.6
+referencia,Cerrado,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,956931.7,8671211.3
+referencia,Cerrado,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,6676466.3,1.096540891E8
+referencia,Cerrado,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,1588650.6,3.19143981E7
+referencia,Cerrado,MT,Mato Grosso,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,23698.1,286708.6
+referencia,Cerrado,MT,Mato Grosso,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Vegetação Primária,2023,11744.1,68775.2
+referencia,Cerrado,MT,Mato Grosso,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,69344.5,692051.0
+referencia,Cerrado,MT,Mato Grosso,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Vegetação Primária,2023,11919.1,210937.4
+referencia,Cerrado,MT,Mato Grosso,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Desmatamento Primário,2023,11960.4,256365.3
+referencia,Cerrado,MT,Mato Grosso,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,35592.9,482831.8
+referencia,Cerrado,MT,Mato Grosso,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Antrópico,2023,11841.4,247932.7
+referencia,Cerrado,MT,Mato Grosso,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Vegetação Primária,2023,35471.2,676853.2
+referencia,Cerrado,MT,Mato Grosso,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,11903.0,204547.0
+referencia,Cerrado,MT,Mato Grosso,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,12036.1,144029.1
+referencia,Cerrado,MT,Mato Grosso,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,47612.0,556561.8
+referencia,Cerrado,MT,Mato Grosso,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,6898283.6,1.050141844E8
+referencia,Cerrado,MT,Mato Grosso,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,379188.4,7442374.8
+referencia,Cerrado,MT,Mato Grosso,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,12008.7,213439.0
+referencia,Cerrado,GO,Goiás,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,473478.3,7869302.5
+referencia,Cerrado,GO,Goiás,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,1441009.2,3.17968305E7
+referencia,Cerrado,GO,Goiás,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,331694.8,3726546.6
+referencia,Cerrado,GO,Goiás,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,3622667.8,6.73438344E7
+referencia,Cerrado,GO,Goiás,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,2023,11698.7,141791.3
+referencia,Cerrado,GO,Goiás,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Outras Transições,2023,11940.0,233854.9
+referencia,Cerrado,GO,Goiás,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,58991.6,711827.7
+referencia,Cerrado,GO,Goiás,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,11685.4,41539.8
+referencia,Cerrado,GO,Goiás,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,71669.8,1037899.2
+referencia,Cerrado,GO,Goiás,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,236723.9,2131154.1
+referencia,Cerrado,GO,Goiás,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,1.90500553E7,2.299533269E8
+referencia,Cerrado,GO,Goiás,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,735985.7,1.25567324E7
+referencia,Cerrado,GO,Goiás,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,1197941.8,4569639.3
+referencia,Cerrado,GO,Goiás,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,70758.4,517434.9
+referencia,Cerrado,GO,Goiás,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,175719.4,1609317.3
+referencia,Cerrado,GO,Goiás,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Vegetação Primária,2023,59611.8,1043011.5
+referencia,Cerrado,GO,Goiás,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,23955.4,486683.7
+referencia,Cerrado,GO,Goiás,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,11929.6,151070.6
+referencia,Cerrado,GO,Goiás,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,214309.0,2507919.1
+referencia,Cerrado,GO,Goiás,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,5376040.5,3.46313211E7
+referencia,Cerrado,GO,Goiás,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,130170.5,1411216.7
+referencia,Cerrado,GO,Goiás,62,Algodão,Agropecuária,Agricultura,Lavoura Temporária,Algodão,Antrópico,2023,11678.7,75572.1
+referencia,Cerrado,DF,Distrito Federal,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,11852.9,181980.7
+referencia,Cerrado,DF,Distrito Federal,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,35609.8,574128.8
+referencia,Cerrado,DF,Distrito Federal,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,35581.5,327234.8
+referencia,Cerrado,DF,Distrito Federal,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,177924.2,3216101.6
+referencia,Cerrado,DF,Distrito Federal,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,11847.2,83788.6
+referencia,Cerrado,DF,Distrito Federal,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,59253.0,1128302.7
+referencia,Cerrado,DF,Distrito Federal,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,59270.2,875491.6
+referencia,Cerrado,DF,Distrito Federal,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Vegetação Primária,2023,11852.9,208101.9
+referencia,Cerrado,DF,Distrito Federal,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,11858.6,346487.1
+referencia,Cerrado,DF,Distrito Federal,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,130398.9,747297.2
+referencia,Mata Atlântica,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,1259.7,24782.2
+referencia,Mata Atlântica,MG,Minas Gerais,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,29423.3,718189.4
+referencia,Mata Atlântica,MG,Minas Gerais,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,48975.4,1318782.7
+referencia,Mata Atlântica,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,10083.9,196949.0
+referencia,Mata Atlântica,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,61131.7,1326668.8
+referencia,Mata Atlântica,MG,Minas Gerais,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,9311.2,216840.5
+referencia,Mata Atlântica,MG,Minas Gerais,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,503.5,9613.7
+referencia,Mata Atlântica,MG,Minas Gerais,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,294388.3,3972601.9
+referencia,Mata Atlântica,MG,Minas Gerais,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,25419.6,76459.4
+referencia,Mata Atlântica,MG,Minas Gerais,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,1943.7,39942.4
+referencia,Mata Atlântica,MG,Minas Gerais,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Vegetação Primária,2023,4401.7,121105.6
+referencia,Mata Atlântica,MG,Minas Gerais,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Outras Transições,2023,13728.5,355754.1
+referencia,Mata Atlântica,MG,Minas Gerais,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,3160.1,5493.7
+referencia,Mata Atlântica,MG,Minas Gerais,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,16277.2,134790.2
+referencia,Mata Atlântica,MG,Minas Gerais,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,27064.5,117428.5
+referencia,Mata Atlântica,MG,Minas Gerais,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,2236.1,9928.2
+referencia,Mata Atlântica,MG,Minas Gerais,46,Café,Agropecuária,Agricultura,Lavoura Perene,Café,Antrópico,2023,27228.2,541407.9
+referencia,Mata Atlântica,SP,São Paulo,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,13437.4,273232.9
+referencia,Mata Atlântica,SP,São Paulo,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,992.6,12331.2
+referencia,Mata Atlântica,SP,São Paulo,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,59291.3,1143780.3
+referencia,Mata Atlântica,SP,São Paulo,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,5386.4,86833.8
+referencia,Mata Atlântica,SP,São Paulo,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,166969.9,2104069.6
+referencia,Mata Atlântica,SP,São Paulo,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,163198.1,1740312.0
+referencia,Mata Atlântica,SP,São Paulo,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,16589.8,255986.3
+referencia,Mata Atlântica,SP,São Paulo,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,6270.3,116913.4
+referencia,Mata Atlântica,SP,São Paulo,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,26535.3,224756.4
+referencia,Mata Atlântica,SP,São Paulo,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,13745.4,142713.5
+referencia,Mata Atlântica,SP,São Paulo,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,75924.7,1227268.2
+referencia,Mata Atlântica,SP,São Paulo,47,Citrus,Agropecuária,Agricultura,Lavoura Perene,Citrus,Antrópico,2023,8630.3,141211.4
+referencia,Mata Atlântica,PR,Paraná,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,1853.2,42336.5
+referencia,Mata Atlântica,PR,Paraná,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,14634.7,265738.5
+referencia,Mata Atlântica,PR,Paraná,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,6303.0,140243.5
+referencia,Mata Atlântica,PR,Paraná,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,1812.7,30420.6
+referencia,Mata Atlântica,PR,Paraná,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,14745.4,255706.6
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,3752.5,38206.2
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,3981.5,45508.1
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,3315.2,35389.1
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,6369.5,31225.9
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,129079.2,774859.4
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,7983.0,113073.7
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,4781.1,48934.7
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,17822.7,194675.4
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,53354.3,573591.6
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,4368.1,60398.0
+referencia,Mata Atlântica,GO,Goiás,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,73188.2,381682.6
+referencia,Mata Atlântica,GO,Goiás,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,25939.5,81913.6
+referencia,Mata Atlântica,GO,Goiás,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,2929.4,9744.5
+referencia,Mata Atlântica,GO,Goiás,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,2051.6,18540.1
+referencia,Mata Atlântica,GO,Goiás,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,8311.6,77831.4
+referencia,Pantanal,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,6545.5,130717.1
+referencia,Pantanal,MS,Mato Grosso do Sul,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,84759.9,2542485.1
+referencia,Pantanal,MS,Mato Grosso do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,910.0,6285.8
+referencia,Pantanal,MS,Mato Grosso do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,3591.6,83824.2
+referencia,Pantanal,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,95104.8,1986210.1
+referencia,Pantanal,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,19914.1,385902.2
+referencia,Pantanal,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,25207.9,949267.2
+referencia,Pantanal,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,48931.0,1396526.5
+referencia,Pantanal,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,7694.5,447517.0
+referencia,Pantanal,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,11738.8,251803.3
+referencia,Pantanal,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,30724.3,697026.6
+referencia,Pantanal,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,30934.9,757329.1
+referencia,Pantanal,MT,Mato Grosso,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,232.0,4506.1
+referencia,Caatinga,RN,Rio Grande do Norte,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,10846.0,233502.1
+referencia,Caatinga,RN,Rio Grande do Norte,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,6343.9,63224.3
+referencia,Caatinga,RN,Rio Grande do Norte,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,6820.9,2490.1
+referencia,Caatinga,RN,Rio Grande do Norte,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,1633.0,31126.4
+referencia,Caatinga,PB,Paraíba,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,6653.3,162079.3
+referencia,Caatinga,PB,Paraíba,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,17449.0,380381.6
+referencia,Caatinga,PB,Paraíba,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,9441.3,267473.5
+referencia,Caatinga,PE,Pernambuco,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,572.7,9947.9
+referencia,Caatinga,PE,Pernambuco,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,1003.7,24334.7
+referencia,Caatinga,PE,Pernambuco,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,2023,5017.4,114017.9
+referencia,Caatinga,PE,Pernambuco,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,37682.4,763431.8
+referencia,Caatinga,AL,Alagoas,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,24927.4,467100.2
+referencia,Caatinga,SE,Sergipe,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,61286.7,1231022.4
+referencia,Caatinga,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,16035.3,341566.9
+referencia,Caatinga,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,31567.4,704268.2
+referencia,Caatinga,BA,Bahia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,99949.0,1809246.9
+referencia,Caatinga,BA,Bahia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Secundária,2023,801.5,8657.3
+referencia,Caatinga,BA,Bahia,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,7381.9,139615.4
+referencia,Cerrado,BA,Bahia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,606.3,10870.2
+referencia,Cerrado,MG,Minas Gerais,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,27602.9,448396.8
+referencia,Cerrado,MG,Minas Gerais,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,36259.4,858365.5
+referencia,Cerrado,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,3481.7,65063.8
+referencia,Cerrado,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,62077.7,1286830.7
+referencia,Cerrado,MG,Minas Gerais,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,12149.2,303977.5
+referencia,Cerrado,MG,Minas Gerais,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Vegetação Primária,2023,137.9,3223.7
+referencia,Cerrado,MG,Minas Gerais,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,248472.2,3113749.5
+referencia,Cerrado,MG,Minas Gerais,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,2957.0,64915.9
+referencia,Cerrado,MG,Minas Gerais,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,40956.3,225577.5
+referencia,Cerrado,MG,Minas Gerais,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,4604.0,109136.6
+referencia,Cerrado,MG,Minas Gerais,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Vegetação Primária,2023,3253.6,67321.9
+referencia,Cerrado,MG,Minas Gerais,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Outras Transições,2023,19352.9,395074.0
+referencia,Cerrado,MG,Minas Gerais,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,3565.4,48886.3
+referencia,Cerrado,MG,Minas Gerais,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,1083.1,7897.4
+referencia,Cerrado,MG,Minas Gerais,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,8931.8,64858.1
+referencia,Cerrado,MG,Minas Gerais,46,Café,Agropecuária,Agricultura,Lavoura Perene,Café,Antrópico,2023,12893.1,240720.6
+referencia,Cerrado,SP,São Paulo,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,16308.0,293707.9
+referencia,Cerrado,SP,São Paulo,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,69261.3,1111548.0
+referencia,Cerrado,SP,São Paulo,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,1196.4,24370.8
+referencia,Cerrado,SP,São Paulo,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,3655.0,38147.7
+referencia,Cerrado,SP,São Paulo,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,142238.4,1456456.2
+referencia,Cerrado,SP,São Paulo,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,193775.1,2198679.3
+referencia,Cerrado,SP,São Paulo,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,14037.2,225024.9
+referencia,Cerrado,SP,São Paulo,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,402.6,0.0
+referencia,Cerrado,SP,São Paulo,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,13824.9,95996.9
+referencia,Cerrado,SP,São Paulo,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,11976.1,114809.0
+referencia,Cerrado,SP,São Paulo,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,82444.4,1184068.8
+referencia,Cerrado,SP,São Paulo,47,Citrus,Agropecuária,Agricultura,Lavoura Perene,Citrus,Antrópico,2023,23199.2,417799.3
+referencia,Cerrado,PR,Paraná,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,3178.4,65582.8
+referencia,Cerrado,PR,Paraná,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,2244.4,47762.6
+referencia,Cerrado,PR,Paraná,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,20888.7,463909.6
+referencia,Cerrado,PR,Paraná,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,2244.4,45993.7
+referencia,Cerrado,PR,Paraná,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,9215.4,99212.5
+referencia,Cerrado,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,2150.1,7463.3
+referencia,Cerrado,MS,Mato Grosso do Sul,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,9792.7,136840.5
+referencia,Cerrado,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,100087.2,554460.9
+referencia,Cerrado,MS,Mato Grosso do Sul,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,6379.2,80494.6
+referencia,Cerrado,MS,Mato Grosso do Sul,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,56077.0,568283.2
+referencia,Cerrado,GO,Goiás,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,40841.5,267233.9
+referencia,Cerrado,GO,Goiás,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,23277.9,50656.6
+referencia,Cerrado,GO,Goiás,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,1513.1,13801.2
+referencia,Cerrado,GO,Goiás,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,15292.7,148654.7
+referencia,Mata Atlântica,RN,Rio Grande do Norte,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,18769.6,226464.7
+referencia,Mata Atlântica,RN,Rio Grande do Norte,5,Mangue,Floresta,Mangue,Mangue,Mangue,Vegetação Primária,2023,9788.4,128139.2
+referencia,Mata Atlântica,RN,Rio Grande do Norte,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,12233.2,239129.0
+referencia,Mata Atlântica,RN,Rio Grande do Norte,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,38374.1,484695.9
+referencia,Mata Atlântica,RN,Rio Grande do Norte,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,6101.4,82682.0
+referencia,Mata Atlântica,RN,Rio Grande do Norte,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,6478.9,83310.6
+referencia,Mata Atlântica,RN,Rio Grande do Norte,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,69526.3,1661907.9
+referencia,Mata Atlântica,PB,Paraíba,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,47383.2,1261957.2
+referencia,Mata Atlântica,PB,Paraíba,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,11842.4,283287.1
+referencia,Mata Atlântica,PB,Paraíba,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,12732.9,324452.4
+referencia,Mata Atlântica,PB,Paraíba,5,Mangue,Floresta,Mangue,Mangue,Mangue,Antrópico,2023,7810.2,0.0
+referencia,Mata Atlântica,PB,Paraíba,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,33319.9,709648.0
+referencia,Mata Atlântica,PB,Paraíba,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,131206.5,2964199.5
+referencia,Mata Atlântica,PB,Paraíba,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,23995.5,560458.3
+referencia,Mata Atlântica,PB,Paraíba,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,10922.4,0.0
+referencia,Mata Atlântica,PB,Paraíba,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,8821.9,130378.5
+referencia,Mata Atlântica,PB,Paraíba,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,72389.7,1714074.8
+referencia,Mata Atlântica,PE,Pernambuco,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,68715.5,2180137.2
+referencia,Mata Atlântica,PE,Pernambuco,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,8563.6,0.0
+referencia,Mata Atlântica,PE,Pernambuco,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,7148.9,140046.1
+referencia,Mata Atlântica,PE,Pernambuco,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,880695.0,2.21748449E7
+referencia,Mata Atlântica,PE,Pernambuco,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,455306.5,1.20667629E7
+referencia,Mata Atlântica,PE,Pernambuco,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,25908.4,455688.2
+referencia,Mata Atlântica,PE,Pernambuco,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,32174.0,0.0
+referencia,Mata Atlântica,AL,Alagoas,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,44973.1,1386870.0
+referencia,Mata Atlântica,AL,Alagoas,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,7798.1,0.0
+referencia,Mata Atlântica,AL,Alagoas,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,723090.8,1.70937042E7
+referencia,Mata Atlântica,AL,Alagoas,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,10958.7,233925.7
+referencia,Mata Atlântica,AL,Alagoas,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,572823.1,1.47091133E7
+referencia,Mata Atlântica,AL,Alagoas,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,30882.9,274190.7
+referencia,Mata Atlântica,AL,Alagoas,50,Restinga herbácea,Vegetação Herbácea e Arbustiva,Restinga herbácea,Restinga herbácea,Restinga herbácea,Antrópico,2023,12114.0,194599.6
+referencia,Mata Atlântica,AL,Alagoas,50,Restinga herbácea,Vegetação Herbácea e Arbustiva,Restinga herbácea,Restinga herbácea,Restinga herbácea,Vegetação Primária,2023,11116.4,122995.3
+referencia,Mata Atlântica,SE,Sergipe,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,36295.9,1306280.3
+referencia,Mata Atlântica,SE,Sergipe,5,Mangue,Floresta,Mangue,Mangue,Mangue,Vegetação Primária,2023,12070.5,615219.0
+referencia,Mata Atlântica,SE,Sergipe,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,11726.6,172507.6
+referencia,Mata Atlântica,SE,Sergipe,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,729727.7,2.05894923E7
+referencia,Mata Atlântica,SE,Sergipe,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,12086.8,557353.3
+referencia,Mata Atlântica,SE,Sergipe,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,12106.4,308217.6
+referencia,Mata Atlântica,SE,Sergipe,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,21198.4,353453.5
+referencia,Mata Atlântica,SE,Sergipe,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,7311.3,0.0
+referencia,Mata Atlântica,SE,Sergipe,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,12110.2,218503.6
+referencia,Mata Atlântica,SE,Sergipe,50,Restinga herbácea,Vegetação Herbácea e Arbustiva,Restinga herbácea,Restinga herbácea,Restinga herbácea,Vegetação Primária,2023,19953.8,307107.6
+referencia,Mata Atlântica,BA,Bahia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,819874.0,4.1932167E7
+referencia,Mata Atlântica,BA,Bahia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,1882034.3,1.254165588E8
+referencia,Mata Atlântica,BA,Bahia,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Outras Transições,2023,5152.0,45943.0
+referencia,Mata Atlântica,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,53412.6,1168936.0
+referencia,Mata Atlântica,BA,Bahia,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,380110.4,7478216.2
+referencia,Mata Atlântica,BA,Bahia,5,Mangue,Floresta,Mangue,Mangue,Mangue,Vegetação Primária,2023,62253.3,2819775.7
+referencia,Mata Atlântica,BA,Bahia,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,648902.7,2.45386666E7
+referencia,Mata Atlântica,BA,Bahia,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Vegetação Primária,2023,11881.1,212341.7
+referencia,Mata Atlântica,BA,Bahia,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,11769.3,277624.3
+referencia,Mata Atlântica,BA,Bahia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,6395912.1,1.623050969E8
+referencia,Mata Atlântica,BA,Bahia,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,152839.3,3552046.0
+referencia,Mata Atlântica,BA,Bahia,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Vegetação Primária,2023,11960.4,419207.2
+referencia,Mata Atlântica,BA,Bahia,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,29102.8,262316.2
+referencia,Mata Atlântica,BA,Bahia,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,12008.7,0.0
+referencia,Mata Atlântica,BA,Bahia,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,21443.5,403552.8
+referencia,Mata Atlântica,BA,Bahia,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,141502.7,3183367.1
+referencia,Mata Atlântica,BA,Bahia,49,Restinga Arbórea,Floresta,Restinga Arbórea,Restinga Arbórea,Restinga Arbórea,Vegetação Primária,2023,7630.4,114025.2
+referencia,Mata Atlântica,BA,Bahia,50,Restinga herbácea,Vegetação Herbácea e Arbustiva,Restinga herbácea,Restinga herbácea,Restinga herbácea,Antrópico,2023,11744.1,208048.8
+referencia,Mata Atlântica,BA,Bahia,50,Restinga herbácea,Vegetação Herbácea e Arbustiva,Restinga herbácea,Restinga herbácea,Restinga herbácea,Vegetação Primária,2023,72343.0,2085274.5
+referencia,Mata Atlântica,MG,Minas Gerais,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,1387494.0,3.91292706E7
+referencia,Mata Atlântica,MG,Minas Gerais,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,2401919.4,7.63657595E7
+referencia,Mata Atlântica,MG,Minas Gerais,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Secundária,2023,23408.2,531270.8
+referencia,Mata Atlântica,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,72634.5,1430228.2
+referencia,Mata Atlântica,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,1356639.5,3.01903384E7
+referencia,Mata Atlântica,MG,Minas Gerais,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,2023,11835.6,231591.4
+referencia,Mata Atlântica,MG,Minas Gerais,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,177297.1,5383813.1
+referencia,Mata Atlântica,MG,Minas Gerais,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,2023,57346.4,572512.8
+referencia,Mata Atlântica,MG,Minas Gerais,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,368026.5,7755110.7
+referencia,Mata Atlântica,MG,Minas Gerais,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,1.56584739E7,3.138355476E8
+referencia,Mata Atlântica,MG,Minas Gerais,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,316922.3,6668702.4
+referencia,Mata Atlântica,MG,Minas Gerais,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,79107.4,197366.2
+referencia,Mata Atlântica,MG,Minas Gerais,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,136372.1,3096860.0
+referencia,Mata Atlântica,MG,Minas Gerais,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,115725.4,2393933.7
+referencia,Mata Atlântica,MG,Minas Gerais,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Vegetação Primária,2023,11581.3,401624.2
+referencia,Mata Atlântica,MG,Minas Gerais,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Vegetação Primária,2023,7290.3,200581.2
+referencia,Mata Atlântica,MG,Minas Gerais,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Outras Transições,2023,9541.5,249362.5
+referencia,Mata Atlântica,MG,Minas Gerais,30,Mineração,Área não vegetada,Mineração,Mineração,Mineração,Vegetação Primária,2023,23217.4,597677.4
+referencia,Mata Atlântica,MG,Minas Gerais,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,78250.8,909040.3
+referencia,Mata Atlântica,MG,Minas Gerais,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,134390.2,860041.3
+referencia,Mata Atlântica,MG,Minas Gerais,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,89663.2,333534.8
+referencia,Mata Atlântica,MG,Minas Gerais,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,307763.1,4251457.5
+referencia,Mata Atlântica,MG,Minas Gerais,46,Café,Agropecuária,Agricultura,Lavoura Perene,Café,Antrópico,2023,260460.7,5316996.8
+referencia,Mata Atlântica,ES,Espírito Santo,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,439882.5,1.64546806E7
+referencia,Mata Atlântica,ES,Espírito Santo,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,405158.6,2.02871909E7
+referencia,Mata Atlântica,ES,Espírito Santo,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,212976.9,5644229.0
+referencia,Mata Atlântica,ES,Espírito Santo,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,30511.8,357956.7
+referencia,Mata Atlântica,ES,Espírito Santo,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,33440.6,621659.3
+referencia,Mata Atlântica,ES,Espírito Santo,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,11552.2,324150.3
+referencia,Mata Atlântica,ES,Espírito Santo,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,3241555.2,7.04435466E7
+referencia,Mata Atlântica,ES,Espírito Santo,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,23322.9,533851.9
+referencia,Mata Atlântica,ES,Espírito Santo,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,11609.8,284844.1
+referencia,Mata Atlântica,ES,Espírito Santo,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,42416.5,232229.0
+referencia,Mata Atlântica,ES,Espírito Santo,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,19217.3,145446.5
+referencia,Mata Atlântica,ES,Espírito Santo,46,Café,Agropecuária,Agricultura,Lavoura Perene,Café,Antrópico,2023,34655.9,718931.6
+referencia,Mata Atlântica,ES,Espírito Santo,50,Restinga herbácea,Vegetação Herbácea e Arbustiva,Restinga herbácea,Restinga herbácea,Restinga herbácea,Vegetação Primária,2023,27324.0,482971.3
+referencia,Mata Atlântica,RJ,Rio de Janeiro,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,397801.0,1.42111266E7
+referencia,Mata Atlântica,RJ,Rio de Janeiro,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,663149.7,4.41691882E7
+referencia,Mata Atlântica,RJ,Rio de Janeiro,5,Mangue,Floresta,Mangue,Mangue,Mangue,Vegetação Primária,2023,6453.7,0.0
+referencia,Mata Atlântica,RJ,Rio de Janeiro,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Secundária,2023,11438.2,49614.2
+referencia,Mata Atlântica,RJ,Rio de Janeiro,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,2689010.2,5.92931254E7
+referencia,Mata Atlântica,RJ,Rio de Janeiro,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,22723.9,842219.4
+referencia,Mata Atlântica,RJ,Rio de Janeiro,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,177137.2,1735825.4
+referencia,Mata Atlântica,RJ,Rio de Janeiro,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Outras Transições,2023,5211.3,0.0
+referencia,Mata Atlântica,RJ,Rio de Janeiro,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,22820.5,259748.5
+referencia,Mata Atlântica,RJ,Rio de Janeiro,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,44591.3,475602.0
+referencia,Mata Atlântica,RJ,Rio de Janeiro,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,122463.8,1981446.7
+referencia,Mata Atlântica,RJ,Rio de Janeiro,50,Restinga herbácea,Vegetação Herbácea e Arbustiva,Restinga herbácea,Restinga herbácea,Restinga herbácea,Antrópico,2023,22773.0,147495.9
+referencia,Mata Atlântica,RJ,Rio de Janeiro,50,Restinga herbácea,Vegetação Herbácea e Arbustiva,Restinga herbácea,Restinga herbácea,Restinga herbácea,Vegetação Primária,2023,38400.9,239583.5
+referencia,Mata Atlântica,SP,São Paulo,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,822512.1,3.19437372E7
+referencia,Mata Atlântica,SP,São Paulo,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,2455255.0,1.5828754E8
+referencia,Mata Atlântica,SP,São Paulo,5,Mangue,Floresta,Mangue,Mangue,Mangue,Vegetação Primária,2023,21929.3,1117541.8
+referencia,Mata Atlântica,SP,São Paulo,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,437717.6,1.36846362E7
+referencia,Mata Atlântica,SP,São Paulo,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,22890.4,162578.4
+referencia,Mata Atlântica,SP,São Paulo,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,6014.8,96964.4
+referencia,Mata Atlântica,SP,São Paulo,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,22748.4,534319.2
+referencia,Mata Atlântica,SP,São Paulo,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,5931129.0,7.399629E7
+referencia,Mata Atlântica,SP,São Paulo,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,11461.6,53982.2
+referencia,Mata Atlântica,SP,São Paulo,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,5261836.9,4.45942215E7
+referencia,Mata Atlântica,SP,São Paulo,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,506744.1,1.00540081E7
+referencia,Mata Atlântica,SP,São Paulo,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,666885.0,7451868.4
+referencia,Mata Atlântica,SP,São Paulo,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Outras Transições,2023,11291.1,0.0
+referencia,Mata Atlântica,SP,São Paulo,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,155080.7,1813861.7
+referencia,Mata Atlântica,SP,São Paulo,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,387387.7,3189301.2
+referencia,Mata Atlântica,SP,São Paulo,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,660402.9,9629757.7
+referencia,Mata Atlântica,SP,São Paulo,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,11231.0,423569.7
+referencia,Mata Atlântica,SP,São Paulo,46,Café,Agropecuária,Agricultura,Lavoura Perene,Café,Antrópico,2023,11333.1,241520.7
+referencia,Mata Atlântica,SP,São Paulo,47,Citrus,Agropecuária,Agricultura,Lavoura Perene,Citrus,Antrópico,2023,59977.5,1070233.2
+referencia,Mata Atlântica,SP,São Paulo,49,Restinga Arbórea,Floresta,Restinga Arbórea,Restinga Arbórea,Restinga Arbórea,Antrópico,2023,22426.9,1095392.4
+referencia,Mata Atlântica,SP,São Paulo,49,Restinga Arbórea,Floresta,Restinga Arbórea,Restinga Arbórea,Restinga Arbórea,Vegetação Primária,2023,189312.1,8754206.5
+referencia,Mata Atlântica,PR,Paraná,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,2692609.4,7.84142861E7
+referencia,Mata Atlântica,PR,Paraná,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,1893971.3,8.58166699E7
+referencia,Mata Atlântica,PR,Paraná,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Secundária,2023,33352.5,983516.0
+referencia,Mata Atlântica,PR,Paraná,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Outras Transições,2023,22344.2,943881.0
+referencia,Mata Atlântica,PR,Paraná,5,Mangue,Floresta,Mangue,Mangue,Mangue,Vegetação Primária,2023,11105.7,325802.1
+referencia,Mata Atlântica,PR,Paraná,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,519805.5,1.5598455E7
+referencia,Mata Atlântica,PR,Paraná,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,45130.4,525849.1
+referencia,Mata Atlântica,PR,Paraná,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,4289144.1,7.20183102E7
+referencia,Mata Atlântica,PR,Paraná,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,714625.4,6498971.9
+referencia,Mata Atlântica,PR,Paraná,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,301917.7,6665286.1
+referencia,Mata Atlântica,PR,Paraná,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,177907.3,3482390.9
+referencia,Mata Atlântica,PR,Paraná,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,78556.4,1289084.7
+referencia,Mata Atlântica,PR,Paraná,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,62557.5,2895093.2
+referencia,Mata Atlântica,PR,Paraná,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,275590.4,4845287.4
+referencia,Mata Atlântica,PR,Paraná,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,8182314.5,1.398013751E8
+referencia,Mata Atlântica,PR,Paraná,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,11265.6,45397.8
+referencia,Mata Atlântica,PR,Paraná,40,Arroz,Agropecuária,Agricultura,Lavoura Temporária,Arroz,Antrópico,2023,22666.2,135452.3
+referencia,Mata Atlântica,PR,Paraná,47,Citrus,Agropecuária,Agricultura,Lavoura Perene,Citrus,Antrópico,2023,11349.6,47577.9
+referencia,Mata Atlântica,PR,Paraná,49,Restinga Arbórea,Floresta,Restinga Arbórea,Restinga Arbórea,Restinga Arbórea,Antrópico,2023,18558.1,1125349.6
+referencia,Mata Atlântica,PR,Paraná,49,Restinga Arbórea,Floresta,Restinga Arbórea,Restinga Arbórea,Restinga Arbórea,Vegetação Primária,2023,127778.9,6567043.7
+referencia,Mata Atlântica,SC,Santa Catarina,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,2998397.2,1.094377167E8
+referencia,Mata Atlântica,SC,Santa Catarina,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,2339632.7,1.121432779E8
+referencia,Mata Atlântica,SC,Santa Catarina,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Outras Transições,2023,10954.4,262999.0
+referencia,Mata Atlântica,SC,Santa Catarina,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,769304.6,1.93427613E7
+referencia,Mata Atlântica,SC,Santa Catarina,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Vegetação Primária,2023,21859.9,540937.8
+referencia,Mata Atlântica,SC,Santa Catarina,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,2023,65569.9,1766894.7
+referencia,Mata Atlântica,SC,Santa Catarina,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,762027.6,2.17226747E7
+referencia,Mata Atlântica,SC,Santa Catarina,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,839143.3,2.65374695E7
+referencia,Mata Atlântica,SC,Santa Catarina,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,388063.4,1.24488246E7
+referencia,Mata Atlântica,SC,Santa Catarina,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,68461.9,2480898.7
+referencia,Mata Atlântica,SC,Santa Catarina,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,31110.0,217662.0
+referencia,Mata Atlântica,SC,Santa Catarina,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,19923.5,730421.1
+referencia,Mata Atlântica,SC,Santa Catarina,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,27674.5,1287410.1
+referencia,Mata Atlântica,SC,Santa Catarina,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,881649.0,2.16172366E7
+referencia,Mata Atlântica,SC,Santa Catarina,40,Arroz,Agropecuária,Agricultura,Lavoura Temporária,Arroz,Antrópico,2023,181346.4,4696474.5
+referencia,Mata Atlântica,SC,Santa Catarina,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,10983.4,374541.2
+referencia,Mata Atlântica,SC,Santa Catarina,49,Restinga Arbórea,Floresta,Restinga Arbórea,Restinga Arbórea,Restinga Arbórea,Antrópico,2023,33159.2,1305169.7
+referencia,Mata Atlântica,SC,Santa Catarina,49,Restinga Arbórea,Floresta,Restinga Arbórea,Restinga Arbórea,Restinga Arbórea,Vegetação Primária,2023,20791.5,576510.0
+referencia,Mata Atlântica,RS,Rio Grande do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,1850359.6,7.77479188E7
+referencia,Mata Atlântica,RS,Rio Grande do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,1438438.3,7.32935356E7
+referencia,Mata Atlântica,RS,Rio Grande do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Outras Transições,2023,10944.6,225009.7
+referencia,Mata Atlântica,RS,Rio Grande do Sul,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,113274.4,5147924.2
+referencia,Mata Atlântica,RS,Rio Grande do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,2023,121520.9,2939107.4
+referencia,Mata Atlântica,RS,Rio Grande do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,837466.6,1.9547624E7
+referencia,Mata Atlântica,RS,Rio Grande do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Secundária,2023,44578.7,762594.3
+referencia,Mata Atlântica,RS,Rio Grande do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,179840.0,6047399.6
+referencia,Mata Atlântica,RS,Rio Grande do Sul,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,179134.2,6040302.5
+referencia,Mata Atlântica,RS,Rio Grande do Sul,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,69303.2,2287600.4
+referencia,Mata Atlântica,RS,Rio Grande do Sul,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,32892.2,892754.8
+referencia,Mata Atlântica,RS,Rio Grande do Sul,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,40825.5,356142.2
+referencia,Mata Atlântica,RS,Rio Grande do Sul,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,3281597.2,5.61941503E7
+referencia,Mata Atlântica,RS,Rio Grande do Sul,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,38429.1,677006.9
+referencia,Mata Atlântica,RS,Rio Grande do Sul,40,Arroz,Agropecuária,Agricultura,Lavoura Temporária,Arroz,Antrópico,2023,37230.0,1108037.8
+referencia,Mata Atlântica,RS,Rio Grande do Sul,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,10227.4,274308.3
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,41888.4,496997.7
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,11390.4,409180.8
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,7510.6,85844.8
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,109620.1,1124133.1
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,129867.9,1113690.9
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,1553055.2,9877959.8
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,402631.1,2492612.0
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,34073.5,116872.3
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,18150.0,154884.4
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,22573.7,183524.2
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,153902.5,1115831.6
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,1075293.1,1.05238817E7
+referencia,Mata Atlântica,MS,Mato Grosso do Sul,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,18289.1,138304.3
+referencia,Mata Atlântica,GO,Goiás,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,11705.3,107592.7
+referencia,Mata Atlântica,GO,Goiás,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,312085.3,2608302.1
+referencia,Mata Atlântica,GO,Goiás,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,2023,90795.5,504985.2
+referencia,Mata Atlântica,GO,Goiás,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,20421.2,57731.7
+referencia,Mata Atlântica,GO,Goiás,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,32942.9,298736.1
+referencia,Mata Atlântica,GO,Goiás,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,15105.4,135275.5
+referencia,Pampa,RS,Rio Grande do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,14301.6,395355.9
+referencia,Pampa,RS,Rio Grande do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,19543.3,528670.0
+referencia,Pampa,RS,Rio Grande do Sul,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,3866.4,112279.5
+referencia,Pampa,RS,Rio Grande do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,2023,18167.5,364485.5
+referencia,Pampa,RS,Rio Grande do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,39934.3,806577.5
+referencia,Pampa,RS,Rio Grande do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Secundária,2023,7306.4,123595.8
+referencia,Pampa,RS,Rio Grande do Sul,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,16566.6,407457.2
+referencia,Pampa,RS,Rio Grande do Sul,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,2478.4,81514.1
+referencia,Pampa,RS,Rio Grande do Sul,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Vegetação Primária,2023,5050.6,219662.4
+referencia,Pampa,RS,Rio Grande do Sul,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,260861.3,2918216.9
+referencia,Pampa,RS,Rio Grande do Sul,40,Arroz,Agropecuária,Agricultura,Lavoura Temporária,Arroz,Antrópico,2023,18583.1,355603.9
+referencia,Mata Atlântica,RS,Rio Grande do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,55161.1,1429034.1
+referencia,Mata Atlântica,RS,Rio Grande do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,7188.3,222707.5
+referencia,Mata Atlântica,RS,Rio Grande do Sul,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,5050.6,235190.1
+referencia,Mata Atlântica,RS,Rio Grande do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,2023,7844.9,199487.1
+referencia,Mata Atlântica,RS,Rio Grande do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,27934.6,495971.7
+referencia,Mata Atlântica,RS,Rio Grande do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Secundária,2023,8250.6,92659.5
+referencia,Mata Atlântica,RS,Rio Grande do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,7324.8,211752.0
+referencia,Mata Atlântica,RS,Rio Grande do Sul,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,4709.3,108777.2
+referencia,Mata Atlântica,RS,Rio Grande do Sul,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,6006.9,150346.0
+referencia,Mata Atlântica,RS,Rio Grande do Sul,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,756.8,0.0
+referencia,Mata Atlântica,RS,Rio Grande do Sul,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,198367.0,2117758.5
+referencia,Mata Atlântica,RS,Rio Grande do Sul,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,4980.8,123113.3
+referencia,Mata Atlântica,RS,Rio Grande do Sul,40,Arroz,Agropecuária,Agricultura,Lavoura Temporária,Arroz,Antrópico,2023,5678.7,102231.0
+referencia,Mata Atlântica,RS,Rio Grande do Sul,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,463.0,12417.2
+referencia,Pampa,RS,Rio Grande do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,481955.3,1.07581413E7
+referencia,Pampa,RS,Rio Grande do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,968876.5,2.59902943E7
+referencia,Pampa,RS,Rio Grande do Sul,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,508215.0,1.19532131E7
+referencia,Pampa,RS,Rio Grande do Sul,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Vegetação Primária,2023,74284.9,2093301.3
+referencia,Pampa,RS,Rio Grande do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,20911.1,95006.9
+referencia,Pampa,RS,Rio Grande do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,162002.2,858487.1
+referencia,Pampa,RS,Rio Grande do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,2023,2329791.7,1.84274876E7
+referencia,Pampa,RS,Rio Grande do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,5105467.7,7.03002702E7
+referencia,Pampa,RS,Rio Grande do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Secundária,2023,78305.0,1117518.8
+referencia,Pampa,RS,Rio Grande do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Outras Transições,2023,9613.6,216222.5
+referencia,Pampa,RS,Rio Grande do Sul,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,2023,794086.0,6577780.4
+referencia,Pampa,RS,Rio Grande do Sul,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Vegetação Primária,2023,49765.0,269963.4
+referencia,Pampa,RS,Rio Grande do Sul,23,"Praia, Duna e Areal",Área não vegetada,"Praia, Duna e Areal","Praia, Duna e Areal","Praia, Duna e Areal",Antrópico,2023,10794.6,18030.1
+referencia,Pampa,RS,Rio Grande do Sul,23,"Praia, Duna e Areal",Área não vegetada,"Praia, Duna e Areal","Praia, Duna e Areal","Praia, Duna e Areal",Vegetação Primária,2023,9619.9,26139.0
+referencia,Pampa,RS,Rio Grande do Sul,23,"Praia, Duna e Areal",Área não vegetada,"Praia, Duna e Areal","Praia, Duna e Areal","Praia, Duna e Areal",Outras Transições,2023,46853.9,58514.5
+referencia,Pampa,RS,Rio Grande do Sul,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,92287.0,1404094.3
+referencia,Pampa,RS,Rio Grande do Sul,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Vegetação Primária,2023,14748.6,278415.5
+referencia,Pampa,RS,Rio Grande do Sul,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Antrópico,2023,131272.6,852764.4
+referencia,Pampa,RS,Rio Grande do Sul,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,10701.0,202100.5
+referencia,Pampa,RS,Rio Grande do Sul,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,1568684.1,2566777.8
+referencia,Pampa,RS,Rio Grande do Sul,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,4799757.3,3.69202573E7
+referencia,Pampa,RS,Rio Grande do Sul,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Vegetação Primária,2023,74618.0,1048476.0
+referencia,Pampa,RS,Rio Grande do Sul,40,Arroz,Agropecuária,Agricultura,Lavoura Temporária,Arroz,Antrópico,2023,1362417.6,9982833.1
+referencia,Pampa,RS,Rio Grande do Sul,40,Arroz,Agropecuária,Agricultura,Lavoura Temporária,Arroz,Vegetação Primária,2023,21304.6,166532.9
+referencia,Pampa,RS,Rio Grande do Sul,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2023,51220.0,152919.9
+referencia,Pampa,RS,Rio Grande do Sul,49,Restinga Arbórea,Floresta,Restinga Arbórea,Restinga Arbórea,Restinga Arbórea,Vegetação Primária,2023,10561.2,79973.3
+referencia,Pampa,RS,Rio Grande do Sul,50,Restinga herbácea,Vegetação Herbácea e Arbustiva,Restinga herbácea,Restinga herbácea,Restinga herbácea,Antrópico,2023,17771.1,41103.7
+referencia,Pampa,RS,Rio Grande do Sul,50,Restinga herbácea,Vegetação Herbácea e Arbustiva,Restinga herbácea,Restinga herbácea,Restinga herbácea,Vegetação Primária,2023,40337.6,245767.6
+referencia,Amazônia,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,8461.9,245568.2
+referencia,Amazônia,MT,Mato Grosso,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,2023,4595.0,90955.4
+referencia,Amazônia,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,5419.6,155292.9
+referencia,Amazônia,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,41710.2,867046.7
+referencia,Amazônia,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,10700.2,282193.4
+referencia,Cerrado,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,24129.7,810841.0
+referencia,Cerrado,MS,Mato Grosso do Sul,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,41806.2,1151728.5
+referencia,Cerrado,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,75524.2,1376179.2
+referencia,Cerrado,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,13787.6,255754.0
+referencia,Cerrado,MS,Mato Grosso do Sul,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,545.7,13872.0
+referencia,Cerrado,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,33545.6,1253219.1
+referencia,Cerrado,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,6815.8,193668.3
+referencia,Cerrado,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,9561.3,197699.0
+referencia,Cerrado,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,57480.1,1115870.8
+referencia,Cerrado,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,43346.5,1029543.6
+referencia,Cerrado,MT,Mato Grosso,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,2023,185.7,2818.4
+referencia,Pantanal,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,2023,12714.4,958819.9
+referencia,Pantanal,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,1129547.9,2.91594486E7
+referencia,Pantanal,MS,Mato Grosso do Sul,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,1546815.6,3.46803592E7
+referencia,Pantanal,MS,Mato Grosso do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,2023,11685.4,267967.3
+referencia,Pantanal,MS,Mato Grosso do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,1121401.7,1.58016892E7
+referencia,Pantanal,MS,Mato Grosso do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,3870224.1,6.48923897E7
+referencia,Pantanal,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,842542.3,1.48291534E7
+referencia,Pantanal,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,574700.7,8743875.9
+referencia,Pantanal,MS,Mato Grosso do Sul,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Vegetação Primária,2023,23294.8,490497.6
+referencia,Pantanal,MS,Mato Grosso do Sul,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,2023,11651.6,525613.7
+referencia,Pantanal,MS,Mato Grosso do Sul,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,160239.9,3437345.9
+referencia,Pantanal,MS,Mato Grosso do Sul,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,216546.9,5116618.6
+referencia,Pantanal,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,2023,536931.0,1.81798182E7
+referencia,Pantanal,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,2023,23563.3,363377.7
+referencia,Pantanal,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,2023,1401948.3,3.99306916E7
+referencia,Pantanal,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2023,743488.3,1.21441975E7
+referencia,Pantanal,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,2023,1344909.8,2.76736681E7
+referencia,Pantanal,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,2023,620577.6,1.39032366E7
+referencia,Pantanal,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Vegetação Primária,2023,204962.9,4207798.5
+referencia,Pantanal,MT,Mato Grosso,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Vegetação Primária,2023,122740.7,1955514.5
+referencia,Pantanal,MT,Mato Grosso,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2023,106463.1,1607503.1

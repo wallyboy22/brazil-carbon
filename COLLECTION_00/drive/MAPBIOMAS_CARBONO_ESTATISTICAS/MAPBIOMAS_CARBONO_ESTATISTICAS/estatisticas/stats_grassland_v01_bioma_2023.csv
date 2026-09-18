@@ -1,0 +1,205 @@
+ecossistema,produto,versao,ano,Bioma,UF,Unidade Federativa,classe,cobertura (n0),cobertura (n1),cobertura (n2),cobertura (n3),cobertura (n4),Desmatamento e vegetação secundária,Área (ha),Biomassa acima do solo (t MS),Carbono acima do solo (t C)
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,0.0,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,8.4,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Secundária,0.0,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Outras Transições,0.1,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,5.2,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,0.3,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Outras Transições,0.3,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,0.6,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,0.1,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,2.2,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Secundária,0.1,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Recrescimento,0.0,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Outras Transições,0.0,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,0.1,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,3.9,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Secundária,0.5,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Recrescimento,0.1,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Outras Transições,0.7,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,123.2,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Desmatamento Primário,0.2,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Desmatamento Secundário,0.0,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Outras Transições,0.6,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,0.5,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,0.3,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Desmatamento Primário,0.1,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,3.3,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,1.1,0.0,0.0
+campestre,grassland,v01,2023,Amazônia,MT,Mato Grosso,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,0.9,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,0.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,220.0,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Secundária,1.7,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Recrescimento,0.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Outras Transições,0.7,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,0.3,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,130.0,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,16.9,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Recrescimento,2.6,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Outras Transições,3.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,7,Savana Alagada,Floresta,Savana Alagada,Savana Alagada,Savana Alagada,Vegetação Primária,0.2,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,0.2,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,0.0,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,6.7,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Secundária,0.8,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Outras Transições,0.0,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,0.2,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,40.5,0.4,0.2
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Secundária,4.5,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Recrescimento,0.4,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Outras Transições,1.0,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,228.3,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Desmatamento Primário,1.2,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Desmatamento Secundário,0.7,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Outras Transições,0.7,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,5.3,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Desmatamento Primário,0.3,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Desmatamento Secundário,0.2,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Outras Transições,0.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,0.3,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,2.3,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,0.8,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,40,Arroz,Agropecuária,Agricultura,Lavoura Temporária,Arroz,Antrópico,0.2,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MS,Mato Grosso do Sul,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,0.3,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,148.6,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Secundária,1.6,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Recrescimento,0.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Outras Transições,1.2,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,0.3,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,71.0,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,6.7,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Recrescimento,0.9,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Outras Transições,2.2,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,7,Savana Alagada,Floresta,Savana Alagada,Savana Alagada,Savana Alagada,Vegetação Primária,0.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,0.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,0.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,37.9,0.1,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Secundária,0.4,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Recrescimento,0.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Outras Transições,0.8,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,0.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,30.3,0.1,0.1
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Secundária,5.6,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Recrescimento,0.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Outras Transições,4.3,0.1,0.1
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,178.4,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Desmatamento Primário,2.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Desmatamento Secundário,0.8,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Outras Transições,1.6,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,1.6,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Desmatamento Primário,0.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Desmatamento Secundário,0.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Outras Transições,0.0,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,0.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,25,Outras Áreas não Vegetadas,Área não vegetada,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Antrópico,0.0,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Outras Transições,0.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,30,Mineração,Área não vegetada,Mineração,Mineração,Mineração,Antrópico,1.0,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,30,Mineração,Área não vegetada,Mineração,Mineração,Mineração,Desmatamento Primário,0.0,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,31,Aquicultura,Corpos D´água,Aquicultura,Aquicultura,Aquicultura,Antrópico,0.1,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,8.4,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,0.2,0.0,0.0
+campestre,grassland,v01,2023,Cerrado,MT,Mato Grosso,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,1.2,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,40.6,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,1378706.0,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Secundária,7707.9,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Recrescimento,95.9,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Outras Transições,1014.1,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,1015.9,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,1906286.5,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,27430.7,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Recrescimento,3708.9,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Outras Transições,4669.2,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,7,Savana Alagada,Floresta,Savana Alagada,Savana Alagada,Savana Alagada,Antrópico,15.2,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,7,Savana Alagada,Floresta,Savana Alagada,Savana Alagada,Savana Alagada,Vegetação Primária,154169.9,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,7,Savana Alagada,Floresta,Savana Alagada,Savana Alagada,Savana Alagada,Vegetação Secundária,238.2,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,7,Savana Alagada,Floresta,Savana Alagada,Savana Alagada,Savana Alagada,Recrescimento,13.9,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,7,Savana Alagada,Floresta,Savana Alagada,Savana Alagada,Savana Alagada,Outras Transições,82.6,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,13.8,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,187.7,175.4,82.4
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,1247724.8,4.953538973985835E17,2.3281633137058218E17
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Secundária,2117.4,52044.8,24461.1
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Recrescimento,74.3,2506511.3,1178060.3
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Outras Transições,1024.9,1.1499314010091E12,5.404677559753E11
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,2371.3,1.0863632058218E12,5.105906861068E11
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,3033150.0,9.223372036854776E17,6.016045878602213E17
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Secundária,27949.5,5.575420326046116E15,2.6204475999202045E15
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Recrescimento,3859.9,7.30201801812E10,3.43194848269E10
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Outras Transições,9550.2,3.26629709972532E13,1.53515966598055E13
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,1191793.1,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Desmatamento Primário,41380.4,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Desmatamento Secundário,4008.1,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Outras Transições,3832.9,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,24027.9,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Desmatamento Primário,27147.9,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Desmatamento Secundário,514.2,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Outras Transições,93.7,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,3234.7,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Desmatamento Primário,0.4,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Desmatamento Secundário,0.4,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Outras Transições,1.8,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,25,Outras Áreas não Vegetadas,Área não vegetada,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Antrópico,351.9,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,25,Outras Áreas não Vegetadas,Área não vegetada,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Desmatamento Primário,66.9,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,25,Outras Áreas não Vegetadas,Área não vegetada,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Desmatamento Secundário,0.2,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,25,Outras Áreas não Vegetadas,Área não vegetada,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Outras Transições,0.8,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Outras Transições,3207.7,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,30,Mineração,Área não vegetada,Mineração,Mineração,Mineração,Antrópico,893.2,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,30,Mineração,Área não vegetada,Mineração,Mineração,Mineração,Desmatamento Primário,88.3,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,30,Mineração,Área não vegetada,Mineração,Mineração,Mineração,Desmatamento Secundário,2.9,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,30,Mineração,Área não vegetada,Mineração,Mineração,Mineração,Outras Transições,24.3,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,619687.0,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,85.7,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Desmatamento Secundário,0.1,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,40,Arroz,Agropecuária,Agricultura,Lavoura Temporária,Arroz,Antrópico,5687.5,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,40,Arroz,Agropecuária,Agricultura,Lavoura Temporária,Arroz,Desmatamento Primário,0.5,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,40,Arroz,Agropecuária,Agricultura,Lavoura Temporária,Arroz,Desmatamento Secundário,12.0,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,40,Arroz,Agropecuária,Agricultura,Lavoura Temporária,Arroz,Outras Transições,7.2,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,2229.8,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MS,Mato Grosso do Sul,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Outras Transições,0.8,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Antrópico,6.4,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Primária,681728.1,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Vegetação Secundária,1008.7,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Recrescimento,7.0,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,3,Formação Florestal,Floresta,Formação Florestal,Formação Florestal,Formação Florestal,Outras Transições,234.4,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Antrópico,532.5,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Primária,1350055.7,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Vegetação Secundária,24515.3,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Recrescimento,2426.7,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,4,Formação Savânica,Floresta,Formação Savânica,Formação Savânica,Formação Savânica,Outras Transições,5099.0,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,7,Savana Alagada,Floresta,Savana Alagada,Savana Alagada,Savana Alagada,Antrópico,1.9,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,7,Savana Alagada,Floresta,Savana Alagada,Savana Alagada,Savana Alagada,Vegetação Primária,67825.6,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,7,Savana Alagada,Floresta,Savana Alagada,Savana Alagada,Savana Alagada,Vegetação Secundária,109.4,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,7,Savana Alagada,Floresta,Savana Alagada,Savana Alagada,Savana Alagada,Recrescimento,5.7,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,7,Savana Alagada,Floresta,Savana Alagada,Savana Alagada,Savana Alagada,Outras Transições,46.1,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Antrópico,284.3,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,9,Silvicultura,Agropecuária,Silvicultura,Silvicultura,Silvicultura,Outras Transições,0.6,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Antrópico,16.6,7.851768425107E11,3.690331105725E11
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Primária,715187.9,9.223372036854776E17,9.223372036854776E17
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Vegetação Secundária,721.2,1.8549650799999785E15,8.718336032189394E14
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Recrescimento,32.7,5058.6,2377.5
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Campo Alagado e Área Pantanosa,Outras Transições,675.5,9.047886267725008E14,4.252506649963138E14
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Antrópico,701.7,1.6120439160090242E15,7.57660651347821E14
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Primária,1278174.9,9.223372036854776E17,9.223372036854776E17
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Vegetação Secundária,16977.4,1.95631076103216E16,9.194660641604194E15
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Recrescimento,1836.7,2.562567511393554E14,1.204406724908549E14
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Formação Campestre,Formação Campestre,Formação Campestre,Outras Transições,4662.5,8.417812221012221E15,3.956371758559421E15
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Antrópico,728539.6,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Desmatamento Primário,14212.0,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Desmatamento Secundário,2469.9,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,15,Pastagem,Agropecuária,Pastagem,Pastagem,Pastagem,Outras Transições,2970.6,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,20,Cana,Agropecuária,Agricultura,Lavoura Temporária,Cana,Antrópico,0.1,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Antrópico,19151.4,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Desmatamento Primário,4064.3,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Desmatamento Secundário,813.5,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,21,Mosaico de Usos,Agropecuária,Mosaico de Usos,Mosaico de Usos,Mosaico de Usos,Outras Transições,118.3,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,24,Área Urbanizada,Área não vegetada,Área Urbanizada,Área Urbanizada,Área Urbanizada,Antrópico,3063.0,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,25,Outras Áreas não Vegetadas,Área não vegetada,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Antrópico,473.8,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,25,Outras Áreas não Vegetadas,Área não vegetada,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Desmatamento Primário,2.3,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,25,Outras Áreas não Vegetadas,Área não vegetada,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Outras Áreas não Vegetadas,Outras Transições,0.3,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,29,Afloramento Rochoso,Área não vegetada,Afloramento Rochoso,Afloramento Rochoso,Afloramento Rochoso,Outras Transições,0.1,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,30,Mineração,Área não vegetada,Mineração,Mineração,Mineração,Antrópico,56.5,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,30,Mineração,Área não vegetada,Mineração,Mineração,Mineração,Outras Transições,1.2,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,31,Aquicultura,Corpos D´água,Aquicultura,Aquicultura,Aquicultura,Antrópico,55.3,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,33,"Rio, Lago e Oceano",Corpos D´água,"Rio, Lago e Oceano","Rio, Lago e Oceano","Rio, Lago e Oceano",Outras Transições,419475.6,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,39,Soja,Agropecuária,Agricultura,Lavoura Temporária,Soja,Antrópico,1487.0,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Antrópico,525.2,0.0,0.0
+campestre,grassland,v01,2023,Pantanal,MT,Mato Grosso,41,Outras Lavouras Temporárias,Agropecuária,Agricultura,Lavoura Temporária,Outras Lavouras Temporárias,Outras Transições,0.5,0.0,0.0

@@ -1,0 +1,148 @@
+ref_id,ref_family,band,classe,area_ha,total_native,year,ref_term,unit,factor_to_c,epoch,group,variable,t2_candidate,dens_native
+avitabile_agb,avitabile,,3,2050751.6,154101884.4,,agb,t MS/ha,0.47,2010,Avitabile 2016,agb,True,75.144
+avitabile_agb,avitabile,,4,3148708.4,100098825.1,,agb,t MS/ha,0.47,2010,Avitabile 2016,agb,True,31.79
+avitabile_agb,avitabile,,7,57500.3,1931186.9,,agb,t MS/ha,0.47,2010,Avitabile 2016,agb,True,33.586
+avitabile_agb,avitabile,,9,82.3,2204.8,,agb,t MS/ha,0.47,2010,Avitabile 2016,agb,True,26.79
+avitabile_agb,avitabile,,11,1809869.9,52205931.5,,agb,t MS/ha,0.47,2010,Avitabile 2016,agb,True,28.845
+avitabile_agb,avitabile,,12,4634478.1,96603126.1,,agb,t MS/ha,0.47,2010,Avitabile 2016,agb,True,20.844
+avitabile_agb,avitabile,,15,335084.0,4670422.2,,agb,t MS/ha,0.47,2010,Avitabile 2016,agb,True,13.938
+avitabile_agb,avitabile,,21,7298.7,214889.6,,agb,t MS/ha,0.47,2010,Avitabile 2016,agb,True,29.442
+avitabile_agb,avitabile,,24,161.0,1430.0,,agb,t MS/ha,0.47,2010,Avitabile 2016,agb,True,8.882
+avitabile_agb,avitabile,,29,407.4,7295.5,,agb,t MS/ha,0.47,2010,Avitabile 2016,agb,True,17.907
+avitabile_agb,avitabile,,30,485.3,47234.9,,agb,t MS/ha,0.47,2010,Avitabile 2016,agb,True,97.331
+avitabile_agb,avitabile,,33,250328.0,7921512.1,,agb,t MS/ha,0.47,2010,Avitabile 2016,agb,True,31.645
+avitabile_agb,avitabile,,41,81.4,1865.4,,agb,t MS/ha,0.47,2010,Avitabile 2016,agb,True,22.916
+saatchi_agb,saatchi,,3,2050751.6,123937649.2,,agb,t MS/ha,0.47,2011,Saatchi 2011,agb,True,60.435
+saatchi_agb,saatchi,,4,3148708.4,125567978.6,,agb,t MS/ha,0.47,2011,Saatchi 2011,agb,True,39.879
+saatchi_agb,saatchi,,7,57500.3,2543637.0,,agb,t MS/ha,0.47,2011,Saatchi 2011,agb,True,44.237
+saatchi_agb,saatchi,,9,82.3,3660.0,,agb,t MS/ha,0.47,2011,Saatchi 2011,agb,True,44.471
+saatchi_agb,saatchi,,11,1809869.9,76272899.4,,agb,t MS/ha,0.47,2011,Saatchi 2011,agb,True,42.143
+saatchi_agb,saatchi,,12,4634478.1,160289410.3,,agb,t MS/ha,0.47,2011,Saatchi 2011,agb,True,34.586
+saatchi_agb,saatchi,,15,335084.0,10293109.6,,agb,t MS/ha,0.47,2011,Saatchi 2011,agb,True,30.718
+saatchi_agb,saatchi,,21,7298.7,304170.3,,agb,t MS/ha,0.47,2011,Saatchi 2011,agb,True,41.675
+saatchi_agb,saatchi,,24,161.0,5173.9,,agb,t MS/ha,0.47,2011,Saatchi 2011,agb,True,32.136
+saatchi_agb,saatchi,,29,407.4,13707.9,,agb,t MS/ha,0.47,2011,Saatchi 2011,agb,True,33.647
+saatchi_agb,saatchi,,30,485.3,52447.9,,agb,t MS/ha,0.47,2011,Saatchi 2011,agb,True,108.073
+saatchi_agb,saatchi,,33,250328.0,10789623.2,,agb,t MS/ha,0.47,2011,Saatchi 2011,agb,True,43.102
+saatchi_agb,saatchi,,41,81.4,3318.0,,agb,t MS/ha,0.47,2011,Saatchi 2011,agb,True,40.762
+saatchi_agc,saatchi,,3,2050751.6,81009064.0,,agc,t C/ha,1.0,2011,Saatchi 2011,agc,True,39.502
+saatchi_agc,saatchi,,4,3148708.4,83020232.7,,agc,t C/ha,1.0,2011,Saatchi 2011,agc,True,26.366
+saatchi_agc,saatchi,,7,57500.3,1676253.7,,agc,t C/ha,1.0,2011,Saatchi 2011,agc,True,29.152
+saatchi_agc,saatchi,,9,82.3,2419.5,,agc,t C/ha,1.0,2011,Saatchi 2011,agc,True,29.399
+saatchi_agc,saatchi,,11,1809869.9,50258311.9,,agc,t C/ha,1.0,2011,Saatchi 2011,agc,True,27.769
+saatchi_agc,saatchi,,12,4634478.1,106176536.0,,agc,t C/ha,1.0,2011,Saatchi 2011,agc,True,22.91
+saatchi_agc,saatchi,,15,335084.0,6855084.8,,agc,t C/ha,1.0,2011,Saatchi 2011,agc,True,20.458
+saatchi_agc,saatchi,,21,7298.7,200763.6,,agc,t C/ha,1.0,2011,Saatchi 2011,agc,True,27.507
+saatchi_agc,saatchi,,24,161.0,3450.6,,agc,t C/ha,1.0,2011,Saatchi 2011,agc,True,21.432
+saatchi_agc,saatchi,,29,407.4,9113.2,,agc,t C/ha,1.0,2011,Saatchi 2011,agc,True,22.369
+saatchi_agc,saatchi,,30,485.3,33762.9,,agc,t C/ha,1.0,2011,Saatchi 2011,agc,True,69.571
+saatchi_agc,saatchi,,33,250328.0,7097911.8,,agc,t C/ha,1.0,2011,Saatchi 2011,agc,True,28.354
+saatchi_agc,saatchi,,41,81.4,2198.6,,agc,t C/ha,1.0,2011,Saatchi 2011,agc,True,27.01
+saatchi_bgb,saatchi,,3,2050751.6,38080478.8,,bgb,t MS/ha,0.47,2011,Saatchi 2011,bgb,False,18.569
+saatchi_bgb,saatchi,,4,3148708.4,40472486.7,,bgb,t MS/ha,0.47,2011,Saatchi 2011,bgb,False,12.854
+saatchi_bgb,saatchi,,7,57500.3,808870.2,,bgb,t MS/ha,0.47,2011,Saatchi 2011,bgb,False,14.067
+saatchi_bgb,saatchi,,9,82.3,1179.0,,bgb,t MS/ha,0.47,2011,Saatchi 2011,bgb,False,14.326
+saatchi_bgb,saatchi,,11,1809869.9,24243724.6,,bgb,t MS/ha,0.47,2011,Saatchi 2011,bgb,False,13.395
+saatchi_bgb,saatchi,,12,4634478.1,52063661.7,,bgb,t MS/ha,0.47,2011,Saatchi 2011,bgb,False,11.234
+saatchi_bgb,saatchi,,15,335084.0,3417060.0,,bgb,t MS/ha,0.47,2011,Saatchi 2011,bgb,False,10.198
+saatchi_bgb,saatchi,,21,7298.7,97356.9,,bgb,t MS/ha,0.47,2011,Saatchi 2011,bgb,False,13.339
+saatchi_bgb,saatchi,,24,161.0,1727.3,,bgb,t MS/ha,0.47,2011,Saatchi 2011,bgb,False,10.729
+saatchi_bgb,saatchi,,29,407.4,4518.5,,bgb,t MS/ha,0.47,2011,Saatchi 2011,bgb,False,11.091
+saatchi_bgb,saatchi,,30,485.3,15077.9,,bgb,t MS/ha,0.47,2011,Saatchi 2011,bgb,False,31.069
+saatchi_bgb,saatchi,,33,250328.0,3406200.3,,bgb,t MS/ha,0.47,2011,Saatchi 2011,bgb,False,13.607
+saatchi_bgb,saatchi,,41,81.4,1079.1,,bgb,t MS/ha,0.47,2011,Saatchi 2011,bgb,False,13.257
+saatchi_error,saatchi,,3,2050751.6,69766918.0,,error,t C/ha,1.0,2011,Saatchi 2011,error,False,34.02
+saatchi_error,saatchi,,4,3148708.4,102845969.6,,error,t C/ha,1.0,2011,Saatchi 2011,error,False,32.663
+saatchi_error,saatchi,,7,57500.3,1771727.7,,error,t C/ha,1.0,2011,Saatchi 2011,error,False,30.812
+saatchi_error,saatchi,,9,82.3,2961.6,,error,t C/ha,1.0,2011,Saatchi 2011,error,False,35.985
+saatchi_error,saatchi,,11,1809869.9,55485460.8,,error,t C/ha,1.0,2011,Saatchi 2011,error,False,30.657
+saatchi_error,saatchi,,12,4634478.1,147145713.5,,error,t C/ha,1.0,2011,Saatchi 2011,error,False,31.75
+saatchi_error,saatchi,,15,335084.0,11032079.8,,error,t C/ha,1.0,2011,Saatchi 2011,error,False,32.923
+saatchi_error,saatchi,,21,7298.7,244220.6,,error,t C/ha,1.0,2011,Saatchi 2011,error,False,33.461
+saatchi_error,saatchi,,24,161.0,4159.5,,error,t C/ha,1.0,2011,Saatchi 2011,error,False,25.835
+saatchi_error,saatchi,,29,407.4,12784.2,,error,t C/ha,1.0,2011,Saatchi 2011,error,False,31.38
+saatchi_error,saatchi,,30,485.3,16194.0,,error,t C/ha,1.0,2011,Saatchi 2011,error,False,33.369
+saatchi_error,saatchi,,33,250328.0,7587897.6,,error,t C/ha,1.0,2011,Saatchi 2011,error,False,30.312
+saatchi_error,saatchi,,41,81.4,2747.7,,error,t C/ha,1.0,2011,Saatchi 2011,error,False,33.756
+tcn_agc,tcn,,3,2075574.5,,,agc,t C/ha,1.0,baseline,TCN (3ª CN),agc,True,
+tcn_agc,tcn,,4,3247489.3,,,agc,t C/ha,1.0,baseline,TCN (3ª CN),agc,True,
+tcn_agc,tcn,,7,201574.4,,,agc,t C/ha,1.0,baseline,TCN (3ª CN),agc,True,
+tcn_agc,tcn,,9,2.3,,,agc,t C/ha,1.0,baseline,TCN (3ª CN),agc,True,
+tcn_agc,tcn,,11,1964404.2,,,agc,t C/ha,1.0,baseline,TCN (3ª CN),agc,True,
+tcn_agc,tcn,,12,4296973.5,,,agc,t C/ha,1.0,baseline,TCN (3ª CN),agc,True,
+tcn_agc,tcn,,15,14584.9,,,agc,t C/ha,1.0,baseline,TCN (3ª CN),agc,True,
+tcn_agc,tcn,,21,578.7,,,agc,t C/ha,1.0,baseline,TCN (3ª CN),agc,True,
+tcn_agc,tcn,,24,13.7,,,agc,t C/ha,1.0,baseline,TCN (3ª CN),agc,True,
+tcn_agc,tcn,,25,2.3,,,agc,t C/ha,1.0,baseline,TCN (3ª CN),agc,True,
+tcn_agc,tcn,,29,27.5,,,agc,t C/ha,1.0,baseline,TCN (3ª CN),agc,True,
+tcn_agc,tcn,,30,11.4,,,agc,t C/ha,1.0,baseline,TCN (3ª CN),agc,True,
+tcn_agc,tcn,,33,17876.9,,,agc,t C/ha,1.0,baseline,TCN (3ª CN),agc,True,
+tcn_agc,tcn,,40,6.8,,,agc,t C/ha,1.0,baseline,TCN (3ª CN),agc,True,
+tcn_agc,tcn,,41,8.0,,,agc,t C/ha,1.0,baseline,TCN (3ª CN),agc,True,
+tcn_bgc,tcn,,3,2075574.5,,,bgc,t C/ha,1.0,baseline,TCN (3ª CN),bgc,False,
+tcn_bgc,tcn,,4,3247489.3,,,bgc,t C/ha,1.0,baseline,TCN (3ª CN),bgc,False,
+tcn_bgc,tcn,,7,201574.4,,,bgc,t C/ha,1.0,baseline,TCN (3ª CN),bgc,False,
+tcn_bgc,tcn,,9,2.3,,,bgc,t C/ha,1.0,baseline,TCN (3ª CN),bgc,False,
+tcn_bgc,tcn,,11,1964404.2,,,bgc,t C/ha,1.0,baseline,TCN (3ª CN),bgc,False,
+tcn_bgc,tcn,,12,4296973.5,,,bgc,t C/ha,1.0,baseline,TCN (3ª CN),bgc,False,
+tcn_bgc,tcn,,15,14584.9,,,bgc,t C/ha,1.0,baseline,TCN (3ª CN),bgc,False,
+tcn_bgc,tcn,,21,578.7,,,bgc,t C/ha,1.0,baseline,TCN (3ª CN),bgc,False,
+tcn_bgc,tcn,,24,13.7,,,bgc,t C/ha,1.0,baseline,TCN (3ª CN),bgc,False,
+tcn_bgc,tcn,,25,2.3,,,bgc,t C/ha,1.0,baseline,TCN (3ª CN),bgc,False,
+tcn_bgc,tcn,,29,27.5,,,bgc,t C/ha,1.0,baseline,TCN (3ª CN),bgc,False,
+tcn_bgc,tcn,,30,11.4,,,bgc,t C/ha,1.0,baseline,TCN (3ª CN),bgc,False,
+tcn_bgc,tcn,,33,17876.9,,,bgc,t C/ha,1.0,baseline,TCN (3ª CN),bgc,False,
+tcn_bgc,tcn,,40,6.8,,,bgc,t C/ha,1.0,baseline,TCN (3ª CN),bgc,False,
+tcn_bgc,tcn,,41,8.0,,,bgc,t C/ha,1.0,baseline,TCN (3ª CN),bgc,False,
+tcn_cdw,tcn,,3,2075574.5,,,cdw,t C/ha,1.0,baseline,TCN (3ª CN),cdw,False,
+tcn_cdw,tcn,,4,3247489.3,,,cdw,t C/ha,1.0,baseline,TCN (3ª CN),cdw,False,
+tcn_cdw,tcn,,7,201574.4,,,cdw,t C/ha,1.0,baseline,TCN (3ª CN),cdw,False,
+tcn_cdw,tcn,,9,2.3,,,cdw,t C/ha,1.0,baseline,TCN (3ª CN),cdw,False,
+tcn_cdw,tcn,,11,1964404.2,,,cdw,t C/ha,1.0,baseline,TCN (3ª CN),cdw,False,
+tcn_cdw,tcn,,12,4296973.5,,,cdw,t C/ha,1.0,baseline,TCN (3ª CN),cdw,False,
+tcn_cdw,tcn,,15,14584.9,,,cdw,t C/ha,1.0,baseline,TCN (3ª CN),cdw,False,
+tcn_cdw,tcn,,21,578.7,,,cdw,t C/ha,1.0,baseline,TCN (3ª CN),cdw,False,
+tcn_cdw,tcn,,24,13.7,,,cdw,t C/ha,1.0,baseline,TCN (3ª CN),cdw,False,
+tcn_cdw,tcn,,25,2.3,,,cdw,t C/ha,1.0,baseline,TCN (3ª CN),cdw,False,
+tcn_cdw,tcn,,29,27.5,,,cdw,t C/ha,1.0,baseline,TCN (3ª CN),cdw,False,
+tcn_cdw,tcn,,30,11.4,,,cdw,t C/ha,1.0,baseline,TCN (3ª CN),cdw,False,
+tcn_cdw,tcn,,33,17876.9,,,cdw,t C/ha,1.0,baseline,TCN (3ª CN),cdw,False,
+tcn_cdw,tcn,,40,6.8,,,cdw,t C/ha,1.0,baseline,TCN (3ª CN),cdw,False,
+tcn_cdw,tcn,,41,8.0,,,cdw,t C/ha,1.0,baseline,TCN (3ª CN),cdw,False,
+tcn_litter,tcn,,3,2075574.5,,,litter,t C/ha,1.0,baseline,TCN (3ª CN),litter,False,
+tcn_litter,tcn,,4,3247489.3,,,litter,t C/ha,1.0,baseline,TCN (3ª CN),litter,False,
+tcn_litter,tcn,,7,201574.4,,,litter,t C/ha,1.0,baseline,TCN (3ª CN),litter,False,
+tcn_litter,tcn,,9,2.3,,,litter,t C/ha,1.0,baseline,TCN (3ª CN),litter,False,
+tcn_litter,tcn,,11,1964404.2,,,litter,t C/ha,1.0,baseline,TCN (3ª CN),litter,False,
+tcn_litter,tcn,,12,4296973.5,,,litter,t C/ha,1.0,baseline,TCN (3ª CN),litter,False,
+tcn_litter,tcn,,15,14584.9,,,litter,t C/ha,1.0,baseline,TCN (3ª CN),litter,False,
+tcn_litter,tcn,,21,578.7,,,litter,t C/ha,1.0,baseline,TCN (3ª CN),litter,False,
+tcn_litter,tcn,,24,13.7,,,litter,t C/ha,1.0,baseline,TCN (3ª CN),litter,False,
+tcn_litter,tcn,,25,2.3,,,litter,t C/ha,1.0,baseline,TCN (3ª CN),litter,False,
+tcn_litter,tcn,,29,27.5,,,litter,t C/ha,1.0,baseline,TCN (3ª CN),litter,False,
+tcn_litter,tcn,,30,11.4,,,litter,t C/ha,1.0,baseline,TCN (3ª CN),litter,False,
+tcn_litter,tcn,,33,17876.9,,,litter,t C/ha,1.0,baseline,TCN (3ª CN),litter,False,
+tcn_litter,tcn,,40,6.8,,,litter,t C/ha,1.0,baseline,TCN (3ª CN),litter,False,
+tcn_litter,tcn,,41,8.0,,,litter,t C/ha,1.0,baseline,TCN (3ª CN),litter,False,
+tcn_total,tcn,,3,2075574.5,,,total,t C/ha,1.0,baseline,TCN (3ª CN),total,True,
+tcn_total,tcn,,4,3247489.3,,,total,t C/ha,1.0,baseline,TCN (3ª CN),total,True,
+tcn_total,tcn,,7,201574.4,,,total,t C/ha,1.0,baseline,TCN (3ª CN),total,True,
+tcn_total,tcn,,9,2.3,,,total,t C/ha,1.0,baseline,TCN (3ª CN),total,True,
+tcn_total,tcn,,11,1964404.2,,,total,t C/ha,1.0,baseline,TCN (3ª CN),total,True,
+tcn_total,tcn,,12,4296973.5,,,total,t C/ha,1.0,baseline,TCN (3ª CN),total,True,
+tcn_total,tcn,,15,14584.9,,,total,t C/ha,1.0,baseline,TCN (3ª CN),total,True,
+tcn_total,tcn,,21,578.7,,,total,t C/ha,1.0,baseline,TCN (3ª CN),total,True,
+tcn_total,tcn,,24,13.7,,,total,t C/ha,1.0,baseline,TCN (3ª CN),total,True,
+tcn_total,tcn,,25,2.3,,,total,t C/ha,1.0,baseline,TCN (3ª CN),total,True,
+tcn_total,tcn,,29,27.5,,,total,t C/ha,1.0,baseline,TCN (3ª CN),total,True,
+tcn_total,tcn,,30,11.4,,,total,t C/ha,1.0,baseline,TCN (3ª CN),total,True,
+tcn_total,tcn,,33,17876.9,,,total,t C/ha,1.0,baseline,TCN (3ª CN),total,True,
+tcn_total,tcn,,40,6.8,,,total,t C/ha,1.0,baseline,TCN (3ª CN),total,True,
+tcn_total,tcn,,41,8.0,,,total,t C/ha,1.0,baseline,TCN (3ª CN),total,True,
+xu_live,xu,,3,1713746.5,48992650.0,,live,t C/ha,1.0,2019,Xu & Saatchi 2021,live,True,28.588
+xu_live,xu,,4,3082454.8,78550062.4,,live,t C/ha,1.0,2019,Xu & Saatchi 2021,live,True,25.483
+xu_live,xu,,11,1876040.9,28460910.7,,live,t C/ha,1.0,2019,Xu & Saatchi 2021,live,True,15.171
+xu_live,xu,,12,5241820.4,93211904.9,,live,t C/ha,1.0,2019,Xu & Saatchi 2021,live,True,17.782
+xu_live,xu,,15,842628.1,14310750.2,,live,t C/ha,1.0,2019,Xu & Saatchi 2021,live,True,16.983
+xu_live,xu,,21,23294.8,490497.6,,live,t C/ha,1.0,2019,Xu & Saatchi 2021,live,True,21.056
+xu_live,xu,,33,283212.6,5397366.5,,live,t C/ha,1.0,2019,Xu & Saatchi 2021,live,True,19.058

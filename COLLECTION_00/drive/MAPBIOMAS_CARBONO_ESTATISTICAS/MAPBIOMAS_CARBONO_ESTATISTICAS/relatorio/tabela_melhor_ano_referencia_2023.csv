@@ -1,0 +1,36 @@
+produto,versao,classe,n0,n1,natureza,marcador,area_ha,dens_prod,melhor_ref,melhor_epoch,melhor_year,melhor_dens_ref,diff_abs,diff_pct,fator_impl,candidatos_top3,recomendacao
+forest,v03,3,Formação Florestal,Floresta,Natural,florestal,8.4,32.29761904761905,xu_live,2019,,28.588,3.71,11.5,1.13,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+forest,v03,4,Formação Savânica,Floresta,Natural,florestal,5.2,25.096153846153847,xu_live,2019,,25.483,0.387,1.5,0.985,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+forest,v03,7,Savana Alagada,Floresta,Natural,florestal,0.2,25.0,saatchi_agc,2011,,29.152,4.152,16.6,0.858,saatchi_agc/2011,saatchi_agc/2011
+forest,v03,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Natural,campestre,2.2,23.36363636363636,saatchi_agc,2011,,27.769,4.405,18.9,0.841,saatchi_agc/2011 | xu_live/2019,saatchi_agc/2011
+forest,v03,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Natural,campestre,3.9,21.76923076923077,saatchi_agc,2011,,22.91,1.141,5.2,0.95,saatchi_agc/2011 | xu_live/2019,saatchi_agc/2011
+forest,v04,3,Formação Florestal,Floresta,Natural,florestal,8.4,29.607142857142854,xu_live,2019,,28.588,1.019,3.4,1.036,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+forest,v04,4,Formação Savânica,Floresta,Natural,florestal,5.2,25.153846153846157,xu_live,2019,,25.483,0.329,1.3,0.987,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+forest,v04,7,Savana Alagada,Floresta,Natural,florestal,0.2,22.999999999999996,saatchi_agc,2011,,29.152,6.152,26.7,0.789,saatchi_agc/2011,saatchi_agc/2011
+forest,v04,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Natural,campestre,2.2,19.136363636363637,xu_live,2019,,15.171,3.965,20.7,1.261,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+forest,v04,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Natural,campestre,3.9,23.333333333333332,saatchi_agc,2011,,22.91,0.423,1.8,1.018,saatchi_agc/2011 | xu_live/2019,saatchi_agc/2011
+forest,v05,3,Formação Florestal,Floresta,Natural,florestal,8.4,14.583333333333332,xu_live,2019,,28.588,14.005,96.0,0.51,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+forest,v05,4,Formação Savânica,Floresta,Natural,florestal,5.2,16.403846153846153,xu_live,2019,,25.483,9.079,55.3,0.644,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+forest,v05,7,Savana Alagada,Floresta,Natural,florestal,0.2,10.0,saatchi_agc,2011,,29.152,19.152,191.5,0.343,saatchi_agc/2011,saatchi_agc/2011
+forest,v05,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Natural,campestre,2.2,5.772727272727272,xu_live,2019,,15.171,9.398,162.8,0.381,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+forest,v05,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Natural,campestre,3.9,7.58974358974359,xu_live,2019,,17.782,10.192,134.3,0.427,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+forest,v06,3,Formação Florestal,Floresta,Natural,florestal,8.4,0.44047619047619047,xu_live,2019,,28.588,28.148,6390.2,0.015,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+forest,v06,4,Formação Savânica,Floresta,Natural,florestal,5.2,0.0,xu_live,2019,,25.483,25.483,2548300000000.0,0.0,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+forest,v06,7,Savana Alagada,Floresta,Natural,florestal,0.2,0.0,saatchi_agc,2011,,29.152,29.152,2915200000000.0,0.0,saatchi_agc/2011,saatchi_agc/2011
+forest,v06,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Natural,campestre,2.2,0.0,xu_live,2019,,15.171,15.171,1517100000000.0,0.0,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+forest,v06,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Natural,campestre,3.9,0.0,xu_live,2019,,17.782,17.782,1778200000000.0,0.0,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+forest,v07,3,Formação Florestal,Floresta,Natural,florestal,8.4,29.321428571428573,xu_live,2019,,28.588,0.733,2.5,1.026,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+forest,v07,4,Formação Savânica,Floresta,Natural,florestal,5.2,24.78846153846154,xu_live,2019,,25.483,0.695,2.8,0.973,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+forest,v07,7,Savana Alagada,Floresta,Natural,florestal,0.2,19.5,saatchi_agc,2011,,29.152,9.652,49.5,0.669,saatchi_agc/2011,saatchi_agc/2011
+forest,v07,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Natural,campestre,2.2,20.86363636363636,xu_live,2019,,15.171,5.693,27.3,1.375,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+forest,v07,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Natural,campestre,3.9,22.871794871794872,saatchi_agc,2011,,22.91,0.038,0.2,0.998,saatchi_agc/2011 | xu_live/2019,saatchi_agc/2011
+grassland_biomass,v01,3,Formação Florestal,Floresta,Natural,florestal,8.4,0.0,saatchi_agb,2011,,60.435,60.435,6043500000000.0,0.0,saatchi_agb/2011 | avitabile_agb/2010,saatchi_agb/2011
+grassland_biomass,v01,4,Formação Savânica,Floresta,Natural,florestal,5.2,0.0,avitabile_agb,2010,,31.79,31.79,3179000000000.0,0.0,avitabile_agb/2010 | saatchi_agb/2011,avitabile_agb/2010
+grassland_biomass,v01,7,Savana Alagada,Floresta,Natural,florestal,0.2,0.0,avitabile_agb,2010,,33.586,33.586,3358600000000.0,0.0,avitabile_agb/2010 | saatchi_agb/2011,avitabile_agb/2010
+grassland_biomass,v01,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Natural,campestre,2.2,0.0,avitabile_agb,2010,,28.845,28.845,2884500000000.0,0.0,avitabile_agb/2010 | saatchi_agb/2011,avitabile_agb/2010
+grassland_biomass,v01,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Natural,campestre,3.9,0.0,avitabile_agb,2010,,20.844,20.844,2084400000000.0,0.0,avitabile_agb/2010 | saatchi_agb/2011,avitabile_agb/2010
+grassland_carbon,v01,3,Formação Florestal,Floresta,Natural,florestal,8.4,0.0,xu_live,2019,,28.588,28.588,2858800000000.0,0.0,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+grassland_carbon,v01,4,Formação Savânica,Floresta,Natural,florestal,5.2,0.0,xu_live,2019,,25.483,25.483,2548300000000.0,0.0,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+grassland_carbon,v01,7,Savana Alagada,Floresta,Natural,florestal,0.2,0.0,saatchi_agc,2011,,29.152,29.152,2915200000000.0,0.0,saatchi_agc/2011,saatchi_agc/2011
+grassland_carbon,v01,11,Campo Alagado e Área Pantanosa,Vegetação Herbácea e Arbustiva,Natural,campestre,2.2,0.0,xu_live,2019,,15.171,15.171,1517100000000.0,0.0,xu_live/2019 | saatchi_agc/2011,xu_live/2019
+grassland_carbon,v01,12,Formação Campestre,Vegetação Herbácea e Arbustiva,Natural,campestre,3.9,0.0,xu_live,2019,,17.782,17.782,1778200000000.0,0.0,xu_live/2019 | saatchi_agc/2011,xu_live/2019
