@@ -22,10 +22,11 @@ print("statistics · 13_figures · figuras")
 print("=" * 68)
 
 forest = pd.read_csv(out_dir() / "consolidado_forest_2023.csv", encoding="utf-8")
-grassland = pd.read_csv(out_dir() / "consolidado_grassland_2023.csv",
-                        encoding="utf-8") if (out_dir() /
-                        "consolidado_grassland_2023.csv").exists() else None
+grassland_raw = pd.read_csv(out_dir() / "consolidado_grassland_2023.csv",
+                            encoding="utf-8") if (out_dir() /
+                            "consolidado_grassland_2023.csv").exists() else None
 ref = CONF["GRASSLAND_REF_VERSION"]
+grassland = grassland_raw
 if grassland is not None and "versao" in grassland.columns:
     grassland = grassland[grassland["versao"].astype(str) == str(ref)]
     print(f"[INFO] grassland consolidado filtrado p/ referência {ref}")
@@ -44,7 +45,8 @@ if len(forest):
         ax.barh(cls, [vals.get(c, 0) for c in order], label=v,
                 color=plt.cm.viridis(i / max(len(VEC) - 1, 1)),
                 height=0.8 / len(VEC) - 0.04 if len(VEC) > 1 else 0.8)
-    ax.set(xlabel="estoque (t)", title="f1 · estoque de AGC por classe C11 (2023)")
+    ax.set(xlabel=VALUE_LABEL["estoque_t"],
+           title=f"f1 · {VALUE_LABEL['estoque_t']} por classe C11 (2023)")
     ax.grid(axis="x", alpha=0.3)
     ax.legend(ncols=len(VEC))
     save_fig(fig, "f1_forest_estoque_por_classe.png")
@@ -111,6 +113,99 @@ if grassland is not None and len(grassland):
     ax.set(xlabel="produto", ylabel="t",
            title=f"f5 · grassland {ref} — total por produto (2023)")
     save_fig(fig, "f5_grassland_compare_menu.png")
+
+# ---------------------------------------------------------------------------
+# Densidade ponderada (sum(t)/sum(ha)) + medidas das REFERÊNCIAS
+# ---------------------------------------------------------------------------
+try:
+    refs = load_references_csv()
+except Exception as e:  # noqa: BLE001
+    print("[AVISO] referências indisponíveis:", e)
+    refs = pd.DataFrame()
+
+
+def _refs_por_classe(term):
+    """Densidade de referência (na unidade do produto) por classe × ref."""
+    if not len(refs):
+        return pd.DataFrame(columns=["classe", "ref_id", "dens"])
+    allowed = ALLOWED_TERMS.get(term, ())
+    sub = refs[refs["ref_term"].isin(allowed)].copy()
+    if not len(sub):
+        return pd.DataFrame(columns=["classe", "ref_id", "dens"])
+    sub = ref_value_for_product(sub, term).dropna(subset=["ref_value"])
+    return sub[["classe", "ref_id", "ref_value"]].rename(
+        columns={"ref_value": "dens"})
+
+
+def _plot_dens_refs(ax, refsub, order):
+    """Sobrepõe as densidades de referência (pontos) num eixo de barras."""
+    for rid, g in refsub.groupby("ref_id"):
+        gi = g.set_index("classe")
+        ys = [gi["dens"].get(c, np.nan) for c in order]
+        ax.plot(range(len(order)), ys, marker="o", ls="none", ms=5,
+                label=f"ref: {rid}")
+
+
+def _density_figure(ax_order_by_area, value_col, keys, ylab, title, fname,
+                    ref_term=None):
+    d = dens_ponderada(ax_order_by_area, value_col, keys)
+    if not len(d):
+        return
+    order = (ax_order_by_area.groupby("classe")["area_ha"].sum()
+             .sort_values(ascending=False).index[:15])
+    cls = [n0_label(c) for c in order]
+    x = np.arange(len(order))
+    fig, ax = plt.subplots(figsize=(12, max(4, 0.45 * len(cls))))
+    if "version" in keys:
+        for i, v in enumerate(CONF["FOREST_VERSIONS"]):
+            dv = d[d["version"] == v].set_index("classe")["dens"]
+            ax.bar(x + i * 0.8 / len(CONF["FOREST_VERSIONS"]),
+                   [dv.get(c, np.nan) for c in order],
+                   width=0.8 / len(CONF["FOREST_VERSIONS"]), label=v)
+        ax.set_xticks(x + 0.4 - 0.4 / len(CONF["FOREST_VERSIONS"]))
+    else:
+        dv = d.set_index("classe")["dens"]
+        ax.bar(x, [dv.get(c, np.nan) for c in order], label=keys[-1])
+        ax.set_xticks(x)
+    if ref_term:
+        _plot_dens_refs(ax, _refs_por_classe(ref_term), order)
+    ax.set_xticklabels(cls, rotation=45, ha="right")
+    ax.set(ylabel=ylab, title=title)
+    ax.grid(axis="y", alpha=0.3)
+    ax.legend(ncols=2, fontsize=8)
+    save_fig(fig, fname)
+
+
+if len(forest):
+    _density_figure(forest, "estoque_t", ["version", "classe"],
+                    VALUE_DENS_LABEL["estoque_t"],
+                    f"f6 · densidade ponderada de {VALUE_LABEL['estoque_t']} "
+                    "por classe × versão + referências",
+                    "f6_forest_densidade_por_classe.png", ref_term="agc")
+
+if grassland_raw is not None and len(grassland_raw):
+    _vers = (sorted(grassland_raw["versao"].astype(str).unique())
+             if "versao" in grassland_raw.columns else [])
+    g_src = grassland_raw
+    if str(ref) in _vers:
+        g_src = grassland_raw[grassland_raw["versao"].astype(str) == str(ref)]
+    elif _vers:
+        g_src = grassland_raw[grassland_raw["versao"].astype(str) == _vers[0]]
+        print(f"[INFO] grassland densidade usando versão {_vers[0]}")
+    gC = g_src[g_src["produto"] == "carbon"]
+    gB = g_src[g_src["produto"] == "biomass"]
+    if len(gC):
+        _density_figure(gC, "estoque_t", ["classe"],
+                        VALUE_DENS_LABEL["estoque_t"],
+                        f"f7 · densidade ponderada de "
+                        f"{VALUE_LABEL['estoque_t']} — campestre + referências",
+                        "f7_grassland_carbono_densidade.png", ref_term="carbon")
+    if len(gB):
+        _density_figure(gB, "biomassa_t", ["classe"],
+                        VALUE_DENS_LABEL["biomassa_t"],
+                        f"f8 · densidade ponderada de "
+                        f"{VALUE_LABEL['biomassa_t']} — campestre + referências",
+                        "f8_grassland_biomassa_densidade.png", ref_term="biomass")
 
 print()
 print(f"[ARTEFATOS] {len(manifest())} — baixe/exporte as figuras para cá:")

@@ -31,7 +31,7 @@ md = [f"# Resumo das estatísticas · Pantanal · ano {CONF['YEAR']}",
       f"\nGerado por `toolkits/statistics/v00/run/cells_for_collab_notebook` em Colab.",
       f"\nFiltro def_sec: "
       f"{', '.join(CONF['DEF_SEC_FILTER']) if CONF.get('DEF_SEC_FILTER') else 'todos'}.",
-      "\n## Floresta (carbono acima do solo, t)\n"]
+      f"\n## Floresta ({VALUE_LABEL['estoque_t']})\n"]
 
 xlsx_path = out_dir() / f"resumo_pantanal_{CONF['YEAR']}.xlsx"
 with pd.ExcelWriter(xlsx_path, engine="openpyxl") as xw:

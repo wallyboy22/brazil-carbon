@@ -136,14 +136,40 @@ def build_compare_forest(df: pd.DataFrame) -> pd.DataFrame:
 GRASS_VALUE_COL = {"biomass": "biomassa_t", "carbon": "estoque_t",
                    "anpp": "anpp_t"}
 GRASS_PRODUCT_LABEL = {
-    "biomass": "biomassa acima do solo (t MS)",
-    "anpp": "produtividade primária líquida acima do solo (t MS/ano)",
-    "carbon": "carbono acima do solo (t C)"}
+    "biomass": "Biomassa acima do solo (t MS)",
+    "anpp": "Produtividade primária líquida acima do solo (t MS/ano)",
+    "carbon": "Carbono acima do solo (t C)"}
+
+# Rótulo (nome da COLUNA acordada) por coluna interna de valor.
+VALUE_LABEL = {
+    "estoque_t": "Carbono acima do solo (t C)",
+    "biomassa_t": "Biomassa acima do solo (t MS)",
+    "anpp_t": "Produtividade primária líquida acima do solo (t MS/ano)",
+}
+# Idem, para DENSIDADE (t/ha) — usado nos gráficos de média ponderada.
+VALUE_DENS_LABEL = {
+    "estoque_t": "Carbono acima do solo (t C/ha)",
+    "biomassa_t": "Biomassa acima do solo (t MS/ha)",
+    "anpp_t": "Produtividade primária líquida acima do solo (t MS/ha/ano)",
+}
 
 
 def grass_value_col(produto) -> str:
     """Coluna de valor do produto campestre no consolidado grassland."""
     return GRASS_VALUE_COL.get(str(produto), "biomassa_t")
+
+
+def dens_ponderada(df: pd.DataFrame, value_col: str,
+                   keys=("classe",)) -> pd.DataFrame:
+    """Densidade ponderada por área: `sum(valor) / sum(area_ha)` por chave."""
+    cols = list(keys) + ["area_ha", "valor", "dens"]
+    if df is None or not len(df):
+        return pd.DataFrame(columns=cols)
+    g = (df.groupby(list(keys), dropna=False)
+         .agg(area_ha=("area_ha", "sum"), valor=(value_col, "sum"))
+         .reset_index())
+    g["dens"] = np.where(g["area_ha"] > 0, g["valor"] / g["area_ha"], np.nan)
+    return g
 
 
 def build_compare_grassland(df: pd.DataFrame) -> pd.DataFrame:
