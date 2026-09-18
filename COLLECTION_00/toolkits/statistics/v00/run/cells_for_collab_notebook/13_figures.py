@@ -207,6 +207,73 @@ if grassland_raw is not None and len(grassland_raw):
                         f"{VALUE_LABEL['biomassa_t']} — campestre + referências",
                         "f8_grassland_biomassa_densidade.png", ref_term="biomass")
 
+# ---------------------------------------------------------------------------
+# Grids (heatmaps) com os valores dentro: total (t), área (ha) e t/ha
+# ---------------------------------------------------------------------------
+def _top_classes(df, n=12):
+    if df is None or not len(df) or "n0" not in df.columns:
+        return []
+    return (df.groupby("n0")["area_ha"].sum().sort_values(ascending=False)
+            .index[:n].tolist())
+
+
+def _grid_panel(ax, piv, title, fmt, cmap):
+    if piv is None or not len(piv):
+        ax.axis("off")
+        ax.set_title(title, fontsize=10)
+        return
+    mat = piv.values.astype(float)
+    im = ax.imshow(mat, aspect="auto", cmap=cmap)
+    ax.set_xticks(range(piv.shape[1]))
+    ax.set_xticklabels([str(c) for c in piv.columns], rotation=45, ha="right",
+                       fontsize=8)
+    ax.set_yticks(range(piv.shape[0]))
+    ax.set_yticklabels([str(r) for r in piv.index], fontsize=8)
+    for i in range(mat.shape[0]):
+        for j in range(mat.shape[1]):
+            v = mat[i, j]
+            if np.isfinite(v):
+                ax.text(j, i, format(v, fmt), ha="center", va="center",
+                        fontsize=7)
+    ax.set_title(title, fontsize=10)
+    plt.colorbar(im, ax=ax, shrink=0.8)
+
+
+def _grid_pivots(rows, col_col, val_col):
+    t = rows.pivot_table(index="n0", columns=col_col, values=val_col,
+                         aggfunc="sum", dropna=False)
+    a = rows.pivot_table(index="n0", columns=col_col, values="area_ha",
+                         aggfunc="sum", dropna=False)
+    d = t / a.replace(0, np.nan)
+    return t, a, d
+
+
+f_t = f_a = f_d = None
+if len(forest):
+    fr = forest[forest["n0"].isin(_top_classes(forest, 12))]
+    f_t, f_a, f_d = _grid_pivots(fr, "version", "estoque_t")
+
+g_t = g_a = g_d = None
+if grassland_raw is not None and len(grassland_raw):
+    gr = grassland_raw.copy()
+    _vcols = [c for c in ("estoque_t", "biomassa_t", "anpp_t")
+              if c in gr.columns]
+    gr["valor"] = gr[_vcols].sum(axis=1, min_count=1)
+    gr = gr[gr["n0"].isin(_top_classes(gr, 12))]
+    g_t, g_a, g_d = _grid_pivots(gr, "produto", "valor")
+
+for piv_f, piv_g, fmt, cmap, fname, lab in [
+    (f_t, g_t, ",.0f", "YlGnBu", "g1_grid_total.png", "total (t)"),
+    (f_a, g_a, ",.0f", "YlOrBr", "g2_grid_area.png", "área (ha)"),
+    (f_d, g_d, ",.1f", "YlOrRd", "g3_grid_densidade.png", "densidade (t/ha)"),
+]:
+    fig, axes = plt.subplots(1, 2, figsize=(15, 6))
+    _grid_panel(axes[0], piv_f, f"forest · {lab} — classe × versão", fmt, cmap)
+    _grid_panel(axes[1], piv_g, f"grassland · {lab} — classe × produto", fmt,
+                cmap)
+    fig.suptitle(f"grid · {lab}", fontweight="bold")
+    save_fig(fig, fname)
+
 print()
 print(f"[ARTEFATOS] {len(manifest())} — baixe/exporte as figuras para cá:")
 for m in manifest():
