@@ -13,7 +13,8 @@ Rodar `run/run_view.js` no Code Editor. O painel esquerdo permite:
   **Pantanal Campestre** — checkboxes por versão;
 - **Referência** (gavetas): uma gaveta **por fonte** (Saatchi, Baccini, Zimbres,
   Avitabile, Xu & Saatchi, TCN, QCN, QCN-r, **IFN**);
-- **Auxiliares** (gaveta): **Uso e Cobertura (C11)**;
+- **Auxiliares** (gavetas): **Uso e Cobertura (C11)** · **MapBiomas Pastagem**
+  (biomassa 2023) · **MapBiomas Solo** (carbono orgânico 2023);
 - **LEGENDAS** (gaveta única, sem subgavetas): **Mín/Máx global** (textbox que
   sobrescrevem o min/max de todas as rampas — legenda **e** mapa), **Opacidade**,
   as **barras de cor** (esticadas horizontalmente) por rampa distinta e, **abaixo**,
@@ -43,6 +44,7 @@ contracts/
   00_catalog_limits.js       # IBGE: biomas/ufs
   00_catalog_territories.js  # níveis territoriais (bioma/uf/região/brasil) + dicts
   00_catalog_landcover.js    # MapBiomas C11 (asset, paleta, legenda)
+  00_catalog_mapbiomas.js    # MapBiomas Pastagem (biomassa) + Solo (carbono orgânico)
   00_catalog_products.js     # Cerrado (vbeta1) + Pantanal forest (v03–v08) + grassland
   00_catalog_references.js   # 17 mapas de referência + FONTES (rótulos)
   00_catalog_layers.js       # registry: PRODUTOS · REF_FONTES · AUXILIARES

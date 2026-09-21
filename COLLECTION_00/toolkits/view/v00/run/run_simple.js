@@ -40,10 +40,19 @@ var QCN = 'projects/ee-ipam/assets/CCAL/public/qcn';
 var IFN = 'projects/ee-ipam/assets/IFN/IFN_2026_BR_PLOTS-v13';
 var LULC = 'projects/mapbiomas-public/assets/brazil/lulc/collection11/' +
   'mapbiomas_brazil_collection11_coverage_v3';
+var MBP = 'projects/mapbiomas-public/assets/brazil/lulc/collection11/' +
+  'mapbiomas_brazil_collection11_pasture_biomass_v1';
+var MBS = 'projects/mapbiomas-public/assets/brazil/soil/collection3/' +
+  'mapbiomas_brazil_collection3_soil_carbon_v1';
 
 // vis de AGBD do Cerrado (t/ha) — máximos maiores que o Pantanal.
 var CERR_VIS = { min: 0, max: 140,
   palette: ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'] };
+// MapBiomas Pastagem (Mg/ha) e Solo (Mg C/ha), 2023.
+var PAST_VIS = { min: 0, max: 30,
+  palette: ['#ffffe5', '#d9f0a3', '#78c679', '#31a354', '#006837'] };
+var SOIL_VIS = { min: 0, max: 100,
+  palette: ['#f7f4e9', '#e6d3a3', '#c9a86a', '#9c6b3f', '#5c3b1e'] };
 
 // ---- Camadas ----
 // col = ImageCollection COL (mosaico do ano) · img = imagem · mask_lt = nodata.
@@ -91,7 +100,10 @@ var LAYERS = [
   { n: 'LULC C11 1985', img: LULC, band: 'classification_1985', vis: LULC_VIS },
   { n: 'LULC C11 2000', img: LULC, band: 'classification_2000', vis: LULC_VIS },
   { n: 'LULC C11 2010', img: LULC, band: 'classification_2010', vis: LULC_VIS },
-  { n: 'LULC C11 2023', img: LULC, band: 'classification_2023', vis: LULC_VIS }
+  { n: 'LULC C11 2023', img: LULC, band: 'classification_2023', vis: LULC_VIS },
+  // MapBiomas Pastagem / Solo (2023)
+  { n: 'MapBiomas Pastagem biomassa 2023 (Mg/ha)', img: MBP, band: 'biomass_2023', vis: PAST_VIS },
+  { n: 'MapBiomas Solo carbono organico 2023 (Mg C/ha)', img: MBS, band: 'carbon_2023', vis: SOIL_VIS }
 ];
 
 /** true se o asset existe (getAsset direto; não depende de listar a pasta). */

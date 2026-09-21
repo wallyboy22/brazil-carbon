@@ -4,10 +4,10 @@
  * Compõe as CAMADAS visualizáveis do app a partir dos catálogos:
  *   · Resultados (Cerrado Florestal / Pantanal Florestal / Pantanal Campestre)
  *   · Referências (benchmarks/CN)  — agrupadas por FONTE
- *   · Auxiliares (Uso e Cobertura MapBiomas C11)
+ *   · Auxiliares (Uso e Cobertura C11 + MapBiomas Pastagem/Solo)
  *
  * Cada camada: { id, nome, tipo, asset|col, band, unit, vis, ... }
- *   tipo: 'resultado' | 'referencia' | 'lulc'
+ *   tipo: 'resultado' | 'referencia' | 'lulc' | 'auxiliar'
  *   produto: id do produto (resultados) · fonte: id da fonte (referências)
  *   auxiliar: id do auxiliar (lulc)
  ******************************************************************************/
@@ -17,6 +17,8 @@ var REF = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/v00/contracts/00_catalog_references.js');
 var LC = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/v00/contracts/00_catalog_landcover.js');
+var MB = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/v00/contracts/00_catalog_mapbiomas.js');
 
 var LAYERS = [];
 
@@ -64,6 +66,16 @@ REF.IFN_COLUNAS.forEach(function (c) {
     asset: LC.C11_ASSET, band: LC.band(y), vis: LC.VIS });
 });
 
+// ---- Auxiliares: MapBiomas Pastagem / Solo (2023) ---------------------------
+LAYERS.push({ id: 'aux_mb_pastagem_2023', auxiliar: 'mapbiomas_pastagem',
+  nome: 'MapBiomas Pastagem · biomassa 2023', tipo: 'auxiliar',
+  asset: MB.PASTURE.asset, band: MB.PASTURE.band(2023),
+  unit: MB.PASTURE.unit, vis: MB.PASTURE.vis });
+LAYERS.push({ id: 'aux_mb_solo_2023', auxiliar: 'mapbiomas_solo',
+  nome: 'MapBiomas Solo · carbono orgânico 2023', tipo: 'auxiliar',
+  asset: MB.SOIL.asset, band: MB.SOIL.band(2023),
+  unit: MB.SOIL.unit, vis: MB.SOIL.vis });
+
 exports.LAYERS = LAYERS;
 
 /** Agrupa um array de camadas por uma chave, na ordem de `defs`. */
@@ -89,9 +101,11 @@ exports.REF_FONTES = group(Object.keys(REF.FONTES).map(function (id) {
   return { id: id, label: REF.FONTES[id] };
 }), 'fonte');
 
-/** Auxiliares (Uso e Cobertura). */
+/** Auxiliares (Uso e Cobertura + produtos MapBiomas Pastagem/Solo). */
 exports.AUXILIARES = group([
-  { id: 'uso_cobertura', label: 'Uso e Cobertura (C11)' }
+  { id: 'uso_cobertura', label: 'Uso e Cobertura (C11)' },
+  { id: 'mapbiomas_pastagem', label: 'MapBiomas Pastagem (biomassa)' },
+  { id: 'mapbiomas_solo', label: 'MapBiomas Solo (carbono orgânico)' }
 ], 'auxiliar');
 
 /** Agrupa um array arbitrário de camadas na ordem de exibição (legado). */
