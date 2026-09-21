@@ -27,7 +27,8 @@ var DRIVE_ROOT = 'mapbiomas_carbono';
 
 var points = {};
 c.TRAIN_YEARS.forEach(function (y) {
-  points[y] = ee.FeatureCollection(c.ASSET_ROOT + '/SAMPLES/forest_footprint_v08_' + y);
+  points[y] = ee.FeatureCollection(
+    c.ASSET_ROOT + '/SAMPLES/forest_footprint_' + c.SOURCE + '_' + c.YEAR);
 });
 
 var cells = c.makeCellFeatures(CELL_SPLIT).map(function (cell) {
@@ -50,19 +51,25 @@ function exportCell(id) {
   var geom = ee.Geometry.BBox(def.bbox[0], def.bbox[1], def.bbox[2], def.bbox[3])
     .intersection(biome, ee.ErrorMargin(30));
   c.TRAIN_YEARS.forEach(function (year) {
+    var wprop = c.SOURCE_CFG.weightProp;   // 'agbd_se' (gedi) ou null (ifn)
+    var required = c.FEATURE_BANDS.concat([c.TARGET]);
+    if (wprop) required = required.concat([wprop]);
     var sampled = src.buildTypedCovariatesStack(geom, year)
       .sampleRegions({ collection: points[year].filterBounds(geom),
-        properties: src.SAMPLE_PROPS, scale: c.SCALE,
+        properties: src.getSampleProps(), scale: c.SCALE,
         geometries: true, tileScale: TILE_SCALE })
-      .filter(ee.Filter.notNull(c.FEATURE_BANDS.concat([c.TARGET, 'agbd_se'])))
+      .filter(ee.Filter.notNull(required))
       .map(function (f) {
         var lon = f.geometry().centroid(30).coordinates().get(0);
         var lat = f.geometry().centroid(30).coordinates().get(1);
-        var se = ee.Number(ee.Algorithms.If(f.get('agbd_se'),
-          f.get('agbd_se'), 1)).max(1);
-        return f.set('lon', lon).set('lat', lat).set('w', ee.Number(1).divide(se.pow(2)));
+        var w = wprop
+          ? ee.Number(1).divide(
+            ee.Number(ee.Algorithms.If(f.get(wprop), f.get(wprop), 1))
+              .max(1).pow(2))
+          : ee.Number(1);
+        return f.set('lon', lon).set('lat', lat).set('w', w);
       });
-    var name = 'agc_matrix_v08_' + id + '_' + year;
+    var name = 'agc_matrix_' + c.SOURCE + '_v08_' + id + '_' + year;
     print('[TASK]', name);
     // ASSET (server-side, para o treino)
     Export.table.toAsset({ collection: sampled,

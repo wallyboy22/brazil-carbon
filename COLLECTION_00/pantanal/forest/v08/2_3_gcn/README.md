@@ -25,19 +25,24 @@ conteúdo** do `*.py` do fluxo, na ordem abaixo.
 O `2_2_toDrive_matrix.js` exporta os CSVs para **uma pasta única** `MyDrive/mapbiomas_carbono/`
 (no GEE, `folder:` não cria subpastas). As células do `2_3_gcn` tratam essa pasta como a
 **raiz do balde**: `CONF["DRIVE_ROOT"]` aponta para ela, os CSVs são lidos direto
-(`MATRIX_DIR = ""`) e as figuras/artefatos vão para a subpasta `figures/` criada pelo
+(`MATRIX_DIR = ""`) e as figuras/artefatos vão para a pasta `figures_<SOURCE>/` criada pelo
 próprio Python. Para usar outra pasta, ajuste `CONF["DRIVE_ROOT"]` na célula 00 e o
 `DRIVE_ROOT` do `2_2_toDrive_matrix.js`.
 
+> **Fonte de amostra (`CONF["SOURCE"]`)**: `'gedi'` | `'ifn'` — deve casar com o
+> `SOURCE` do `0_contract.js`. Ela entra como **prefixo** nos artefatos para não
+> colidir entre variantes: CSVs `agc_matrix_<SOURCE>_v08_*.csv`,
+> `samples_thinned_<SOURCE>_v08.csv` e pasta `figures_<SOURCE>/`.
+
 ## Biblioteca de figuras
 
-Todas as figuras são salvas na subpasta `figures/` da pasta de output no Drive
-(`CONF["DRIVE_ROOT"]/figures/`), espelhando a pasta `figures/` deste repositório. Após a
-execução, baixe/exporte as figuras para cá:
+Todas as figuras são salvas na pasta `figures_<SOURCE>/` da pasta de output no Drive
+(`CONF["DRIVE_ROOT"]/figures_<SOURCE>/`), espelhando a pasta `figures/` deste repositório.
+Após a execução, baixe/exporte as figuras para cá:
 
 ```
-v08/2_3_gcn/figures/f1_alvo_distribuicao.png
-v08/2_3_gcn/figures/f2_correlacao_bandas.png
+v08/2_3_gcn/figures_<SOURCE>/f1_alvo_distribuicao.png
+v08/2_3_gcn/figures_<SOURCE>/f2_correlacao_bandas.png
 ... (+ diagnostico.json, gate_state.json, champion.json, relatorio_recomendacoes.md)
 ```
 

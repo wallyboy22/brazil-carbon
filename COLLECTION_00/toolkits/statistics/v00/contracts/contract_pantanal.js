@@ -31,6 +31,11 @@ var BIOME = {
   BIOME_NAME: 'Pantanal',
   YEAR: 2023,          // ano do estrato LULC (classificação)
   SCALE: 30,
+  // Área de análise (restringe TODOS os escopos territoriais).
+  REGION: { biomeName: 'Pantanal' },
+  // Escopos territoriais disparados (ids de 00_catalog_territories.js):
+  //   bioma_uf (atual) · bioma · uf · bap · bap_planalto · bap_pantanal · matopiba
+  TERRITORY_SCOPES: ['bioma_uf'],
   // Território: SEMPRE cruza bioma × UF (rótulos por dicionário estático).
   territory: {
     biomeFc: LIM.BIOMES_FC,
@@ -53,7 +58,7 @@ function resolve(scope) {
 // ---- Abrangências do bioma --------------------------------------------------
 exports.FOREST = resolve({
   SCOPE: 'forest',
-  VERSIONS: PROD.FOREST,          // V03–V08 (mosaicos anuais + stdBand opcional)
+  VERSIONS: PROD.FOREST,          // V03–V07 + V08_GEDI/V08_IFN (mosaicos anuais + stdBand)
   PREFIX: 'stats_forest',
   STOCK_UNIT: 'Mg',               // agbd (biomassa acima do solo) em Mg/ha × área_ha
   UNCERT_MODE: 'sd_ens',          // incerteza = stdDev do ensemble (v07/v08)

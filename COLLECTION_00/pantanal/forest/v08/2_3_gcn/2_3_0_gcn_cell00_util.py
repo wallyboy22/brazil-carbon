@@ -33,8 +33,11 @@ CONF = {
     # Raiz do "balde" no Drive: pasta única do 2_2_toDrive_matrix.js (folder=).
     # O GEE não cria subpastas; os CSVs caem direto aqui.
     "DRIVE_ROOT": "/content/drive/MyDrive/mapbiomas_carbono",
+    # Fonte de amostra: 'gedi' | 'ifn' — deve casar com SOURCE do 0_contract.js.
+    # Os artefatos levam o prefixo da fonte (evita colisão GEDI × IFN).
+    "SOURCE": "gedi",
     "MATRIX_DIR": "",           # CSVs da matriz na própria raiz do balde
-    "FIG_DIR": "figures",       # subpasta de figuras (criada pelo Python aqui)
+    "FIG_DIR": "figures",       # pasta de figuras (prefixada com a fonte abaixo)
     # --- dados ---
     "TARGET": "agbd",
     "WEIGHT_COL": "w",
@@ -58,6 +61,8 @@ CONF = {
     "CV_FOLDS": 5,
     "RANDOM_STATE": 2021,
 }
+# Prefixo da fonte no nome das pastas/artefatos (evita colisão entre variantes).
+CONF["FIG_DIR"] = f"{CONF['FIG_DIR']}_{CONF['SOURCE']}"
 _MANIFEST: list[str] = []  # registro de artefatos gerados nesta rodada
 
 
@@ -104,8 +109,9 @@ def manifest() -> list[str]:
 # Dados: leitura / limpeza da matriz (CSVs do Drive)
 # ---------------------------------------------------------------------------
 def load_matrix() -> pd.DataFrame:
-    """Concatena todos os agc_matrix_v08_*.csv da pasta MATRIX_DIR."""
-    files = sorted(matrix_dir().glob("agc_matrix_v08_*.csv"))
+    """Concatena todos os agc_matrix_<SOURCE>_v08_*.csv da pasta MATRIX_DIR."""
+    files = sorted(matrix_dir().glob(
+        f"agc_matrix_{CONF['SOURCE']}_v08_*.csv"))
     if not files:
         raise FileNotFoundError(
             f"Nenhum CSV de matriz em {matrix_dir()}. Rode 2_2_toDrive_matrix.js "

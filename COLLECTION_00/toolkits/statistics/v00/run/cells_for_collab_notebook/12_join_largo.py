@@ -25,7 +25,10 @@ import re
 import numpy as np
 import pandas as pd
 
-KEY = ["Bioma", "UF", "classe", "def_sec"]
+_YEAR = CONF["YEAR"]
+_SCOPE = CONF.get("TERRITORY_SCOPE", "bioma_uf")
+# Chave do join: rótulos territoriais presentes no escopo (bioma_uf → Bioma+UF).
+_KEY_ALL = ["Bioma", "UF", "classe", "def_sec"]
 CATS = ["cobertura (n0)", "cobertura (n1)", "cobertura (n2)",
         "cobertura (n3)", "cobertura (n4)"]
 
@@ -43,17 +46,19 @@ def _prep(df):
             df[c] = df[c].astype(str)
     if "classe" in df.columns:
         df["classe"] = pd.to_numeric(df["classe"], errors="coerce")
-    # sentinela de nodata (ex.: TCN/grassland ~ ±9.22e17) → NaN
+    # sentinel 2 de nodata (ex.: TCN/grassland ~ ±9.22e17) → NaN
     num = df.select_dtypes(include=[np.number]).columns
     df[num] = df[num].mask(df[num].abs() >= 1e15)
     return _filter_defsec(df)
 
 
 # --- base: forest largo ------------------------------------------------------
-ff = _read("stats_forest_*2023*.csv")
+ff = _read(f"stats_forest_*{_SCOPE}_{_YEAR}.csv")
 if not ff:
-    raise FileNotFoundError("nenhum stats_forest_*2023*.csv em " + str(csv_dir()))
+    raise FileNotFoundError(
+        f"nenhum stats_forest_*{_SCOPE}_{_YEAR}.csv em " + str(csv_dir()))
 base = _prep(pd.concat(ff, ignore_index=True))
+KEY = [c for c in _KEY_ALL if c in base.columns]
 metric_cols = [c for c in base.columns if re.match(r"^v\d+\s+", str(c))]
 base = base[KEY + CATS + ["Área (ha)"] + metric_cols].copy()
 print(f"[BASE] forest largo: {len(base)} linhas · {len(metric_cols)} colunas de versão")
@@ -61,7 +66,7 @@ print(f"[BASE] forest largo: {len(base)} linhas · {len(metric_cols)} colunas de
 parts = [base]
 
 # --- grassland principal (sem `período`) -------------------------------------
-for df in _read("stats_grassland_*2023*.csv"):
+for df in _read(f"stats_grassland_*{_SCOPE}_{_YEAR}.csv"):
     if "período" in df.columns:
         continue  # mensais ficam de fora da tabela larga
     df = _prep(df)
@@ -79,9 +84,10 @@ for df in _read("stats_grassland_*2023*.csv"):
 NON_METRIC = set(KEY + CATS + [
     "ecossistema", "Unidade Federativa",
     "Desmatamento e vegetação secundária", "ano_lulc", "Área (ha)"])
-for fp in sorted(csv_dir().glob("stats_references_*2023*.csv")):
+for fp in sorted(csv_dir().glob(f"stats_references_*_{_SCOPE}_{_YEAR}.csv")):
     df = _prep(pd.read_csv(fp))
-    grupo = fp.stem.replace("stats_references_", "").replace("_2023", "")
+    grupo = fp.stem.replace("stats_references_", "").replace(
+        f"_{_SCOPE}_{_YEAR}", "")
     mcols = [c for c in df.columns if c not in NON_METRIC]
     ren = {c: f"{grupo} {c}" for c in mcols}
     df = df.rename(columns=ren)

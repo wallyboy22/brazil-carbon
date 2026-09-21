@@ -44,10 +44,9 @@ var PALSAR_BANDS = ['HH_db', 'HV_db', 'HV_HH_ratio', 'RVI'];
 // Config (contrato da própria versão)
 // ---------------------------------------------------------------------------
 exports.ASSET_ROOT = c.ASSET_ROOT;
-exports.FOOTPRINT_ASSET = c.FOOTPRINT_ASSET;
-exports.BIOME_FC = c.BIOME_FC;
-exports.BIOME_PROP = c.BIOME_PROP;
-exports.BIOME_NAME = c.BIOME_NAME;
+exports.SOURCE = c.SOURCE;
+exports.SOURCE_CFG = c.SOURCE_CFG;
+exports.BAP_ASSET = c.BAP_ASSET;
 exports.LULC_ASSET = c.LULC_ASSET;
 exports.FOREST_CLASSES = c.FOREST_CLASSES;
 exports.SCALE = c.SCALE;
@@ -69,10 +68,52 @@ exports.ensureImageCollection = infra.ensureImageCollection;
 exports.SAMPLE_PROPS = infra.SAMPLE_PROPS;
 
 // ---------------------------------------------------------------------------
-// Bioma
+// Domínio BAP (Bacia do Alto Paraguai = Pantanal + Planalto)
+// União dos 3 polígonos do asset numa feição única com `domain = 'BAP'`,
+// para compatibilidade com as máscaras que filtram por propriedade.
+// `getBiome` é mantido como alias (scripts v08 chamam getBiome()).
 // ---------------------------------------------------------------------------
+exports.getDomain = function () {
+  var geom = ee.FeatureCollection(c.BAP_ASSET).geometry();
+  return ee.FeatureCollection([ee.Feature(geom, { domain: c.DOMAIN_NAME })]);
+};
+
 exports.getBiome = function () {
-  return infra.getBiome(c.BIOME_FC, c.BIOME_PROP, c.BIOME_NAME);
+  return exports.getDomain();
+};
+
+// ---------------------------------------------------------------------------
+// Amostras por fonte (multi-fonte: gedi | ifn)
+// ---------------------------------------------------------------------------
+exports.getSampleProps = function () {
+  return c.SOURCE_CFG.sampleProps;
+};
+
+/**
+ * Footprints/parcelas da fonte ativa, normalizados para o schema do pipeline:
+ *   · gedi — merge dos footprints BAP (`footprint_bap_<ano>`), alvo já `agbd`;
+ *   · ifn  — parcelas IFN na BAP, floresta filtrada adiante pela máscara,
+ *            geometria reduzida ao CENTROIDE e `AGB_Mg_ha` → `agbd`.
+ * O alvo final é sempre `agbd` (t/ha).
+ */
+exports.getFootprints = function () {
+  var S = c.SOURCE_CFG;
+  if (c.SOURCE === 'gedi') {
+    return ee.FeatureCollection(S.footprintAssets.map(function (a) {
+      return ee.FeatureCollection(a);
+    })).flatten();
+  }
+  // ifn
+  var fc = ee.FeatureCollection(S.footprintAsset)
+    .filterBounds(exports.getDomain().geometry())
+    .filter(ee.Filter.gt(S.targetProp, 0));
+  return fc.map(function (f) {
+    var centroid = f.geometry().centroid(30);
+    var y = f.get(S.targetProp);
+    return ee.Feature(centroid)
+      .copyProperties(f, S.sampleProps)
+      .set('agbd', y);
+  });
 };
 
 // ---------------------------------------------------------------------------
@@ -92,7 +133,7 @@ exports.getPalsarValidMask = function (year) {
 exports.getForestMask = function (year) {
   return training.getForestMask({
     lulcAsset: c.LULC_ASSET,
-    biomeFc: c.BIOME_FC, biomeProp: c.BIOME_PROP, biomeName: c.BIOME_NAME,
+    biomeFc: exports.getDomain(), biomeProp: c.DOMAIN_PROP, biomeName: c.DOMAIN_NAME,
     forestClasses: c.FOREST_CLASSES
   }, year);
 };
@@ -109,7 +150,7 @@ var EXTRA_MASK_BUILDERS = {
 exports.getTrainingMask = function (year) {
   return training.getTrainingMask({
     lulcAsset: c.LULC_ASSET,
-    biomeFc: c.BIOME_FC, biomeProp: c.BIOME_PROP, biomeName: c.BIOME_NAME,
+    biomeFc: exports.getDomain(), biomeProp: c.DOMAIN_PROP, biomeName: c.DOMAIN_NAME,
     forestClasses: c.FOREST_CLASSES,
     trainingMasks: c.TRAINING_MASKS,
     extraBuilders: EXTRA_MASK_BUILDERS
@@ -119,11 +160,11 @@ exports.getTrainingMask = function (year) {
 exports.applyTrainingMask = function (fc, year) {
   return training.applyTrainingMask({
     lulcAsset: c.LULC_ASSET,
-    biomeFc: c.BIOME_FC, biomeProp: c.BIOME_PROP, biomeName: c.BIOME_NAME,
+    biomeFc: exports.getDomain(), biomeProp: c.DOMAIN_PROP, biomeName: c.DOMAIN_NAME,
     forestClasses: c.FOREST_CLASSES,
     trainingMasks: c.TRAINING_MASKS,
     extraBuilders: EXTRA_MASK_BUILDERS,
-    sampleProps: infra.SAMPLE_PROPS,
+    sampleProps: exports.getSampleProps(),
     scale: c.SCALE
   }, fc, year);
 };

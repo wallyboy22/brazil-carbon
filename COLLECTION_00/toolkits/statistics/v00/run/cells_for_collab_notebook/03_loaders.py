@@ -7,15 +7,19 @@ Rode após 02_schema. Deixa as tabelas LONGAS por versão/produto no namespace.
 """
 import re
 
+# Ano e escopo territorial dos CSVs (sufixo `_<escopo>_`).
+_YEAR = CONF["YEAR"]
+_SCOPE = CONF["TERRITORY_SCOPE"]
+
 # ---------------------------------------------------------------------------
 # Forest — CSV LARGO (todas as versões em colunas) → longo por versão
 # ---------------------------------------------------------------------------
 def load_forest() -> pd.DataFrame:
-    """Carrega o CSV LARGO florestal (stats_forest_*2023*.csv) e o desmembra em
-    formato longo por versão, a partir das colunas '<vXX> Biomassa acima do solo
-    (t MS)' / '<vXX> Carbono acima do solo (t C)*' e das incertezas. A biomassa
-    é a nativa (`agbd`); o carbono é derivado no stats (mapeado p/ `estoque_t`)."""
-    df = _read("stats_forest_*2023*.csv")
+    """Carrega o CSV LARGO florestal (stats_forest_*<escopo>_<ano>.csv) e o
+    desmembra em formato longo por versão, a partir das colunas '<vXX> Biomassa
+    acima do solo (t MS)' / '<vXX> Carbono acima do solo (t C)*' e das
+    incertezas. A biomassa é a nativa (`agbd`); o carbono é derivado no stats."""
+    df = _read(f"stats_forest_*{_SCOPE}_{_YEAR}.csv")
     if not len(df):
         return pd.DataFrame()
     bio_re = re.compile(r"^(v\d+)\s+Biomassa acima do solo \(t MS\)$")
@@ -47,9 +51,9 @@ def load_forest() -> pd.DataFrame:
 # Grassland — principal ANUAL + biomassa/ANPP mensais LONGOS
 # ---------------------------------------------------------------------------
 def load_grassland() -> pd.DataFrame:
-    """Concatena stats_grassland_*_2023*.csv (principal ANUAL + biomassa/ANPP
-    mensais LONGOS — 1 linha por combinação classe × def_sec × mês)."""
-    return _clean_schema(_read("stats_grassland_*2023*.csv"))
+    """Concatena stats_grassland_*<escopo>_<ano>.csv (principal ANUAL +
+    biomassa/ANPP mensais LONGOS — 1 linha por combinação classe × def_sec × mês)."""
+    return _clean_schema(_read(f"stats_grassland_*{_SCOPE}_{_YEAR}.csv"))
 
 
 # ---------------------------------------------------------------------------
@@ -57,11 +61,11 @@ def load_grassland() -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 _gv = CONF["GRASSLAND_REF_VERSION"]
 EXPECTED = {
-    "forest": ["stats_forest_"],
-    "grassland": [f"stats_grassland_{_gv}_",
-                  f"stats_grassland_{_gv}_biomassa_mensal_",
-                  f"stats_grassland_{_gv}_anpp_mensal_"],
-    "references": ["stats_references_"],
+    "forest": [f"stats_forest_*{_SCOPE}_{_YEAR}"],
+    "grassland": [f"stats_grassland_{_gv}_{_SCOPE}_{_YEAR}",
+                  f"stats_grassland_{_gv}_biomassa_mensal_{_SCOPE}_{_YEAR}",
+                  f"stats_grassland_{_gv}_anpp_mensal_{_SCOPE}_{_YEAR}"],
+    "references": [f"stats_references_*_{_SCOPE}_{_YEAR}"],
 }
 
 

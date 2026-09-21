@@ -32,6 +32,9 @@ exports.GRUPOS = REF.GRUPOS;
 // ---- Território --------------------------------------------------------------
 // Área de análise = TODOS os biomas (1 CSV por ref). O território SEMPRE cruza
 // bioma × UF; os rótulos vêm de dicionários estáticos (00_catalog_territories).
+// Escopos territoriais: bioma_uf (atual) · bioma · uf · custom (bap/matopiba…).
+exports.REGION = { allBiomes: true };
+exports.TERRITORY_SCOPES = ['bioma_uf'];
 exports.territory = {
   biomeFc: LIM.BIOMES_FC,
   biomeCodeProp: LIM.BIOME_CODE_PROP,       // CD_BIOMA

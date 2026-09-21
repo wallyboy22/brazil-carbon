@@ -55,3 +55,59 @@ exports.UFS = {
   52: { sigla: 'GO', nome: 'Goiás' },
   53: { sigla: 'DF', nome: 'Distrito Federal' }
 };
+
+// ============================================================================
+// ESCOPOS TERRITORIAIS (generalização v00 · set/2026)
+// ----------------------------------------------------------------------------
+// Um ESCOPO define as UNIDADES territoriais (features) e as colunas de rótulo
+// emitidas. Todos são SEMPRE limitados pela ÁREA do contrato (REGION).
+//   · MODES  — escopos embutidos: bioma_uf (multi-feição), bioma, uf;
+//   · CUSTOM — regiões nomeadas (1 feição/região): BAP, Matopiba, …
+// O nome do arquivo de saída carrega o id do escopo (não há coluna redundante
+// de território nos escopos custom).
+// ============================================================================
+exports.MODES = {
+  bioma_uf: { id: 'bioma_uf', mode: 'bioma_uf',
+    labelCols: ['Bioma', 'UF', 'Unidade Federativa'] },
+  bioma: { id: 'bioma', mode: 'bioma', labelCols: ['Bioma'] },
+  uf: { id: 'uf', mode: 'uf', labelCols: ['UF', 'Unidade Federativa'] }
+};
+
+// Regiões customizadas: `fc` (asset), filtro opcional por propriedade.
+exports.CUSTOM = {
+  bap: {
+    id: 'bap', label: 'BAP',
+    fc: 'projects/ee-arcplan/assets/bap_pantanal_planalto'
+  },
+  bap_planalto: {
+    id: 'bap_planalto', label: 'BAP Planalto',
+    fc: 'projects/ee-arcplan/assets/bap_pantanal_planalto',
+    filterProp: 'name_pt_br', filterValue: 'Planalto'
+  },
+  bap_pantanal: {
+    id: 'bap_pantanal', label: 'BAP Pantanal',
+    fc: 'projects/ee-arcplan/assets/bap_pantanal_planalto',
+    filterProp: 'name_pt_br', filterValue: 'Pantanal'
+  },
+  matopiba: {
+    id: 'matopiba', label: 'Matopiba',
+    fc: 'projects/mapbiomas-workspace/AUXILIAR/ESTATISTICAS/COLECAO8/VERSAO-1/matopiba'
+  }
+};
+
+/** Resolve um id de escopo → descritor normalizado. */
+exports.resolveScope = function (id) {
+  if (exports.MODES[id]) {
+    var m = exports.MODES[id];
+    return { id: m.id, mode: m.mode, labelCols: m.labelCols };
+  }
+  var c = exports.CUSTOM[id];
+  if (!c) throw new Error('Escopo territorial desconhecido: ' + id);
+  return { id: c.id, mode: 'custom', labelCols: [], fc: c.fc,
+    filterProp: c.filterProp, filterValue: c.filterValue, label: c.label };
+};
+
+/** Lista de ids de escopos válidos (embutidos + custom). */
+exports.scopeIds = function () {
+  return Object.keys(exports.MODES).concat(Object.keys(exports.CUSTOM));
+};

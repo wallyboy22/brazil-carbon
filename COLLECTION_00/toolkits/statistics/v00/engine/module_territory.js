@@ -1,43 +1,79 @@
 /******************************************************************************
  * MAPBIOMAS-CARBONO — toolkit statistics/v00 · module_territory (módulo)
  * ---------------------------------------------------------------------------
- * Território compartilhado pelos motores de estatística: banda `territory` =
- * bioma×100 + UF e os rótulos Bioma / UF / Unidade Federativa das colunas.
+ * Território compartilhado pelos motores de estatística. Generalizado em
+ * ESCOPOS (ver contracts/00_catalog_territories.js):
+ *   · bioma_uf — banda `territory` = bioma×100 + UF (multi-feição);
+ *   · bioma    — banda `territory` = código do bioma (CD_BIOMA);
+ *   · uf       — banda `territory` = código da UF (CD_UF);
+ *   · custom   — banda `territory` = 1 (região única; rótulo = nome do arquivo).
+ * Todos os escopos são SEMPRE limitados pela ÁREA do contrato (REGION).
  *
- * Alinhado à referência do mapbiomas-fire:
- *   · bioma pintado pelo CÓDIGO numérico do asset (`CD_BIOMA`, 1..6);
- *   · UF pintada pelo CÓDIGO `CD_UF`;
- *   · SEMPRE cruza bioma×UF (não há mais toggle);
- *   · rótulos decodificados por dicionários ESTÁTICOS (sem getInfo/evaluate).
- *
- * API (chamar configure 1× por execução, antes dos runX):
- *   configure(cfg)        — { biomeFc, biomeCodeProp, biomeNameProp, ufFc, ufCodeProp }
- *   territoryImage()      — ee.Image 'territory' (bioma×100 + uf)
- *   buildLabelDicts(leg)  — { info, biome, sigla, nome, defsec } ee.Dictionary
- *   regionGeom(biomeName) — geometria do bioma (por nome)
+ * API (chamar configure 1× por escopo, antes dos runX):
+ *   configure(scope, region) — scope = resolveScope(id); region = contrato.REGION
+ *   labelCols()              — colunas de rótulo do escopo
+ *   territoryImage()         — ee.Image 'territory'
+ *   regionGeom()             — geometria da área de análise (redução)
+ *   buildLabelDicts(leg)     — { info, biome, sigla, nome, defsec } ee.Dictionary
+ *   labelProps(code, D)      — props de rótulo (EE) p/ um código de território
  ******************************************************************************/
+var LIM = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/contracts/00_catalog_limits.js');
 var TER = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/contracts/00_catalog_territories.js');
 
-var _CFG = null;
+var _SCOPE = null;
+var _REGION = null;
 
-exports.configure = function (cfg) { _CFG = cfg; };
+exports.configure = function (scope, region) {
+  _SCOPE = scope;
+  _REGION = region || {};
+};
 
-function cfg() {
-  if (!_CFG) throw new Error('module_territory.configure() não foi chamado');
-  return _CFG;
+function scope() {
+  if (!_SCOPE) throw new Error('module_territory.configure() não foi chamado');
+  return _SCOPE;
 }
 
-/** Banda `territory` = paint(bioma, código)×100 + paint(UF, código). */
+function region() { return _REGION || {}; }
+
+exports.labelCols = function () { return scope().labelCols || []; };
+
+/** FeatureCollection custom do escopo (com filtro opcional por propriedade). */
+function customFc(s) {
+  var fc = ee.FeatureCollection(s.fc);
+  if (s.filterProp) {
+    fc = fc.filter(ee.Filter.eq(s.filterProp, s.filterValue));
+  }
+  return fc;
+}
+
+/** Banda `territory` (código) conforme o modo do escopo. */
 exports.territoryImage = function () {
-  var c = cfg();
+  var s = scope();
+  if (s.mode === 'custom') {
+    return ee.Image().paint(customFc(s), 1).rename('territory').int();
+  }
+  if (s.mode === 'bioma') {
+    var biomes = ee.FeatureCollection(LIM.BIOMES_FC).map(function (f) {
+      return f.set('_b', ee.Number.parse(f.get(LIM.BIOME_CODE_PROP)));
+    });
+    return ee.Image().paint(biomes, '_b').rename('territory').int();
+  }
+  if (s.mode === 'uf') {
+    var ufs = ee.FeatureCollection(LIM.UFS_FC).map(function (f) {
+      return f.set('_u', ee.Number.parse(f.get(LIM.UF_CODE_PROP)));
+    });
+    return ee.Image().paint(ufs, '_u').rename('territory').int();
+  }
+  // bioma_uf (default)
   var biomeLayer = ee.Image().paint(
-    ee.FeatureCollection(c.biomeFc).map(function (f) {
-      return f.set('_b', ee.Number.parse(f.get(c.biomeCodeProp)));
+    ee.FeatureCollection(LIM.BIOMES_FC).map(function (f) {
+      return f.set('_b', ee.Number.parse(f.get(LIM.BIOME_CODE_PROP)));
     }), '_b');
   var ufLayer = ee.Image().paint(
-    ee.FeatureCollection(c.ufFc).map(function (f) {
-      return f.set('_u', ee.Number.parse(f.get(c.ufCodeProp)));
+    ee.FeatureCollection(LIM.UFS_FC).map(function (f) {
+      return f.set('_u', ee.Number.parse(f.get(LIM.UF_CODE_PROP)));
     }), '_u');
   return biomeLayer.multiply(100).add(ufLayer).rename('territory').int();
 };
@@ -63,10 +99,44 @@ exports.buildLabelDicts = function (leg) {
   };
 };
 
-/** Geometria de um bioma (recorte por região para a redução). */
-exports.regionGeom = function (biomeName) {
-  var c = cfg();
-  return ee.FeatureCollection(c.biomeFc)
-    .filter(ee.Filter.eq(c.biomeNameProp, biomeName))
-    .first().geometry();
+/** Props de rótulo (EE) para um código de território, conforme o escopo. */
+exports.labelProps = function (code, D) {
+  var s = scope();
+  var c = ee.Number(code).int();
+  if (s.mode === 'bioma_uf') {
+    var b = c.divide(100).int();
+    var u = c.mod(100).int();
+    return {
+      'Bioma': ee.String(D.biome.get(b, '')),
+      'UF': ee.String(D.sigla.get(u, '')),
+      'Unidade Federativa': ee.String(D.nome.get(u, ''))
+    };
+  }
+  if (s.mode === 'bioma') {
+    return { 'Bioma': ee.String(D.biome.get(c, '')) };
+  }
+  if (s.mode === 'uf') {
+    return {
+      'UF': ee.String(D.sigla.get(c, '')),
+      'Unidade Federativa': ee.String(D.nome.get(c, ''))
+    };
+  }
+  return {}; // custom: o nome do arquivo carrega o território
+};
+
+/** Geometria da ÁREA de análise (recorte para a redução). Aceita override. */
+exports.regionGeom = function (regionOverride) {
+  var r = regionOverride || region();
+  if (r.biomeName) {
+    return ee.FeatureCollection(LIM.BIOMES_FC)
+      .filter(ee.Filter.eq(LIM.BIOME_NAME_PROP, r.biomeName))
+      .first().geometry();
+  }
+  if (r.fc) {
+    var fc = ee.FeatureCollection(r.fc);
+    if (r.filterProp) fc = fc.filter(ee.Filter.eq(r.filterProp, r.filterValue));
+    return fc.geometry();
+  }
+  // allBiomes (referências) ou default: união de todos os biomas
+  return ee.FeatureCollection(LIM.BIOMES_FC).geometry();
 };

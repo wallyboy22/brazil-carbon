@@ -2,14 +2,18 @@
  * MAPBIOMAS-CARBONO — toolkit statistics/v00 · run · PANTANAL (driver)
  * ---------------------------------------------------------------------------
  * Driver único do bioma Pantanal: dispara as estatísticas da FLORESTA (AGC,
- * V03–V08) e dos CAMPOS (produtos v01–v02) via motor unificado.
+ * V03–V07 + V08_GEDI/V08_IFN) e dos CAMPOS (produtos v01–v02) via motor unificado.
  *
  *   · contrato: contracts/contract_pantanal.js (escopos FOREST e GRASSLAND)
  *   · motor:    engine/engine.js
  *   · saída:    MAPBIOMAS_CARBONO_ESTATISTICAS ·
- *               stats_forest_<v>_bioma_2023.csv
- *               stats_grassland_<v>_<regiao>_2023.csv (+ _biomassa_mensal_ /
+ *               stats_forest_<escopo>_2023.csv
+ *               stats_grassland_<v>_<escopo>_2023.csv (+ _biomassa_mensal_ /
  *               _anpp_mensal_ longos)
+ *
+ * ESCOPOS TERRITORIAIS: definidos em TERRITORY_SCOPES (contrato). Default
+ * ['bioma_uf']; opções: bioma_uf · bioma · uf · bap · bap_planalto ·
+ * bap_pantanal · matopiba. Cada escopo gera um CSV (custo EECU × nº de escopos).
  *
  * Uso no Code Editor: só rodar. Para um escopo/versão específico:
  *   engine.runForest(PANTANAL.FOREST, 'v07');

@@ -40,8 +40,9 @@ if cache.exists():
     print(f"[CACHE] {cache} ({len(refs_df)} linhas) — apague o cache para "
           "reler os CSVs do Drive")
 else:
-    print(f"[CSV] lendo stats_references_*_{CONF['YEAR']}.csv de"
-          f" {csv_dir()} · território: {CONF['REF_TERRITORIO']}")
+    print(f"[CSV] lendo stats_references_*_{CONF['TERRITORY_SCOPE']}_"
+          f"{CONF['YEAR']}.csv de {csv_dir()} · território: "
+          f"{CONF['REF_TERRITORIO']}")
     refs_df = load_references_csv(lulc_year=CONF["YEAR"])
     refs_df.to_csv(cache, index=False)
     print(f"[OUT] {cache} ({len(refs_df)} linhas)")

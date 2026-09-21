@@ -4,8 +4,8 @@ MAPBIOMAS-CARBONO · toolkit statistics/v00 — cells_for_collab_notebook
 06_references.py · Catálogo/mapa das REFERÊNCIAS + análise T1/T2.
 
 As estatísticas das referências são computadas NO EARTH ENGINE (run/run_references.js)
-e exportadas **1 CSV por FAMÍLIA** (`stats_references_<grupo>_<ano>.csv`), com as
-métricas de cada ref em COLUNAS descritivas. Aqui:
+e exportadas **1 CSV por FAMÍLIA** (`stats_references_<grupo>_<escopo>_<ano>.csv`),
+com as métricas de cada ref em COLUNAS descritivas. Aqui:
   · `load_references_csv` faz o *unpivot* das colunas nativas para longo,
     derivando (termo, unidade, fator) do NOME da coluna;
   · T1 (`cross_2023`) e T2 (`best_reference_year`) cruzam por TERMO.
@@ -71,15 +71,17 @@ def load_references_csv(lulc_year: int = 2023,
     t2_candidate.
     """
     territorio = territorio or CONF.get("REF_TERRITORIO", "Pantanal (bioma)")
-    files = sorted(csv_dir().glob(f"stats_references_*_{lulc_year}.csv"))
+    scope = CONF.get("TERRITORY_SCOPE", "bioma_uf")
+    files = sorted(csv_dir().glob(
+        f"stats_references_*_{scope}_{lulc_year}.csv"))
     if not files:
         raise FileNotFoundError(
-            f"nenhum stats_references_*_{lulc_year}.csv em {csv_dir()} — "
+            f"nenhum stats_references_*_{scope}_{lulc_year}.csv em {csv_dir()} — "
             "rode o run/run_references.js no GEE e re-exporte para o Drive.")
     frames = []
     for fp in files:
         grupo = fp.stem.replace("stats_references_", "").replace(
-            f"_{lulc_year}", "")
+            f"_{scope}_{lulc_year}", "")
         meta = GRUPO_META.get(grupo, {"group": grupo, "epoch": "?"})
         df = _derive_territorio(pd.read_csv(fp, encoding="utf-8"))
         if "Desmatamento e vegetação secundária" in df.columns:
@@ -125,7 +127,7 @@ def load_references_csv(lulc_year: int = 2023,
                t2_candidate=("t2_candidate", "first"))
           .reset_index())
     df["area_ha"] = df["area_ha"].round(1)
-    # sentinela de nodata (ex.: TCN ~ ±9.22e17) → NaN
+    # sentinel 2 de nodata (ex.: TCN ~ ±9.22e17) → NaN
     df.loc[df["total_native"].abs() >= 1e15, "total_native"] = np.nan
     df["total_native"] = df["total_native"].round(1)
     df["dens_native"] = np.where(df["area_ha"] > 0,

@@ -74,7 +74,7 @@ A("\n## 2. Diagnóstico")
 A("\n| Métrica | Valor | Leitura |")
 A("|---|---|---|")
 if diag:
-    A(f"| Baseline RF (CV espacial) | RMSE {diag['baseline_rmse']:.2f} Mg/ha · bias "
+    A(f"| Baseline RF (CV espacial) | RMSE {diag['baseline_rmse']:.2f} t/ha · bias "
       f"{diag['baseline_bias_pct']:.2f}% | bias desprezível |")
     A(f"| Pares colineares (|r|>0.85) | {diag['collinear_pairs_gt085']} | "
       f"bandas redundantes; tolerável p/ RF |")
@@ -83,7 +83,7 @@ if diag:
     A(f"| Resíduo × agbd_se | r={diag['resid_se_pearson_r']:.2f} | "
       f"erro do rótulo associado ao resíduo |")
 else:
-    A(f"| Baseline RF (CV espacial) | RMSE {rmse_rf:.2f} Mg/ha · bias "
+    A(f"| Baseline RF (CV espacial) | RMSE {rmse_rf:.2f} t/ha · bias "
       f"{state['algorithms'][list(state['algorithms'])[0]]['pbias']:.2f}% | "
       f"bias desprezível |")
     A("| _diagnostico.json ausente (rode cell02)_ | | |")

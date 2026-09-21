@@ -40,7 +40,7 @@ y = df[CONF["TARGET"]].values
 # --- f1: distribuição do alvo -------------------------------------------------
 fig, ax = plt.subplots(1, 2, figsize=(11, 4))
 ax[0].hist(y, bins=60, color="#1a9850", edgecolor="white")
-ax[0].set(xlabel="agbd (Mg/ha)", ylabel="n", title="Alvo original")
+ax[0].set(xlabel="agbd (t/ha)", ylabel="n", title="Alvo original")
 ax[1].hist(np.log1p(y), bins=60, color="#2b83ba", edgecolor="white")
 ax[1].set(xlabel="ln(1+agbd)", title="Alvo log — cauda alta estabilizada")
 fig.suptitle("f1 · distribuição do alvo", fontweight="bold")
@@ -70,7 +70,7 @@ for tr, va in cv.split(X, y, df["_block"]):
     resid[va] = y[va] - m.predict(X.iloc[va])
     ids_[va] = True
 baseline_rmse = float(np.sqrt(np.mean(resid ** 2)))
-print(f"[BASELINE] RMSE espacial: {baseline_rmse:.2f} Mg/ha · "
+print(f"[BASELINE] RMSE espacial: {baseline_rmse:.2f} t/ha · "
       f"n_valid {ids_.sum()}")
 
 # --- f3: resíduo × agbd_se ---------------------------------------------------

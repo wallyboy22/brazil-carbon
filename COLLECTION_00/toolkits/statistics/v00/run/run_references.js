@@ -6,7 +6,9 @@
  *
  *   · contrato: contracts/contract_references.js
  *   · motor:    engine/engine.js
- *   · saída:    MAPBIOMAS_CARBONO_ESTATISTICAS · stats_references_<grupo>_2023.csv
+ *   · saída:    MAPBIOMAS_CARBONO_ESTATISTICAS ·
+ *               stats_references_<grupo>_<escopo>_2023.csv
+ *               (escopos via TERRITORY_SCOPES; default ['bioma_uf'])
  *
  * Uso (Code Editor):
  *   engine.runReferences(C);                     → 1 CSV por grupo (8 grupos)

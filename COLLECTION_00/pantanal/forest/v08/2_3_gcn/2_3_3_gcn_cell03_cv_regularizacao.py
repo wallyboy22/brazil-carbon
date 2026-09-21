@@ -103,7 +103,7 @@ for name, est in algs.items():
 fig, ax = plt.subplots(figsize=(6.5, 4))
 names = list(res_algs); vals = [res_algs[k]["rmse"] for k in names]
 ax.bar(names, vals, color="#2b83ba")
-ax.set(ylabel="RMSE espacial (Mg/ha)", title="f5 · RF × GBM × SVR (CV em blocos)")
+ax.set(ylabel="RMSE espacial (t/ha)", title="f5 · RF × GBM × SVR (CV em blocos)")
 ax.set_xticks(range(len(names)))
 ax.set_xticklabels(names, rotation=22, ha="right")
 save_fig(fig, "f5_cv_algoritmos.png")
@@ -125,10 +125,10 @@ for frac in fractions:
             flds.append(ys[va] - m.predict(Xs.iloc[va]))
         rmses.append(np.sqrt(np.mean(np.concatenate(flds) ** 2)))
     lc[frac] = float(np.mean(rmses))
-    print(f"[CURVA] frac={frac:.0%} → RMSE={lc[frac]:.2f} Mg/ha")
+    print(f"[CURVA] frac={frac:.0%} → RMSE={lc[frac]:.2f} t/ha")
 fig, ax = plt.subplots(figsize=(6.5, 4))
 ax.plot(list(lc), list(lc.values()), "-o", color="#1a9850")
-ax.set(xlabel="fração do treino", ylabel="RMSE espacial (Mg/ha)",
+ax.set(xlabel="fração do treino", ylabel="RMSE espacial (t/ha)",
        title="f6 · curva de aprendizado")
 save_fig(fig, "f6_curva_aprendizado.png")
 
@@ -147,7 +147,7 @@ ax.plot(list(sweep), [sweep[k]["rmse"] for k in sweep], "-o", color="#d73027")
 for k, v in sweep.items():
     ax.annotate(f"{v['rmse']:.2f}", (k, v["rmse"]), textcoords="offset points",
                 xytext=(0, 6), ha="center", fontsize=8)
-ax.set(xlabel="minLeafPopulation", ylabel="RMSE espacial (Mg/ha)",
+ax.set(xlabel="minLeafPopulation", ylabel="RMSE espacial (t/ha)",
        title=f"f7 · varredura minLeaf (melhor={best_mlf})")
 save_fig(fig, "f7_sweep_minleaf.png")
 
@@ -157,7 +157,7 @@ rmse_log, bias_log = smeared_blocked_cv(log_on=True)
 smear = None
 fig, ax = plt.subplots(figsize=(6.5, 4))
 ax.bar(["agbd", "ln(1+agbd)"], [rmse_lin, rmse_log], color=["#525252", "#2b83ba"])
-ax.set(ylabel="RMSE espacial (Mg/ha)",
+ax.set(ylabel="RMSE espacial (t/ha)",
        title=f"f8 · objetivo linear vs log (bias {bias_lin:.1f}% / {bias_log:.1f}%)")
 save_fig(fig, "f8_log_target.png")
 print(f"[LOG] linear RMSE={rmse_lin:.2f} · log RMSE={rmse_log:.2f}")

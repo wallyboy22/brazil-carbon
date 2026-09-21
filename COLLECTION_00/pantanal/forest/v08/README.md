@@ -1,10 +1,16 @@
-# Pantanal Forest v08 — Fix do PALSAR-2 + pipeline
+# Pantanal Forest v08 — Fix do PALSAR-2 + domínio BAP + multi-fonte
 
 > **Problema resolvido**: excesso localizado de carbono em tiles de
 > `agc_pred_v07_merged_2023` (e v04/v05/v06), com `agbd_std` alto — artefato
 > associado ao PALSAR-2 amostrado **célula a célula** (`.first()`). A v08
 > reconstrói o PALSAR como mosaico global determinístico e adiciona a máscara
 > de nodata do SAR ao treino.
+>
+> **Domínio e fontes (v08/BAP)**: o domínio passou do bioma Pantanal (IBGE)
+> para a **Bacia do Alto Paraguai** (`projects/ee-arcplan/assets/bap_pantanal_planalto`,
+> Pantanal + Planalto). O pipeline é único e parametrizado por `SOURCE`
+> (`gedi` | `ifn`), gerando as sub-versões `V08_GEDI` e `V08_IFN` com as mesmas
+> covariáveis e hiperparâmetros.
 
 ## 1. Diagnóstico
 
@@ -51,6 +57,8 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 
 | Aspecto | v07 (concluída) | v08 |
 |---|---|---|
+| Domínio | bioma Pantanal (IBGE) | Bacia do Alto Paraguai (BAP) |
+| Fonte de amostra | GEDI L4A (footprint Pantanal) | `SOURCE`: GEDI (footprint BAP) ou IFN (`PLOTS-v13`) |
 | PALSAR | `.first()` por célula (platôs) | mediana global no bioma |
 | Máscara de treino | LULC 3,4,6,7,49 + extras | + `palsar_nodata` |
 | Champion/ensemble | minLeaf 10 · 6 vars · linear · N=5 | idênticos à v07 (valores inlineados no contrato v08) |
@@ -65,6 +73,7 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 | 0 | `0_contract.js` · `0_covariate_source.js` | contrato + fix PALSAR global |
 | 0 | `0_diagnose_tiles.js` | fase 0: confirma platôs, banda culpada, membros (usa assets v07) |
 | 1 | `1_preflight.js` | máscara de treino + stack tipado |
+| 2 | `2_0_export_footprint_bap.js` | (só `gedi`) footprints GEDI L4A sobre a BAP → SAMPLES/footprint_bap_<ANO> |
 | 2 | `2_0_check_footprint.js` | raw vs treino (mask C11 + palsar) |
 | 2 | `2_1_toAsset_samples_treino.js` | amostras de treino → SAMPLES/ |
 | 2 | `2_2_toDrive_matrix.js` | matriz por célula/ano → ASSET + Drive (CSV) |
@@ -77,13 +86,16 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 
 ## 5. Ordem de execução
 
+0. Definir `SOURCE` em `0_contract.js` (`gedi` | `ifn`) — decide a raiz
+   (`V08_GEDI`/`V08_IFN`) e a fonte de amostra.
 1. `0_diagnose_tiles.js` — confirmar hipótese; anotar `SMOKE_CELLS`.
-2. `1_preflight.js` → `2_0_check_footprint.js` → `2_1_toAsset_samples_treino.js`
+2. (só `gedi`) `2_0_export_footprint_bap.js` — footprints GEDI L4A sobre a BAP.
+3. `1_preflight.js` → `2_0_check_footprint.js` → `2_1_toAsset_samples_treino.js`
    → `2_2_toDrive_matrix.js` (tasks de matriz).
-3. `2_3_gcn` (Colab) — se o campeão do gate divergir do herdado da v07,
+4. `2_3_gcn` (Colab) — se o campeão do gate divergir do herdado da v07,
    atualizar `0_contract.js` (seção CHAMPION/ENSEMBLE).
-4. `3_model_training.js` → `4_spatial_prediction.js` (tasks) → `5_merge.js`.
-5. `6_qualidade.js` (QA visual) → `7_statistics.js` (CSVs + comparativo).
+5. `3_model_training.js` → `4_spatial_prediction.js` (tasks) → `5_merge.js`.
+6. `6_qualidade.js` (QA visual) → `7_statistics.js` (CSVs + comparativo).
 
 ## 6. Biblioteca de covariáveis (`covariate/`)
 

@@ -19,7 +19,7 @@
  *   factor_to_c    AGB→C aplicado para gerar <pool>_tC (1.0 se já carbono)
  *   t2_candidate   elegível ao "melhor ano de referência" (T2)
  *   pools          [{band, col}] — banda(s)/coluna(s) de valor (1 por ref)
- *   nodata_le      se valor <= nodata_le -> mascarar (sentinela)
+ *   nodata_le      se valor <= nodata_le -> mascarar (sentinel 2)
  *   filter_index   para IMAGE_COLLECTION: system:index a selecionar
  *   multi_year     {start, end} p/ séries (Xu): usa-se UM ano (o mais recente).
  ******************************************************************************/
@@ -106,7 +106,7 @@ exports.REFERENCES = [
     fonte_curta: 'Avitabile 2016', magnitude: 'biomassa', unit: 't/ha', scale: 928,
     epoch: '2010', factor_to_c: 0.47, nodata_le: -3.4e38,
     pools: [{ band: 'b1', col: 'agb' }], asset: REF_ROOT + '/Avitabile_AGB_Map',
-    note: 'sentinela -3.4e38 mascarada' }),
+    note: 'sentinel 2 -3.4e38 mascarada' }),
   // ---- Xu & Saatchi 2021 (biomassa viva AGB+BGB, t C/ha, 2000–2019, ~10 km) --
   // Série multi-ano: usa-se UM ano (o mais recente ≤ YEAR do contrato).
   ref({ id: 'xu2021', grupo: 'xu', fonte: 'Xu & Saatchi 2021 · carbono vivo (2000–2019)',
@@ -116,7 +116,7 @@ exports.REFERENCES = [
     asset: REF_ROOT + '/Saatchi_Xu2021_t10a_cd_ab_pred_corr_2000_2019_v2',
     note: 'b<i> -> ano 1999+i; inclui BGB' }),
   // ---- TCN (3ª CN, baseline pretérito, ~110 m) --------------------------------
-  // Assets trazem sentinela int64 (~-9.22e17) sem máscara → nodata_le.
+  // Assets trazem sentinel 2 int64 (~-9.22e17) sem máscara → nodata_le.
   ref({ id: 'tcn_agc', grupo: 'tcn', fonte: 'TCN (3ª CN) · AGC', fonte_curta: 'TCN',
     magnitude: 'carbono', unit: 't C/ha', scale: 110, epoch: 'baseline',
     nodata_le: -1e30, pools: [{ band: 'b1', col: 'agc' }],

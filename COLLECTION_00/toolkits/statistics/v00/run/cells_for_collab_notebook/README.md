@@ -39,8 +39,18 @@ namespace, então a biblioteca (`00`–`06`) precisa rodar antes das etapas.
 ## Schema dos CSVs do GEE (formato "gráfico-ready")
 Os drivers (`run/run_pantanal.js`, `run/run_references.js`) exportam **UMA linha
 por COMBINAÇÃO (classe LULC × def_sec)**, com colunas prontas para gráfico.
-O território é SEMPRE bioma × UF (`Bioma`, `UF`, `Unidade Federativa`). Todas as
-tabelas têm `ecossistema` (`florestal` | `campestre` | `referencia`).
+O território é definido pelo **ESCOPO** (`TERRITORY_SCOPE`), que entra como
+sufixo `_<escopo>_` no nome do arquivo:
+- `bioma_uf` (default) — cruza bioma × UF (`Bioma`, `UF`, `Unidade Federativa`);
+- `bioma` — só `Bioma`; `uf` — só `UF`/`Unidade Federativa`;
+- custom (`bap`, `bap_planalto`, `bap_pantanal`, `matopiba`) — sem coluna de
+  território (o nome do arquivo carrega a região).
+Todas as tabelas têm `ecossistema` (`florestal` | `campestre` | `referencia`).
+
+> **Nomes:** `stats_forest_<escopo>_<ano>.csv`,
+> `stats_grassland_<v>_<escopo>_<ano>.csv`,
+> `stats_references_<grupo>_<escopo>_<ano>.csv`. Os loaders filtram pelo
+> `TERRITORY_SCOPE` de `00_config.py`.
 
 As colunas de valor seguem `<Material> <compartimento> (<unidade>)`, com `*`
 quando a métrica é derivada **no estágio de estatística** (ex.: AGB→C):
@@ -70,8 +80,9 @@ como dimensão de data no Looker Studio.
 
 ## Configuração (`CONF`, em `00_config.py`)
 `DRIVE_ROOT` (a 10_auth_drive preenche), `CSV_DIR`, `FIG_DIR`, `OUT_DIR`,
-`YEAR`, `FOREST_VERSIONS`, `GRASSLAND_REF_VERSION`, `CARBON_FRACTION`,
-`REF_MIN_VALID`, `REF_TERRITORIO`, `FAZER_MAPAS`, `GRID_M`, `MAP_FOREST_VERSION`.
+`YEAR`, `TERRITORY_SCOPE`, `FOREST_VERSIONS`, `GRASSLAND_REF_VERSION`,
+`CARBON_FRACTION`, `REF_MIN_VALID`, `REF_TERRITORIO`, `FAZER_MAPAS`, `GRID_M`,
+`MAP_FOREST_VERSION`.
 
 ## Nomenclatura de bandas
 Recomendações (inglês) em `COLLECTION_00/docs/BAND_NAMING.md`.

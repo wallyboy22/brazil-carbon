@@ -8,7 +8,8 @@ carregadas no namespace pela célula 00.
 Decisões (resposta da consulta A1/B6):
   - thinning OFF-LINE (grade espacial 60-90 m), mantendo por célula o footprint
     de MENOR agbd_se (mais confiável dentro da grade)
-  - a matriz THINNED é exportada para o Drive (samples_thinned_v08.csv) e é a
+  - a matriz THINNED é exportada para o Drive (samples_thinned_<SOURCE>_v08.csv)
+    e é a
     que alimenta o treino/validação server-side (3_) via Assets reexportados
   - gera as figuras de antes×depois na MESMA pasta de output
 """
@@ -66,9 +67,9 @@ print(f"[SE] mediana agbd_se antes={se_antes:.2f} → depois={se_depois:.2f} " +
       f"({(se_antes - se_depois) / se_antes * 100:.0f}% menor)")
 
 # --- exporta a matriz thinned (mesma pasta de output) ------------------------
-out_csv = matrix_dir() / "samples_thinned_v08.csv"
+out_csv = matrix_dir() / f"samples_thinned_{CONF['SOURCE']}_v08.csv"
 thin.to_csv(out_csv, index=False)
-write_artifact(matrix_dir() / "samples_thinned_v08.note.txt",
+write_artifact(matrix_dir() / f"samples_thinned_{CONF['SOURCE']}_v08.note.txt",
                f"thinned matrix: {len(thin)} rows")
 print(f"[CSV] matriz thinned → {out_csv}")
 

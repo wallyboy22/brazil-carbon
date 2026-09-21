@@ -5,8 +5,8 @@
  * geradas pelo motor: versões florestais (AGC) e produtos campestres
  * (biomassa/ANPP/carbono), todos 2023.
  *
- *   FOREST   → mosaicos anuais por versão (V03–V08), banda de predição +
- *              banda de incerteza de ensemble quando houver.
+ *   FOREST   → mosaicos anuais por versão (V03–V07 + V08_GEDI/V08_IFN),
+ *              banda de predição + banda de incerteza de ensemble quando houver.
  *   GRASSLAND_PRODUCTS → produtos ANUAIS (tabela principal).
  *   GRASSLAND_MONTHLY  → produtos MENSAIS (bandas <prefix>_1..12).
  ******************************************************************************/
@@ -27,8 +27,11 @@ exports.FOREST = [
     mosaic: FOREST_BASE + '/V06/PREDICTIONS/agc_pred_v06_merged_2023' },
   { id: 'v07', band: 'prediction_2023', stdBand: 'agbd_std_2023',
     mosaic: FOREST_BASE + '/V07/PREDICTIONS/agc_pred_v07_merged_2023' },
-  { id: 'v08', band: 'prediction_2023', stdBand: 'agbd_std_2023',
-    mosaic: FOREST_BASE + '/V08/PREDICTIONS/agc_pred_v08_merged_2023' }
+  // v08 tem sub-versões por FONTE de amostra (domínio BAP): GEDI e IFN.
+  { id: 'v08_gedi', band: 'prediction_2023', stdBand: 'agbd_std_2023',
+    mosaic: FOREST_BASE + '/V08_GEDI/PREDICTIONS/agc_pred_v08_merged_2023' },
+  { id: 'v08_ifn', band: 'prediction_2023', stdBand: 'agbd_std_2023',
+    mosaic: FOREST_BASE + '/V08_IFN/PREDICTIONS/agc_pred_v08_merged_2023' }
 ];
 
 // ---- Campestre (Pantanal) ----------------------------------------------------

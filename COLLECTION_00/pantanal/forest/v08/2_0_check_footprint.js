@@ -10,11 +10,14 @@ var c = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_contract.js');
 var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_covariate_source.js');
-var raw = ee.FeatureCollection(src.FOOTPRINT_ASSET);
+var raw = src.getFootprints();
 var labeled = src.applyTrainingMask(raw, c.YEAR);
 
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 2_0_check_footprint');
+print('[FONTE]', c.SOURCE, '·', c.SOURCE_CFG.label);
 raw.size().evaluate(function (n) { print('[RAW]', n); });
 labeled.size().evaluate(function (n) { print('[TREINO (mask C11 + palsar)]', n); });
-labeled.distinct('pft_class').aggregate_array('pft_class')
-  .evaluate(function (p) { print('[PFT]', p); });
+if (c.SOURCE === 'gedi') {
+  labeled.distinct('pft_class').aggregate_array('pft_class')
+    .evaluate(function (p) { print('[PFT]', p); });
+}

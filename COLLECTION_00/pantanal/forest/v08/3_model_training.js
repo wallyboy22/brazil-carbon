@@ -19,7 +19,7 @@ var N = c.ENSEMBLE.NUM_MEMBERS;
 
 var response = ee.data.listAssets(root + '/MATRIX');
 var assets = (response.assets || []).filter(function (a) {
-  return a.type === 'TABLE' && a.id.indexOf('/agc_matrix_v08_') > -1;
+  return a.type === 'TABLE' && a.id.indexOf('/agc_matrix_' + c.SOURCE + '_v08_') > -1;
 });
 if (!assets.length) throw new Error('Matriz florestal v08 não encontrada.');
 var matrix = ee.FeatureCollection(assets.map(function (a) {

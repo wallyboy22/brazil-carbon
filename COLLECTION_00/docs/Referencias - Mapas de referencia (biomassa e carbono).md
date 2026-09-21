@@ -55,7 +55,7 @@ grandes conversões de uso/cobertura).
 - `Avitabile_AGB_Map_Mode_K_2_2` = collection com **12 imagens** (6 biomas BR × v1/v2), banda `total_1985` +
   série `total_YYYY`; sem `system:time_start`.
 - Xu 2021: banda→ano/variável ainda **não mapeado** (20 bandas, `cd`/`ab` prováveis) — ver `xu_saatchi2021.pdf`.
-- `Avitabile_AGB_Map` traz sentinela `-3.4e38` sem máscara (tratada por `> -1e30` no diag); valid fraction
+- `Avitabile_AGB_Map` traz sentinel 2 `-3.4e38` sem máscara (tratada por `> -1e30` no diag); valid fraction
   não confiável nesse bbox largo.
 - `TCN_*` = **3ª Comunicação Nacional** e `qcn_*` = **4ª Comunicação Nacional**
   (MCTI/UNFCCC); `qcn_rect_v1` = retificação IPAM para compatibilizar com o

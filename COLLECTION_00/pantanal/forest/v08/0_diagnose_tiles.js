@@ -23,8 +23,9 @@ var src = require(
 var CELL_SPLIT = 4;
 var YEAR = 2023;
 var ADD_LAYER = true;
-var V07_ROOT = c.FOOTPRINT_ASSET
-  .slice(0, c.FOOTPRINT_ASSET.indexOf('/SAMPLES')) + '/V07';
+var FOREST_BASE = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/' +
+  'COLLECTION_00/PANTANAL_FOREST';
+var V07_ROOT = FOREST_BASE + '/V07';
 var N = c.ENSEMBLE.NUM_MEMBERS;
 
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 0_diagnose_tiles');

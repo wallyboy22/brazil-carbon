@@ -32,8 +32,11 @@ CONF = {
     "FIG_DIR": "figures",       # biblioteca de figuras (espelha o repo figures/)
     "OUT_DIR": "relatorio",     # XLSX + .md + consolidados
     "YEAR": 2023,
+    # Escopo territorial dos CSVs (sufixo `_<escopo>_` no nome do arquivo):
+    #   bioma_uf | bioma | uf | bap | bap_planalto | bap_pantanal | matopiba
+    "TERRITORY_SCOPE": "bioma_uf",
     # --- escopo esperado dos arquivos ---
-    "FOREST_VERSIONS": ["v03", "v04", "v05", "v06", "v07", "v08"],
+    "FOREST_VERSIONS": ["v03", "v04", "v05", "v06", "v07", "v08_gedi", "v08_ifn"],
     "GRASSLAND_PRODUCTS": ["biomass", "anpp", "carbon"],
     "GRASSLAND_REF_VERSION": "v02",
     "MISSING_TOL": 1.0,     # t (QA de somas)

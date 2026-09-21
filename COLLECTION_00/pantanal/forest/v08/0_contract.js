@@ -22,6 +22,7 @@
  * Delta vs v07:
  *   + PALSAR global por mediana (0_covariate_source.js, buildPalsarGlobal);
  *   + TRAINING_MASKS += palsar_nodata (apply:'training');
+ *   + domínio BAP (Bacia do Alto Paraguai) substitui o bioma Pantanal;
  *   + caminhos próprios (ASSET_ROOT V08).
  *   Parametrização do modelo NÃO mudou (champion/ensemble idênticos à v07).
  ******************************************************************************/
@@ -120,19 +121,68 @@ exports.TRAINING_MASKS = [
 ];
 
 // =========================================================================
-// Bloco 5 — Contexto geoespacial [definido v06; valores comuns à cadeia]
+// Bloco 5 — Contexto geoespacial [domínio BAP desde v08/BAP]
+// O domínio deixou de ser o bioma Pantanal (IBGE) e passou a ser a Bacia do
+// Alto Paraguai (BAP = Pantanal + Planalto): asset de 3 polígonos
+// ('Pantanal', 'Planalto', 'BAP'), unidos numa feição única de domínio.
 // =========================================================================
-exports.BIOME_FC = 'projects/ee-ipam/assets/ORIGINAIS/IBGE/limite_biomas_IBGE_2026';
-exports.BIOME_PROP = 'Bioma';
-exports.BIOME_NAME = 'Pantanal';
+exports.BAP_ASSET = 'projects/ee-arcplan/assets/bap_pantanal_planalto';
+exports.DOMAIN_PROP = 'domain';
+exports.DOMAIN_NAME = 'BAP';
 exports.LULC_ASSET =
   'projects/mapbiomas-public/assets/brazil/lulc/collection11/' +
   'mapbiomas_brazil_collection11_coverage_v3';
 exports.SCALE = 30;
-exports.FOOTPRINT_ASSET =
-  'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/SAMPLES/footprint_pantanal_2023';
-exports.ASSET_ROOT =
-  'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST/V08';
+
+// =========================================================================
+// Bloco 5b — FONTE DE AMOSTRA [v08/BAP multi-fonte: gedi | ifn]
+// O pipeline é ÚNICO e parametrizado por `SOURCE`. Cada fonte tem raiz de
+// assets própria (sub-versão) e schema de amostra próprio; covariáveis e
+// hiperparâmetros são idênticos entre as variantes (comparação direta).
+//   · gedi — footprints GEDI L4A v2.1 sobre a BAP (footprint_bap_<ano>),
+//            alvo `agbd` (t/ha), peso w = 1/agbd_se²;
+//   · ifn  — parcelas IFN_2026_BR_PLOTS-v13 na BAP (floresta, centroide),
+//            alvo AGB_Mg_ha (t/ha) normalizado para `agbd`, sem agbd_se.
+// Para rodar a variante IFN: trocar SOURCE para 'ifn'.
+// =========================================================================
+var PANTANAL_FOREST = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/' +
+  'COLLECTION_00/PANTANAL_FOREST';
+var BAP_FOOTPRINT_YEARS = [2019, 2020, 2021, 2022, 2023, 2024];
+
+exports.SOURCE = 'gedi';   // 'gedi' | 'ifn'
+
+exports.SOURCES = {
+  gedi: {
+    label: 'GEDI L4A v2.1 (footprints BAP)',
+    assetRoot: PANTANAL_FOREST + '/V08_GEDI',
+    footprintAssets: BAP_FOOTPRINT_YEARS.map(function (y) {
+      return PANTANAL_FOREST + '/SAMPLES/footprint_bap_' + y;
+    }),
+    trainYears: [2023],
+    target: 'agbd',
+    targetProp: 'agbd',
+    weightProp: 'agbd_se',
+    sampleProps: ['agbd', 'agbd_se', 'pft_class', 'shot_number',
+      'lon_lowestmode', 'lat_lowestmode'],
+    pointGeometry: false
+  },
+  ifn: {
+    label: 'IFN (IFN_2026_BR_PLOTS-v13)',
+    assetRoot: PANTANAL_FOREST + '/V08_IFN',
+    footprintAsset: 'projects/ee-ipam/assets/IFN/IFN_2026_BR_PLOTS-v13',
+    trainYears: [2023],
+    target: 'agbd',
+    targetProp: 'AGB_Mg_ha',
+    weightProp: null,
+    sampleProps: ['agbd', 'C_Mg_ha', 'n_ind', 'area_ha', 'bioma', 'fid',
+      'UA', 'Subunidade', 'orientacao', 'mun'],
+    pointGeometry: true
+  }
+};
+
+exports.SOURCE_CFG = exports.SOURCES[exports.SOURCE];
+exports.TRAIN_YEARS = exports.SOURCE_CFG.trainYears;
+exports.ASSET_ROOT = exports.SOURCE_CFG.assetRoot;
 
 // =========================================================================
 // Bloco 6 — CHAMPION [definido v07 (gate 10/09/2026); idêntico na v08]
@@ -140,7 +190,7 @@ exports.ASSET_ROOT =
 // NÃO a parametrização. Se o gate offline da v08 indicar revisão, atualizar
 // aqui após 2_3_gcn.
 // =========================================================================
-exports.MIN_LEAF_POP = 10;        // champion v07: RMSE 52.21 Mg/ha (sweep best)
+exports.MIN_LEAF_POP = 10;        // champion v07: RMSE 52.21 t/ha (sweep best)
 exports.VARIABLES_PER_SPLIT = 6;  // sqrt(n_features)=sqrt(38)=6.16 → 6
 exports.LOG_TARGET = false;       // linear 52.26 < log 52.59 (champion v07)
 exports.SMEAR_FACTOR = 1.0;       // fator de Duan; inerte com LOG_TARGET=false

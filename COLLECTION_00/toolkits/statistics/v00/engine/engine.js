@@ -2,7 +2,7 @@
  * MAPBIOMAS-CARBONO — toolkit statistics/v00 · engine (motor unificado)
  * ---------------------------------------------------------------------------
  * Motor das estatísticas por classe LULC C11 dos domínios:
- *   runForest(contract, versionId?)      — AGC florestal (V03–V08), tabela LARGA
+ *   runForest(contract, versionId?)      — AGC florestal (V03–V07 + V08_GEDI/V08_IFN), tabela LARGA
  *   runGrassland(contract, versionId?)   — produtos campestres (v01–v02)
  *   runReferences(contract, opts?)       — mapas de referência (17 refs)
  *
@@ -26,6 +26,8 @@ var INFRA = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/engine/module_infra.js');
 var T = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/engine/module_territory.js');
+var TER = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/statistics/v00/contracts/00_catalog_territories.js');
 
 /* ==========================================================================
  * Primitivas comuns
@@ -60,8 +62,36 @@ function reduceStack(stack, nValue, geom, scale) {
   }).get('groups');
 }
 
-/** Configura o território do módulo (contrato plano). */
-function setupTerritory(contract) { T.configure(contract.territory); }
+/** Configura o território do módulo para um escopo (contrato plano). */
+function setupTerritory(contract, scope, region) {
+  T.configure(scope, region);
+}
+
+/** Escopos territoriais do contrato (default = bioma_uf). */
+function contractScopes(contract) {
+  return (contract.TERRITORY_SCOPES || ['bioma_uf']).map(function (id) {
+    return TER.resolveScope(id);
+  });
+}
+
+/**
+ * Área de análise de um escopo:
+ *   · custom   → a própria FeatureCollection do escopo;
+ *   · embutido → a área do contrato (contract.REGION).
+ */
+function scopeRegion(contract, scope) {
+  if (scope.mode === 'custom') {
+    return { fc: scope.fc, filterProp: scope.filterProp,
+      filterValue: scope.filterValue };
+  }
+  return contract.REGION;
+}
+
+/** Mescla props de rótulo (EE) num objeto de props comum. */
+function withLabels(props, labels) {
+  Object.keys(labels).forEach(function (k) { props[k] = labels[k]; });
+  return props;
+}
 
 /** Colunas territoriais/categóricas comuns (sem `territorio`). */
 function coberturaCols() {
@@ -72,7 +102,7 @@ function coberturaCols() {
 /**
  * Expansão SERVIDOR-SIDE das combinações (classe × def_sec) de um conjunto de
  * grupos (classe → território → sum). `spec`:
- *   info, biome, sigla, nome (ee.Dictionary)
+ *   info, D (ee.Dictionary)
  *   prefixLen, blockLen     — layout do `sum` por combinação def_sec
  *   one(ctx)                — monta o objeto de props (ctx: s, off, am, j, cls,
  *                             info, biomeName, ufSigla, ufNome)
@@ -82,11 +112,7 @@ function expandRows(groups, spec) {
   function expandTerritory(tEl) {
     var td = ee.Dictionary(tEl);
     var codigo = ee.Number(td.get('territory')).int();
-    var biomeId = codigo.divide(100).int();
-    var ufId = codigo.mod(100).int();
-    var biomeName = ee.String(spec.biome.get(biomeId, ''));
-    var ufSigla = ee.String(spec.sigla.get(ufId, ''));
-    var ufNome = ee.String(spec.nome.get(ufId, ''));
+    var labels = T.labelProps(codigo, spec.D);
 
     function expandClass(gEl) {
       var gd = ee.Dictionary(gEl);
@@ -98,8 +124,7 @@ function expandRows(groups, spec) {
         var off = spec.prefixLen + j * spec.blockLen;
         var am = ee.Number(s.get(off));
         var props = spec.one({
-          s: s, off: off, am: am, j: j, cls: cls, info: info,
-          biomeName: biomeName, ufSigla: ufSigla, ufNome: ufNome
+          s: s, off: off, am: am, j: j, cls: cls, info: info, labels: labels
         });
         return ee.List(ee.Algorithms.If(am.gt(0), [ee.Feature(null, props)], []));
       }
@@ -222,7 +247,7 @@ function bandForYear(r, y) {
 
 /** Colunas do CSV de um grupo de referências. */
 function refColumns(groupRefs) {
-  var cols = ['ecossistema', 'Bioma', 'UF', 'Unidade Federativa', 'classe']
+  var cols = ['ecossistema'].concat(T.labelCols()).concat(['classe'])
     .concat(coberturaCols())
     .concat(['ano_lulc', 'Área (ha)']);
   groupRefs.forEach(function (r) {
@@ -240,12 +265,11 @@ function groupRows(contract, groupRefs, scale, geom, D) {
   var nBands = g.colNames.length;
 
   return expandRows(groups, {
-    info: D.info, biome: D.biome, sigla: D.sigla, nome: D.nome,
+    info: D.info, D: D,
     prefixLen: g.nBase, blockLen: g.nBase,
     one: function (ctx) {
-      var props = {
+      var props = withLabels({
         ecossistema: 'referencia',
-        Bioma: ctx.biomeName, UF: ctx.ufSigla, 'Unidade Federativa': ctx.ufNome,
         classe: ctx.cls,
         'cobertura (n0)': ctx.info.get('n0'),
         'cobertura (n1)': ctx.info.get('n1'),
@@ -256,7 +280,7 @@ function groupRows(contract, groupRefs, scale, geom, D) {
           D.defsec.get(ee.Number(ctx.j).format()),
         ano_lulc: YEAR,
         'Área (ha)': r1(ctx.am)
-      };
+      }, ctx.labels);
       for (var i = 0; i < nBands; i++) {
         props[g.colNames[i]] = r1(ee.Number(ctx.s.get(ctx.off + 1 + i)));
       }
@@ -281,7 +305,6 @@ exports.runReferences = function (contract, opts, done) {
     ? (Array.isArray(opts.ref_ids) ? opts.ref_ids : [opts.ref_ids]) : null;
   var onlyBiomes = opts.biomes
     ? (Array.isArray(opts.biomes) ? opts.biomes : [opts.biomes]) : null;
-  setupTerritory(contract);
 
   if (onlyRefs) {
     var known = contract.REFERENCES.map(function (r) { return r.id; });
@@ -304,6 +327,7 @@ exports.runReferences = function (contract, opts, done) {
   });
   var D = T.buildLabelDicts(LEG);
   var grupos = contract.GRUPOS || {};
+  var scopes = contractScopes(contract);
 
   // Agrupa por família, preservando a ordem de aparição.
   var byGroup = {};
@@ -315,45 +339,54 @@ exports.runReferences = function (contract, opts, done) {
   });
 
   var scheduled = 0;
-  order.forEach(function (g) {
-    var groupRefs = byGroup[g].filter(function (r) {
-      var ok = INFRA.assetExists(r.asset);
-      if (!ok) print('[AVISO] ref', r.id, 'indisponível — ignorada no grupo', g);
-      return ok;
-    });
-    if (!groupRefs.length) {
-      print('[AVISO] grupo', g, 'sem refs disponíveis — ignorado.');
-      return;
-    }
-    var scale = (grupos[g] && grupos[g].scale) || groupRefs[0].scale;
-
-    var fcs = selBiomes.map(function (b) {
-      return groupRows(contract, groupRefs, scale, T.regionGeom(b.nome), D);
-    });
-    var fc = fcs[0];
-    for (var i = 1; i < fcs.length; i++) fc = fc.merge(fcs[i]);
-    var fileName = contract.PREFIX + '_' + g + '_' + contract.YEAR;
-    print('MAPBIOMAS-CARBONO · references · run_references · grupo', g,
-      '(' + groupRefs.length, 'refs)');
-    try {
-      Export.table.toDrive({
-        collection: fc,
-        description: 'WS_CARBONO_stats_references_' + g + '_' + contract.YEAR,
-        folder: contract.DRIVE_FOLDER,
-        fileNamePrefix: fileName,
-        fileFormat: 'CSV',
-        selectors: refColumns(groupRefs)
+  scopes.forEach(function (scope) {
+    setupTerritory(contract, scope, scopeRegion(contract, scope));
+    order.forEach(function (g) {
+      var groupRefs = byGroup[g].filter(function (r) {
+        var ok = INFRA.assetExists(r.asset);
+        if (!ok) print('[AVISO] ref', r.id, 'indisponível — ignorada no grupo', g);
+        return ok;
       });
-      print('[OK]', g, '· export IMEDIATO agendado (',
-        selBiomes.length, 'bioma(s)).');
-      scheduled++;
-    } catch (e) {
-      print('[ERRO export]', fileName, String(e).slice(0, 200));
-    }
+      if (!groupRefs.length) {
+        print('[AVISO] grupo', g, 'sem refs disponíveis — ignorado.');
+        return;
+      }
+      var scale = (grupos[g] && grupos[g].scale) || groupRefs[0].scale;
+
+      var regions = (scope.mode === 'custom')
+        ? [{ fc: scope.fc, filterProp: scope.filterProp,
+          filterValue: scope.filterValue }]
+        : selBiomes.map(function (b) { return { biomeName: b.nome }; });
+      var fcs = regions.map(function (rg) {
+        return groupRows(contract, groupRefs, scale, T.regionGeom(rg), D);
+      });
+      var fc = fcs[0];
+      for (var i = 1; i < fcs.length; i++) fc = fc.merge(fcs[i]);
+      var fileName = contract.PREFIX + '_' + g + '_' + scope.id + '_' +
+        contract.YEAR;
+      print('MAPBIOMAS-CARBONO · references · run_references · grupo', g,
+        '· escopo', scope.id, '(' + groupRefs.length, 'refs)');
+      try {
+        Export.table.toDrive({
+          collection: fc,
+          description: 'WS_CARBONO_stats_references_' + g + '_' + scope.id +
+            '_' + contract.YEAR,
+          folder: contract.DRIVE_FOLDER,
+          fileNamePrefix: fileName,
+          fileFormat: 'CSV',
+          selectors: refColumns(groupRefs)
+        });
+        print('[OK]', g, '·', scope.id, '· export IMEDIATO agendado (',
+          regions.length, 'região(ões)).');
+        scheduled++;
+      } catch (e) {
+        print('[ERRO export]', fileName, String(e).slice(0, 200));
+      }
+    });
   });
-  print('[FIM] references ·', order.length, 'grupos ·', scheduled,
-    'exports agendados imediatos.');
-  if (done) done(scheduled, order.length);
+  print('[FIM] references ·', order.length, 'grupos ×', scopes.length,
+    'escopo(s) ·', scheduled, 'exports agendados imediatos.');
+  if (done) done(scheduled, order.length * scopes.length);
 };
 
 /* ==========================================================================
@@ -432,7 +465,7 @@ function forestWideStack(contract, versions, paths) {
 
 /** Colunas do CSV largo florestal (AGB nativa + carbono* derivada + incertezas). */
 function forestColumns(versions) {
-  var cols = ['ecossistema', 'Bioma', 'UF', 'Unidade Federativa', 'classe']
+  var cols = ['ecossistema'].concat(T.labelCols()).concat(['classe'])
     .concat(coberturaCols())
     .concat(['ano_lulc', 'Área (ha)']);
   versions.forEach(function (v) {
@@ -464,12 +497,11 @@ function forestRows(contract, versions, paths, geom, D) {
   var incCCols = std.map(function (v) { return v.id + ' Incerteza (t C)*'; });
 
   return expandRows(groups, {
-    info: D.info, biome: D.biome, sigla: D.sigla, nome: D.nome,
+    info: D.info, D: D,
     prefixLen: nBase, blockLen: nBase,
     one: function (ctx) {
-      var props = {
+      var props = withLabels({
         ecossistema: 'florestal',
-        Bioma: ctx.biomeName, UF: ctx.ufSigla, 'Unidade Federativa': ctx.ufNome,
         classe: ctx.cls,
         'cobertura (n0)': ctx.info.get('n0', ''),
         'cobertura (n1)': ctx.info.get('n1', ''),
@@ -480,7 +512,7 @@ function forestRows(contract, versions, paths, geom, D) {
           D.defsec.get(ee.Number(ctx.j).format(), ''),
         ano_lulc: contract.YEAR,
         'Área (ha)': r1(ctx.am)
-      };
+      }, ctx.labels);
       for (var i = 0; i < nVersions; i++) {
         var st = ee.Number(ctx.s.get(ctx.off + 1 + i));
         props[bioCols[i]] = r1(st);
@@ -503,7 +535,6 @@ function forestRows(contract, versions, paths, geom, D) {
  * versões ausentes são ignoradas). `done` (opcional) ao final do agendamento.
  */
 exports.runForest = function (contract, versionId, done) {
-  setupTerritory(contract);
   var sel = selVersion(versionId);
   var requested;
   if (sel) {
@@ -534,30 +565,36 @@ exports.runForest = function (contract, versionId, done) {
     return;
   }
 
-  var slug = 'bioma';
-  var namePart = sel ? sel + '_' + slug : slug;
-  var fileName = contract.PREFIX + '_' + namePart + '_' + contract.YEAR;
-  print('MAPBIOMAS-CARBONO ·', contract.BIOME_NAME, 'Forest · run_forest ·',
-    versions.map(function (v) { return v.id; }).join(', '));
-
   var D = T.buildLabelDicts(LEG);
-  var geom = T.regionGeom(contract.BIOME_NAME);
+  var scopes = contractScopes(contract);
+  print('MAPBIOMAS-CARBONO ·', contract.BIOME_NAME, 'Forest · run_forest ·',
+    versions.map(function (v) { return v.id; }).join(', '),
+    '· escopos:', scopes.map(function (s) { return s.id; }).join(', '));
+
   var scheduled = 0;
-  try {
-    Export.table.toDrive({
-      collection: forestRows(contract, versions, paths, geom, D),
-      description: 'WS_CARBONO_stats_forest_' + namePart + '_' + contract.YEAR,
-      folder: contract.DRIVE_FOLDER,
-      fileNamePrefix: fileName,
-      fileFormat: 'CSV',
-      selectors: forestColumns(versions)
-    });
-    scheduled++;
-    print('[OK] forest ·', versions.length, 'versão(ões) numa tabela larga.');
-  } catch (e) {
-    print('[ERRO export]', fileName, String(e).slice(0, 200));
-  }
-  print('[FIM]', contract.BIOME_NAME, 'Forest ·', scheduled, 'export(s) agendado(s).');
+  scopes.forEach(function (scope) {
+    setupTerritory(contract, scope, scopeRegion(contract, scope));
+    var geom = T.regionGeom();
+    var namePart = (sel ? sel + '_' : '') + scope.id;
+    var fileName = contract.PREFIX + '_' + namePart + '_' + contract.YEAR;
+    try {
+      Export.table.toDrive({
+        collection: forestRows(contract, versions, paths, geom, D),
+        description: 'WS_CARBONO_stats_forest_' + namePart + '_' + contract.YEAR,
+        folder: contract.DRIVE_FOLDER,
+        fileNamePrefix: fileName,
+        fileFormat: 'CSV',
+        selectors: forestColumns(versions)
+      });
+      scheduled++;
+      print('[OK] forest ·', scope.id, '·', versions.length,
+        'versão(ões) numa tabela larga.');
+    } catch (e) {
+      print('[ERRO export]', fileName, String(e).slice(0, 200));
+    }
+  });
+  print('[FIM]', contract.BIOME_NAME, 'Forest ·', scheduled,
+    'export(s) agendado(s).');
   if (done) done(scheduled, versions.length);
 };
 
@@ -630,16 +667,18 @@ function grassPrincipalStack(contract, biomass, carbon) {
 }
 
 /* ---- Colunas (selectors) dos 3 CSVs (nomes prontos p/ gráfico) ------------ */
-var SEL_A = ['ecossistema', 'produto', 'versao', 'ano', 'Bioma', 'UF',
-  'Unidade Federativa', 'classe']
-  .concat(coberturaCols())
-  .concat(['Área (ha)', 'Biomassa acima do solo (t MS)',
-    'Carbono acima do solo (t C)']);
+function selA() {
+  return ['ecossistema', 'produto', 'versao', 'ano'].concat(T.labelCols())
+    .concat(['classe']).concat(coberturaCols())
+    .concat(['Área (ha)', 'Biomassa acima do solo (t MS)',
+      'Carbono acima do solo (t C)']);
+}
 
-var SEL_MENSAL = ['ecossistema', 'produto', 'versao', 'ano', 'Bioma', 'UF',
-  'Unidade Federativa', 'classe']
-  .concat(coberturaCols())
-  .concat(['período', 'Área (ha)']);
+function selMensal() {
+  return ['ecossistema', 'produto', 'versao', 'ano'].concat(T.labelCols())
+    .concat(['classe']).concat(coberturaCols())
+    .concat(['período', 'Área (ha)']);
+}
 
 /** FeatureCollection servidor-side de UM mês (linhas longas com `período`). */
 function grassRowsMonthly(contract, product, month, mes, valueCol, geom, D) {
@@ -650,13 +689,12 @@ function grassRowsMonthly(contract, product, month, mes, valueCol, geom, D) {
   var periodo = contract.YEAR + '_' + pad(mes);
 
   return expandRows(groups, {
-    info: D.info, biome: D.biome, sigla: D.sigla, nome: D.nome,
+    info: D.info, D: D,
     prefixLen: 2, blockLen: 2,
     one: function (ctx) {
-      var props = {
+      var props = withLabels({
         ecossistema: 'campestre',
         produto: 'grassland', versao: vId, ano: contract.YEAR,
-        Bioma: ctx.biomeName, UF: ctx.ufSigla, 'Unidade Federativa': ctx.ufNome,
         classe: ctx.cls,
         'cobertura (n0)': ctx.info.get('n0', ''),
         'cobertura (n1)': ctx.info.get('n1', ''),
@@ -667,7 +705,7 @@ function grassRowsMonthly(contract, product, month, mes, valueCol, geom, D) {
           D.defsec.get(ee.Number(ctx.j).format(), ''),
         'período': periodo,
         'Área (ha)': r1(ctx.am)
-      };
+      }, ctx.labels);
       props[valueCol] = r1(ee.Number(ctx.s.get(ctx.off + 1)));
       return props;
     }
@@ -681,13 +719,12 @@ function grassRowsPrincipal(contract, versionId, biomass, carbon, geom, D) {
     grassPrincipalStack(contract, biomass, carbon), nValue, geom, contract.SCALE));
 
   return expandRows(groups, {
-    info: D.info, biome: D.biome, sigla: D.sigla, nome: D.nome,
+    info: D.info, D: D,
     prefixLen: 3, blockLen: 3,
     one: function (ctx) {
-      return {
+      return withLabels({
         ecossistema: 'campestre',
         produto: 'grassland', versao: versionId, ano: contract.YEAR,
-        Bioma: ctx.biomeName, UF: ctx.ufSigla, 'Unidade Federativa': ctx.ufNome,
         classe: ctx.cls,
         'cobertura (n0)': ctx.info.get('n0', ''),
         'cobertura (n1)': ctx.info.get('n1', ''),
@@ -699,7 +736,7 @@ function grassRowsPrincipal(contract, versionId, biomass, carbon, geom, D) {
         'Área (ha)': r1(ctx.am),
         'Biomassa acima do solo (t MS)': r1(ee.Number(ctx.s.get(ctx.off + 1))),
         'Carbono acima do solo (t C)': r1(ee.Number(ctx.s.get(ctx.off + 2)))
-      };
+      }, ctx.labels);
     }
   });
 }
@@ -710,7 +747,6 @@ function grassRowsPrincipal(contract, versionId, biomass, carbon, geom, D) {
  * versão (o join largo é feito offline no Colab). `done` ao final.
  */
 exports.runGrassland = function (contract, versionId, done) {
-  setupTerritory(contract);
   var sel = selVersion(versionId);
   if (sel && contract.VERSIONS.indexOf(sel) === -1) {
     print('[ERRO] versão desconhecida:', sel, '— disponíveis:',
@@ -720,97 +756,102 @@ exports.runGrassland = function (contract, versionId, done) {
   }
   var versions = sel ? [sel] : contract.VERSIONS;
   var D = T.buildLabelDicts(LEG);
-  var geom = T.regionGeom(contract.BIOME_NAME);
-  var slug = 'bioma';
+  var scopes = contractScopes(contract);
   var totalScheduled = 0;
 
-  versions.forEach(function (vid) {
-    var biomass = productOf(contract, vid, 'biomass');
-    var carbon = productOf(contract, vid, 'carbon');
-    var biomassM = productOf(contract, vid, 'biomass_mensal') ||
-      productOf(contract, vid, 'biomassMonthly');
-    var anppM = productOf(contract, vid, 'anpp_mensal') ||
-      productOf(contract, vid, 'anppMonthly');
+  scopes.forEach(function (scope) {
+    setupTerritory(contract, scope, scopeRegion(contract, scope));
+    var geom = T.regionGeom();
+    versions.forEach(function (vid) {
+      var biomass = productOf(contract, vid, 'biomass');
+      var carbon = productOf(contract, vid, 'carbon');
+      var biomassM = productOf(contract, vid, 'biomass_mensal') ||
+        productOf(contract, vid, 'biomassMonthly');
+      var anppM = productOf(contract, vid, 'anpp_mensal') ||
+        productOf(contract, vid, 'anppMonthly');
 
-    if (!biomass && !biomassM) {
-      print('[ERRO] grassland versões disponíveis:', contract.VERSIONS,
-        '· recebido:', vid); return;
-    }
-
-    var context = 'grassland · ' + vid + ' · ' + slug;
-    var scheduled = 0;
-
-    /* A) tabela principal — biomassa + estoque no MESMO stack (anual). */
-    if (biomass && carbon && INFRA.assetExists(biomass.asset) &&
-        INFRA.assetExists(carbon.asset)) {
-      var prefixA = contract.PREFIX + '_' + vid + '_' + slug + '_' + contract.YEAR;
-      try {
-        Export.table.toDrive({
-          collection: grassRowsPrincipal(contract, vid, biomass, carbon, geom, D),
-          description: 'WS_CARBONO_toDrive-' + prefixA,
-          fileNamePrefix: prefixA,
-          folder: contract.DRIVE_FOLDER, fileFormat: 'CSV', selectors: SEL_A
-        });
-        print('[OK]', context, 'principal · export IMEDIATO agendado.');
-        scheduled++;
-      } catch (e) {
-        print('[ERRO export principal]', context, String(e).slice(0, 200));
+      if (!biomass && !biomassM) {
+        print('[ERRO] grassland versões disponíveis:', contract.VERSIONS,
+          '· recebido:', vid); return;
       }
-    }
 
-    /* B) biomassa mensal — LONGA (1 linha por combinação × mês, `período`). */
-    if (biomassM && INFRA.assetExists(biomassM.asset)) {
-      var prefixB = contract.PREFIX + '_' + vid + '_biomassa_mensal_' +
-        slug + '_' + contract.YEAR;
-      var fcB = grassRowsMonthly(contract, biomassM, 1, 1, 'Biomassa acima do solo (t MS)', geom, D);
-      for (var m = 2; m <= 12; m++) {
-        fcB = fcB.merge(
-          grassRowsMonthly(contract, biomassM, m, m, 'Biomassa acima do solo (t MS)', geom, D));
-      }
-      try {
-        Export.table.toDrive({
-          collection: fcB,
-          description: 'WS_CARBONO_toDrive-' + prefixB,
-          fileNamePrefix: prefixB,
-          folder: contract.DRIVE_FOLDER, fileFormat: 'CSV',
-          selectors: SEL_MENSAL.concat(['Biomassa acima do solo (t MS)'])
-        });
-        print('[OK]', context, 'biomassa mensal · export IMEDIATO agendado.');
-        scheduled++;
-      } catch (e) {
-        print('[ERRO export biomassa mensal]', context, String(e).slice(0, 200));
-      }
-    }
+      var context = 'grassland · ' + vid + ' · ' + scope.id;
+      var scheduled = 0;
 
-    /* C) ANPP mensal — LONGA (1 linha por combinação × mês, `período`). */
-    if (anppM && INFRA.assetExists(anppM.asset)) {
-      var prefixC = contract.PREFIX + '_' + vid + '_anpp_mensal_' +
-        slug + '_' + contract.YEAR;
-      var fcC = grassRowsMonthly(contract, anppM, 1, 1, 'Produtividade primária líquida acima do solo (t MS/ano)', geom, D);
-      for (var k = 2; k <= 12; k++) {
-        fcC = fcC.merge(
-          grassRowsMonthly(contract, anppM, k, k, 'Produtividade primária líquida acima do solo (t MS/ano)', geom, D));
+      /* A) tabela principal — biomassa + estoque no MESMO stack (anual). */
+      if (biomass && carbon && INFRA.assetExists(biomass.asset) &&
+          INFRA.assetExists(carbon.asset)) {
+        var prefixA = contract.PREFIX + '_' + vid + '_' + scope.id + '_' +
+          contract.YEAR;
+        try {
+          Export.table.toDrive({
+            collection: grassRowsPrincipal(contract, vid, biomass, carbon, geom, D),
+            description: 'WS_CARBONO_toDrive-' + prefixA,
+            fileNamePrefix: prefixA,
+            folder: contract.DRIVE_FOLDER, fileFormat: 'CSV', selectors: selA()
+          });
+          print('[OK]', context, 'principal · export IMEDIATO agendado.');
+          scheduled++;
+        } catch (e) {
+          print('[ERRO export principal]', context, String(e).slice(0, 200));
+        }
       }
-      try {
-        Export.table.toDrive({
-          collection: fcC,
-          description: 'WS_CARBONO_toDrive-' + prefixC,
-          fileNamePrefix: prefixC,
-          folder: contract.DRIVE_FOLDER, fileFormat: 'CSV',
-          selectors: SEL_MENSAL.concat(['Produtividade primária líquida acima do solo (t MS/ano)'])
-        });
-        print('[OK]', context, 'anpp mensal · export IMEDIATO agendado.');
-        scheduled++;
-      } catch (e) {
-        print('[ERRO export anpp]', context, String(e).slice(0, 200));
-      }
-    }
 
-    print('[FIM]', vid, '·', scheduled, 'de 3 exports agendados imediatos.');
-    totalScheduled += scheduled;
+      /* B) biomassa mensal — LONGA (1 linha por combinação × mês, `período`). */
+      if (biomassM && INFRA.assetExists(biomassM.asset)) {
+        var prefixB = contract.PREFIX + '_' + vid + '_biomassa_mensal_' +
+          scope.id + '_' + contract.YEAR;
+        var fcB = grassRowsMonthly(contract, biomassM, 1, 1, 'Biomassa acima do solo (t MS)', geom, D);
+        for (var m = 2; m <= 12; m++) {
+          fcB = fcB.merge(
+            grassRowsMonthly(contract, biomassM, m, m, 'Biomassa acima do solo (t MS)', geom, D));
+        }
+        try {
+          Export.table.toDrive({
+            collection: fcB,
+            description: 'WS_CARBONO_toDrive-' + prefixB,
+            fileNamePrefix: prefixB,
+            folder: contract.DRIVE_FOLDER, fileFormat: 'CSV',
+            selectors: selMensal().concat(['Biomassa acima do solo (t MS)'])
+          });
+          print('[OK]', context, 'biomassa mensal · export IMEDIATO agendado.');
+          scheduled++;
+        } catch (e) {
+          print('[ERRO export biomassa mensal]', context, String(e).slice(0, 200));
+        }
+      }
+
+      /* C) ANPP mensal — LONGA (1 linha por combinação × mês, `período`). */
+      if (anppM && INFRA.assetExists(anppM.asset)) {
+        var prefixC = contract.PREFIX + '_' + vid + '_anpp_mensal_' +
+          scope.id + '_' + contract.YEAR;
+        var fcC = grassRowsMonthly(contract, anppM, 1, 1, 'Produtividade primária líquida acima do solo (t MS/ano)', geom, D);
+        for (var k = 2; k <= 12; k++) {
+          fcC = fcC.merge(
+            grassRowsMonthly(contract, anppM, k, k, 'Produtividade primária líquida acima do solo (t MS/ano)', geom, D));
+        }
+        try {
+          Export.table.toDrive({
+            collection: fcC,
+            description: 'WS_CARBONO_toDrive-' + prefixC,
+            fileNamePrefix: prefixC,
+            folder: contract.DRIVE_FOLDER, fileFormat: 'CSV',
+            selectors: selMensal().concat(['Produtividade primária líquida acima do solo (t MS/ano)'])
+          });
+          print('[OK]', context, 'anpp mensal · export IMEDIATO agendado.');
+          scheduled++;
+        } catch (e) {
+          print('[ERRO export anpp]', context, String(e).slice(0, 200));
+        }
+      }
+
+      print('[FIM]', vid, '·', scope.id, '·', scheduled,
+        'de 3 exports agendados imediatos.');
+      totalScheduled += scheduled;
+    });
   });
-  print('[FIM] grassland ·', versions.join(', '), '·', totalScheduled,
-    'exports agendados imediatos.');
+  print('[FIM] grassland ·', versions.join(', '), '×', scopes.length,
+    'escopo(s) ·', totalScheduled, 'exports agendados imediatos.');
   if (done) done(totalScheduled);
 };
 
@@ -820,5 +861,5 @@ exports.emitCols = emitCols;
 exports.colName = colName;
 exports.refColumns = refColumns;
 exports.forestColumns = forestColumns;
-exports.SEL_A = SEL_A;
-exports.SEL_MENSAL = SEL_MENSAL;
+exports.SEL_A = selA;
+exports.SEL_MENSAL = selMensal;
