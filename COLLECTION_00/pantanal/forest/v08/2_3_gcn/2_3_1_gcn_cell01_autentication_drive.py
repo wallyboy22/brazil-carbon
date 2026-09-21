@@ -35,7 +35,7 @@ else:
     drive.mount(MOUNT)
     print("[DRIVE] montado em", MOUNT)
 
-if "DRIVE_ROOT" not in globals():
+if "CONF" not in globals():
     print("[AVISO] CONF ainda não está no namespace — rode a célula 00 (util) " +
           "antes desta.")
 else:

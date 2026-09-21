@@ -70,11 +70,18 @@ _MANIFEST: list[str] = []  # registro de artefatos gerados nesta rodada
 # ---------------------------------------------------------------------------
 # Contexto (<VERSION>_<SOURCE>) e descoberta de arquivos
 # ---------------------------------------------------------------------------
+def _matrix_files_in(d: Path) -> list[Path]:
+    """CSVs de matriz (agb_matrix_*_v*.csv) numa pasta."""
+    return sorted(d.glob("agb_matrix_*_v*.csv"))
+
+
 def _scan_matrix_files() -> list[Path]:
-    """CSVs de matriz (agb_matrix_*_v*.csv) na raiz flat e nas subpastas."""
+    """CSVs de matriz na raiz flat E nas subpastas (para detecção de fontes)."""
     root = Path(CONF["DRIVE_ROOT"])
-    files = set(root.glob("agb_matrix_*_v*.csv"))
-    files.update(root.glob("*/agb_matrix_*_v*.csv"))
+    files = set(_matrix_files_in(root))
+    for d in root.iterdir():
+        if d.is_dir():
+            files.update(_matrix_files_in(d))
     return sorted(files)
 
 
@@ -89,11 +96,31 @@ def detect_sources() -> list[str]:
 
 
 def resolve_source():
-    """Fonte alvo: CONF['SOURCE'] ou derivada (única); None se ambíguo/ausente."""
+    """Fonte alvo AUTOMÁTICA: CONF['SOURCE'] ou a primeira disponível (com aviso)."""
     if CONF.get("SOURCE"):
         return CONF["SOURCE"]
     srcs = detect_sources()
-    return srcs[0] if len(srcs) == 1 else None
+    if not srcs:
+        return None
+    if len(srcs) > 1:
+        print(f"[AVISO] fontes múltiplas {srcs} — usando '{srcs[0]}'. Defina " +
+              "CONF['SOURCE']='gedi'|'ifn' (ou rode a subetapa 2_3_0b) para escolher.")
+    return srcs[0]
+
+
+def files_for_source(source: str) -> list[Path]:
+    """CSVs de uma fonte: contexto ativo (`<VERSION>_<SOURCE>`) + raiz flat."""
+    dirs = []
+    ctx = context_dir()
+    if ctx is not None:
+        dirs.append(ctx)
+    dirs.append(Path(CONF["DRIVE_ROOT"]))
+    out = set()
+    for d in dirs:
+        for f in _matrix_files_in(d):
+            if _file_source(f) == source:
+                out.add(f)
+    return sorted(out)
 
 
 def context_name():
@@ -160,37 +187,23 @@ def manifest() -> list[str]:
 def load_matrix() -> pd.DataFrame:
     """Concatena os CSVs `agb_matrix_<SOURCE>_v*.csv` da fonte alvo.
 
-    Lê a raiz flat E as subpastas de contexto; seleciona a fonte por
-    `CONF['SOURCE']` (ou a única disponível). Com fontes MISTAS e sem
-    `CONF['SOURCE']`, aborta pedindo a escolha (ou rode a subetapa 2_3_0b).
+    AUTOMÁTICO: usa `CONF['SOURCE']`; se None, deriva da primeira fonte
+    disponível (com aviso). Lê o contexto ativo (`<VERSION>_<SOURCE>`) + a raiz
+    flat — nunca quebra por fontes mistas.
     """
-    files = _scan_matrix_files()
-    if not files:
+    chosen = resolve_source()
+    if chosen is None:
         raise FileNotFoundError(
             f"Nenhum CSV de matriz em {CONF['DRIVE_ROOT']} (raiz ou subpastas). "
             "Rode 2_2_<fonte>_toDrive_matrix.js no GEE e exporte o CSV ao Drive."
         )
-    by_src: dict[str, list[Path]] = {}
-    for f in files:
-        by_src.setdefault(_file_source(f), []).append(f)
-    srcs = sorted(by_src)
-    forced = CONF.get("SOURCE")
-    if forced:
-        if forced not in by_src:
-            raise ValueError(
-                f"CONF['SOURCE']={forced}, mas não há CSVs dessa fonte. "
-                f"Disponíveis: {srcs}."
-            )
-        chosen = forced
-    elif len(srcs) == 1:
-        chosen = srcs[0]
-    else:
-        raise ValueError(
-            f"CSVs de fontes MISTAS: {srcs}. Defina CONF['SOURCE']='gedi'|'ifn' "
-            "ou rode a subetapa 2_3_0b (reorganize_root) para separar em subpastas."
-        )
     CONF["SOURCE"] = chosen
-    files = sorted(by_src[chosen])
+    files = files_for_source(chosen)
+    if not files:
+        raise FileNotFoundError(
+            f"Nenhum CSV da fonte '{chosen}' em {context_dir() or CONF['DRIVE_ROOT']} " +
+            f"/ {CONF['DRIVE_ROOT']}."
+        )
     print(f"[FONTE] {chosen} · {len(files)} CSV(s) · contexto {context_name()}")
     frames = []
     for f in files:

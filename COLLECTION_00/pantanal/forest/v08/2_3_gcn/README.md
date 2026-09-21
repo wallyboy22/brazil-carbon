@@ -51,8 +51,10 @@ As células do `2_3_gcn` resolvem o **contexto** (`<VERSION>_<SOURCE>`) a partir
 seleciona a fonte por `CONF["SOURCE"]`.
 
 > **Fonte de amostra (`CONF["SOURCE"]`)**: `'gedi'` | `'ifn'` — deve casar com o
-> `SOURCE` do `0_contract.js`. Com fontes **mistas** na raiz e sem `SOURCE`, o
-> `load_matrix()` aborta pedindo a escolha (ou rode a reorg 00b).
+> `SOURCE` do `0_contract.js`. Se `None`, o `load_matrix()` **deriva
+> automaticamente** (com aviso, usando a 1ª fonte disponível) e lê o **contexto
+> ativo** + a raiz flat — não quebra por fontes mistas. Defina `SOURCE` (ou rode
+> a reorg 00b) para escolher com clareza.
 
 ## Biblioteca de figuras
 
