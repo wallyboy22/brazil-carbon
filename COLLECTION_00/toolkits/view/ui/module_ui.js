@@ -13,6 +13,7 @@
  *   createButtonDrawer({title,options}) — toggle-buttons (multi/single)
  *   styleCheck / syncCheckBorder / styleToggleButton / applyToggleStyle
  *   legendPanel(entries)           — legenda (cor + rótulo)
+ *   colorBarLegend({...})          — barra de cor (rampa + unidade + extremos)
  *   createSplitLayout({mapWidget,right}) — SplitPanel mapa | painel direito
  *   createThumbnailGrid({axes,values,cellFor}) — grade de miniaturas
  ******************************************************************************/
@@ -199,6 +200,87 @@ exports.legendPanel = function (entries, opts) {
       ui.Panel.Layout.flow('horizontal'), { margin: '0', padding: '0' }));
   });
   return p;
+};
+
+// ---------------------------------------------------------------------------
+// Rampa de cor (interpolação de paleta) + legenda de barra de cor
+// ---------------------------------------------------------------------------
+function _hexToRgb(h) {
+  h = String(h).replace('#', '');
+  if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16),
+    parseInt(h.slice(4, 6), 16)];
+}
+function _rgbToHex(r, g, b) {
+  function h(x) {
+    var s = Math.round(x).toString(16);
+    return s.length < 2 ? '0' + s : s;
+  }
+  return '#' + h(r) + h(g) + h(b);
+}
+/** Interpola `palette` (hex) em `n` cores contínuas. */
+exports.rampColors = function (palette, n) {
+  var pal = (palette && palette.length) ? palette : ['#000000', '#ffffff'];
+  if (pal.length === 1) {
+    var same = []; for (var k = 0; k < n; k++) same.push(pal[0]);
+    return same;
+  }
+  var out = [];
+  for (var i = 0; i < n; i++) {
+    var t = (n > 1 ? i / (n - 1) : 0) * (pal.length - 1);
+    var j = Math.min(pal.length - 2, Math.floor(t));
+    var f = t - j;
+    var c0 = _hexToRgb(pal[j]);
+    var c1 = _hexToRgb(pal[j + 1]);
+    out.push(_rgbToHex(c0[0] + (c1[0] - c0[0]) * f,
+      c0[1] + (c1[1] - c0[1]) * f, c0[2] + (c1[2] - c0[2]) * f));
+  }
+  return out;
+};
+
+/**
+ * Legenda de barra de cor: título + rampa contínua + extremos + unidade.
+ *   { title, unit, min, max, palette, steps?, width?, height? }
+ */
+exports.colorBarLegend = function (o) {
+  o = o || {};
+  var steps = o.steps || 40;
+  var barW = o.width || 220;
+  var h = o.height || '14px';
+  var segW = Math.max(1, Math.round(barW / steps));
+  var colors = exports.rampColors(o.palette, steps);
+
+  var panel = ui.Panel({ layout: ui.Panel.Layout.flow('vertical'),
+    style: { margin: '2px 0px', padding: '2px', backgroundColor: '#fafafa',
+      border: '1px solid #eee' } });
+  if (o.title) {
+    panel.add(ui.Label(o.title, { fontSize: '11px', fontWeight: 'bold',
+      margin: '0px 0px 1px 0px', color: '#333', stretch: 'horizontal' }));
+  }
+  var bar = ui.Panel({ layout: ui.Panel.Layout.flow('horizontal'),
+    style: { margin: '0px', padding: '0px' } });
+  colors.forEach(function (c) {
+    bar.add(ui.Label('', { backgroundColor: c, width: segW + 'px',
+      height: h, margin: '0px', padding: '0px' }));
+  });
+  panel.add(bar);
+
+  function fmt(v) {
+    if (v === null || v === undefined) return '';
+    return (Math.round(v * 100) / 100).toString();
+  }
+  var ticks = ui.Panel({ layout: ui.Panel.Layout.flow('horizontal'),
+    style: { margin: '1px 0px 0px 0px', padding: '0px',
+      width: (steps * segW) + 'px' } });
+  ticks.add(ui.Label(fmt(o.min), { fontSize: '9px', margin: '0px',
+    color: '#555' }));
+  ticks.add(ui.Label(o.unit || '', { fontSize: '9px', margin: '0px',
+    textAlign: 'center', stretch: 'horizontal', color: '#333',
+    fontWeight: 'bold' }));
+  ticks.add(ui.Label(fmt(o.max), { fontSize: '9px', margin: '0px',
+    textAlign: 'right', color: '#555' }));
+  panel.add(ticks);
+  return panel;
 };
 
 // ---------------------------------------------------------------------------

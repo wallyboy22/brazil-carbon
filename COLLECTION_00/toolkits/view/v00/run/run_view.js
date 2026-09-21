@@ -124,6 +124,13 @@ cabLeg.content.add(UI.legendPanel(Object.keys(LC.LULC_LEGEND).map(function (code
 shell.body.add(cabLeg.panel);
 
 // ---------------------------------------------------------------------------
+// LEGENDA · RAMPA DE COR (unidade + cores) — uma barra por rampa distinta
+// ---------------------------------------------------------------------------
+var cabRamp = UI.createCabinet({ title: 'LEGENDA · RAMPA DE COR',
+  isOpen: false });
+shell.body.add(cabRamp.panel);
+
+// ---------------------------------------------------------------------------
 // PAINEL DIREITO · grade de miniaturas (camada × território)
 // ---------------------------------------------------------------------------
 var currentNames = [];
@@ -213,7 +220,40 @@ function refreshMap() {
   thumbValues.territorio = regions.map(function (n) {
     return { id: n, label: n };
   });
+  refreshRamps();
   if (thumbsVisible) thumbs.update();
+}
+
+/** Legenda de rampa: uma barra por rampa distinta entre as camadas marcadas. */
+function refreshRamps() {
+  cabRamp.content.clear();
+  var seen = {};
+  var order = [];
+  LAY.LAYERS.forEach(function (l) {
+    if (!state.layers[l.id]) return;
+    if (l.tipo === 'lulc' || !l.vis || !l.vis.palette) return;
+    var key = [l.unit || '', l.vis.min, l.vis.max,
+      l.vis.palette.join(',')].join('|');
+    if (seen[key]) { seen[key].names.push(l.nome); return; }
+    seen[key] = { layer: l, names: [l.nome] };
+    order.push(key);
+  });
+  if (!order.length) {
+    cabRamp.content.add(ui.Label(
+      'Marque camadas contínuas (resultados/referências) para ver a rampa.',
+      { fontSize: '10px', color: '#888', margin: '2px' }));
+    return;
+  }
+  order.forEach(function (k) {
+    var g = seen[k];
+    var l = g.layer;
+    var title = g.names.length === 1 ? g.names[0]
+      : g.names[0] + '  (+' + (g.names.length - 1) + ')';
+    cabRamp.content.add(UI.colorBarLegend({
+      title: title, unit: l.unit, min: l.vis.min, max: l.vis.max,
+      palette: l.vis.palette
+    }));
+  });
 }
 
 print('MAPBIOMAS-CARBONO · toolkit view/v00 · run_view');

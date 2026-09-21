@@ -28,7 +28,7 @@ exports.STD_VIS = { min: 0, max: 40,
 function forest(id, label, root) {
   return { id: id, label: label, col: root + '/PREDICTIONS/COL',
     band: 'prediction_2023', stdBand: 'agbd_std_2023', year: 2023,
-    vis: exports.AGBD_VIS };
+    unit: 't/ha', vis: exports.AGBD_VIS };
 }
 
 exports.FOREST = [
@@ -46,10 +46,12 @@ exports.FOREST = [
 exports.GRASSLAND = [
   { id: 'v01_biomass', label: 'v01 biomassa',
     asset: GRASS_BASE + '/V01/BIOMASS/grassland_biomass_annual_v01_2023',
-    band: 'biomass_annual', vis: { min: 0, max: 15,
+    band: 'biomass_annual', unit: 't/ha',
+    vis: { min: 0, max: 15,
       palette: ['#ffffe5', '#d9f0a3', '#78c679', '#31a354', '#006837'] } },
   { id: 'v01_carbon', label: 'v01 carbono',
     asset: GRASS_BASE + '/V01/CARBON/grassland_carbon_stock_v01_2023',
-    band: 'carbon_stock_MgC_ha', vis: { min: 0, max: 8,
+    band: 'carbon_stock_MgC_ha', unit: 't C/ha',
+    vis: { min: 0, max: 8,
       palette: ['#fff7fb', '#d0d1e6', '#74a9cf', '#0570b0', '#034e7b'] } }
 ];

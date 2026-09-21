@@ -22,21 +22,22 @@ var LAYERS = [];
 PROD.FOREST.forEach(function (v) {
   LAYERS.push({ id: 'res_forest_' + v.id, grupo: 'Resultados · Forest',
     nome: 'Forest ' + v.label, tipo: 'resultado',
-    col: v.col, band: v.band, stdBand: v.stdBand, year: v.year, vis: v.vis });
+    col: v.col, band: v.band, stdBand: v.stdBand, year: v.year,
+    unit: v.unit, vis: v.vis });
 });
 
 // ---- Resultados: Grassland --------------------------------------------------
 PROD.GRASSLAND.forEach(function (v) {
   LAYERS.push({ id: 'res_grass_' + v.id, grupo: 'Resultados · Grassland',
     nome: 'Grassland ' + v.label, tipo: 'resultado',
-    asset: v.asset, band: v.band, vis: v.vis });
+    asset: v.asset, band: v.band, unit: v.unit, vis: v.vis });
 });
 
 // ---- Referências ------------------------------------------------------------
 REF.REFERENCES.forEach(function (r) {
   LAYERS.push({ id: 'ref_' + r.id, grupo: 'Referências',
     nome: r.fonte, tipo: 'referencia',
-    asset: r.asset, band: r.band, nodata_le: r.nodata_le,
+    asset: r.asset, band: r.band, unit: r.unit, nodata_le: r.nodata_le,
     multi_year: r.multi_year, filter_index: r.filter_index, vis: r.vis });
 });
 

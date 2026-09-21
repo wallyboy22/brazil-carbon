@@ -9,7 +9,9 @@ Rodar `run/run_view.js` no Code Editor. O painel esquerdo permite:
 - **Território**: Bioma / UF / Região / Brasil (assets do próprio projeto);
 - **Regiões**: seleção (vazio = todas) que filtra e dá zoom;
 - **Camadas**: checkboxes por grupo (todas as versões de resultado);
-- **Opacidade** e **legenda** do Uso e Cobertura (C11).
+- **Opacidade** e **legenda** do Uso e Cobertura (C11);
+- **LEGENDA · RAMPA DE COR**: barra de cor (unidade + extremos + cores) para
+  cada rampa distinta entre as camadas marcadas (resultados/referências).
 
 No cabinet **CAMADAS** há dois toggles:
 - **MAP ON/OFF**: mostra/esconde todas as camadas do mapa;
