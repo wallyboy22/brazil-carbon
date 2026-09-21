@@ -247,28 +247,27 @@ exports.rampColors = function (palette, n) {
 
 /**
  * Legenda de barra de cor: título + rampa contínua + extremos + unidade.
- *   { title, unit, min, max, palette, steps?, width?, height? }
+ * A barra ESTICA horizontalmente (preenche a largura do container).
+ *   { title, unit, min, max, palette, steps?, height? }
  */
 exports.colorBarLegend = function (o) {
   o = o || {};
   var steps = o.steps || 40;
-  var barW = o.width || 220;
   var h = o.height || '14px';
-  var segW = Math.max(1, Math.round(barW / steps));
   var colors = exports.rampColors(o.palette, steps);
 
   var panel = ui.Panel({ layout: ui.Panel.Layout.flow('vertical'),
     style: { margin: '2px 0px', padding: '2px', backgroundColor: '#fafafa',
-      border: '1px solid #eee' } });
+      border: '1px solid #eee', stretch: 'horizontal' } });
   if (o.title) {
     panel.add(ui.Label(o.title, { fontSize: '11px', fontWeight: 'bold',
       margin: '0px 0px 1px 0px', color: '#333', stretch: 'horizontal' }));
   }
   var bar = ui.Panel({ layout: ui.Panel.Layout.flow('horizontal'),
-    style: { margin: '0px', padding: '0px' } });
+    style: { margin: '0px', padding: '0px', stretch: 'horizontal' } });
   colors.forEach(function (c) {
-    bar.add(ui.Label('', { backgroundColor: c, width: segW + 'px',
-      height: h, margin: '0px', padding: '0px' }));
+    bar.add(ui.Label('', { backgroundColor: c, width: '0px', height: h,
+      margin: '0px', padding: '0px', stretch: 'horizontal' }));
   });
   panel.add(bar);
 
@@ -278,7 +277,7 @@ exports.colorBarLegend = function (o) {
   }
   var ticks = ui.Panel({ layout: ui.Panel.Layout.flow('horizontal'),
     style: { margin: '1px 0px 0px 0px', padding: '0px',
-      width: (steps * segW) + 'px' } });
+      stretch: 'horizontal' } });
   ticks.add(ui.Label(fmt(o.min), { fontSize: '9px', margin: '0px',
     color: '#555' }));
   ticks.add(ui.Label(o.unit || '', { fontSize: '9px', margin: '0px',

@@ -14,10 +14,10 @@ Rodar `run/run_view.js` no Code Editor. O painel esquerdo permite:
 - **Referência** (gavetas): uma gaveta **por fonte** (Saatchi, Baccini, Zimbres,
   Avitabile, Xu & Saatchi, TCN, QCN, QCN-r, **IFN**);
 - **Auxiliares** (gaveta): **Uso e Cobertura (C11)**;
-- **Opacidade** e **LEGENDAS** (mesma gaveta): **Mín/Máx global** (dois textbox
-  que sobrescrevem o min/max de todas as rampas — legenda **e** mapa), as
-  **barras de cor** por rampa distinta e, abaixo, a **legenda do Uso e
-  Cobertura (C11)**.
+- **LEGENDAS** (gaveta única, sem subgavetas): **Mín/Máx global** (textbox que
+  sobrescrevem o min/max de todas as rampas — legenda **e** mapa), **Opacidade**,
+  as **barras de cor** (esticadas horizontalmente) por rampa distinta e, **abaixo**,
+  a **legenda do Uso e Cobertura (C11)** — que só aparece quando o C11 está ligado.
 
 > As camadas **Forest** aparecem como **`Pantanal Forest vXX`** e **`Cerrado
 > Florestal vbeta1`**. Camadas cujo asset ainda **não existe** (ex.: `v08

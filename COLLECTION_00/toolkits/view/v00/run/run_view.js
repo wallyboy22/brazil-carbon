@@ -154,18 +154,7 @@ availGroups(LAY.AUXILIARES).forEach(function (a) {
 });
 
 // ---------------------------------------------------------------------------
-// VISUALIZAÇÃO
-// ---------------------------------------------------------------------------
-var cabVis = UI.createCabinet({ title: 'VISUALIZAÇÃO', isOpen: false });
-shell.body.add(cabVis.panel);
-cabVis.content.add(ui.Label('Opacidade',
-  { fontSize: '11px', fontWeight: 'bold', margin: '2px' }));
-cabVis.content.add(ui.Slider({ min: 0, max: 1, value: state.opacity,
-  style: { stretch: 'horizontal' },
-  onChange: function (v) { state.opacity = v; refreshMap(); } }));
-
-// ---------------------------------------------------------------------------
-// LEGENDAS — rampas de cor (com Mín/Máx global) + Uso e Cobertura (C11)
+// LEGENDAS — rampas de cor (Mín/Máx global + opacidade) + Uso e Cobertura (C11)
 // ---------------------------------------------------------------------------
 var visOverride = { min: null, max: null };
 function parseNum(v) { var n = parseFloat(v); return isNaN(n) ? null : n; }
@@ -197,16 +186,21 @@ rampControls.add(ui.Label('Mín:', ctrlLbl)).add(tbMin)
   .add(ui.Label('Máx:', ctrlLbl)).add(tbMax);
 cabRamp.content.add(rampControls);
 
+// Opacidade (movida da antiga gaveta VISUALIZAÇÃO)
+var opacityRow = ui.Panel({ layout: ui.Panel.Layout.flow('horizontal'),
+  style: { margin: '0px', padding: '1px', backgroundColor: '#f5f5f5' } });
+opacityRow.add(ui.Label('Opacidade:', ctrlLbl));
+opacityRow.add(ui.Slider({ min: 0, max: 1, value: state.opacity,
+  style: { stretch: 'horizontal' },
+  onChange: function (v) { state.opacity = v; refreshMap(); } }));
+cabRamp.content.add(opacityRow);
+
 var rampBody = ui.Panel({ style: { margin: '0px', padding: '0px' } });
 cabRamp.content.add(rampBody);
 
-// Uso e Cobertura (C11) — mais abaixo, na mesma gaveta de legendas.
-cabRamp.content.add(ui.Label('Uso e Cobertura (C11)',
-  { fontSize: '11px', fontWeight: 'bold', margin: '4px 2px 1px 2px' }));
-cabRamp.content.add(UI.legendPanel(Object.keys(LC.LULC_LEGEND).map(function (code) {
-  return { color: LC.LULC_LEGEND[code].cor,
-    label: LC.LULC_LEGEND[code].nome + ' (' + code + ')' };
-})));
+// Uso e Cobertura (C11) — ABAIXO das rampas, só quando o C11 estiver ligado.
+var lulcBody = ui.Panel({ style: { margin: '0px', padding: '0px' } });
+cabRamp.content.add(lulcBody);
 
 // ---------------------------------------------------------------------------
 // PAINEL DIREITO · grade de miniaturas (camada × território)
@@ -303,37 +297,51 @@ function refreshMap() {
   if (thumbsVisible) thumbs.update();
 }
 
-/** Legenda de rampa: uma barra por rampa distinta entre as camadas marcadas. */
+/** Legenda: uma barra por rampa distinta + LULC (C11) se ligado. */
 function refreshRamps() {
   rampBody.clear();
   var seen = {};
   var order = [];
+  var lulcOn = false;
   available.forEach(function (l) {
     if (!state.layers[l.id]) return;
-    if (l.tipo === 'lulc' || !l.vis || !l.vis.palette) return;
+    if (l.tipo === 'lulc') { lulcOn = true; return; }
+    if (!l.vis || !l.vis.palette) return;
     var key = [l.unit || '', l.vis.min, l.vis.max,
       l.vis.palette.join(',')].join('|');
     if (seen[key]) { seen[key].names.push(l.nome); return; }
     seen[key] = { layer: l, names: [l.nome] };
     order.push(key);
   });
+
   if (!order.length) {
     rampBody.add(ui.Label(
       'Marque camadas contínuas (resultados/referências) para ver a rampa.',
       { fontSize: '10px', color: '#888', margin: '2px' }));
-    return;
+  } else {
+    order.forEach(function (k) {
+      var g = seen[k];
+      var l = g.layer;
+      var vis = applyOverride(l.vis);
+      var title = g.names.length === 1 ? g.names[0]
+        : g.names[0] + '  (+' + (g.names.length - 1) + ')';
+      rampBody.add(UI.colorBarLegend({
+        title: title, unit: l.unit, min: vis.min, max: vis.max,
+        palette: vis.palette
+      }));
+    });
   }
-  order.forEach(function (k) {
-    var g = seen[k];
-    var l = g.layer;
-    var vis = applyOverride(l.vis);
-    var title = g.names.length === 1 ? g.names[0]
-      : g.names[0] + '  (+' + (g.names.length - 1) + ')';
-    rampBody.add(UI.colorBarLegend({
-      title: title, unit: l.unit, min: vis.min, max: vis.max,
-      palette: vis.palette
-    }));
-  });
+
+  // Legenda do Uso e Cobertura (C11) — abaixo das rampas, só se estiver ligado.
+  lulcBody.clear();
+  if (lulcOn) {
+    lulcBody.add(ui.Label('Uso e Cobertura (C11)',
+      { fontSize: '11px', fontWeight: 'bold', margin: '4px 2px 1px 2px' }));
+    lulcBody.add(UI.legendPanel(Object.keys(LC.LULC_LEGEND).map(function (code) {
+      return { color: LC.LULC_LEGEND[code].cor,
+        label: LC.LULC_LEGEND[code].nome + ' (' + code + ')' };
+    })));
+  }
 }
 
 print('MAPBIOMAS-CARBONO · toolkit view/v00 · run_view');
