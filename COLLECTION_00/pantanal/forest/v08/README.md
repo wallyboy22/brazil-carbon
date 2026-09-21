@@ -82,7 +82,6 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 | 4 | `4_spatial_prediction.js` | predição por célula/ano → PREDICTIONS/COL (mediana+std) |
 | 5 | `5_merge.js` | mosaico anual → `agc_pred_v08_merged_<ano>` |
 | 6 | `6_qualidade.js` | QA visual V03–V08 |
-| — | `archive/` | scripts obsoletos/substituídos (0_diagnose_tiles, 1_preflight, 2_0_check_footprint, 7_statistics) |
 
 ## 5. Ordem de execução
 

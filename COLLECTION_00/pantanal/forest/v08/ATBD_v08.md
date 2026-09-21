@@ -112,7 +112,6 @@ Fonte: `v08/0_contract.js`.
 | 4 | `4_spatial_prediction.js` | Predição por célula/ano → `PREDICTIONS/COL` (mediana + std) |
 | 5 | `5_merge.js` | Mosaico anual → `agc_pred_v08_merged_<ano>` |
 | 6 | `6_qualidade.js` | QA visual v03–v08 |
-| — | `archive/` | Scripts obsoletos/substituídos (`0_diagnose_tiles`, `1_preflight`, `2_0_check_footprint`, `7_statistics`) |
 
 **Notas de arquitetura**
 - A grade é `CELL_SPLIT = 4` (até ~256 células por `makeCellDefinitions`).
