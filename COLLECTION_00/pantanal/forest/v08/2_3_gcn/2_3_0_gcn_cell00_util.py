@@ -37,8 +37,8 @@ CONF = {
     "DRIVE_ROOT": "/content/drive/MyDrive/mapbiomas_carbono",
     # Versão do produto (prefixo do contexto): <VERSION>_<SOURCE>.
     "VERSION": "v08",
-    # Fonte de amostra: 'gedi' | 'ifn'. Se None, é DERIVADA dos CSVs; com fontes
-    # mistas na raiz, load_matrix() exige que você defina ('gedi' ou 'ifn').
+    # Fonte: 'gedi' | 'ifn' (fixa UMA) ou None = AUTO (roda TODAS as disponíveis,
+    # em sequência, nas células 02..06).
     "SOURCE": None,
     "MATRIX_DIR": "",           # (legado) CSVs da matriz na própria raiz do balde
     "FIG_DIR": "figures",       # (legado) base; fig_dir() prefixa com a fonte
@@ -100,16 +100,33 @@ def detect_sources() -> list[str]:
 
 
 def resolve_source():
-    """Fonte alvo AUTOMÁTICA: CONF['SOURCE'] ou a primeira disponível (com aviso)."""
-    if CONF.get("SOURCE"):
-        return CONF["SOURCE"]
+    """Fonte corrente: `CONF['SOURCE']` (None = não fixada)."""
+    return CONF.get("SOURCE") or None
+
+
+def sources_to_run() -> list:
+    """Fontes a processar: a fixada em `CONF['SOURCE']` ou TODAS as disponíveis.
+
+    A escolha do usuário é capturada UMA vez (`CONF['_USER_SOURCE']`) — o loop
+    das células grava `CONF['SOURCE']` (fonte corrente) e isso não deve mudar a
+    seleção nas células seguintes.
+
+    Com `CONF['SOURCE']=None` (auto), as células 02..06 rodam cada fonte
+    disponível (gedi/ifn), individualmente, em sequência.
+    """
+    if "_USER_SOURCE" not in CONF:
+        CONF["_USER_SOURCE"] = CONF.get("SOURCE")
+    choice = CONF["_USER_SOURCE"]
+    if choice:
+        return [choice]
     srcs = detect_sources()
     if not srcs:
-        return None
+        print("[AVISO] nenhuma fonte detectada — defina CONF['SOURCE'] ou " +
+              "exporte os CSVs (2_2_<fonte>_toDrive_matrix.js).")
+        return [None]
     if len(srcs) > 1:
-        print(f"[AVISO] fontes múltiplas {srcs} — usando '{srcs[0]}'. Defina " +
-              "CONF['SOURCE']='gedi'|'ifn' (ou rode a subetapa 2_3_0b) para escolher.")
-    return srcs[0]
+        print(f"[AUTO] fontes disponíveis {srcs} — rodando em sequência.")
+    return srcs
 
 
 def files_for_source(source: str) -> list[Path]:
@@ -188,14 +205,13 @@ def manifest() -> list[str]:
 # ---------------------------------------------------------------------------
 # Dados: leitura / limpeza da matriz (CSVs do Drive)
 # ---------------------------------------------------------------------------
-def load_matrix() -> pd.DataFrame:
+def load_matrix(source=None) -> pd.DataFrame:
     """Concatena os CSVs `agb_matrix_<SOURCE>_v*.csv` da fonte alvo.
 
-    AUTOMÁTICO: usa `CONF['SOURCE']`; se None, deriva da primeira fonte
-    disponível (com aviso). Lê o contexto ativo (`<VERSION>_<SOURCE>`) + a raiz
-    flat — nunca quebra por fontes mistas.
+    `source` (ou `CONF['SOURCE']`) seleciona a fonte; lê o contexto ativo
+    (`<VERSION>_<SOURCE>`) + a raiz flat — nunca quebra por fontes mistas.
     """
-    chosen = resolve_source()
+    chosen = source or resolve_source()
     if chosen is None:
         raise FileNotFoundError(
             f"Nenhum CSV de matriz em {CONF['DRIVE_ROOT']} (raiz ou subpastas). "
@@ -276,7 +292,9 @@ def spatial_blocks(df: pd.DataFrame, block_m: float = None) -> np.ndarray:
 # Thinning espacial (grade; mantém o footprint de menor agbd_se por célula)
 # ---------------------------------------------------------------------------
 def grid_thin(df: pd.DataFrame, cell_m: float = None) -> pd.DataFrame:
-    """Mantém, por célula de grade ~cell_m, o ponto de MENOR agbd_se.
+    """Mantém, por célula de grade ~cell_m, 1 ponto.
+
+    Com `agbd_se` (GEDI): o de MENOR agbd_se. Sem (IFN): a 1ª ocorrência.
     Objetivo (resposta B6): quebrar autocorrelação espacial e excesso de
     pontos redundantes antes do treino/validação."""
     cell_m = cell_m or CONF["THIN_M"]
@@ -286,7 +304,12 @@ def grid_thin(df: pd.DataFrame, cell_m: float = None) -> pd.DataFrame:
     g = gx * 1_000_000 + gy
     df = df.copy()
     df["_g"] = g
-    keep = df.loc[df.groupby("_g")[CONF["AGBD_SE"]].idxmin()].drop(columns="_g")
+    se = CONF["AGBD_SE"]
+    if se in df.columns:
+        keep = df.loc[df.groupby("_g")[se].idxmin()].drop(columns="_g")
+    else:
+        print(f"[THIN] sem '{se}' (fonte {CONF.get('SOURCE')}) → 1ª ocorrência por célula")
+        keep = df.drop_duplicates("_g", keep="first").drop(columns="_g")
     return keep.reset_index(drop=True)
 
 

@@ -50,11 +50,12 @@ As células do `2_3_gcn` resolvem o **contexto** (`<VERSION>_<SOURCE>`) a partir
 `<contexto>/figures/`. **Retrocompatível**: sem a reorg (raiz flat), lê a raiz e
 seleciona a fonte por `CONF["SOURCE"]`.
 
-> **Fonte de amostra (`CONF["SOURCE"]`)**: `'gedi'` | `'ifn'` — deve casar com o
-> `SOURCE` do `0_contract.js`. Se `None`, o `load_matrix()` **deriva
-> automaticamente** (com aviso, usando a 1ª fonte disponível) e lê o **contexto
-> ativo** + a raiz flat — não quebra por fontes mistas. Defina `SOURCE` (ou rode
-> a reorg 00b) para escolher com clareza.
+> **Fonte (`CONF["SOURCE"]`)**: `'gedi'` | `'ifn'` **fixa** uma fonte; **`None`
+> (auto) roda TODAS as fontes disponíveis**, cada célula (02..06) processando-as
+> em sequência e gravando em `<VERSION>_<SOURCE>/`. A escolha é capturada na 1ª
+> célula (`CONF['_USER_SOURCE']`). O gate é **genérico por fonte** (não há célula
+> de gedi/ifn); a IFN não tem `agbd_se` → o thinning usa a **1ª ocorrência** e o
+> **f3** plota resíduo × `agbd`.
 
 ## Biblioteca de figuras
 
