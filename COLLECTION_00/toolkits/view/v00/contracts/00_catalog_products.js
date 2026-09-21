@@ -41,7 +41,8 @@ exports.FOREST = [
   forest('v08_ifn', 'v08 (IFN)', FOREST_BASE + '/V08_IFN')
 ];
 
-/** Grassland — produtos anuais por versão (imagem única). */
+/** Grassland — produtos anuais existentes (imagem única).
+ *  NOTA: ANPP e v02 ainda não foram exportados → fora do catálogo por ora. */
 exports.GRASSLAND = [
   { id: 'v01_biomass', label: 'v01 biomassa',
     asset: GRASS_BASE + '/V01/BIOMASS/grassland_biomass_annual_v01_2023',
@@ -50,21 +51,5 @@ exports.GRASSLAND = [
   { id: 'v01_carbon', label: 'v01 carbono',
     asset: GRASS_BASE + '/V01/CARBON/grassland_carbon_stock_v01_2023',
     band: 'carbon_stock_MgC_ha', vis: { min: 0, max: 8,
-      palette: ['#fff7fb', '#d0d1e6', '#74a9cf', '#0570b0', '#034e7b'] } },
-  { id: 'v01_anpp', label: 'v01 ANPP',
-    asset: GRASS_BASE + '/V01/ANPP/grassland_anpp_annual_v01_2023',
-    band: 'anpp_annual', vis: { min: 0, max: 15,
-      palette: ['#f7fcf0', '#ccebc5', '#7bccc4', '#2b8cbe', '#084081'] } },
-  { id: 'v02_biomass', label: 'v02 biomassa (bioma)',
-    asset: GRASS_BASE + '/V02/BIOMASS/grassland_biomass_annual_v02_2023',
-    band: 'biomass_annual', vis: { min: 0, max: 15,
-      palette: ['#ffffe5', '#d9f0a3', '#78c679', '#31a354', '#006837'] } },
-  { id: 'v02_carbon', label: 'v02 carbono (bioma)',
-    asset: GRASS_BASE + '/V02/CARBON/grassland_carbon_stock_v02_2023',
-    band: 'carbon_stock_MgC_ha', vis: { min: 0, max: 8,
-      palette: ['#fff7fb', '#d0d1e6', '#74a9cf', '#0570b0', '#034e7b'] } },
-  { id: 'v02_anpp', label: 'v02 ANPP (bioma)',
-    asset: GRASS_BASE + '/V02/ANPP/grassland_anpp_annual_v02_2023',
-    band: 'anpp_annual', vis: { min: 0, max: 15,
-      palette: ['#f7fcf0', '#ccebc5', '#7bccc4', '#2b8cbe', '#084081'] } }
+      palette: ['#fff7fb', '#d0d1e6', '#74a9cf', '#0570b0', '#034e7b'] } }
 ];
