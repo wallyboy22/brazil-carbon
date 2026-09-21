@@ -49,12 +49,15 @@ CONF = {
     "LAT": "lat",
     "AGBD_SE": "agbd_se",
     "MIN_FEAT_NULL_RATE": 0.05,   # descarta banda com >5% de ausente
+    # --- escala do gate offline (a matriz GEDI tem ~1,6M linhas) ---
+    "SAMPLE_N": 150_000,          # máx. de linhas usadas no gate (None = todas)
     # --- CV espacial ---
     "BLOCK_M": 3000,              # blocos espaciais ~3 km (testes 1-5 km)
     # --- thinning ---
     "THIN_M": 75,                 # grade do thinning (60-90 m recomendado)
     # --- modelagem ---
-    "N_ESTIMATORS": 300,
+    "N_ESTIMATORS": 300,          # champion (cell05)
+    "N_ESTIMATORS_DIAG": 150,     # análises do gate (cell02/03) — mais leve
     "BAG_FRACTION": 0.632,
     "SEED_BASE": 2021,
     "MIN_LEAF_CANDIDATES": [5, 10, 20, 30],
@@ -63,6 +66,7 @@ CONF = {
     "TRAIN_FRACTION": 0.8,
     "CV_FOLDS": 5,
     "RANDOM_STATE": 2021,
+    "SVR_N": 20_000,              # SVR é O(n²): roda só numa subamostra (cell03)
 }
 _MANIFEST: list[str] = []  # registro de artefatos gerados nesta rodada
 
@@ -215,8 +219,28 @@ def load_matrix() -> pd.DataFrame:
     return df
 
 
+def subsample(df: pd.DataFrame, n=None, seed=None) -> pd.DataFrame:
+    """Subamostra determinística (`SAMPLE_N`) — mantém o gate leve em matrizes grandes.
+
+    O gate é validação/decisão (o treino de produção usa a matriz completa no GEE);
+    com `SAMPLE_N=None` usa todas as linhas.
+    """
+    n = n if n is not None else CONF.get("SAMPLE_N")
+    if not n or len(df) <= n:
+        return df
+    seed = seed if seed is not None else CONF["RANDOM_STATE"]
+    rng = np.random.default_rng(seed)
+    idx = np.sort(rng.choice(len(df), size=n, replace=False))
+    out = df.iloc[idx].reset_index(drop=True)
+    print(f"[AMOSTRA] gate: {len(df)} → {len(out)} linhas (SAMPLE_N={n})")
+    return out
+
+
 def clean_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Remove colunas de metadados, bandas quase vazias e linhas com alvo/geo ausentes."""
+    """Remove colunas de metadados, bandas quase vazias e linhas com alvo/geo ausentes.
+
+    Ao final aplica `subsample()` (SAMPLE_N) para escalar o gate.
+    """
     for col in ("system:index", "geometry", ".geo", "decimal", "_file"):
         if col in df.columns:
             df = df.drop(columns=col)
@@ -227,6 +251,7 @@ def clean_features(df: pd.DataFrame) -> pd.DataFrame:
     drop_feats = list(null_rate[null_rate > CONF["MIN_FEAT_NULL_RATE"]].index)
     df = df.drop(columns=drop_feats, errors="ignore")
     keep = df.dropna(subset=[CONF["TARGET"], CONF["LON"], CONF["LAT"]])
+    keep = subsample(keep)
     return keep, drop_feats
 
 
@@ -268,51 +293,56 @@ def grid_thin(df: pd.DataFrame, cell_m: float = None) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # Estatística espacial (Moran's I + variograma) — numpy/scipy
 # ---------------------------------------------------------------------------
-def _weights(coords_m: np.ndarray, band_m: float):
+def _pairs_within(coords_m: np.ndarray, band_m: float) -> np.ndarray:
+    """Pares de vizinhos (i<j) a menos de `band_m` metros (KDTree). O(n_pares)."""
     from scipy.spatial import cKDTree
     tree = cKDTree(coords_m)
-    pairs = np.array(list(tree.query_pairs(r=band_m)), dtype=int)
-    n = len(coords_m)
-    wij = np.zeros((n, n))
-    for i, j in pairs:
-        wij[i, j] = 1.0
-        wij[j, i] = 1.0
-    return wij, pairs
+    return np.array(list(tree.query_pairs(r=band_m)), dtype=int)
 
 
 def moran_i(resids: np.ndarray, coords_m: np.ndarray, band_m: float = 90.0,
             permutations: int = 199) -> tuple:
-    """Moran's I global (autocorrelação residual). Retorna (I, pseudo-p, n_pares)."""
+    """Moran's I global (autocorrelação residual) — O(n_pares), SEM matriz densa.
+
+    W binário (1 p/ vizinhos a < `band_m`). Retorna (I, pseudo-p, n_pares).
+    """
     n = len(resids)
     z = resids - resids.mean()
     zs = np.sum(z ** 2)
-    if zs == 0:
+    if zs == 0 or n < 2:
         return 0.0, 1.0, 0
-    W, pairs = _weights(coords_m, band_m)
-    S0 = float(W.sum())
-    if S0 == 0:
+    pairs = _pairs_within(coords_m, band_m)
+    if len(pairs) == 0:
         return 0.0, 1.0, 0
-    I = float((n / S0) * (z @ W @ z) / zs)
-    # permutação
+    i0, j0 = pairs[:, 0], pairs[:, 1]
+    S0 = 2.0 * len(pairs)                 # soma dos pesos (simétrico)
+    I = float((n / S0) * (2.0 * np.sum(z[i0] * z[j0])) / zs)
     rng = np.random.default_rng(CONF["RANDOM_STATE"])
     count = 0
     for _ in range(permutations):
-        z_perm = rng.permutation(z)
-        Ip = (n / S0) * (z_perm @ W @ z_perm) / np.sum(z_perm ** 2)
+        zp = rng.permutation(z)
+        Ip = (n / S0) * (2.0 * np.sum(zp[i0] * zp[j0])) / np.sum(zp ** 2)
         if Ip >= I:
             count += 1
     p = (count + 1) / (permutations + 1)
-    return I, p, int(len(pairs) / 2)
+    return I, p, int(len(pairs))
 
 
 def variogram(resids: np.ndarray, coords_m: np.ndarray, max_dist_m: float = 1500.0,
-              nbins: int = 15):
-    """Variograma de nuvem (semivariância média por faixa de distância)."""
+              nbins: int = 15, max_pairs: int = 2_000_000):
+    """Variograma de nuvem (semivariância média por faixa de distância).
+
+    Limita o nº de pares a `max_pairs` (amostragem determinística) para escalar.
+    """
     from scipy.spatial import cKDTree
     tree = cKDTree(coords_m)
     pairs = np.array(list(tree.query_pairs(r=max_dist_m)), dtype=int)
     if len(pairs) == 0:
         return np.array([]), np.array([])
+    if max_pairs and len(pairs) > max_pairs:
+        rng = np.random.default_rng(CONF["RANDOM_STATE"])
+        pairs = pairs[rng.choice(len(pairs), size=max_pairs, replace=False)]
+        print(f"[VARIO] pares limitados a {max_pairs} (de {len(pairs)})")
     d = np.sqrt(((coords_m[pairs[:, 0]] - coords_m[pairs[:, 1]]) ** 2).sum(axis=1))
     g = 0.5 * (resids[pairs[:, 0]] - resids[pairs[:, 1]]) ** 2
     bins = np.linspace(0, max_dist_m, nbins + 1)

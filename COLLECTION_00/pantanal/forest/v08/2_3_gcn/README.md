@@ -80,12 +80,20 @@ v08/2_3_gcn/figures_<SOURCE>/f2_correlacao_bandas.png
 | Chave | Padrão | O quê |
 |-------|--------|-------|
 | `VERSION` | `v08` | versão (prefixo do contexto `<VERSION>_<SOURCE>`) |
-| `SOURCE` | `None` | `'gedi'` \| `'ifn'`; `None` deriva dos CSVs (obrigatório se houver fontes mistas) |
+| `SOURCE` | `None` | `'gedi'` \| `'ifn'`; `None` deriva dos CSVs (1ª fonte, com aviso) |
+| `SAMPLE_N` | `150000` | máx. de linhas no gate (None = todas) — escala p/ a matriz GEDI (~1,6M) |
+| `N_ESTIMATORS_DIAG` | `150` | árvores nas análises do gate (cell02/03) |
+| `SVR_N` | `20000` | subamostra do SVR (O(n²)) |
 | `BLOCK_M` | 3000 m | blocos espaciais da CV (teste 1–5 km) |
-| `THIN_M` | 75 m | grade do thinning (teste 60–90 m) |
+| `THIN_M` | 75 m | grade do thinning (60–90 m recomendado) |
 | `MIN_LEAF_CANDIDATES` | `[5,10,20,30]` | varredura `minLeafPopulation` |
 | `N_MEMBERS` | 5 | membros do ensemble |
 | `BAND_FRACTION` | 0.8 | ~80% das bandas por membro |
+
+> **Escala:** o gate é validação/decisão — roda sobre uma **subamostra** (`SAMPLE_N`)
+> para não travar com a matriz GEDI (~1,6M linhas). O treino de produção
+> (`3_model_training`) usa a matriz **completa** no GEE. `moran_i` e `variogram`
+> foram reescritos sem matriz densa (O(n_pares)).
 
 ## Próximos passos
 

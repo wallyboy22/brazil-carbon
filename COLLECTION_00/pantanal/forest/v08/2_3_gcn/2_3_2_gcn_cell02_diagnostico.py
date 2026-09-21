@@ -62,10 +62,11 @@ print(f"[CORRELAÇÃO] pares com |r|>0.85: {red_m}")
 # --- RF baseline com CV espacial (blocos) → resíduos ------------------------
 cv = GroupKFold(n_splits=CONF["CV_FOLDS"])
 resid, ids_ = np.zeros(len(y)), np.zeros(len(y), dtype=bool)
-for tr, va in cv.split(X, y, df["_block"]):
-    m = RandomForestRegressor(n_estimators=CONF["N_ESTIMATORS"],
+for k, (tr, va) in enumerate(cv.split(X, y, df["_block"]), 1):
+    print(f"[BASELINE] fold {k}/{CONF['CV_FOLDS']} · treino={len(tr)} · val={len(va)}")
+    m = RandomForestRegressor(n_estimators=CONF["N_ESTIMATORS_DIAG"],
                               max_features="sqrt", min_samples_leaf=5,
-                              random_state=CONF["RANDOM_STATE"])
+                              n_jobs=-1, random_state=CONF["RANDOM_STATE"])
     m.fit(X.iloc[tr], y[tr])
     resid[va] = y[va] - m.predict(X.iloc[va])
     ids_[va] = True

@@ -45,10 +45,16 @@ n = len(y)
 print(f"[DADOS] n={n} · feats={X.shape[1]} · blocos={df['_block'].nunique()}")
 
 
-def blocked_cv(estimator, X_, y_, blocks, scale=False):
-    """CV espacial em blocos; retorna (rmse, pbias)."""
+def blocked_cv(estimator, X_, y_, blocks, scale=False, max_n=None):
+    """CV espacial em blocos; retorna (rmse, pbias). `max_n` subamostra (p/ SVR)."""
+    if max_n and len(y_) > max_n:
+        rng = np.random.default_rng(CONF["RANDOM_STATE"])
+        idx = np.sort(rng.choice(len(y_), size=max_n, replace=False))
+        X_, y_, blocks = X_.iloc[idx], y_[idx], blocks.iloc[idx]
+        print(f"[CV] subamostra p/ estimador pesado: n={max_n}")
     fold = []
-    for tr, va in cv.split(X_, y_, blocks):
+    for k, (tr, va) in enumerate(cv.split(X_, y_, blocks), 1):
+        print(f"[CV] fold {k}/{CONF['CV_FOLDS']} (n={len(y_)})")
         m = clone(estimator)
         Xtr, Xva = X_.iloc[tr], X_.iloc[va]
         if scale:
@@ -68,8 +74,8 @@ def linear_blocked_cv():
     folds = []
     for tr, va in cv.split(X, y, df["_block"]):
         m = RandomForestRegressor(
-            n_estimators=CONF["N_ESTIMATORS"], max_features="sqrt",
-            min_samples_leaf=5, random_state=CONF["RANDOM_STATE"])
+            n_estimators=CONF["N_ESTIMATORS_DIAG"], max_features="sqrt",
+            min_samples_leaf=5, n_jobs=-1, random_state=CONF["RANDOM_STATE"])
         m.fit(X.iloc[tr], y[tr])
         pred = m.predict(X.iloc[va])
         folds.append((y[va] - pred, y[va]))
@@ -80,8 +86,8 @@ def linear_blocked_cv():
 # --- f5: RF × GBM × SVR -----------------------------------------------------
 algs = {
     "RF (sqrt, leaf=5)": RandomForestRegressor(
-        n_estimators=CONF["N_ESTIMATORS"], max_features="sqrt",
-        min_samples_leaf=5, random_state=CONF["RANDOM_STATE"]),
+        n_estimators=CONF["N_ESTIMATORS_DIAG"], max_features="sqrt",
+        min_samples_leaf=5, n_jobs=-1, random_state=CONF["RANDOM_STATE"]),
     "GBM (lr=0.05, depth=4, n=120)": GradientBoostingRegressor(
         n_estimators=120, learning_rate=0.05, max_depth=4,
         random_state=CONF["RANDOM_STATE"]),
@@ -89,8 +95,9 @@ algs = {
 }
 res_algs = {}
 for name, est in algs.items():
-    rmse, pbias = blocked_cv(est, X, y, df["_block"],
-                             scale=(name.startswith("SVR")))
+    heavy = name.startswith("SVR")   # SVR é O(n²) → subamostra (SVR_N)
+    rmse, pbias = blocked_cv(est, X, y, df["_block"], scale=heavy,
+                             max_n=(CONF.get("SVR_N") if heavy else None))
     res_algs[name] = {"rmse": rmse, "pbias": pbias}
     print(f"[ALG] {name:38s} RMSE={rmse:6.2f} · bias={pbias:6.2f}%")
 
@@ -113,8 +120,9 @@ for frac in fractions:
         Xs, ys = X.iloc[idx], y[idx]
         flds = []
         for tr, va in cv.split(Xs, ys, df["_block"].iloc[idx].to_numpy()):
-            m = RandomForestRegressor(n_estimators=200, max_features="sqrt",
-                                      min_samples_leaf=5, random_state=seed)
+            m = RandomForestRegressor(n_estimators=100, max_features="sqrt",
+                                      min_samples_leaf=5, n_jobs=-1,
+                                      random_state=seed)
             m.fit(Xs.iloc[tr], ys[tr])
             flds.append(ys[va] - m.predict(Xs.iloc[va]))
         rmses.append(np.sqrt(np.mean(np.concatenate(flds) ** 2)))
@@ -129,9 +137,9 @@ save_fig(fig, "f6_curva_aprendizado.png")
 # --- f7: varredura minLeafPopulation -----------------------------------------
 sweep = {}
 for mlf in CONF["MIN_LEAF_CANDIDATES"]:
-    est = RandomForestRegressor(n_estimators=CONF["N_ESTIMATORS"],
+    est = RandomForestRegressor(n_estimators=CONF["N_ESTIMATORS_DIAG"],
                                 max_features="sqrt", min_samples_leaf=mlf,
-                                random_state=CONF["RANDOM_STATE"])
+                                n_jobs=-1, random_state=CONF["RANDOM_STATE"])
     rmse, pbias = blocked_cv(est, X, y, df["_block"])
     sweep[mlf] = {"rmse": rmse, "pbias": pbias}
     print(f"[MINLEAF] {mlf:3d} → RMSE={rmse:6.2f} · bias={pbias:6.2f}%")
