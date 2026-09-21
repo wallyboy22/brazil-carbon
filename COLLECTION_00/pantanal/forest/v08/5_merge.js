@@ -12,7 +12,7 @@ var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_covariate_source.js');
 var root = c.ASSET_ROOT + '/PREDICTIONS';
 var col = ee.ImageCollection(root + '/COL');
-var region = src.getBiome().geometry();
+var region = src.getDomain().geometry();
 
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 5_merge');
 c.YEARS.forEach(function (year) {

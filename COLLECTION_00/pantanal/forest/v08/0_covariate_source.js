@@ -32,8 +32,6 @@ var infra = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/covariate/_infra.js');
 var palsar = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/covariate/_palsar.js');
-var training = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/covariate/_training.js');
 var ens = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/covariate/_ensemble.js');
 var build_stack = require(
@@ -57,7 +55,6 @@ exports.FEATURE_BANDS = c.FEATURE_BANDS;
 exports.TARGET = c.TARGET;
 exports.CONTINUOUS_BANDS = c.CONTINUOUS_BANDS;
 exports.CATEGORICAL_BANDS = c.CATEGORICAL_BANDS;
-exports.TRAINING_MASKS = c.TRAINING_MASKS;
 exports.ENSEMBLE = c.ENSEMBLE;
 exports.makeTiles = c.makeTiles;
 exports.makeCellDefinitions = c.makeCellDefinitions;
@@ -72,17 +69,11 @@ exports.SAMPLE_PROPS = infra.SAMPLE_PROPS;
 
 // ---------------------------------------------------------------------------
 // Domínio BAP (Bacia do Alto Paraguai = Pantanal + Planalto)
-// União dos 3 polígonos do asset numa feição única com `domain = 'BAP'`,
-// para compatibilidade com as máscaras que filtram por propriedade.
-// `getBiome` é mantido como alias (scripts v08 chamam getBiome()).
+// União dos 3 polígonos do asset numa feição única com `domain = 'BAP'`.
 // ---------------------------------------------------------------------------
 exports.getDomain = function () {
   var geom = ee.FeatureCollection(c.BAP_ASSET).geometry();
   return ee.FeatureCollection([ee.Feature(geom, { domain: c.DOMAIN_NAME })]);
-};
-
-exports.getBiome = function () {
-  return exports.getDomain();
 };
 
 // ---------------------------------------------------------------------------
@@ -139,57 +130,11 @@ exports.getFootprints = function () {
 // PALSAR-2 global (FIX v08)
 // ---------------------------------------------------------------------------
 exports.buildPalsarGlobal = function (year) {
-  return palsar.buildPalsarGlobal(exports.getBiome(), year);
+  return palsar.buildPalsarGlobal(exports.getDomain(), year);
 };
 
 exports.getPalsarValidMask = function (year) {
-  return palsar.getPalsarValidMask(exports.getBiome(), year);
-};
-
-// ---------------------------------------------------------------------------
-// Máscaras de TREINO (LULC florestal AND extras) — NÃO mascara a predição
-// ---------------------------------------------------------------------------
-// [LEGADO — não usado pelo pipeline v08/BAP]
-// O filtro de treino agora é feito no 2_2 (mapbiomas_lulc ∈ FOREST_CLASSES +
-// notNull). As funções abaixo ficam apenas como referência/reuso futuro.
-// ---------------------------------------------------------------------------
-exports.getForestMask = function (year) {
-  return training.getForestMask({
-    lulcAsset: c.LULC_ASSET,
-    biomeFc: exports.getDomain(), biomeProp: c.DOMAIN_PROP, biomeName: c.DOMAIN_NAME,
-    forestClasses: c.FOREST_CLASSES
-  }, year);
-};
-
-// Registry de máscaras extras — v08 registra palsar_nodata (ver _metadata.js)
-var EXTRA_MASK_BUILDERS = {
-  palsar_nodata: function (def, year) {
-    return exports.getPalsarValidMask(year);
-  }
-  // Exemplo futuro:
-  // hand_dreno: function (def, year) { ... }
-};
-
-exports.getTrainingMask = function (year) {
-  return training.getTrainingMask({
-    lulcAsset: c.LULC_ASSET,
-    biomeFc: exports.getDomain(), biomeProp: c.DOMAIN_PROP, biomeName: c.DOMAIN_NAME,
-    forestClasses: c.FOREST_CLASSES,
-    trainingMasks: c.TRAINING_MASKS,
-    extraBuilders: EXTRA_MASK_BUILDERS
-  }, year);
-};
-
-exports.applyTrainingMask = function (fc, year) {
-  return training.applyTrainingMask({
-    lulcAsset: c.LULC_ASSET,
-    biomeFc: exports.getDomain(), biomeProp: c.DOMAIN_PROP, biomeName: c.DOMAIN_NAME,
-    forestClasses: c.FOREST_CLASSES,
-    trainingMasks: c.TRAINING_MASKS,
-    extraBuilders: EXTRA_MASK_BUILDERS,
-    sampleProps: exports.getSampleProps(),
-    scale: c.SCALE
-  }, fc, year);
+  return palsar.getPalsarValidMask(exports.getDomain(), year);
 };
 
 // ---------------------------------------------------------------------------

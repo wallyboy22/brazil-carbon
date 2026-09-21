@@ -52,8 +52,7 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 3. Filtro de TREINO no `2_2` (por célula): `mapbiomas_lulc ∈ {3,4,6,7,49}` +
    `notNull(FEATURE_BANDS)`. A antiga máscara de imagem `palsar_nodata` foi
    **removida** (era redundante com o `notNull` e cara — forçava o compósito
-   PALSAR no `2_1`). A predição continua NÃO mascarada por LULC
-   (`MASK_MODE='training_only'`).
+   PALSAR no `2_1`). A predição NÃO é mascarada por LULC.
 
 ## 3. Diferenças vs v07
 

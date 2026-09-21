@@ -1,38 +1,40 @@
 /******************************************************************************
  * MAPBIOMAS-CARBONO — Pantanal Forest v08 · Contrato (autossuficiente)
- * ---------------------------------------------------------------------------
- * Política de contratos (decidida em set/2026): cada versão escreve TODOS os
- * termos próprios — sem require de versão anterior. O bloco comum (schema de
- * bandas + grade) é a referência da v03 (0_contract.js) copiada literalmente;
- * contexto geoespacial e parametrização vêm da cadeia v07→v06→v03, mas são
- * reafirmados aqui como contrato próprio da v08.
+ * ===========================================================================
+ * RESUMO
+ *   Estimativa de AGBD (biomassa acima do solo, t/ha) para florestas da Bacia
+ *   do Alto Paraguai (BAP = Pantanal + Planalto), a partir de amostras GEDI ou
+ *   IFN e um stack de 36 covariáveis, com ensemble RF (N=5). Este arquivo é a
+ *   ÚNICA fonte de verdade do pipeline: schema, grade, domínio, fonte de
+ *   amostra, filtro de treino e hiperparâmetros.
  *
- * Estratégia v08 (fix do artefato de excesso de carbono pós-v07):
- *   - PALSAR-2 reconstruído como mosaico GLOBAL determinístico (não célula a
- *     célula): `JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH` combinado por MEDIANA sobre
- *     as observações válidas do ano, com DN <= 0 mascarado como nodata;
- *   - filtro de TREINO aplicado no 2_2, POR CÉLULA, direto nas covariáveis:
- *     floresta (mapbiomas_lulc ∈ FOREST_CLASSES) + notNull(FEATURE_BANDS);
- *   - demais decisões herdadas INTEGRALMENTE da v07 (champion + ensemble):
- *     minLeafPopulation 10, variablesPerSplit 6, linear, N=5 membros,
- *     predição não mascarada;
- *   - stats/QA herdados (comparativo entre versões montado offline no
- *     statistics_gcn, a partir dos stats_forest_* do GEE).
+ * JUSTIFICATIVA (por que assim)
+ *   - Modelo GLOBAL único (não por célula): evita descontinuidades de borda;
+ *     a matriz agrega todas as células.
+ *   - PALSAR como mosaico GLOBAL por mediana (não `.first()` por célula):
+ *     elimina os platôs alinhados à grade que causavam excesso de carbono.
+ *   - Filtro de treino no 2_2 (floresta + notNull): a máscara de imagem
+ *     `palsar_nodata` era redundante com o notNull e cara — foi removida.
+ *   - Grade em bbox (não CIM): mantém compatibilidade com v03–v07.
+ *   - Unidade: sempre TONELADA (t/ha); nunca megagrama.
  *
- * Delta vs v07:
- *   + PALSAR global por mediana (0_covariate_source.js, buildPalsarGlobal);
- *   + filtro de treino (floresta + notNull) movido para o 2_2 (por célula) —
- *     a máscara de imagem `palsar_nodata` foi removida (redundante e cara);
- *   + domínio BAP (Bacia do Alto Paraguai) substitui o bioma Pantanal;
- *   + caminhos próprios (ASSET_ROOT V08).
- *   Parametrização do modelo NÃO mudou (champion/ensemble idênticos à v07).
+ * DELTA vs v07
+ *   + PALSAR global por mediana; + domínio BAP; + multi-fonte (GEDI/IFN);
+ *   + filtro de treino no 2_2; + caminhos próprios (V08_GEDI/V08_IFN).
+ *   Modelo (champion/ensemble) idêntico à v07; SEM log-target (linear).
+ *
+ * POLÍTICA DE CONTRATOS (set/2026): cada versão escreve TODOS os termos
+ * próprios — sem require de versão anterior. O bloco comum (schema + grade)
+ * é a referência da v03 copiada literalmente.
  ******************************************************************************/
 
 exports.VERSION = 'v08';
 
-// =========================================================================
-// Bloco 1 — Schema de covariáveis [definido v03; ref: v03/0_contract.js]
-// =========================================================================
+// ===========================================================================
+// Bloco 1 — SCHEMA de covariáveis [ref: v03/0_contract.js]
+//   36 bandas = 24 HLS (6 índices × P10/P50/P90/AMP) + 4 PALSAR + 2 HAND
+//   + 5 ERA5/CWD + 1 MapBiomas C11. Contínuas em Float32; categorias Uint8.
+// ===========================================================================
 exports.CONTINUOUS_BANDS = [
   'NDVI_p10', 'EVI_p10', 'NDMI_p10', 'BAI_p10', 'SAVI_p10', 'BSI_p10',
   'NDVI_p50', 'EVI_p50', 'NDMI_p50', 'BAI_p50', 'SAVI_p50', 'BSI_p50',
@@ -44,12 +46,15 @@ exports.CONTINUOUS_BANDS = [
 
 exports.CATEGORICAL_BANDS = ['geomorph_class', 'mapbiomas_lulc'];
 exports.FEATURE_BANDS = exports.CONTINUOUS_BANDS.concat(exports.CATEGORICAL_BANDS);
-exports.TARGET = 'agbd';
+exports.TARGET = 'agbd';   // alvo do modelo (t/ha); carbono derivado no stats
 
-// =========================================================================
-// Bloco 2 — Grade de células espaciais [definido v03]
-// =========================================================================
-exports.PANTANAL_BBOX = [
+// ===========================================================================
+// Bloco 2 — GRADE de células espaciais (bbox) [ref: v03]
+//   Grade regular em graus: 4×4 tiles (Y_EDGES × X_EDGES) subdivididos em
+//   `split²` células. `makeTiles` deriva o id do índice (nº de colunas =
+//   X_EDGES.length-1) — não há mais magic `*4`.
+// ===========================================================================
+exports.DOMAIN_BBOX = [
   -60.678789762675464, -22.813804973745906,
   -52.548906950175464, -12.958681301038263
 ];
@@ -60,11 +65,12 @@ exports.Y_EDGES = [-22.813804973745906, -20.350024, -17.886244,
   -15.422463, -12.958681301038263];
 
 exports.makeTiles = function () {
+  var ncols = exports.X_EDGES.length - 1;
   var tiles = [];
   for (var y = 0; y < exports.Y_EDGES.length - 1; y++) {
-    for (var x = 0; x < exports.X_EDGES.length - 1; x++) {
+    for (var x = 0; x < ncols; x++) {
       tiles.push({
-        id: 'tile' + ('00' + (y * 4 + x + 1)).slice(-2),
+        id: 'tile' + ('00' + (y * ncols + x + 1)).slice(-2),
         bbox: [exports.X_EDGES[x], exports.Y_EDGES[y],
           exports.X_EDGES[x + 1], exports.Y_EDGES[y + 1]]
       });
@@ -100,32 +106,26 @@ exports.makeCellFeatures = function (split) {
   }));
 };
 
-// =========================================================================
-// Bloco 3 — Ano de referência e de treino
-// =========================================================================
+// ===========================================================================
+// Bloco 3 — ANO de referência e de treino
+// ===========================================================================
 exports.YEAR = 2023;
 exports.YEARS = [2023];
 exports.TRAIN_YEARS = [2023];
 
-// =========================================================================
-// Bloco 4 — Filtro de TREINO [evolução v08/BAP]
-// O filtro de treino é aplicado no 2_2, POR CÉLULA, direto nas covariáveis:
+// ===========================================================================
+// Bloco 4 — FILTRO de TREINO [aplicado no 2_2, por célula]
 //   · floresta: mapbiomas_lulc ∈ FOREST_CLASSES;
 //   · válidos:  notNull(FEATURE_BANDS) (cobre nodata do PALSAR etc.).
-// As máscaras de imagem (lulc_forest/palsar_nodata) saíram do pipeline:
-// `palsar_nodata` era redundante com o notNull e cara (forçava o compósito
-// PALSAR no 2_1). MASK_MODE/TRAINING_MASKS ficam por compatibilidade.
-// =========================================================================
-exports.MASK_MODE = 'training_only';
+//   A predição NÃO é mascarada por LULC.
+// ===========================================================================
 exports.FOREST_CLASSES = [3, 4, 6, 7, 49];
-exports.TRAINING_MASKS = [];
 
-// =========================================================================
-// Bloco 5 — Contexto geoespacial [domínio BAP desde v08/BAP]
-// O domínio deixou de ser o bioma Pantanal (IBGE) e passou a ser a Bacia do
-// Alto Paraguai (BAP = Pantanal + Planalto): asset de 3 polígonos
-// ('Pantanal', 'Planalto', 'BAP'), unidos numa feição única de domínio.
-// =========================================================================
+// ===========================================================================
+// Bloco 5 — DOMÍNIO geoespacial (BAP) + LULC
+//   Domínio = Bacia do Alto Paraguai (Pantanal + Planalto): asset de 3
+//   polígonos ('Pantanal','Planalto','BAP') unidos numa feição única.
+// ===========================================================================
 exports.BAP_ASSET = 'projects/ee-arcplan/assets/bap_pantanal_planalto';
 exports.DOMAIN_PROP = 'domain';
 exports.DOMAIN_NAME = 'BAP';
@@ -134,17 +134,17 @@ exports.LULC_ASSET =
   'mapbiomas_brazil_collection11_coverage_v3';
 exports.SCALE = 30;
 
-// =========================================================================
-// Bloco 5b — FONTE DE AMOSTRA [v08/BAP multi-fonte: gedi | ifn]
-// O pipeline é ÚNICO e parametrizado por `SOURCE`. Cada fonte tem raiz de
-// assets própria (sub-versão) e schema de amostra próprio; covariáveis e
-// hiperparâmetros são idênticos entre as variantes (comparação direta).
-//   · gedi — footprints GEDI L4A v2.1 sobre a BAP (footprint_bap_<ano>),
-//            alvo `agbd` (t/ha), peso w = 1/agbd_se²;
-//   · ifn  — parcelas IFN_2026_BR_PLOTS-v13 na BAP (floresta, centroide),
-//            alvo AGB_Mg_ha (t/ha) normalizado para `agbd`, sem agbd_se.
-// Para rodar a variante IFN: trocar SOURCE para 'ifn'.
-// =========================================================================
+// ===========================================================================
+// Bloco 6 — FONTE DE AMOSTRA [multi-fonte: gedi | ifn]
+//   O pipeline é ÚNICO e parametrizado por `SOURCE`. Cada fonte tem raiz de
+//   assets própria (sub-versão) e schema de amostra próprio; covariáveis e
+//   hiperparâmetros são idênticos entre as variantes (comparação direta).
+//     · gedi — footprints GEDI L4A v2.1 na BAP (footprint_bap_<ano>),
+//              alvo `agbd` (t/ha), peso w = 1/agbd_se²;
+//     · ifn  — parcelas IFN_2026_BR_PLOTS-v13 na BAP (floresta, centroide),
+//              alvo AGB_Mg_ha (t/ha) normalizado para `agbd`, sem agbd_se.
+//   Para rodar a variante IFN: trocar SOURCE para 'ifn'.
+// ===========================================================================
 var PANTANAL_FOREST = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/' +
   'COLLECTION_00/PANTANAL_FOREST';
 var BAP_FOOTPRINT_YEARS = [2019, 2020, 2021, 2022, 2023, 2024];
@@ -184,33 +184,21 @@ exports.SOURCE_CFG = exports.SOURCES[exports.SOURCE];
 exports.TRAIN_YEARS = exports.SOURCE_CFG.trainYears;
 exports.ASSET_ROOT = exports.SOURCE_CFG.assetRoot;
 
-// =========================================================================
-// Bloco 6 — CHAMPION [definido v07 (gate 10/09/2026); idêntico na v08]
-// A v08 altera COVARIADAS (PALSAR global) e TREINO (máscara palsar_nodata),
-// NÃO a parametrização. Se o gate offline da v08 indicar revisão, atualizar
-// aqui após 2_3_gcn.
-// =========================================================================
-exports.MIN_LEAF_POP = 10;        // champion v07: RMSE 52.21 t/ha (sweep best)
-exports.VARIABLES_PER_SPLIT = 6;  // sqrt(n_features)=sqrt(38)=6.16 → 6
-exports.LOG_TARGET = false;       // linear 52.26 < log 52.59 (champion v07)
-exports.SMEAR_FACTOR = 1.0;       // fator de Duan; inerte com LOG_TARGET=false
-exports.LOG_OFFSET = 1;           // 1 se target = ln(1+agbd), 0 se ln(agbd)
+// ===========================================================================
+// Bloco 7 — CHAMPION [gate v07, 10/09/2026; SEM log-target]
+//   Regularização direta do RF. RMSE ~52.2 t/ha (sweep offline).
+// ===========================================================================
+exports.MIN_LEAF_POP = 10;        // minLeafPopulation (regularização)
+exports.VARIABLES_PER_SPLIT = 6;  // ~sqrt(36) bandas por split
 
-// =========================================================================
-// Bloco 7 — ENSEMBLE [definido v07; resposta D15-17]
-// N=5 RF — seeds + 80% bandas + 80% linhas. Idêntico à v07.
-// =========================================================================
+// ===========================================================================
+// Bloco 8 — ENSEMBLE [resposta D15-17]
+//   N=5 RF — seeds distintas + ~80% das bandas + ~80% das linhas. Combinação
+//   por MEDIANA (predição) e stdDev (incerteza).
+// ===========================================================================
 exports.ENSEMBLE = {
   NUM_MEMBERS: 5,
   SEED_BASE: 2021,
   BAND_FRACTION: 0.8,
   TRAIN_FRACTION: 0.8
 };
-
-// =========================================================================
-// Bloco 8 — Células de auditoria / smoke test (F25)
-// Somente nelas as bandas membro do ensemble são preservadas no export
-// (m1..mN) além de median/std. Preencher com ids reais da grade após o
-// diagnóstico (0_diagnose_tiles.js) — ver também 4_spatial_prediction.
-// =========================================================================
-exports.SMOKE_CELLS = [];

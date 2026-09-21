@@ -26,17 +26,8 @@ var matrix = ee.FeatureCollection(assets.map(function (a) {
   return ee.FeatureCollection(a.id).select(c.FEATURE_BANDS.concat([c.TARGET]));
 })).flatten();
 
-// Objetivo: se LOG_TARGET, o modelo aprende z = ln(1+agbd) ou ln(agbd)
+// Alvo linear (sem log-target): o modelo aprende `agbd` diretamente.
 var target = c.TARGET;
-if (c.LOG_TARGET) {
-  matrix = matrix.map(function (f) {
-    var z = c.LOG_OFFSET === 1
-      ? ee.Number(f.get(c.TARGET)).add(1).log()
-      : ee.Number(f.get(c.TARGET)).log();
-    return f.set('agbd_log', z);
-  });
-  target = 'agbd_log';
-}
 
 // Export.classifier.toAsset não aceita 'overwrite' (API atual); para permitir
 // re-treino, o asset existente é removido antes do export.
@@ -78,8 +69,7 @@ function trainMember(i) {
     model_version: 'v08',
     ensemble_member: i
   });
-  var modelAsset = root + '/MODELS/rf_agc_v08_m' + i + '_' +
-    (c.LOG_TARGET ? 'log' : 'lin');
+  var modelAsset = root + '/MODELS/rf_agc_v08_m' + i;
   deleteModelAsset(modelAsset);
   print('[TASK]', modelAsset, '· bandas', bands.length, '· seed',
     c.ENSEMBLE.SEED_BASE + i);
@@ -90,8 +80,7 @@ function trainMember(i) {
 
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 3_model_training');
 print('[CHAMPION (v07 herdado)] minLeafPopulation =', c.MIN_LEAF_POP,
-  '· variablesPerSplit =', c.VARIABLES_PER_SPLIT,
-  '· log_target =', c.LOG_TARGET, '· log_offset =', c.LOG_OFFSET);
+  '· variablesPerSplit =', c.VARIABLES_PER_SPLIT);
 print('[ENSEMBLE] N =', N, '· seed_base =', c.ENSEMBLE.SEED_BASE,
   '· band_fraction =', c.ENSEMBLE.BAND_FRACTION,
   '· train_fraction =', c.ENSEMBLE.TRAIN_FRACTION);

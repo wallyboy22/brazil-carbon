@@ -63,7 +63,7 @@ Fonte: `v08/0_contract.js`.
 - `ee.Classifier.smileRandomForest`, modo `REGRESSION`, `numberOfTrees = 300`.
 - Regularização: `minLeafPopulation = 10` (champion herdado da v07),
   `variablesPerSplit = 6` (~sqrt(36)).
-- Alvo linear (`LOG_TARGET = false`); `SMEAR_FACTOR = 1.0` (fator de Duan inerte).
+- Alvo **linear** (sem log-target): `classify` devolve AGBD (t/ha) direto.
 - `bagFraction = 0.8` (~80% das linhas por árvore, via bootstrap).
 
 ### 3.3 Ensemble de predições
@@ -92,7 +92,7 @@ Fonte: `v08/0_contract.js`.
   - `gedi` — footprints GEDI L4A v2.1 sobre a BAP (`SAMPLES/footprint_bap_<ano>`,
     gerados por `2_0_export_footprint_bap.js`, multi-ano 2019–2024);
   - `ifn` — parcelas `IFN_2026_BR_PLOTS-v13` na BAP (floresta, centroide).
-- **Filtro de treino** (`MASK_MODE = 'training_only'`), aplicado no `2_2` por célula:
+- **Filtro de treino**, aplicado no `2_2` por célula:
   - floresta — `mapbiomas_lulc ∈ {3,4,6,7,49}`;
   - válidos — `notNull(FEATURE_BANDS)` (descarta nodata do PALSAR etc.).
   - Não é aplicado à saída da predição.

@@ -41,7 +41,7 @@ var GEDI_SELECTORS = [
   'shot_number', 'delta_time'
 ];
 
-var DOMAIN = src.getBiome().geometry();
+var DOMAIN = src.getDomain().geometry();
 
 // ---------------------------------------------------------------------------
 // Filtros GEDI L4A v2.1

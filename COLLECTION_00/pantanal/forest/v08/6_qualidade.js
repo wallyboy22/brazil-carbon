@@ -62,9 +62,8 @@ function yearImage(p, year) {
 }
 
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 6_qualidade');
-print('[CLASSES TREINO]', c.FOREST_CLASSES,
-  '· [MASK MODE]', c.MASK_MODE, '(não mascara a predição)');
-print('[FIX] v08 usa PALSAR global — comparar platôs por célula vs v07');
+print('[CLASSES TREINO]', c.FOREST_CLASSES, '(a predição não é mascarada)');
+print('[FIX] v08 usa PALSAR global — comparar com v07');
 
 col.size().evaluate(function (n) {
   print('[V08 COL · predições de célula]', n);
@@ -87,14 +86,17 @@ c.YEARS.forEach(function (year) {
     }
   });
 
-  // v08 também expõe a incerteza do ensemble (stdDev dos membros)
-  try {
-    var v08img = yearImage(VERSIONS[5], year);
-    Map.addLayer(v08img.select('agbd_std_' + year), STD_VIS,
-      'V08_std_' + year, false);
-  } catch (e) {
-    print('[AVISO] V08 · banda agbd_std_' + year + ' não disponível');
-  }
+  // v08 expõe a incerteza do ensemble (stdDev) por sub-versão
+  VERSIONS.filter(function (p) { return p.v.indexOf('v08') === 0; })
+    .forEach(function (p) {
+      try {
+        var img = yearImage(p, year);
+        Map.addLayer(img.select('agbd_std_' + year), STD_VIS,
+          p.v.toUpperCase() + '_std_' + year, false);
+      } catch (e) {
+        print('[AVISO]', p.v, '· agbd_std_' + year + ' indisponível');
+      }
+    });
   col.filter(ee.Filter.eq('year', year)).size().evaluate(function (n) {
     print('[QA ' + year + '] v08 · imagens (células):', n);
   });

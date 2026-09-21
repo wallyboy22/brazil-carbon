@@ -18,10 +18,9 @@ print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 1_check');
 print('[FONTE]', c.SOURCE, '·', c.SOURCE_CFG.label);
 print('[DOMÍNIO]', c.BAP_ASSET);
 print('[MODELO]', 'v08 · ensemble RF N=' + c.ENSEMBLE.NUM_MEMBERS +
-  ', minLeaf=' + c.MIN_LEAF_POP + ', log=' + c.LOG_TARGET);
+  ', minLeaf=' + c.MIN_LEAF_POP);
 print('[FOREST_CLASSES]', c.FOREST_CLASSES);
 print('[FILTRO] floresta (mapbiomas_lulc ∈ FOREST_CLASSES) + notNull(FEATURE_BANDS) → no 2_2');
-print('[MASK MODE]', c.MASK_MODE, '— a predição NÃO é mascarada por LULC');
 print('[FEATURE_BANDS]', c.FEATURE_BANDS);
 print('[CONTINUOUS_BANDS]', c.CONTINUOUS_BANDS);
 print('[CATEGORICAL_BANDS]', c.CATEGORICAL_BANDS);
@@ -40,7 +39,7 @@ if (c.SOURCE === 'gedi') {
 // --- floresta + stack numa célula-amostra (recorte pequeno) -----------------
 var cell = c.makeCellDefinitions(4)[0];
 var AOI = ee.Geometry.BBox(cell.bbox[0], cell.bbox[1], cell.bbox[2], cell.bbox[3])
-  .intersection(src.getBiome().geometry(), ee.ErrorMargin(30));
+  .intersection(src.getDomain().geometry(), ee.ErrorMargin(30));
 var stack = src.buildTypedCovariatesStack(AOI, c.YEAR);
 var forestMask = stack.select('mapbiomas_lulc')
   .remap(c.FOREST_CLASSES, c.FOREST_CLASSES.map(function () { return 1; }), 0)

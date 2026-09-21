@@ -18,12 +18,16 @@ var src = require(
 var CELL_SPLIT = 4;
 var TILE_SCALE = 16;
 var matrixRoot = c.ASSET_ROOT + '/MATRIX';
-var biome = src.getBiome().geometry();
+var biome = src.getDomain().geometry();
 // Pasta raiz no Google Drive destino do CSV (Export.table.toDrive).
 // NOTA: o GEE NÃO cria subpastas — o caminho vira um nome único de pasta.
 // Usamos um folder SIMPLES de um nível; a raiz do "balde" (MyDrive/mapbiomas_carbono)
 // é o mesmo DRIVE_ROOT usado pelas células do 2_3_gcn (CONF["DRIVE_ROOT"]).
 var DRIVE_ROOT = 'mapbiomas_carbono';
+
+// Toggles de destino: ASSET (treino) e/ou DRIVE CSV (gate offline/figures).
+var EXPORT_TO_ASSET = true;
+var EXPORT_TO_DRIVE = true;
 
 var points = {};
 c.TRAIN_YEARS.forEach(function (y) {
@@ -87,14 +91,18 @@ function exportCell(id) {
     var name = 'agc_matrix_' + c.SOURCE + '_v08_' + id + '_' + year;
     print('[TASK]', name);
     // ASSET (server-side, para o treino)
-    Export.table.toAsset({ collection: sampled,
-      description: 'WS_CARBONO_toAsset-' + name,
-      assetId: matrixRoot + '/' + name });
+    if (EXPORT_TO_ASSET) {
+      Export.table.toAsset({ collection: sampled,
+        description: 'WS_CARBONO_toAsset-' + name,
+        assetId: matrixRoot + '/' + name });
+    }
     // DRIVE (CSV, para o gate offline / figures)
-    Export.table.toDrive({ collection: sampled,
-      description: 'WS_CARBONO_toDrive-' + name,
-      folder: DRIVE_ROOT, fileNamePrefix: name,
-      fileFormat: 'CSV' });
+    if (EXPORT_TO_DRIVE) {
+      Export.table.toDrive({ collection: sampled,
+        description: 'WS_CARBONO_toDrive-' + name,
+        folder: DRIVE_ROOT, fileNamePrefix: name,
+        fileFormat: 'CSV' });
+    }
   });
 }
 

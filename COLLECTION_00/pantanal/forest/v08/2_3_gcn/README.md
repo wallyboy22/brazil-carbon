@@ -57,8 +57,7 @@ v08/2_3_gcn/figures_<SOURCE>/f2_correlacao_bandas.png
 
 1. Abra `champion.json` (gerado pela célula 05).
 2. Copie os valores para o topo de `v08/0_contract.js`
-   (`MIN_LEAF_POP`, `VARIABLES_PER_SPLIT`, `LOG_TARGET`, `LOG_OFFSET`,
-   `SMEAR_FACTOR`, `ENSEMBLE`).
+   (`MIN_LEAF_POP`, `VARIABLES_PER_SPLIT`, `ENSEMBLE`).
 3. Rode no GEE: `3_model_training.js` → `4_spatial_prediction.js`.
 
 ## Configuração rápida (célula `2_3_0_gcn_cell00_util.py`)
