@@ -13,16 +13,20 @@ Rodar `run/run_view.js` no Code Editor. O painel esquerdo permite:
 - **LEGENDA · RAMPA DE COR**: barra de cor (unidade + extremos + cores) para
   cada rampa distinta entre as camadas marcadas (resultados/referências).
 
+> As camadas **Forest** aparecem como **`Pantanal Forest vXX`** (produto do
+> Pantanal). Camadas cujo asset ainda **não existe** (ex.: `v08 GEDI/IFN`) são
+> **ignoradas** automaticamente — o app só lista o que existe.
+
 No cabinet **CAMADAS** há dois toggles:
 - **MAP ON/OFF**: mostra/esconde todas as camadas do mapa;
 - **THUMBNAILS ON/OFF**: abre o painel direito (SplitPanel) com a grade de
   miniaturas cruzando **camada × território** (só os itens marcados), com
   controles de dimensão, tamanho, layout (permutações dos eixos), inverter e
-  limpar memória.
+  limpar memória. O título de cada miniatura mostra **camada · território**.
 
 > `run/run_simple.js` é um script **standalone** (sem `require`, só endereços de
 > assets + plot), independente do toolkit — para um mapa rápido de todas as
-> camadas, sem UI.
+> camadas, sem UI. Também **ignora** assets inexistentes.
 
 ## Estrutura
 ```
@@ -34,7 +38,7 @@ contracts/
   00_catalog_references.js   # 17 mapas de referência
   00_catalog_layers.js       # registry de CAMADAS (compõe os catálogos)
 engine/
-  module_infra.js            # assetExists
+  module_infra.js            # assetExists (getAsset) + filterExisting
   module_regions.js          # território: featuresFor (FC) + boundsFor
   module_layers.js           # build/mask da imagem de exibição
 run/

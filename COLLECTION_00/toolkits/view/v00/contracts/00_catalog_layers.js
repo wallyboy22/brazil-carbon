@@ -21,7 +21,7 @@ var LAYERS = [];
 // ---- Resultados: Forest (todas as versões) ----------------------------------
 PROD.FOREST.forEach(function (v) {
   LAYERS.push({ id: 'res_forest_' + v.id, grupo: 'Resultados · Forest',
-    nome: 'Forest ' + v.label, tipo: 'resultado',
+    nome: 'Pantanal Forest ' + v.label, tipo: 'resultado',
     col: v.col, band: v.band, stdBand: v.stdBand, year: v.year,
     unit: v.unit, vis: v.vis });
 });
@@ -50,16 +50,19 @@ REF.REFERENCES.forEach(function (r) {
 
 exports.LAYERS = LAYERS;
 
-/** Camadas agrupadas na ordem de exibição. */
-exports.GROUPS = (function () {
+/** Agrupa um array de camadas na ordem de exibição. */
+exports.grouped = function (layers) {
   var order = [];
   var byGroup = {};
-  LAYERS.forEach(function (l) {
+  (layers || []).forEach(function (l) {
     if (!byGroup[l.grupo]) { byGroup[l.grupo] = []; order.push(l.grupo); }
     byGroup[l.grupo].push(l);
   });
   return order.map(function (g) { return { grupo: g, camadas: byGroup[g] }; });
-})();
+};
+
+/** Camadas agrupadas na ordem de exibição. */
+exports.GROUPS = exports.grouped(LAYERS);
 
 /** Busca por id. */
 exports.byId = function (id) {

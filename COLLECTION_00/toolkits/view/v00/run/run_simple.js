@@ -43,13 +43,13 @@ var LULC = 'projects/mapbiomas-public/assets/brazil/lulc/collection11/' +
 // col = ImageCollection COL (mosaico do ano) · img = imagem · mask_lt = nodata.
 var LAYERS = [
   // Forest (v03–v08)
-  { n: 'Forest v03', col: PF + '/V03/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
-  { n: 'Forest v04', col: PF + '/V04/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
-  { n: 'Forest v05', col: PF + '/V05/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
-  { n: 'Forest v06', col: PF + '/V06/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
-  { n: 'Forest v07', col: PF + '/V07/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
-  { n: 'Forest v08 GEDI', col: PF + '/V08_GEDI/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
-  { n: 'Forest v08 IFN', col: PF + '/V08_IFN/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
+  { n: 'Pantanal Forest v03', col: PF + '/V03/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
+  { n: 'Pantanal Forest v04', col: PF + '/V04/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
+  { n: 'Pantanal Forest v05', col: PF + '/V05/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
+  { n: 'Pantanal Forest v06', col: PF + '/V06/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
+  { n: 'Pantanal Forest v07', col: PF + '/V07/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
+  { n: 'Pantanal Forest v08 GEDI', col: PF + '/V08_GEDI/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
+  { n: 'Pantanal Forest v08 IFN', col: PF + '/V08_IFN/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
   // Grassland (v01)
   { n: 'Grass v01 biomassa', img: PG + '/V01/BIOMASS/grassland_biomass_annual_v01_2023', band: 'biomass_annual', vis: AGBD_VIS },
   { n: 'Grass v01 carbono', img: PG + '/V01/CARBON/grassland_carbon_stock_v01_2023', band: 'carbon_stock_MgC_ha', vis: AGBD_VIS },
@@ -78,8 +78,19 @@ var LAYERS = [
   { n: 'LULC C11 2023', img: LULC, band: 'classification_2023', vis: LULC_VIS }
 ];
 
-var count = 0;
+/** true se o asset existe (getAsset direto; não depende de listar a pasta). */
+function assetExists(id) {
+  try { ee.data.getAsset(id); return true; } catch (e) { return false; }
+}
+
+var count = 0, skipped = 0;
 LAYERS.forEach(function (l) {
+  var target = l.col || l.img;
+  if (!assetExists(target)) {
+    print('[AVISO] ausente (ignorada):', l.n, '\u2192', target);
+    skipped++;
+    return;
+  }
   var img = l.col
     ? ee.ImageCollection(l.col).filter(ee.Filter.eq('year', 2023)).mosaic()
     : ee.Image(l.img);
@@ -90,4 +101,5 @@ LAYERS.forEach(function (l) {
 });
 
 print('MAPBIOMAS-CARBONO · toolkit view/v00 · run_simple');
-print('[CAMADAS]', count, 'adicionadas (desligadas) — ligue no controle de camadas.');
+print('[CAMADAS]', count, 'adicionadas (desligadas) — ligue no controle de camadas.',
+  skipped ? ('· ' + skipped + ' ausentes ignoradas') : '');

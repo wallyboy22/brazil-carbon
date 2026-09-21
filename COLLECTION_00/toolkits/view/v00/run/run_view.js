@@ -22,6 +22,17 @@ var ICONS = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/ui/module_icons.js');
 var ML = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/ui/module_map_layers.js');
+var INFRA = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/v00/engine/module_infra.js');
+
+// Só camadas cujo asset EXISTE (pula o que ainda não foi exportado, ex.: v08).
+var available = LAY.LAYERS.filter(function (l) {
+  var target = l.col || l.asset;
+  if (INFRA.assetExists(target)) return true;
+  print('[AVISO] camada ausente (ignorada):', l.nome, '\u2192', target);
+  return false;
+});
+var availableGroups = LAY.grouped(available);
 
 Map.setOptions('SATELLITE');
 Map.setCenter(-52.0, -14.0, 4);   // visão Brasil (sem zoom por território)
@@ -87,7 +98,7 @@ var toggleRow = ui.Panel({ layout: ui.Panel.Layout.flow('horizontal'),
 toggleRow.add(mapToggleBtn).add(thumbToggleBtn);
 cabLayers.content.add(toggleRow);
 
-LAY.GROUPS.forEach(function (g) {
+availableGroups.forEach(function (g) {
   var sub = UI.createCabinet({ title: g.grupo, isOpen: false,
     indent: '2px 2px 2px 10px' });
   var drawer = UI.createLayerDrawer({
@@ -152,7 +163,7 @@ var thumbs = UI.createThumbnailGrid({
       image: LYR.masked(l, REG.featuresFor(state.level, [region])),
       vis: l.vis,
       bounds: REG.boundsFor(state.level, [region]),
-      label: vals.territorio.label
+      label: vals.camada.label + ' \u00B7 ' + vals.territorio.label
     };
   }
 });
@@ -210,7 +221,7 @@ function refreshMap() {
   mlayers.clear();
   var fc = REG.featuresFor(state.level, state.regions);
   var selected = [];
-  LAY.LAYERS.forEach(function (l) {
+  available.forEach(function (l) {
     if (!state.layers[l.id]) return;
     mlayers.update(l.id, LYR.masked(l, fc), l.vis, l.nome, state.opacity);
     selected.push({ id: l.id, label: l.nome });
@@ -229,7 +240,7 @@ function refreshRamps() {
   cabRamp.content.clear();
   var seen = {};
   var order = [];
-  LAY.LAYERS.forEach(function (l) {
+  available.forEach(function (l) {
     if (!state.layers[l.id]) return;
     if (l.tipo === 'lulc' || !l.vis || !l.vis.palette) return;
     var key = [l.unit || '', l.vis.min, l.vis.max,
@@ -257,7 +268,8 @@ function refreshRamps() {
 }
 
 print('MAPBIOMAS-CARBONO · toolkit view/v00 · run_view');
-print('[CAMADAS]', LAY.LAYERS.length, '·', LAY.GROUPS.length, 'grupos');
+print('[CAMADAS]', available.length, 'disponíveis de', LAY.LAYERS.length,
+  '·', availableGroups.length, 'grupos');
 print('[TERRITÓRIOS]', REG.order.join(', '));
 print('[ÍCONES] pacote:', ICONS.source() || 'fallback textual');
 
