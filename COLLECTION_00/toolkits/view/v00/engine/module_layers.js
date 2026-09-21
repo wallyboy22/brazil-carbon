@@ -23,11 +23,10 @@ exports.build = function (layer) {
   if (layer.nodata_le !== null && layer.nodata_le !== undefined) {
     img = img.updateMask(img.gt(layer.nodata_le));
   }
-  return img.rename('layer_' + layer.id);
+  return img;
 };
 
-/** Aplica máscara espacial (território selecionado). */
+/** Recorta a camada ao território selecionado. */
 exports.masked = function (layer, geom) {
-  return exports.build(layer).updateMask(ee.Image(0).paint(
-    ee.FeatureCollection([ee.Feature(geom)]), 1));
+  return exports.build(layer).clip(geom);
 };

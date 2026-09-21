@@ -31,7 +31,7 @@ LAY.GROUPS.forEach(function (g) {
   g.camadas.forEach(function (l) {
     var img = LYR.build(l);
     if (spatialMask) img = img.updateMask(spatialMask);
-    Map.addLayer(img, l.vis, g.grupo + ' · ' + l.nome, false);
+    Map.addLayer(img, l.vis, (g.grupo + ' · ' + l.nome).slice(0, 90), false);
     count++;
   });
 });

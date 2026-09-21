@@ -146,6 +146,6 @@ function refreshMap() {
 print('MAPBIOMAS-CARBONO · toolkit view/v00 · run_view');
 print('[CAMADAS]', LAY.LAYERS.length, '·', LAY.GROUPS.length, 'grupos');
 print('[TERRITÓRIOS]', REG.order.join(', '));
-print('[ÍCONES] pacote disponível:', ICONS.available());
+print('[ÍCONES] pacote:', ICONS.source() || 'fallback textual');
 
 setLevel('bioma');
