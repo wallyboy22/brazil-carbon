@@ -15,6 +15,7 @@ var LYR = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/v00/engine/module_layers.js');
 
 Map.setOptions('SATELLITE');
+Map.setCenter(-52.0, -14.0, 4);   // visão Brasil (sem zoom)
 
 // Recorte espacial (opcional). null = sem máscara. Default: bioma Pantanal.
 var DOMAIN = ee.FeatureCollection(LIM.BIOMES_FC)
@@ -34,8 +35,6 @@ LAY.GROUPS.forEach(function (g) {
     count++;
   });
 });
-
-Map.centerObject(ee.FeatureCollection([ee.Feature(DOMAIN || LIM.BIOMES_FC)]), 6);
 
 print('MAPBIOMAS-CARBONO · toolkit view/v00 · run_simple');
 print('[CAMADAS]', count, 'adicionadas (desligadas por padrão) —',

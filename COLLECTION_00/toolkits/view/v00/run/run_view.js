@@ -24,6 +24,7 @@ var ML = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/ui/module_map_layers.js');
 
 Map.setOptions('SATELLITE');
+Map.setCenter(-52.0, -14.0, 4);   // visão Brasil (sem zoom por território)
 
 var shell = UI.createAppShell({ title: 'MapBiomas Carbono · QA' });
 var activity = UI.createActivity(shell.activity);
@@ -140,7 +141,6 @@ function refreshMap() {
     if (!state.layers[l.id]) return;
     mlayers.update(l.id, LYR.masked(l, geom), l.vis, l.nome, state.opacity);
   });
-  Map.centerObject(ee.FeatureCollection([ee.Feature(geom)]), 6);
 }
 
 print('MAPBIOMAS-CARBONO · toolkit view/v00 · run_view');
