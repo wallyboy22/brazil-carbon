@@ -54,7 +54,6 @@ CONF = {
     "BAG_FRACTION": 0.632,
     "SEED_BASE": 2021,
     "MIN_LEAF_CANDIDATES": [5, 10, 20, 30],
-    "LOG_OFFSET": 1,              # 1 → target ln(1+agbd); 0 → ln(agbd)
     "N_MEMBERS": 5,
     "BAND_FRACTION": 0.8,
     "TRAIN_FRACTION": 0.8,
@@ -158,21 +157,6 @@ def spatial_blocks(df: pd.DataFrame, block_m: float = None) -> np.ndarray:
     gx = ((df[CONF["LON"]] * 111320.0 * np.cos(np.deg2rad(lat0))) // block_m).astype(int)
     gy = ((df[CONF["LAT"]] * 110574.0) // block_m).astype(int)
     return gx * 1_000_000 + gy
-
-
-def transform_target(y: np.ndarray, log_on: bool, offset: float = None):
-    offset = CONF["LOG_OFFSET"] if offset is None else offset
-    if log_on:
-        return np.log1p(y) if offset == 1 else np.log(y)
-    return y
-
-
-def inverse_target(pred_log: np.ndarray, smear: float, log_on: bool,
-                   offset: float = None):
-    offset = CONF["LOG_OFFSET"] if offset is None else offset
-    if log_on:
-        return np.exp(pred_log) * smear - (offset if offset == 1 else 0)
-    return pred_log
 
 
 # ---------------------------------------------------------------------------

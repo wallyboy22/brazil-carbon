@@ -44,16 +44,12 @@ X = df[FEATS].fillna(df[FEATS].median())
 y = df[CONF["TARGET"]].values
 
 # --- decisões ----------------------------------------------------------------
-log_on = state["log_eval"]["rmse_log"] < state["log_eval"]["rmse_linear"]
+# v08: alvo LINEAR (sem log-target) — não há decisão de log.
 min_leaf = state["min_leaf_best"]
-smear = float(np.exp(1.0))  # recalculado dentro do 3_model_training via Duan;
-                             # aqui registra-se apenas a decisão log
 
 champion = {
     "version": "v08",
-    "log_target": log_on,
-    "log_offset": state["log_eval"]["log_offset"],
-    "smear_factor": None,  # pré-definido pelo desenho do GEE (fator de Duan)
+    "log_target": False,
     "min_leaf_pop": int(min_leaf),
     "variables_per_split": "sqrt(n_features)",
     "ensemble": {
@@ -65,21 +61,19 @@ champion = {
     "metrics": {
         "rmse_cv_linear": state["log_eval"]["rmse_linear"],
         "bias_cv_linear": state["log_eval"]["bias_linear"],
-        "rmse_cv_log": state["log_eval"]["rmse_log"],
-        "bias_cv_log": state["log_eval"]["bias_log"],
         "rmse_cv_minleaf_best": state["minleaf_sweep"][str(min_leaf)]["rmse"],
     },
     "n_features": int(X.shape[1]),
     "n_rows_thinned": int(len(y)),
     "n_rows_raw": state["n_rows"],
 }
-print(f"[DECISÃO] log_target={log_on} · minLeafPopulation={min_leaf}")
+print(f"[DECISÃO] log_target=False (v08 linear) · minLeafPopulation={min_leaf}")
 
 # --- importância de permutação do champion ----------------------------------
 m = RandomForestRegressor(n_estimators=CONF["N_ESTIMATORS"],
                           max_features="sqrt", min_samples_leaf=min_leaf,
                           random_state=CONF["RANDOM_STATE"])
-yt = np.log1p(y) if log_on else y
+yt = y   # v08: alvo linear
 m.fit(X, yt)
 imp = permutation_importance(m, X, yt, n_repeats=5,
                              random_state=CONF["RANDOM_STATE"])

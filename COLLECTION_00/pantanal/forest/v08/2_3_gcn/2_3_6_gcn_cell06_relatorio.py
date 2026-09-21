@@ -40,7 +40,6 @@ minleaf = {int(k): v["rmse"] for k, v in state["minleaf_sweep"].items()}
 best_ml = int(champ["min_leaf_pop"])
 ml_delta = {k: v - minleaf[best_ml] for k, v in minleaf.items()}
 rmse_lin = state["log_eval"]["rmse_linear"]
-rmse_log = state["log_eval"]["rmse_log"]
 rmse_rf = state["algorithms"][list(state["algorithms"])[0]]["rmse"]
 n_raw = champ["n_rows_raw"]
 n_thin = champ["n_rows_thinned"]
@@ -104,10 +103,7 @@ A(f"\n`{lc_items}` — ruidosa, sem colapso/platô claro")
 A("→ ganho marginal de mais dados; **não exige mudança**.\n")
 
 A("## 5. Champion (copiar p/ `0_contract.js`)")
-log_on = champ["log_target"]
-exp = "linear" if not log_on else f"log(1+agbd) (offset {champ['log_offset']})"
-A(f"- **log_target**: `{champ['log_target']}` ({exp}) — RMSE linear "
-  f"{rmse_lin:.2f} vs log {rmse_log:.2f}")
+A(f"- **alvo**: linear (sem log) — RMSE CV linear {rmse_lin:.2f}")
 A(f"- **min_leaf_pop**: `{champ['min_leaf_pop']}` "
   f"(sweep: {', '.join(f'{k}→{v:.2f}' for k, v in sorted(minleaf.items()))})")
 A(f"- **variables_per_split**: `{champ['variables_per_split']}`")
@@ -118,8 +114,7 @@ A(f"- **ensemble**: {champ['ensemble']['num_members']} membros · seed "
 A("## 6. Decisão MUDAR/MANTER")
 A("\n| Parâmetro (`0_contract.js`) | Valor champion | Decisão | Embasa |")
 A("|---|---|---|---|")
-A(f"| LOG_TARGET | {champ['log_target']} | {M('')} | linear {rmse_lin:.2f} < log "
-  f"{rmse_log:.2f} |")
+A(f"| ALVO | linear (sem log) | {M('')} | RMSE CV linear {rmse_lin:.2f} |")
 best_ml_delta = minleaf[best_ml]
 alt = ", ".join(f"{k}→+{v:.2f}" for k, v in sorted(ml_delta.items())
                 if k != best_ml)
@@ -141,8 +136,6 @@ else:
     n_feat_str = str(n_feat)
 A("- Colinearidade alta (50 pares |r|>0.85): se o GEE favorecer claramente 1 banda "
   "de um par no `3_model_training.js`, avaliar VIF/remoção de bandas na v08.")
-A(f"- `smear_factor` do champion é `None`: o fator de Duan é recalculado "
-  f"dentro do `3_model_training.js`.")
 A("- Após copiar os campos 5/6 para o `0_contract.js`, rodar "
   "`3_model_training.js` e `4_spatial_prediction.js`.")
 

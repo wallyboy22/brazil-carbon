@@ -63,21 +63,15 @@ def blocked_cv(estimator, X_, y_, blocks, scale=False):
     return rmse, pbias
 
 
-# --- CV espacial com log + Duan (implementação dedicada) ---------------------
-def smeared_blocked_cv(log_on=True, offset=None):
-    offset = CONF["LOG_OFFSET"] if offset is None else offset
+# --- CV espacial do alvo linear (RF) ----------------------------------------
+def linear_blocked_cv():
     folds = []
     for tr, va in cv.split(X, y, df["_block"]):
         m = RandomForestRegressor(
             n_estimators=CONF["N_ESTIMATORS"], max_features="sqrt",
             min_samples_leaf=5, random_state=CONF["RANDOM_STATE"])
-        ytr = (np.log1p(y[tr]) if offset == 1 else np.log(y[tr])) if log_on else y[tr]
-        m.fit(X.iloc[tr], ytr)
+        m.fit(X.iloc[tr], y[tr])
         pred = m.predict(X.iloc[va])
-        if log_on:
-            res_fold = ytr - m.predict(X.iloc[tr])
-            smear = float(np.mean(np.exp(res_fold)))
-            pred = np.exp(pred) * smear - (offset if offset == 1 else 0.0)
         folds.append((y[va] - pred, y[va]))
     rr = np.concatenate([f[0] for f in folds]); yy = np.concatenate([f[1] for f in folds])
     return float(np.sqrt(np.mean(rr ** 2))), float(np.mean(rr) / np.mean(yy) * 100)
@@ -151,16 +145,9 @@ ax.set(xlabel="minLeafPopulation", ylabel="RMSE espacial (t/ha)",
        title=f"f7 · varredura minLeaf (melhor={best_mlf})")
 save_fig(fig, "f7_sweep_minleaf.png")
 
-# --- f8: log(1+agbd) × linear + fator de Duan (B7) ---------------------------
-rmse_lin, bias_lin = smeared_blocked_cv(log_on=False)
-rmse_log, bias_log = smeared_blocked_cv(log_on=True)
-smear = None
-fig, ax = plt.subplots(figsize=(6.5, 4))
-ax.bar(["agbd", "ln(1+agbd)"], [rmse_lin, rmse_log], color=["#525252", "#2b83ba"])
-ax.set(ylabel="RMSE espacial (t/ha)",
-       title=f"f8 · objetivo linear vs log (bias {bias_lin:.1f}% / {bias_log:.1f}%)")
-save_fig(fig, "f8_log_target.png")
-print(f"[LOG] linear RMSE={rmse_lin:.2f} · log RMSE={rmse_log:.2f}")
+# --- CV do alvo LINEAR (v08 sem log-target) ---------------------------------
+rmse_lin, bias_lin = linear_blocked_cv()
+print(f"[ALVO] linear RMSE={rmse_lin:.2f} · bias={bias_lin:.1f}%")
 
 # --- estado persistido para a célula champion --------------------------------
 state = {
@@ -168,9 +155,7 @@ state = {
     "min_leaf_best": best_mlf,
     "algorithms": res_algs,
     "learning_curve": lc,
-    "log_eval": {"rmse_linear": rmse_lin, "bias_linear": bias_lin,
-                 "rmse_log": rmse_log, "bias_log": bias_log,
-                 "log_offset": CONF["LOG_OFFSET"]},
+    "log_eval": {"rmse_linear": rmse_lin, "bias_linear": bias_lin},
     "n_features": X.shape[1],
     "n_rows": n,
     "n_blocks": int(df["_block"].nunique()),
