@@ -102,19 +102,17 @@ Fonte: `v08/0_contract.js`.
 
 | Passo | Arquivo | Função |
 |---|---|---|
-| 0 | `0_contract.js` · `0_covariate_source.js` | Contrato (bandas, grade, champion) + PALSAR global (`buildPalsarGlobal`) |
-| 0 | `0_diagnose_tiles.js` | Fase 0: confirma platôs PALSAR, banda culpada, `SMOKE_CELLS` |
-| 1 | `1_preflight.js` | Floresta C11 + stack tipado (célula-amostra) |
+| 0 | `0_contract.js` · `0_covariate_source.js` | Contrato (bandas, grade, domínio BAP, fonte, champion) + PALSAR global (`buildPalsarGlobal`) |
+| 1 | `1_check.js` | Diagnóstico único: fonte/domínio, contagem de footprints, floresta C11 + stack (célula-amostra) |
 | 2 | `2_0_export_footprint_bap.js` | (só `gedi`) footprints GEDI L4A sobre a BAP → `SAMPLES/footprint_bap_<ANO>` |
-| 2 | `2_0_check_footprint.js` | Contagem raw × treino (máscara C11 + palsar) |
-| 2 | `2_1_toAsset_samples_treino.js` | Amostras de treino → `SAMPLES/forest_footprint_<SOURCE>_<ANO>` |
-| 2 | `2_2_toDrive_matrix.js` | Matriz por célula × ano → ASSET + Drive CSV (`lon`, `lat`, `w`) |
-| 2 | `2_3_gcn/*` | Gate offline (Colab): diagnóstico, CV espacial, thinning, champion |
+| 2 | `2_1_toAsset_samples_treino.js` | Amostras normalizadas (1 task por recorte) → `SAMPLES/forest_footprint_<SOURCE>_<ANO>_<cell>` |
+| 2 | `2_2_toDrive_matrix.js` | Matriz por célula × ano (filtro floresta + notNull) → ASSET + Drive CSV (`lon`, `lat`, `w`) |
+| 2 | `2_3_gcn/*` | Gate offline (Colab): diagnóstico, CV espacial, thinning (validação), champion |
 | 3 | `3_model_training.js` | Ensemble RF global → `MODELS/rf_agc_v08_m1..m5` |
 | 4 | `4_spatial_prediction.js` | Predição por célula/ano → `PREDICTIONS/COL` (mediana + std) |
 | 5 | `5_merge.js` | Mosaico anual → `agc_pred_v08_merged_<ano>` |
 | 6 | `6_qualidade.js` | QA visual v03–v08 |
-| 7 | `7_statistics.js` | Estatísticas AGC × LULC C11 |
+| — | `archive/` | Scripts obsoletos/substituídos (`0_diagnose_tiles`, `1_preflight`, `2_0_check_footprint`, `7_statistics`) |
 
 **Notas de arquitetura**
 - A grade é `CELL_SPLIT = 4` (até ~256 células por `makeCellDefinitions`).

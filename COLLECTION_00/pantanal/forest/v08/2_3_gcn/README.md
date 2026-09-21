@@ -16,9 +16,16 @@ conteúdo** do `*.py` do fluxo, na ordem abaixo.
 | 01 | `2_3_1_gcn_cell01_autentication_drive.py` | autentica Earth Engine e monta o Google Drive | — |
 | 02 | `2_3_2_gcn_cell02_diagnostico.py` | diagnóstico da matriz: distribuição do alvo, correlação das bandas, resíduo×agbd_se, Moran's I + variograma | `f1..f4_*.png` |
 | 03 | `2_3_3_gcn_cell03_cv_regularizacao.py` | CV **espacial em blocos**, RF×GBM×SVR, curva de aprendizado, varredura `minLeafPopulation`, avaliação log(1+agbd) com fator de Duan | `f5..f8_*.png` + `gate_state.json` |
-| 04 | `2_3_4_gcn_cell04_thinning_figuras.py` | thinning OFF-LINE em grade 60–90 m (mantém o footprint de menor `agbd_se`), figuras antes×depois, exporta a matriz thinned | `f9/f10_*.png` + `samples_thinned_v08.csv` |
+| 04 | `2_3_4_gcn_cell04_thinning_figuras.py` | thinning OFF-LINE em grade 60–90 m (mantém o footprint de menor `agbd_se`), figuras antes×depois, exporta a matriz thinned | `f9/f10_*.png` + `samples_thinned_<SOURCE>_v08.csv` |
 | 05 | `2_3_5_gcn_cell05_champion.py` | decide `log_target`/`minLeafPopulation`, fixa o ensemble, importância de permutação, grava o **champion** | `f11_*.png` + `champion.json` |
 | 06 | `2_3_6_gcn_cell06_relatorio.py` | lê `gate_state.json` + `champion.json` e gera o **relatório de recomendações** (tabela decisória MUDAR/MANTER por parâmetro do `0_contract.js`) | `relatorio_recomendacoes.md` |
+
+> **Escopo do gate (validação).** O gate é um passo **offline de validação/decisão**:
+> o thinning (célula 04) existe para dar **CV espacial honesta** (quebra autocorrelação)
+> e para decidir o champion — **não** alimenta o treino de produção. O
+> `3_model_training.js` treina na **matriz completa** (`MATRIX/`), aplicando os
+> hiperparâmetros decididos aqui. A coluna `w = 1/agbd_se²` também é **reservada**
+> (o GEE não aceita pesos no treino hoje) — fica no CSV para uso offline futuro.
 
 ## Estrutura de pastas no Drive
 

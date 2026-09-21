@@ -72,32 +72,31 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 
 | Step | Arquivo | O que faz |
 |---|---|---|
-| 0 | `0_contract.js` · `0_covariate_source.js` | contrato + fix PALSAR global |
-| 0 | `0_diagnose_tiles.js` | fase 0: confirma platôs, banda culpada, membros (usa assets v07) |
-| 1 | `1_preflight.js` | máscara de treino + stack tipado |
+| 0 | `0_contract.js` · `0_covariate_source.js` | contrato (domínio BAP, fonte, champion) + PALSAR global |
+| 1 | `1_check.js` | diagnóstico único: fonte/domínio, footprints, floresta+stack (célula-amostra) |
 | 2 | `2_0_export_footprint_bap.js` | (só `gedi`) footprints GEDI L4A sobre a BAP → SAMPLES/footprint_bap_<ANO> |
-| 2 | `2_0_check_footprint.js` | raw vs treino (mask C11 + palsar) |
-| 2 | `2_1_toAsset_samples_treino.js` | amostras de treino → SAMPLES/ |
-| 2 | `2_2_toDrive_matrix.js` | matriz por célula/ano → ASSET + Drive (CSV) |
-| 2 | `2_3_gcn/*` | gate offline (Colab) — figuras, thinning, champion |
+| 2 | `2_1_toAsset_samples_treino.js` | amostras normalizadas (1 task por recorte) → SAMPLES/ |
+| 2 | `2_2_toDrive_matrix.js` | matriz por célula/ano (filtro floresta + notNull) → ASSET + Drive (CSV) |
+| 2 | `2_3_gcn/*` | gate offline (Colab) — figuras, thinning (validação), champion |
 | 3 | `3_model_training.js` | ensemble RF global → MODELS/rf_agc_v08_m1..m5 |
 | 4 | `4_spatial_prediction.js` | predição por célula/ano → PREDICTIONS/COL (mediana+std) |
 | 5 | `5_merge.js` | mosaico anual → `agc_pred_v08_merged_<ano>` |
-| 6 | `6_qualidade.js` | QA V03–V08 plotado simultaneamente |
-| 7 | `7_statistics.js` | stats AGC×LULC C11 (usa stats_engine compartilhado) |
+| 6 | `6_qualidade.js` | QA visual V03–V08 |
+| — | `archive/` | scripts obsoletos/substituídos (0_diagnose_tiles, 1_preflight, 2_0_check_footprint, 7_statistics) |
 
 ## 5. Ordem de execução
 
 0. Definir `SOURCE` em `0_contract.js` (`gedi` | `ifn`) — decide a raiz
    (`V08_GEDI`/`V08_IFN`) e a fonte de amostra.
-1. `0_diagnose_tiles.js` — confirmar hipótese; anotar `SMOKE_CELLS`.
+1. `1_check.js` — diagnóstico (fonte, contagem de footprints, floresta+stack).
 2. (só `gedi`) `2_0_export_footprint_bap.js` — footprints GEDI L4A sobre a BAP.
-3. `1_preflight.js` → `2_0_check_footprint.js` → `2_1_toAsset_samples_treino.js`
-   → `2_2_toDrive_matrix.js` (tasks de matriz).
-4. `2_3_gcn` (Colab) — se o campeão do gate divergir do herdado da v07,
-   atualizar `0_contract.js` (seção CHAMPION/ENSEMBLE).
+3. `2_1_toAsset_samples_treino.js` → `2_2_toDrive_matrix.js` (tasks de matriz).
+4. `2_3_gcn` (Colab) — gate offline de **validação** (o thinning é offline e NÃO
+   alimenta o treino; se o campeão divergir do herdado da v07, atualizar
+   `0_contract.js` — seção CHAMPION/ENSEMBLE).
 5. `3_model_training.js` → `4_spatial_prediction.js` (tasks) → `5_merge.js`.
-6. `6_qualidade.js` (QA visual) → `7_statistics.js` (CSVs + comparativo).
+6. `6_qualidade.js` (QA visual). As estatísticas saem do toolkit
+   `toolkits/statistics/v00` (`run/run_pantanal.js`).
 
 ## 6. Biblioteca de covariáveis (`covariate/`)
 
