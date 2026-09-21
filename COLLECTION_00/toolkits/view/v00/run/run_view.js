@@ -18,12 +18,19 @@ var LYR = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/v00/engine/module_layers.js');
 var UI = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/ui/module_ui.js');
-var ICONS = require(
-  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/ui/module_icons.js');
 var ML = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/ui/module_map_layers.js');
 var INFRA = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/v00/engine/module_infra.js');
+
+// Ícones: MESMA fonte do toolkit do MapBiomas Fogo (require no topo do script).
+var b64 = null;
+try {
+  b64 = require('users/workspaceipam/packages:mapbiomas-toolkit/utils/b64');
+} catch (e) {
+  print('[AVISO] pacote b64 indisponível (usando fallback textual):', e);
+}
+UI.setIcons(b64);
 
 // Só camadas cujo asset EXISTE (pula o que ainda não foi exportado, ex.: v08).
 var available = LAY.LAYERS.filter(function (l) {
@@ -167,22 +174,48 @@ cabVis.content.add(ui.Slider({ min: 0, max: 1, value: state.opacity,
   onChange: function (v) { state.opacity = v; refreshMap(); } }));
 
 // ---------------------------------------------------------------------------
-// LEGENDA (Uso e Cobertura C11)
+// LEGENDAS — rampas de cor (com Mín/Máx global) + Uso e Cobertura (C11)
 // ---------------------------------------------------------------------------
-var cabLeg = UI.createCabinet({ title: 'LEGENDA · Uso e Cobertura (C11)',
-  isOpen: false });
-cabLeg.content.add(UI.legendPanel(Object.keys(LC.LULC_LEGEND).map(function (code) {
+var visOverride = { min: null, max: null };
+function parseNum(v) { var n = parseFloat(v); return isNaN(n) ? null : n; }
+/** Aplica o Mín/Máx global (se definido) sobre o vis da camada. */
+function applyOverride(vis) {
+  var v = { min: vis.min, max: vis.max, palette: vis.palette };
+  if (visOverride.min !== null) v.min = visOverride.min;
+  if (visOverride.max !== null) v.max = visOverride.max;
+  return v;
+}
+
+var cabRamp = UI.createCabinet({ title: 'LEGENDAS', isOpen: false });
+shell.body.add(cabRamp.panel);
+
+var tbMin = ui.Textbox({ value: '', placeholder: 'mín padrão',
+  style: { margin: '1px 2px', fontSize: '10px', width: '64px' },
+  onChange: function (v) {
+    visOverride.min = parseNum(v); refreshMap(); refreshRamps();
+  } });
+var tbMax = ui.Textbox({ value: '', placeholder: 'máx padrão',
+  style: { margin: '1px 2px', fontSize: '10px', width: '64px' },
+  onChange: function (v) {
+    visOverride.max = parseNum(v); refreshMap(); refreshRamps();
+  } });
+var rampControls = ui.Panel({ layout: ui.Panel.Layout.flow('horizontal'),
+  style: { margin: '0px', padding: '1px', backgroundColor: '#f5f5f5' } });
+var ctrlLbl = { fontSize: '10px', margin: '2px' };
+rampControls.add(ui.Label('Mín:', ctrlLbl)).add(tbMin)
+  .add(ui.Label('Máx:', ctrlLbl)).add(tbMax);
+cabRamp.content.add(rampControls);
+
+var rampBody = ui.Panel({ style: { margin: '0px', padding: '0px' } });
+cabRamp.content.add(rampBody);
+
+// Uso e Cobertura (C11) — mais abaixo, na mesma gaveta de legendas.
+cabRamp.content.add(ui.Label('Uso e Cobertura (C11)',
+  { fontSize: '11px', fontWeight: 'bold', margin: '4px 2px 1px 2px' }));
+cabRamp.content.add(UI.legendPanel(Object.keys(LC.LULC_LEGEND).map(function (code) {
   return { color: LC.LULC_LEGEND[code].cor,
     label: LC.LULC_LEGEND[code].nome + ' (' + code + ')' };
 })));
-shell.body.add(cabLeg.panel);
-
-// ---------------------------------------------------------------------------
-// LEGENDA · RAMPA DE COR (unidade + cores) — uma barra por rampa distinta
-// ---------------------------------------------------------------------------
-var cabRamp = UI.createCabinet({ title: 'LEGENDA · RAMPA DE COR',
-  isOpen: false });
-shell.body.add(cabRamp.panel);
 
 // ---------------------------------------------------------------------------
 // PAINEL DIREITO · grade de miniaturas (camada × território)
@@ -204,7 +237,7 @@ var thumbs = UI.createThumbnailGrid({
     var region = vals.territorio.id;
     return {
       image: LYR.masked(l, REG.featuresFor(state.level, [region])),
-      vis: l.vis,
+      vis: applyOverride(l.vis),
       bounds: REG.boundsFor(state.level, [region]),
       label: vals.camada.label + ' \u00B7 ' + vals.territorio.label
     };
@@ -266,7 +299,8 @@ function refreshMap() {
   var selected = [];
   available.forEach(function (l) {
     if (!state.layers[l.id]) return;
-    mlayers.update(l.id, LYR.masked(l, fc), l.vis, l.nome, state.opacity);
+    mlayers.update(l.id, LYR.masked(l, fc), applyOverride(l.vis), l.nome,
+      state.opacity);
     selected.push({ id: l.id, label: l.nome });
   });
   thumbValues.camada = selected;
@@ -280,7 +314,7 @@ function refreshMap() {
 
 /** Legenda de rampa: uma barra por rampa distinta entre as camadas marcadas. */
 function refreshRamps() {
-  cabRamp.content.clear();
+  rampBody.clear();
   var seen = {};
   var order = [];
   available.forEach(function (l) {
@@ -293,7 +327,7 @@ function refreshRamps() {
     order.push(key);
   });
   if (!order.length) {
-    cabRamp.content.add(ui.Label(
+    rampBody.add(ui.Label(
       'Marque camadas contínuas (resultados/referências) para ver a rampa.',
       { fontSize: '10px', color: '#888', margin: '2px' }));
     return;
@@ -301,11 +335,12 @@ function refreshRamps() {
   order.forEach(function (k) {
     var g = seen[k];
     var l = g.layer;
+    var vis = applyOverride(l.vis);
     var title = g.names.length === 1 ? g.names[0]
       : g.names[0] + '  (+' + (g.names.length - 1) + ')';
-    cabRamp.content.add(UI.colorBarLegend({
-      title: title, unit: l.unit, min: l.vis.min, max: l.vis.max,
-      palette: l.vis.palette
+    rampBody.add(UI.colorBarLegend({
+      title: title, unit: l.unit, min: vis.min, max: vis.max,
+      palette: vis.palette
     }));
   });
 }
@@ -318,6 +353,6 @@ print('[GRUPOS] produtos:', (LAY.PRODUTOS || []).length, '→',
   availGroups(LAY.REF_FONTES).length,
   '· auxiliares:', (LAY.AUXILIARES || []).length);
 print('[TERRITÓRIOS]', REG.order.join(', '));
-print('[ÍCONES] pacote:', ICONS.source() || 'fallback textual');
+print('[ÍCONES] b64:', b64 ? 'ok' : 'fallback textual');
 
 setLevel('bioma');

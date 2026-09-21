@@ -14,8 +14,10 @@ Rodar `run/run_view.js` no Code Editor. O painel esquerdo permite:
 - **Referência** (gavetas): uma gaveta **por fonte** (Saatchi, Baccini, Zimbres,
   Avitabile, Xu & Saatchi, TCN, QCN, QCN-r, **IFN**);
 - **Auxiliares** (gaveta): **Uso e Cobertura (C11)**;
-- **Opacidade** e **LEGENDA · RAMPA DE COR** (barra de cor: unidade + extremos +
-  cores) para cada rampa distinta entre as camadas marcadas.
+- **Opacidade** e **LEGENDAS** (mesma gaveta): **Mín/Máx global** (dois textbox
+  que sobrescrevem o min/max de todas as rampas — legenda **e** mapa), as
+  **barras de cor** por rampa distinta e, abaixo, a **legenda do Uso e
+  Cobertura (C11)**.
 
 > As camadas **Forest** aparecem como **`Pantanal Forest vXX`** e **`Cerrado
 > Florestal vbeta1`**. Camadas cujo asset ainda **não existe** (ex.: `v08
@@ -60,6 +62,9 @@ docs/                        # (em COLLECTION_00/docs) ex.: Resultado - Cerrado 
 ## Notas
 - Catálogos **reescritos** a partir do `statistics/v00` (política "cada toolkit
   escreve os seus"); mesmos assets do projeto.
+- **Ícones**: `run_view.js` requer `users/workspaceipam/packages:mapbiomas-toolkit/
+  utils/b64` **no topo do script** (mesma fonte do toolkit do MapBiomas Fogo) e
+  injeta via `UI.setIcons(b64)` — os botões usam `imageUrl` como no Fogo.
 - **Genérico**: adicionar camadas = incluir no catálogo correspondente; a UI é
   data-driven (`PRODUTOS` / `REF_FONTES` / `AUXILIARES` gerados do registry).
 - Cerrado: assets em `CARBON/MAPPING/Cerrado/mapa_biomassa_vbeta1` (banda `b1`,

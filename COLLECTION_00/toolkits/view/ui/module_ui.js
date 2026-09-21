@@ -20,6 +20,18 @@
 var ICONS = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/ui/module_icons.js');
 
+// Ícones injetados pelo app (ex.: `require('...packages:mapbiomas-toolkit/utils/b64')`),
+// como no toolkit do MapBiomas Fogo. Cai no `ICONS` (com fallback) se ausente.
+var _injectedIcons = null;
+exports.setIcons = function (mod) { _injectedIcons = mod; };
+function icon(key) {
+  var ic = _injectedIcons || ICONS;
+  if (ic && typeof ic.get === 'function') {
+    try { var v = ic.get(key); if (v) return v; } catch (e) { /* ignora */ }
+  }
+  return ICONS.get(key);
+}
+
 // ---------------------------------------------------------------------------
 // Estilos (0~1px)
 // ---------------------------------------------------------------------------
@@ -75,7 +87,7 @@ exports.createActivity = function (label) {
       wrap: function (fn) { return fn; } };
   }
   var pending = 0;
-  var gif = ICONS.get('load_gif');
+  var gif = icon('load_gif');
   if (gif) label.setImageUrl(gif); else label.setValue('…');
   label.style().set('shown', false);
   function update() { label.style().set('shown', pending > 0); }
@@ -104,7 +116,7 @@ exports.createCabinet = function (o) {
       border: '1px solid #ddd' } });
 
   var open = !!o.isOpen;
-  var toggleBtn = ui.Button({ imageUrl: ICONS.arrow(open),
+  var toggleBtn = ui.Button({ imageUrl: icon(open ? 'arraw_v' : 'arraw_>'),
     style: { margin: '0px', padding: '0px', backgroundColor: 'ffffff00' } });
   header.add(toggleBtn).add(ui.Label(o.title || '', {
     fontSize: o.indent ? '15px' : '18px', fontWeight: 'bold', margin: '1px 4px',
@@ -114,7 +126,7 @@ exports.createCabinet = function (o) {
   toggleBtn.onClick(function () {
     var isShown = content.style().get('shown');
     content.style().set('shown', !isShown);
-    toggleBtn.setImageUrl(ICONS.arrow(!isShown));
+    toggleBtn.setImageUrl(icon(!isShown ? 'arraw_v' : 'arraw_>'));
   });
   return { panel: panel, content: content, header: header, toggle: toggleBtn };
 };
