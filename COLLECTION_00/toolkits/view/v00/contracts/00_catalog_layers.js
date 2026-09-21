@@ -50,6 +50,13 @@ REF.REFERENCES.forEach(function (r) {
     multi_year: r.multi_year, filter_index: r.filter_index, vis: r.vis });
 });
 
+// ---- IFN (inventário de campo) — rasterizado via `paint` --------------------
+REF.IFN_COLUNAS.forEach(function (c) {
+  LAYERS.push({ id: 'ref_ifn_' + c.id, fonte: 'ifn',
+    nome: 'IFN · ' + c.label + ' (' + c.unit + ')', tipo: 'referencia',
+    paint: { fc: REF.IFN_ASSET, prop: c.prop }, unit: c.unit, vis: c.vis });
+});
+
 // ---- Auxiliares: Uso e Cobertura (C11) — anos-chave -------------------------
 [1985, 2000, 2010, 2023].forEach(function (y) {
   LAYERS.push({ id: 'lulc_' + y, auxiliar: 'uso_cobertura',

@@ -27,7 +27,7 @@ var INFRA = require(
 
 // Só camadas cujo asset EXISTE (pula o que ainda não foi exportado, ex.: v08).
 var available = LAY.LAYERS.filter(function (l) {
-  var target = l.col || l.asset;
+  var target = l.col || l.asset || (l.paint && l.paint.fc);
   if (INFRA.assetExists(target)) return true;
   print('[AVISO] camada ausente (ignorada):', l.nome, '\u2192', target);
   return false;
@@ -56,7 +56,7 @@ var drawerLevels = UI.createButtonDrawer({
 });
 cabTerr.content.add(drawerLevels.panel);
 
-var drawerRegions = UI.createLayerDrawer({ title: 'Regiões (vazio = todas)',
+var drawerRegions = UI.createLayerDrawer({ title: 'Regiões (vazio = Brasil)',
   options: [] });
 cabTerr.content.add(drawerRegions.panel);
 
@@ -222,7 +222,7 @@ function refreshRegions() {
     currentNames = names || [];
     drawerRegions.flowPanel.clear();
     drawerRegions.checkboxes = {};
-    var all = ui.Checkbox({ label: 'Todas', value: state.regions.length === 0,
+    var all = ui.Checkbox({ label: 'Brasil', value: state.regions.length === 0,
       onChange: function (v) {
         if (v) { state.regions = []; refreshRegions(); refreshMap(); }
       },

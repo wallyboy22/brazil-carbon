@@ -4,8 +4,13 @@
  * Constrói a ee.Image de exibição de uma camada do registry.
  ******************************************************************************/
 
-/** ee.Image de uma camada (trata COL, banda, série multi-ano e nodata). */
+/** ee.Image de uma camada (trata paint, COL, banda, série multi-ano e nodata). */
 exports.build = function (layer) {
+  if (layer.paint) {
+    // IFN: rasteriza a FC pintando a coluna de interesse (banda `constant`).
+    return ee.Image().paint(ee.FeatureCollection(layer.paint.fc),
+      layer.paint.prop);
+  }
   var img;
   if (layer.col) {
     // Forest: mosaico da ImageCollection COL no ano da camada.

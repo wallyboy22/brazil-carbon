@@ -37,6 +37,7 @@ var PG = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL
 var CER = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/Cerrado/mapa_biomassa_vbeta1';
 var REF = 'projects/ee-ipam/assets/CCAL/DATASETS/Biomass_ref_maps';
 var QCN = 'projects/ee-ipam/assets/CCAL/public/qcn';
+var IFN = 'projects/ee-ipam/assets/IFN/IFN_2026_BR_PLOTS-v13';
 var LULC = 'projects/mapbiomas-public/assets/brazil/lulc/collection11/' +
   'mapbiomas_brazil_collection11_coverage_v3';
 
@@ -79,6 +80,13 @@ var LAYERS = [
   { n: 'QCN AGB', img: QCN + '/qcn_brazil_historical_biomass_carbon_v1', band: 'AGB', vis: REF_VIS },
   { n: 'QCN-r total (1985)', img: QCN + '/qcn_brazil_historical_biomass_carbon_qcn_rect_v1', band: 'TOTAL', vis: REF_VIS },
   { n: 'QCN-r AGB (1985)', img: QCN + '/qcn_brazil_historical_biomass_carbon_qcn_rect_v1', band: 'AGB', vis: REF_VIS },
+  // IFN (inventário de campo) — rasterizado via paint (banda `constant`)
+  { n: 'IFN AGB (Mg/ha)', paint: { fc: IFN, prop: 'AGB_Mg_ha' }, vis: REF_VIS },
+  { n: 'IFN Carbono (Mg C/ha)', paint: { fc: IFN, prop: 'C_Mg_ha' }, vis: REF_VIS },
+  { n: 'IFN CO2e (Mg CO2e/ha)', paint: { fc: IFN, prop: 'CO2e_Mg_ha' }, vis: REF_VIS },
+  { n: 'IFN Area basal (m2/ha)', paint: { fc: IFN, prop: 'G_m2_ha' }, vis: REF_VIS },
+  { n: 'IFN No individuos', paint: { fc: IFN, prop: 'n_ind' }, vis: REF_VIS },
+  { n: 'IFN AGB total (Mg)', paint: { fc: IFN, prop: 'AGB_Mg' }, vis: REF_VIS },
   // Uso e Cobertura (C11)
   { n: 'LULC C11 1985', img: LULC, band: 'classification_1985', vis: LULC_VIS },
   { n: 'LULC C11 2000', img: LULC, band: 'classification_2000', vis: LULC_VIS },
@@ -93,16 +101,21 @@ function assetExists(id) {
 
 var count = 0, skipped = 0;
 LAYERS.forEach(function (l) {
-  var target = l.col || l.img;
+  var target = l.col || l.img || (l.paint && l.paint.fc);
   if (!assetExists(target)) {
     print('[AVISO] ausente (ignorada):', l.n, '\u2192', target);
     skipped++;
     return;
   }
-  var img = l.col
-    ? ee.ImageCollection(l.col).filter(ee.Filter.eq('year', 2023)).mosaic()
-    : ee.Image(l.img);
-  img = img.select(l.band);
+  var img;
+  if (l.paint) {
+    img = ee.Image().paint(ee.FeatureCollection(l.paint.fc), l.paint.prop);
+  } else {
+    img = l.col
+      ? ee.ImageCollection(l.col).filter(ee.Filter.eq('year', 2023)).mosaic()
+      : ee.Image(l.img);
+    img = img.select(l.band);
+  }
   if (l.mask_lt !== undefined) img = img.updateMask(img.gt(l.mask_lt));
   Map.addLayer(img, l.vis, l.n.slice(0, 90), false);
   count++;

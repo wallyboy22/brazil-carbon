@@ -12,7 +12,7 @@ Rodar `run/run_view.js` no Code Editor. O painel esquerdo permite:
 - **MapBiomas Carbono** (gavetas): **Cerrado Florestal** · **Pantanal Florestal** ·
   **Pantanal Campestre** — checkboxes por versão;
 - **Referência** (gavetas): uma gaveta **por fonte** (Saatchi, Baccini, Zimbres,
-  Avitabile, Xu & Saatchi, TCN, QCN, QCN-r);
+  Avitabile, Xu & Saatchi, TCN, QCN, QCN-r, **IFN**);
 - **Auxiliares** (gaveta): **Uso e Cobertura (C11)**;
 - **Opacidade** e **LEGENDA · RAMPA DE COR** (barra de cor: unidade + extremos +
   cores) para cada rampa distinta entre as camadas marcadas.
@@ -20,6 +20,9 @@ Rodar `run/run_view.js` no Code Editor. O painel esquerdo permite:
 > As camadas **Forest** aparecem como **`Pantanal Forest vXX`** e **`Cerrado
 > Florestal vbeta1`**. Camadas cujo asset ainda **não existe** (ex.: `v08
 > GEDI/IFN`) são **ignoradas** automaticamente — o app só lista o que existe.
+> A gaveta **IFN** traz as parcelas de campo do Inventário Florestal Nacional
+> rasterizadas com `ee.Image().paint(fc, coluna)` (AGB, carbono, CO2e, área
+> basal, nº de indivíduos, AGB total).
 
 Na gaveta **MapBiomas Carbono** há dois toggles:
 - **MAP ON/OFF**: mostra/esconde todas as camadas do mapa;

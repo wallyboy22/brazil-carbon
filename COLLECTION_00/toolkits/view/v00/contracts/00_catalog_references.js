@@ -91,5 +91,36 @@ exports.FONTES = {
   xu: 'Xu & Saatchi 2021 (tropical)',
   tcn: 'TCN (3ª CN)',
   qcn: 'QCN (4ª CN)',
-  qcnr: 'QCN-r (1985)'
+  qcnr: 'QCN-r (1985)',
+  ifn: 'IFN (inventário de campo)'
 };
+
+// ---------------------------------------------------------------------------
+// IFN — Inventário Florestal Nacional (parcelas de campo, nacional).
+//   Rasterizado via `ee.Image().paint(fc, coluna)` (banda `constant`).
+//   Unidade: megagrama (Mg) = tonelada.
+// ---------------------------------------------------------------------------
+exports.IFN_ASSET =
+  'projects/ee-ipam/assets/IFN/IFN_2026_BR_PLOTS-v13';
+
+/** Colunas de interesse do IFN (id, prop, label, unit, vis). */
+exports.IFN_COLUNAS = [
+  { id: 'agb', prop: 'AGB_Mg_ha', label: 'AGB', unit: 'Mg/ha',
+    vis: { min: 0, max: 300,
+      palette: ['#ffffe5', '#d9f0a3', '#78c679', '#238443', '#004529'] } },
+  { id: 'carbono', prop: 'C_Mg_ha', label: 'Carbono', unit: 'Mg C/ha',
+    vis: { min: 0, max: 150,
+      palette: ['#fff7fb', '#d0d1e6', '#74a9cf', '#0570b0', '#034e7b'] } },
+  { id: 'co2e', prop: 'CO2e_Mg_ha', label: 'CO2e', unit: 'Mg CO2e/ha',
+    vis: { min: 0, max: 550,
+      palette: ['#ffffcc', '#c2e699', '#78c679', '#31a354', '#006837'] } },
+  { id: 'area_basal', prop: 'G_m2_ha', label: 'Área basal', unit: 'm²/ha',
+    vis: { min: 0, max: 60,
+      palette: ['#f7fcf5', '#c7e9c0', '#74c476', '#238b45', '#00441b'] } },
+  { id: 'n_ind', prop: 'n_ind', label: 'Nº indivíduos', unit: 'nº',
+    vis: { min: 0, max: 40,
+      palette: ['#f1eef6', '#d0d1e6', '#a6bddb', '#3690c0', '#034e7b'] } },
+  { id: 'agb_total', prop: 'AGB_Mg', label: 'AGB total', unit: 'Mg',
+    vis: { min: 0, max: 50,
+      palette: ['#ffffe5', '#d9f0a3', '#78c679', '#238443', '#004529'] } }
+];
