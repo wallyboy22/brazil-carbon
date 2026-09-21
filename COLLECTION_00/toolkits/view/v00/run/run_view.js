@@ -23,15 +23,6 @@ var ML = require(
 var INFRA = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/v00/engine/module_infra.js');
 
-// Ícones: MESMA fonte do toolkit do MapBiomas Fogo (require no topo do script).
-var b64 = null;
-try {
-  b64 = require('users/workspaceipam/packages:mapbiomas-toolkit/utils/b64');
-} catch (e) {
-  print('[AVISO] pacote b64 indisponível (usando fallback textual):', e);
-}
-UI.setIcons(b64);
-
 // Só camadas cujo asset EXISTE (pula o que ainda não foi exportado, ex.: v08).
 var available = LAY.LAYERS.filter(function (l) {
   var target = l.col || l.asset || (l.paint && l.paint.fc);
@@ -353,6 +344,5 @@ print('[GRUPOS] produtos:', (LAY.PRODUTOS || []).length, '→',
   availGroups(LAY.REF_FONTES).length,
   '· auxiliares:', (LAY.AUXILIARES || []).length);
 print('[TERRITÓRIOS]', REG.order.join(', '));
-print('[ÍCONES] b64:', b64 ? 'ok' : 'fallback textual');
 
 setLevel('bioma');

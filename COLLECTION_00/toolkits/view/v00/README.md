@@ -62,9 +62,8 @@ docs/                        # (em COLLECTION_00/docs) ex.: Resultado - Cerrado 
 ## Notas
 - Catálogos **reescritos** a partir do `statistics/v00` (política "cada toolkit
   escreve os seus"); mesmos assets do projeto.
-- **Ícones**: `run_view.js` requer `users/workspaceipam/packages:mapbiomas-toolkit/
-  utils/b64` **no topo do script** (mesma fonte do toolkit do MapBiomas Fogo) e
-  injeta via `UI.setIcons(b64)` — os botões usam `imageUrl` como no Fogo.
+- **Botões**: os cabinets usam botão de seta com **label de texto** (▼/▶),
+  no esquema do toolkit de **Material Combustível** (sem `imageUrl`/b64).
 - **Genérico**: adicionar camadas = incluir no catálogo correspondente; a UI é
   data-driven (`PRODUTOS` / `REF_FONTES` / `AUXILIARES` gerados do registry).
 - Cerrado: assets em `CARBON/MAPPING/Cerrado/mapa_biomassa_vbeta1` (banda `b1`,
