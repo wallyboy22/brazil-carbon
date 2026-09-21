@@ -16,7 +16,7 @@
 | Versão | v08 — sub-versões por fonte: `V08_GEDI` e `V08_IFN` |
 | Raiz de assets | `.../PANTANAL_FOREST/V08_GEDI` · `.../PANTANAL_FOREST/V08_IFN` |
 | Fontes de amostra | `SOURCE ∈ {gedi, ifn}` — GEDI L4A v2.1 (footprints BAP) · IFN `IFN_2026_BR_PLOTS-v13` |
-| Delta vs v07 | Domínio BAP (substitui o bioma Pantanal) + multi-fonte (GEDI/IFN); PALSAR global por mediana + máscara de treino `palsar_nodata`; parametrização do modelo idêntica à v07 |
+| Delta vs v07 | Domínio BAP (substitui o bioma Pantanal) + multi-fonte (GEDI/IFN); PALSAR global por mediana; filtro de treino (floresta + notNull) no `2_2`; parametrização do modelo idêntica à v07 |
 
 Fonte: `v08/0_contract.js`.
 
@@ -34,7 +34,8 @@ Fonte: `v08/0_contract.js`.
   `.first()` escolhe uma *strip* SAR arbitrária por célula → platôs de `HV_db`/`HH_db`
   alinhados à grade, ampliados pelo `focal_mean(3)`.
 - **Correção v08**: PALSAR reconstruído como **mosaico global determinístico por
-  mediana**; `DN <= 0` mascarado como nodata; nova máscara de treino `palsar_nodata`.
+  mediana**; `DN <= 0` mascarado como nodata. O filtro de treino passou a ser
+  feito no `2_2` (por célula), eliminando a máscara de imagem `palsar_nodata`.
 
 ## 3. Base teórica
 
@@ -91,10 +92,10 @@ Fonte: `v08/0_contract.js`.
   - `gedi` — footprints GEDI L4A v2.1 sobre a BAP (`SAMPLES/footprint_bap_<ano>`,
     gerados por `2_0_export_footprint_bap.js`, multi-ano 2019–2024);
   - `ifn` — parcelas `IFN_2026_BR_PLOTS-v13` na BAP (floresta, centroide).
-- **Máscara de treino** (`MASK_MODE = 'training_only'`):
-  - `lulc_forest` — classes florestais C11 `{3,4,6,7,49}`;
-  - `palsar_nodata` — exclui footprints onde o mosaico PALSAR global é nodata (v08).
-  - A máscara **não** é aplicada à saída da predição.
+- **Filtro de treino** (`MASK_MODE = 'training_only'`), aplicado no `2_2` por célula:
+  - floresta — `mapbiomas_lulc ∈ {3,4,6,7,49}`;
+  - válidos — `notNull(FEATURE_BANDS)` (descarta nodata do PALSAR etc.).
+  - Não é aplicado à saída da predição.
 - **Peso do rótulo**: coluna `w = 1/max(agbd_se, 1)²` (fonte `gedi`; `w = 1` na `ifn`).
 
 ## 5. Algoritmo (passo a passo)
@@ -103,7 +104,7 @@ Fonte: `v08/0_contract.js`.
 |---|---|---|
 | 0 | `0_contract.js` · `0_covariate_source.js` | Contrato (bandas, grade, champion) + PALSAR global (`buildPalsarGlobal`) |
 | 0 | `0_diagnose_tiles.js` | Fase 0: confirma platôs PALSAR, banda culpada, `SMOKE_CELLS` |
-| 1 | `1_preflight.js` | Máscara de treino + stack tipado |
+| 1 | `1_preflight.js` | Floresta C11 + stack tipado (célula-amostra) |
 | 2 | `2_0_export_footprint_bap.js` | (só `gedi`) footprints GEDI L4A sobre a BAP → `SAMPLES/footprint_bap_<ANO>` |
 | 2 | `2_0_check_footprint.js` | Contagem raw × treino (máscara C11 + palsar) |
 | 2 | `2_1_toAsset_samples_treino.js` | Amostras de treino → `SAMPLES/forest_footprint_<SOURCE>_<ANO>` |

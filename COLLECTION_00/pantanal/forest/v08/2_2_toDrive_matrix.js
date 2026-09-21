@@ -71,7 +71,9 @@ function exportCell(id) {
       .sampleRegions({ collection: points[year].filterBounds(geom),
         properties: src.getSampleProps(), scale: c.SCALE,
         geometries: true, tileScale: TILE_SCALE })
-      .filter(ee.Filter.notNull(required))
+      .filter(ee.Filter.and(
+        ee.Filter.notNull(required),
+        ee.Filter.inList('mapbiomas_lulc', c.FOREST_CLASSES)))
       .map(function (f) {
         var lon = f.geometry().centroid(30).coordinates().get(0);
         var lat = f.geometry().centroid(30).coordinates().get(1);

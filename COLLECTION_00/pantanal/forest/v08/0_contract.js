@@ -11,17 +11,18 @@
  *   - PALSAR-2 reconstruído como mosaico GLOBAL determinístico (não célula a
  *     célula): `JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH` combinado por MEDIANA sobre
  *     as observações válidas do ano, com DN <= 0 mascarado como nodata;
- *   - máscara de nodata do PALSAR registrada em TRAINING_MASKS (exclui do
- *     treino footprints em áreas sem dado SAR válido) — decisão v08;
+ *   - filtro de TREINO aplicado no 2_2, POR CÉLULA, direto nas covariáveis:
+ *     floresta (mapbiomas_lulc ∈ FOREST_CLASSES) + notNull(FEATURE_BANDS);
  *   - demais decisões herdadas INTEGRALMENTE da v07 (champion + ensemble):
  *     minLeafPopulation 10, variablesPerSplit 6, linear, N=5 membros,
- *     máscara LULC (3,4,6,7,49) só no treino, predição não mascarada;
+ *     predição não mascarada;
  *   - stats/QA herdados (comparativo entre versões montado offline no
  *     statistics_gcn, a partir dos stats_forest_* do GEE).
  *
  * Delta vs v07:
  *   + PALSAR global por mediana (0_covariate_source.js, buildPalsarGlobal);
- *   + TRAINING_MASKS += palsar_nodata (apply:'training');
+ *   + filtro de treino (floresta + notNull) movido para o 2_2 (por célula) —
+ *     a máscara de imagem `palsar_nodata` foi removida (redundante e cara);
  *   + domínio BAP (Bacia do Alto Paraguai) substitui o bioma Pantanal;
  *   + caminhos próprios (ASSET_ROOT V08).
  *   Parametrização do modelo NÃO mudou (champion/ensemble idênticos à v07).
@@ -107,18 +108,17 @@ exports.YEARS = [2023];
 exports.TRAIN_YEARS = [2023];
 
 // =========================================================================
-// Bloco 4 — Máscara de TREINO [definido v07; evolução v08]
-// A v08 herda LULC (3,4,6,7,49) filtering só o treino + acrescenta
-// palsar_nodata (fix da v08: exclui footprints sem SAR válido).
+// Bloco 4 — Filtro de TREINO [evolução v08/BAP]
+// O filtro de treino é aplicado no 2_2, POR CÉLULA, direto nas covariáveis:
+//   · floresta: mapbiomas_lulc ∈ FOREST_CLASSES;
+//   · válidos:  notNull(FEATURE_BANDS) (cobre nodata do PALSAR etc.).
+// As máscaras de imagem (lulc_forest/palsar_nodata) saíram do pipeline:
+// `palsar_nodata` era redundante com o notNull e cara (forçava o compósito
+// PALSAR no 2_1). MASK_MODE/TRAINING_MASKS ficam por compatibilidade.
 // =========================================================================
 exports.MASK_MODE = 'training_only';
 exports.FOREST_CLASSES = [3, 4, 6, 7, 49];
-exports.TRAINING_MASKS = [
-  { name: 'lulc_forest', classes: exports.FOREST_CLASSES, apply: 'training' },
-  // Exclui do treino footprints onde o mosaico PALSAR global é nodata
-  // (construção em 0_covariate_source.js, função buildPalsarGlobal).
-  { name: 'palsar_nodata', apply: 'training' }
-];
+exports.TRAINING_MASKS = [];
 
 // =========================================================================
 // Bloco 5 — Contexto geoespacial [domínio BAP desde v08/BAP]

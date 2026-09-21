@@ -49,9 +49,11 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
    per-célula do stack herdado (não são computadas no grafo) e injeta as do
    mosaico global tipadas em `Float32`. O restante das covariáveis (HLS,
    HAND, ERA5/CWD, LULC) é idêntico.
-3. `TRAINING_MASKS` + `palsar_nodata` — máscara extra de treino que exclui
-   footprints onde o mosaico global de SAR é nodata (sem dado). A predição
-   continua NÃO mascarada por LULC (`MASK_MODE='training_only'`).
+3. Filtro de TREINO no `2_2` (por célula): `mapbiomas_lulc ∈ {3,4,6,7,49}` +
+   `notNull(FEATURE_BANDS)`. A antiga máscara de imagem `palsar_nodata` foi
+   **removida** (era redundante com o `notNull` e cara — forçava o compósito
+   PALSAR no `2_1`). A predição continua NÃO mascarada por LULC
+   (`MASK_MODE='training_only'`).
 
 ## 3. Diferenças vs v07
 
@@ -60,7 +62,7 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 | Domínio | bioma Pantanal (IBGE) | Bacia do Alto Paraguai (BAP) |
 | Fonte de amostra | GEDI L4A (footprint Pantanal) | `SOURCE`: GEDI (footprint BAP) ou IFN (`PLOTS-v13`) |
 | PALSAR | `.first()` por célula (platôs) | mediana global no bioma |
-| Máscara de treino | LULC 3,4,6,7,49 + extras | + `palsar_nodata` |
+| Filtro de treino | máscara LULC (imagem) | `mapbiomas_lulc ∈ FOREST_CLASSES` + `notNull` no `2_2` |
 | Champion/ensemble | minLeaf 10 · 6 vars · linear · N=5 | idênticos à v07 (valores inlineados no contrato v08) |
 | Predição | não mascarada | não mascarada |
 | Stats comparativo | V03–V07 | V03–V08 (`0_contract_stats.js`) |

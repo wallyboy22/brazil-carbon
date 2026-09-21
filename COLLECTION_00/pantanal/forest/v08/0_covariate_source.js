@@ -16,9 +16,12 @@
  *     - combinação por MEDIANA (determinística) das observações válidas
  *     - conversão dB idêntica à cadeia (pow²·log10·10−83), HV/HH ratio, RVI
  *       e filtro de speckle focal_mean(3)
- *   getTrainingMask(year):
- *     - LULC florestal (3,4,6,7,49) + TRAINING_MASKS extras, incluindo a
- *       nova máscara palsar_nodata (exclui footprints sem dado SAR válido)
+ *   getFootprints():
+ *     - footprints/parcelas da fonte ativa (GEDI: merge dos anos BAP; IFN:
+ *       centroide + AGB_Mg_ha→agbd), SEM mascaramento
+ *   filtro de TREINO (no 2_2, por célula): mapbiomas_lulc ∈ FOREST_CLASSES +
+ *     notNull(FEATURE_BANDS). As antigas máscaras de imagem (lulc_forest /
+ *     palsar_nodata) ficam como legado abaixo.
  *   buildTypedCovariatesStack(aoi, year):
  *     - remove bandas PALSAR per-célula do stack (não computadas no output)
  *     - injeta o mosaico global tipado de PALSAR do ano (determinístico)
@@ -145,6 +148,10 @@ exports.getPalsarValidMask = function (year) {
 
 // ---------------------------------------------------------------------------
 // Máscaras de TREINO (LULC florestal AND extras) — NÃO mascara a predição
+// ---------------------------------------------------------------------------
+// [LEGADO — não usado pelo pipeline v08/BAP]
+// O filtro de treino agora é feito no 2_2 (mapbiomas_lulc ∈ FOREST_CLASSES +
+// notNull). As funções abaixo ficam apenas como referência/reuso futuro.
 // ---------------------------------------------------------------------------
 exports.getForestMask = function (year) {
   return training.getForestMask({
