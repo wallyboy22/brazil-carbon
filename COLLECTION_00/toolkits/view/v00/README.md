@@ -24,7 +24,7 @@ Rodar `run/run_view.js` no Code Editor. O painel esquerdo permite:
 > rasterizadas com `ee.Image().paint(fc, coluna)` (AGB, carbono, CO2e, área
 > basal, nº de indivíduos, AGB total).
 
-Na gaveta **MapBiomas Carbono** há dois toggles:
+No cabinet **CONTROLES** (fora das gavetas de camadas) há dois toggles:
 - **MAP ON/OFF**: mostra/esconde todas as camadas do mapa;
 - **THUMBNAILS ON/OFF**: abre o painel direito (SplitPanel) com a grade de
   miniaturas cruzando **camada × território** (só os itens marcados), com

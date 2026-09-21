@@ -63,12 +63,17 @@ cabTerr.content.add(drawerRegions.panel);
 // ---------------------------------------------------------------------------
 // CAMADAS — gavetas aninhadas (MapBiomas Carbono · Referência · Auxiliares)
 // ---------------------------------------------------------------------------
-/** Mantém só os grupos com camadas disponíveis (assets existentes). */
+// Índice por ID (o `require` do GEE serializa os exports, então comparar
+// identidade de objeto falha — ver `available` × `LAY.PRODUTOS`).
+var availIds = {};
+available.forEach(function (l) { availIds[l.id] = true; });
+
+/** Mantém só os grupos com camadas disponíveis (comparação por ID). */
 function availGroups(groups) {
-  return groups.map(function (g) {
+  return (groups || []).map(function (g) {
     return { id: g.id, label: g.label,
-      camadas: g.camadas.filter(function (l) {
-        return available.indexOf(l) >= 0;
+      camadas: (g.camadas || []).filter(function (l) {
+        return !!availIds[l.id];
       }) };
   }).filter(function (g) { return g.camadas.length > 0; });
 }
@@ -85,13 +90,17 @@ function addLayerDrawer(parent, layers) {
 }
 
 function addSubCabinet(parent, label, layers) {
-  var sub = UI.createCabinet({ title: label, isOpen: false,
-    indent: '2px 2px 2px 10px' });
-  addLayerDrawer(sub, layers);
-  parent.content.add(sub.panel);
+  try {
+    var sub = UI.createCabinet({ title: label, isOpen: false,
+      indent: '2px 2px 2px 10px' });
+    addLayerDrawer(sub, layers);
+    parent.content.add(sub.panel);
+  } catch (e) {
+    print('[ERRO] subgaveta', label, e);
+  }
 }
 
-// --- Toggles: MAP ON/OFF · THUMBNAILS ON/OFF ---------------------------------
+// --- CONTROLES (toggles MAP/THUMBNAILS — FORA das gavetas de camadas) --------
 var mapVisible = true;
 var thumbsVisible = false;
 var mapToggleBtn = ui.Button({ label: 'MAP ON',
@@ -112,8 +121,8 @@ var thumbToggleBtn = ui.Button({ label: 'THUMBNAILS OFF',
     thumbsVisible = !thumbsVisible;
     thumbToggleBtn.setLabel(thumbsVisible ? 'THUMBNAILS ON' : 'THUMBNAILS OFF');
     UI.applyToggleStyle(thumbToggleBtn, thumbsVisible);
-    split.showRight(thumbsVisible);
-    if (thumbsVisible) thumbs.update();
+    if (split) split.showRight(thumbsVisible);
+    if (thumbsVisible && thumbs) thumbs.update();
   } });
 UI.applyToggleStyle(thumbToggleBtn, false);
 
@@ -121,10 +130,13 @@ var toggleRow = ui.Panel({ layout: ui.Panel.Layout.flow('horizontal'),
   style: { margin: '0px', padding: '0px' } });
 toggleRow.add(mapToggleBtn).add(thumbToggleBtn);
 
+var cabCtrl = UI.createCabinet({ title: 'CONTROLES', isOpen: true });
+shell.body.add(cabCtrl.panel);
+cabCtrl.content.add(toggleRow);
+
 // --- MapBiomas Carbono (Cerrado Florestal · Pantanal Florestal · Campestre) --
 var cabCarbono = UI.createCabinet({ title: 'MapBiomas Carbono', isOpen: true });
 shell.body.add(cabCarbono.panel);
-cabCarbono.content.add(toggleRow);
 availGroups(LAY.PRODUTOS).forEach(function (p) {
   addSubCabinet(cabCarbono, p.label, p.camadas);
 });
@@ -299,9 +311,12 @@ function refreshRamps() {
 }
 
 print('MAPBIOMAS-CARBONO · toolkit view/v00 · run_view');
-print('[CAMADAS]', available.length, 'disponíveis de', LAY.LAYERS.length,
-  '· produtos:', availGroups(LAY.PRODUTOS).length,
-  '· fontes:', availGroups(LAY.REF_FONTES).length);
+print('[CAMADAS]', available.length, 'disponíveis de', LAY.LAYERS.length);
+print('[GRUPOS] produtos:', (LAY.PRODUTOS || []).length, '→',
+  availGroups(LAY.PRODUTOS).length,
+  '· fontes:', (LAY.REF_FONTES || []).length, '→',
+  availGroups(LAY.REF_FONTES).length,
+  '· auxiliares:', (LAY.AUXILIARES || []).length);
 print('[TERRITÓRIOS]', REG.order.join(', '));
 print('[ÍCONES] pacote:', ICONS.source() || 'fallback textual');
 

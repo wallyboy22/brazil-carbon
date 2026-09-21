@@ -70,6 +70,10 @@ exports.createAppShell = function (o) {
 // Indicador de atividade
 // ---------------------------------------------------------------------------
 exports.createActivity = function (label) {
+  if (!label || typeof label.style !== 'function') {
+    return { start: function () {}, end: function () {},
+      wrap: function (fn) { return fn; } };
+  }
   var pending = 0;
   var gif = ICONS.get('load_gif');
   if (gif) label.setImageUrl(gif); else label.setValue('…');
@@ -173,6 +177,7 @@ exports.createButtonDrawer = function (o) {
 // Estilos de check/botão
 // ---------------------------------------------------------------------------
 exports.styleCheck = function (chk, active) {
+  if (!chk || typeof chk.style !== 'function') return;
   chk.style().set('border', active ? '1px solid #1a73e8' : '1px solid #cccccc');
   chk.style().set('backgroundColor', active ? '#e8f0fe' : '#ffffff');
 };
@@ -180,6 +185,7 @@ exports.syncCheckBorder = function (chk) {
   exports.styleCheck(chk, chk.getValue());
 };
 exports.styleToggleButton = function (btn, active) {
+  if (!btn || typeof btn.style !== 'function') return;
   btn.style().set('backgroundColor', active ? '#e8f0fe' : '#ffffff');
   btn.style().set('border', active ? '1px solid #1a73e8'
     : '1px solid rgba(0,0,0,0)');
@@ -287,6 +293,7 @@ exports.colorBarLegend = function (o) {
 // Botão toggle verde/vermelho (MAP ON/OFF, THUMBNAILS ON/OFF)
 // ---------------------------------------------------------------------------
 exports.applyToggleStyle = function (btn, on) {
+  if (!btn || typeof btn.style !== 'function') return;
   btn.style().set({
     backgroundColor: on ? '#2e7d32' : '#c62828',
     border: on ? '1px solid #1b5e20' : '1px solid #b71c1c',
@@ -300,17 +307,34 @@ exports.applyToggleStyle = function (btn, on) {
 exports.createSplitLayout = function (o) {
   o = o || {};
   var right = o.right;
-  right.style().set({ width: o.width || '460px', shown: !!o.shown });
+  if (!right || typeof right.style !== 'function') {
+    print('[AVISO] createSplitLayout: painel direito inválido — sem split.');
+    return { right: null, showRight: function () {} };
+  }
+  try { right.style().set({ width: o.width || '460px', shown: !!o.shown }); }
+  catch (e) { /* ignora */ }
+
   var mapWidget = o.mapWidget || ui.root.widgets().get(0);
-  ui.root.remove(mapWidget);
-  ui.root.insert(1, ui.SplitPanel({
-    firstPanel: mapWidget,
-    secondPanel: right,
-    orientation: 'horizontal'
-  }));
+  if (!mapWidget) {
+    print('[AVISO] createSplitLayout: widget do mapa não encontrado — sem split.');
+    return { right: right, showRight: function (b) {
+      try { right.style().set('shown', !!b); } catch (e) {} } };
+  }
+  try {
+    ui.root.remove(mapWidget);
+    ui.root.insert(1, ui.SplitPanel({
+      firstPanel: mapWidget,
+      secondPanel: right,
+      orientation: 'horizontal'
+    }));
+  } catch (e) {
+    print('[AVISO] createSplitLayout: falha ao montar SplitPanel:', e);
+  }
   return {
     right: right,
-    showRight: function (b) { right.style().set('shown', !!b); }
+    showRight: function (b) {
+      try { right.style().set('shown', !!b); } catch (e) {}
+    }
   };
 };
 
