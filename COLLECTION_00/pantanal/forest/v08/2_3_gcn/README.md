@@ -38,7 +38,7 @@ próprio Python. Para usar outra pasta, ajuste `CONF["DRIVE_ROOT"]` na célula 0
 
 > **Fonte de amostra (`CONF["SOURCE"]`)**: `'gedi'` | `'ifn'` — deve casar com o
 > `SOURCE` do `0_contract.js`. Ela entra como **prefixo** nos artefatos para não
-> colidir entre variantes: CSVs `agc_matrix_<SOURCE>_v08_*.csv`,
+> colidir entre variantes: CSVs `agb_matrix_<SOURCE>_v08_*.csv`,
 > `samples_thinned_<SOURCE>_v08.csv` e pasta `figures_<SOURCE>/`.
 
 ## Biblioteca de figuras

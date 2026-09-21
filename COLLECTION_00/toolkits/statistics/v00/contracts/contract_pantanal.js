@@ -60,7 +60,7 @@ exports.FOREST = resolve({
   SCOPE: 'forest',
   VERSIONS: PROD.FOREST,          // V03–V07 + V08_GEDI/V08_IFN (mosaicos anuais + stdBand)
   PREFIX: 'stats_forest',
-  STOCK_UNIT: 'Mg',               // agbd (biomassa acima do solo) em Mg/ha × área_ha
+  STOCK_UNIT: 't',                // agbd (biomassa acima do solo) em t/ha × área_ha
   UNCERT_MODE: 'sd_ens',          // incerteza = stdDev do ensemble (v07/v08)
   CARBON_FRACTION: 0.47           // AGB→C (coluna derivada no estágio de estatística)
 });

@@ -24,15 +24,15 @@ var STD_VIS = { min: 0, max: 40, palette: ['#ffffb2', '#fd8d3c', '#d73027', '#7f
 
 // Todas as versões (merge anual exportado pelo 5_merge + COL de fallback).
 // v08 tem sub-versões por fonte (V08_GEDI / V08_IFN), com prefixo de merge
-// próprio (agc_pred_v08_merged_).
+// próprio (agb_pred_v08_merged_).
 var VERSIONS = [
   { v: 'v03', root: BASE + '/V03', prefix: 'agc_pred_v03_merged_' },
   { v: 'v04', root: BASE + '/V04', prefix: 'agc_pred_v04_merged_' },
   { v: 'v05', root: BASE + '/V05', prefix: 'agc_pred_v05_merged_' },
   { v: 'v06', root: BASE + '/V06', prefix: 'agc_pred_v06_merged_' },
   { v: 'v07', root: BASE + '/V07', prefix: 'agc_pred_v07_merged_' },
-  { v: 'v08_gedi', root: BASE + '/V08_GEDI', prefix: 'agc_pred_v08_merged_' },
-  { v: 'v08_ifn', root: BASE + '/V08_IFN', prefix: 'agc_pred_v08_merged_' }
+  { v: 'v08_gedi', root: BASE + '/V08_GEDI', prefix: 'agb_pred_v08_merged_' },
+  { v: 'v08_ifn', root: BASE + '/V08_IFN', prefix: 'agb_pred_v08_merged_' }
 ].map(function (p) {
   return {
     v: p.v,

@@ -108,9 +108,9 @@ def manifest() -> list[str]:
 # Dados: leitura / limpeza da matriz (CSVs do Drive)
 # ---------------------------------------------------------------------------
 def load_matrix() -> pd.DataFrame:
-    """Concatena todos os agc_matrix_<SOURCE>_v08_*.csv da pasta MATRIX_DIR."""
+    """Concatena todos os agb_matrix_<SOURCE>_v08_*.csv da pasta MATRIX_DIR."""
     files = sorted(matrix_dir().glob(
-        f"agc_matrix_{CONF['SOURCE']}_v08_*.csv"))
+        f"agb_matrix_{CONF['SOURCE']}_v08_*.csv"))
     if not files:
         raise FileNotFoundError(
             f"Nenhum CSV de matriz em {matrix_dir()}. Rode 2_2_toDrive_matrix.js "

@@ -77,9 +77,9 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 | 2 | `2_1_toAsset_samples_treino.js` | amostras normalizadas (1 task por recorte) → SAMPLES/ |
 | 2 | `2_2_toDrive_matrix.js` | matriz por célula/ano (filtro floresta + notNull) → ASSET + Drive (CSV) |
 | 2 | `2_3_gcn/*` | gate offline (Colab) — figuras, thinning (validação), champion |
-| 3 | `3_model_training.js` | ensemble RF global → MODELS/rf_agc_v08_m1..m5 |
+| 3 | `3_model_training.js` | ensemble RF global → MODELS/rf_agb_v08_m1..m5 |
 | 4 | `4_spatial_prediction.js` | predição por célula/ano → PREDICTIONS/COL (mediana+std) |
-| 5 | `5_merge.js` | mosaico anual → `agc_pred_v08_merged_<ano>` |
+| 5 | `5_merge.js` | mosaico anual → `agb_pred_v08_merged_<ano>` |
 | 6 | `6_qualidade.js` | QA visual V03–V08 |
 
 ## 5. Ordem de execução

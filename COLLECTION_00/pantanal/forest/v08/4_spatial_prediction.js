@@ -1,7 +1,7 @@
 /******************************************************************************
  * MAPBIOMAS-CARBONO — Pantanal Forest v08 · Predição espacial
  * ---------------------------------------------------------------------------
- *   - ensemble de N modelos globais (rf_agc_v08_m1..mN): cada membro usa só
+ *   - ensemble de N modelos globais (rf_agb_v08_m1..mN): cada membro usa só
  *     o seu subconjunto de bandas; resultado = MEDIANA + stdDev (incerteza);
  *   - stack com PALSAR GLOBAL determinístico (mediana no domínio);
  *   - alvo linear (sem log-target): classify já devolve AGBD (t/ha);
@@ -22,7 +22,7 @@ var N = c.ENSEMBLE.NUM_MEMBERS;
 
 var models = {};
 for (var i = 1; i <= N; i++) {
-  models['m' + i] = ee.Classifier.load(root + '/MODELS/rf_agc_v08_m' + i);
+  models['m' + i] = ee.Classifier.load(root + '/MODELS/rf_agb_v08_m' + i);
 }
 
 var domain = src.getDomain().geometry();
@@ -55,7 +55,7 @@ function predictCell(id, year) {
     .set('year', year).set('cell_id', id)
     .set('system:time_start', ee.Date.fromYMD(year, 1, 1).millis());
 
-  var name = 'agc_pred_v08_' + id + '_' + year;
+  var name = 'agb_pred_v08_' + id + '_' + year;
   if (ADD_LAYER) Map.addLayer(image.select('prediction_' + year),
     { min: 0, max: 75, palette: palette }, name, false);
   Export.image.toAsset({ image: image,

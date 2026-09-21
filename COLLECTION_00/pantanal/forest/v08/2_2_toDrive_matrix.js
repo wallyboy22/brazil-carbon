@@ -88,7 +88,7 @@ function exportCell(id) {
           : ee.Number(1);
         return f.set('lon', lon).set('lat', lat).set('w', w);
       });
-    var name = 'agc_matrix_' + c.SOURCE + '_v08_' + id + '_' + year;
+    var name = 'agb_matrix_' + c.SOURCE + '_v08_' + id + '_' + year;
     print('[TASK]', name);
     // ASSET (server-side, para o treino)
     if (EXPORT_TO_ASSET) {

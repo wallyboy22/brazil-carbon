@@ -108,9 +108,9 @@ Fonte: `v08/0_contract.js`.
 | 2 | `2_1_toAsset_samples_treino.js` | Amostras normalizadas (1 task por recorte) → `SAMPLES/forest_footprint_<SOURCE>_<ANO>_<cell>` |
 | 2 | `2_2_toDrive_matrix.js` | Matriz por célula × ano (filtro floresta + notNull) → ASSET + Drive CSV (`lon`, `lat`, `w`) |
 | 2 | `2_3_gcn/*` | Gate offline (Colab): diagnóstico, CV espacial, thinning (validação), champion |
-| 3 | `3_model_training.js` | Ensemble RF global → `MODELS/rf_agc_v08_m1..m5` |
+| 3 | `3_model_training.js` | Ensemble RF global → `MODELS/rf_agb_v08_m1..m5` |
 | 4 | `4_spatial_prediction.js` | Predição por célula/ano → `PREDICTIONS/COL` (mediana + std) |
-| 5 | `5_merge.js` | Mosaico anual → `agc_pred_v08_merged_<ano>` |
+| 5 | `5_merge.js` | Mosaico anual → `agb_pred_v08_merged_<ano>` |
 | 6 | `6_qualidade.js` | QA visual v03–v08 |
 
 **Notas de arquitetura**

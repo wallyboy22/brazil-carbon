@@ -8,7 +8,7 @@
  *
  * MODELO GLOBAL ÚNICO (não por célula): a matriz agrega TODAS as células.
  * Um classificador por membro do ensemble é exportado para
- * ASSET_ROOT/MODELS/rf_agc_v08_m1..mN.
+ * ASSET_ROOT/MODELS/rf_agb_v08_m1..mN.
  ******************************************************************************/
 var c = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_contract.js');
@@ -19,7 +19,7 @@ var N = c.ENSEMBLE.NUM_MEMBERS;
 
 var response = ee.data.listAssets(root + '/MATRIX');
 var assets = (response.assets || []).filter(function (a) {
-  return a.type === 'TABLE' && a.id.indexOf('/agc_matrix_' + c.SOURCE + '_v08_') > -1;
+  return a.type === 'TABLE' && a.id.indexOf('/agb_matrix_' + c.SOURCE + '_v08_') > -1;
 });
 if (!assets.length) throw new Error('Matriz florestal v08 não encontrada.');
 var matrix = ee.FeatureCollection(assets.map(function (a) {
@@ -69,12 +69,12 @@ function trainMember(i) {
     model_version: 'v08',
     ensemble_member: i
   });
-  var modelAsset = root + '/MODELS/rf_agc_v08_m' + i;
+  var modelAsset = root + '/MODELS/rf_agb_v08_m' + i;
   deleteModelAsset(modelAsset);
   print('[TASK]', modelAsset, '· bandas', bands.length, '· seed',
     c.ENSEMBLE.SEED_BASE + i);
   Export.classifier.toAsset({ classifier: model,
-    description: 'WS_CARBONO_toAsset-rf_agc_v08_m' + i,
+    description: 'WS_CARBONO_toAsset-rf_agb_v08_m' + i,
     assetId: modelAsset });
 }
 

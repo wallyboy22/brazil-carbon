@@ -20,7 +20,7 @@ c.YEARS.forEach(function (year) {
     .mosaic()
     .rename(['prediction_' + year, 'agbd_std_' + year])
     .toFloat();
-  var name = 'agc_pred_v08_merged_' + year;
+  var name = 'agb_pred_v08_merged_' + year;
   print('[TASK]', root + '/' + name);
   Export.image.toAsset({ image: image,
     description: 'WS_CARBONO_toAsset-' + name,

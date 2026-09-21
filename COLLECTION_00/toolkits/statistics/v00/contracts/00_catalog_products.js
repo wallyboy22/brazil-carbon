@@ -29,9 +29,9 @@ exports.FOREST = [
     mosaic: FOREST_BASE + '/V07/PREDICTIONS/agc_pred_v07_merged_2023' },
   // v08 tem sub-versões por FONTE de amostra (domínio BAP): GEDI e IFN.
   { id: 'v08_gedi', band: 'prediction_2023', stdBand: 'agbd_std_2023',
-    mosaic: FOREST_BASE + '/V08_GEDI/PREDICTIONS/agc_pred_v08_merged_2023' },
+    mosaic: FOREST_BASE + '/V08_GEDI/PREDICTIONS/agb_pred_v08_merged_2023' },
   { id: 'v08_ifn', band: 'prediction_2023', stdBand: 'agbd_std_2023',
-    mosaic: FOREST_BASE + '/V08_IFN/PREDICTIONS/agc_pred_v08_merged_2023' }
+    mosaic: FOREST_BASE + '/V08_IFN/PREDICTIONS/agb_pred_v08_merged_2023' }
 ];
 
 // ---- Campestre (Pantanal) ----------------------------------------------------
@@ -40,7 +40,7 @@ var GRASS_BASE =
 var MESES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 // toTFactor converte a banda para t/ha antes de multiplicar pela área:
-// kg → t (÷1000); Mg → t (÷1).
+// kg → t (÷1000); t → t (÷1).
 function anualP(version, id, name, asset, band, unit, toTFactor) {
   return { version: version, id: id, name: name, asset: asset, band: band,
     unit: unit, toTFactor: toTFactor === undefined ? 1 / 1000 : toTFactor };
