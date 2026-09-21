@@ -15,9 +15,15 @@ var labeled = src.applyTrainingMask(raw, c.YEAR);
 
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 2_0_check_footprint');
 print('[FONTE]', c.SOURCE, '·', c.SOURCE_CFG.label);
-raw.size().evaluate(function (n) { print('[RAW]', n); });
-labeled.size().evaluate(function (n) { print('[TREINO (mask C11 + palsar)]', n); });
+raw.size().evaluate(
+  function (n) { print('[RAW]', n); },
+  function (e) { print('[ERRO RAW]', e); });
+labeled.size().evaluate(
+  function (n) { print('[TREINO (mask C11 + palsar)]', n); },
+  function (e) { print('[ERRO TREINO]', e); });
 if (c.SOURCE === 'gedi') {
   labeled.distinct('pft_class').aggregate_array('pft_class')
-    .evaluate(function (p) { print('[PFT]', p); });
+    .evaluate(
+      function (p) { print('[PFT]', p); },
+      function (e) { print('[ERRO PFT]', e); });
 }

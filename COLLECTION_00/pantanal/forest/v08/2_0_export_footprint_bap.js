@@ -5,18 +5,17 @@
  * extrai os footprints GEDI L4A v2.1 FILTRADOS sobre a BAP e exporta um asset
  * por ano (`SAMPLES/footprint_bap_<ANO>`).
  *
- * O footprint histórico (`footprint_pantanal_2023`) cobre só o bioma Pantanal;
- * como o domínio da v08/BAP passou a ser Pantanal + Planalto, os footprints
- * GEDI precisam cobrir toda a Bacia.
+ * DIRETO: os anos são disparados em PARALELO (um evaluate por ano só para
+ * descobrir os `table_id` — o carregamento das tabelas GEDI exige os ids no
+ * cliente). Sem contagem por ano e sem encadeamento: as tasks aparecem no
+ * Task Manager logo após o primeiro retorno, em vez de uma a uma.
  *
  * Filtros de qualidade (porta do v00/mb_carbon_agc.js — filterGedi):
  *   l4_quality_flag=1 · degrade_flag=0 · agbd>0 · erro relativo <50% ·
  *   sensitivity>=0.95 · 8 beams (0,1,2,3,5,6,8,11) · solar_elevation<0.
  *
- * COMO USAR (GEE Code Editor):
- *   1) Ajuste YEARS (série multi-ano) e DRIVE_ROOT se quiser CSV.
- *   2) Run > monitore as tasks; cada ano exporta um asset.
- *   3) Os assets gerados já são lidos por getFootprints() da variante GEDI.
+ * COMO USAR (GEE Code Editor): Run > as tasks aparecem em ~1 min (podem levar
+ * alguns minutos para o Task Manager listar). Não rode o 2_1 antes de concluírem.
  ******************************************************************************/
 var c = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_contract.js');
@@ -64,79 +63,58 @@ function filterGedi(fc, aoi) {
   return fc.filterBounds(aoi);
 }
 
-/** Granules (table_id) do GEDI no domínio e ano (time_start é STRING ISO). */
-function discoverGranules(aoi, year, callback) {
-  var start = year + '-01-01';
-  var end = (year + 1) + '-01-01';
-  var idx = ee.FeatureCollection('LARSE/GEDI/GEDI04_A_002_INDEX')
-    .filter(ee.Filter.gt('time_start', start + 'T00:00:00Z'))
-    .filter(ee.Filter.lt('time_start', end + 'T00:00:00Z'))
-    .filterBounds(aoi);
-  idx.aggregate_array('table_id').distinct().evaluate(function (assets) {
-    callback(assets || []);
-  });
-}
-
-// ---------------------------------------------------------------------------
-// Pipeline (encadeado por ano — 1 evaluate por ano)
-// ---------------------------------------------------------------------------
-function processYear(year) {
-  print('====== ANO:', year, '· domínio BAP ======');
-  discoverGranules(DOMAIN, year, function (assets) {
-    if (!assets.length) {
-      print('[AVISO] Sem granules GEDI em', year, '— pulando.');
-      nextYear(year);
-      return;
-    }
-    var fcServer = ee.FeatureCollection(assets.map(function (tid) {
-      return filterGedi(ee.FeatureCollection(tid), DOMAIN);
-    })).flatten();
-
-    fcServer.size().evaluate(function (total) {
-      print('[OK] Granules:', assets.length, '· pegadas filtradas:', total);
-      if (total === 0) {
-        print('[AVISO] Nenhuma pegada após filtros em', year, '— pulando.');
-        nextYear(year);
-        return;
-      }
-      if (EXPORT_TO_ASSET) {
-        var assetId = SAMPLES_ROOT + '/footprint_bap_' + year;
-        Export.table.toAsset({
-          collection: fcServer,
-          description: 'WS_CARBONO_toAsset-footprint_bap_' + year,
-          assetId: assetId
-        });
-        print('[TASK] Asset:', assetId);
-      }
-      if (EXPORT_TO_DRIVE) {
-        var name = 'GEDI_L4A_AGB_' + year + '_bap_filtered';
-        Export.table.toDrive({
-          collection: fcServer, description: 'WS_CARBONO_toDrive-' + name,
-          folder: EXPORT_FOLDER, fileNamePrefix: name, fileFormat: 'CSV',
-          selectors: GEDI_SELECTORS
-        });
-        print('[TASK] Drive:', name + '.csv');
-      }
-      nextYear(year);
+/** Exporta os footprints de UM ano (asset e/ou Drive). */
+function exportYear(year, ids) {
+  var fc = ee.FeatureCollection(ids.map(function (tid) {
+    return filterGedi(ee.FeatureCollection(tid), DOMAIN);
+  })).flatten();
+  if (EXPORT_TO_ASSET) {
+    var assetId = SAMPLES_ROOT + '/footprint_bap_' + year;
+    Export.table.toAsset({
+      collection: fc,
+      description: 'WS_CARBONO_toAsset-footprint_bap_' + year,
+      assetId: assetId
     });
-  });
-}
-
-var _i = 0;
-function nextYear(year) {
-  _i += 1;
-  if (_i < YEARS.length) {
-    processYear(YEARS[_i]);
-  } else {
-    print('[FIM] Footprints BAP exportados para', SAMPLES_ROOT);
+    print('[TASK] Asset:', assetId);
+  }
+  if (EXPORT_TO_DRIVE) {
+    var name = 'GEDI_L4A_AGB_' + year + '_bap_filtered';
+    Export.table.toDrive({
+      collection: fc, description: 'WS_CARBONO_toDrive-' + name,
+      folder: EXPORT_FOLDER, fileNamePrefix: name, fileFormat: 'CSV',
+      selectors: GEDI_SELECTORS
+    });
+    print('[TASK] Drive:', name + '.csv');
   }
 }
 
 // ---------------------------------------------------------------------------
-// Execução
+// Execução — dispara TODOS os anos em paralelo (1 evaluate por ano, só p/ ids)
 // ---------------------------------------------------------------------------
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 2_0_export_footprint_bap');
 print('[DOMÍNIO]', c.BAP_ASSET, '· anos', YEARS);
 print('[SAÍDA]', SAMPLES_ROOT + '/footprint_bap_<ANO>');
 src.ensureFolder(SAMPLES_ROOT);
-if (YEARS.length) processYear(YEARS[0]);
+
+YEARS.forEach(function (year) {
+  var start = year + '-01-01';
+  var end = (year + 1) + '-01-01';
+  ee.FeatureCollection('LARSE/GEDI/GEDI04_A_002_INDEX')
+    .filter(ee.Filter.gt('time_start', start + 'T00:00:00Z'))
+    .filter(ee.Filter.lt('time_start', end + 'T00:00:00Z'))
+    .filterBounds(DOMAIN)
+    .aggregate_array('table_id').distinct()
+    .evaluate(function (ids) {
+      if (!ids || !ids.length) {
+        print('[AVISO] sem granules GEDI em', year, '— pulando.');
+        return;
+      }
+      print('[ANO]', year, '· granules:', ids.length);
+      exportYear(year, ids);
+    }, function (err) {
+      print('[ERRO] descoberta de granules em', year, '—', err);
+    });
+});
+
+print('[FIM] Tasks agendadas para', YEARS.join(', '),
+  '— aguarde concluírem antes do 2_1.');

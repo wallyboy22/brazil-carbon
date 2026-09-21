@@ -99,7 +99,23 @@ exports.getSampleProps = function () {
 exports.getFootprints = function () {
   var S = c.SOURCE_CFG;
   if (c.SOURCE === 'gedi') {
-    return ee.FeatureCollection(S.footprintAssets.map(function (a) {
+    // Tolera anos sem asset (o exportador pula anos sem pegadas) e falha com
+    // mensagem clara se NENHUM footprint_bap_* existir.
+    var existing = [];
+    var missing = [];
+    S.footprintAssets.forEach(function (a) {
+      try { ee.data.getAsset(a); existing.push(a); }
+      catch (e) { missing.push(a); }
+    });
+    if (missing.length) {
+      print('[AVISO] footprints ausentes (ok se o ano não tinha GEDI):',
+        missing.join(', '));
+    }
+    if (!existing.length) {
+      throw new Error('Nenhum footprint_bap_* encontrado — rode ' +
+        '2_0_export_footprint_bap.js no GEE e aguarde as tasks.');
+    }
+    return ee.FeatureCollection(existing.map(function (a) {
       return ee.FeatureCollection(a);
     })).flatten();
   }
