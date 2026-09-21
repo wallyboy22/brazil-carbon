@@ -441,6 +441,32 @@ def reorganize_root(dry_run: bool = False) -> dict:
     return stats
 
 
+def diagnose_drive(max_items: int = 40) -> None:
+    """Imprime o estado do Drive: raiz, conteúdo, CSVs, fontes e contexto.
+
+    Rode `diagnose_drive()` na célula 00 (após montar o Drive) para ver o que o
+    gate está enxergando quando algo "não é encontrado".
+    """
+    root = Path(CONF["DRIVE_ROOT"])
+    print("=" * 68)
+    print("[DIAG] DRIVE_ROOT:", root, "· existe:", root.exists())
+    if not root.exists():
+        print("  → pasta inexistente: confira CONF['DRIVE_ROOT'] e a montagem do Drive.")
+        print("=" * 68)
+        return
+    print("[DIAG] conteúdo da raiz:")
+    for p in sorted(root.iterdir())[:max_items]:
+        print(f"   [{'DIR ' if p.is_dir() else 'file'}] {p.name}")
+    files = _scan_matrix_files()
+    print(f"[DIAG] CSVs de matriz encontrados: {len(files)}")
+    for f in files[:max_items]:
+        print("   ", f.relative_to(root))
+    print("[DIAG] fontes detectadas:", detect_sources())
+    print("[DIAG] SOURCE (CONF):", CONF.get("SOURCE"),
+          "· contexto resolvido:", context_name(), "· dir:", context_dir())
+    print("=" * 68)
+
+
 print("=" * 68)
 print("v08 · cell00 · util/config carregadas (CONF + funções no namespace)")
 print("     DRIVE_ROOT:", CONF["DRIVE_ROOT"], "· MATRIX_DIR:", CONF["MATRIX_DIR"],
