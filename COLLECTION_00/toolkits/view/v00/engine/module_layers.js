@@ -4,9 +4,16 @@
  * Constrói a ee.Image de exibição de uma camada do registry.
  ******************************************************************************/
 
-/** ee.Image de uma camada (trata banda, série multi-ano e nodata sentinela). */
+/** ee.Image de uma camada (trata COL, banda, série multi-ano e nodata). */
 exports.build = function (layer) {
-  var img = ee.Image(layer.asset);
+  var img;
+  if (layer.col) {
+    // Forest: mosaico da ImageCollection COL no ano da camada.
+    img = ee.ImageCollection(layer.col)
+      .filter(ee.Filter.eq('year', layer.year || 2023)).mosaic();
+  } else {
+    img = ee.Image(layer.asset);
+  }
   var band = layer.band;
   if (layer.multi_year) {
     // Séries (Xu): usa o ano mais recente da série (b<end-start+1>).

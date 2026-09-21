@@ -22,7 +22,7 @@ var LAYERS = [];
 PROD.FOREST.forEach(function (v) {
   LAYERS.push({ id: 'res_forest_' + v.id, grupo: 'Resultados · Forest',
     nome: 'Forest ' + v.label, tipo: 'resultado',
-    asset: v.asset, band: v.band, stdBand: v.stdBand, vis: v.vis });
+    col: v.col, band: v.band, stdBand: v.stdBand, year: v.year, vis: v.vis });
 });
 
 // ---- Resultados: Grassland --------------------------------------------------

@@ -4,13 +4,18 @@
  * Camadas de RESULTADO do projeto (TODAS as versões) para o app de QA:
  *   FOREST     → AGBD previsto (v03–v08; v08 em sub-versões gedi/ifn)
  *   GRASSLAND  → biomassa / carbono / ANPP (v01/v02)
- * Assets reescritos do toolkit statistics/v00, com vis para visualização.
+ *
+ * Forest usa a ImageCollection `PREDICTIONS/COL` (mosaico por ano) — uniforme
+ * para todas as versões (o merge só existe em v05/v07). Grassland = imagem
+ * anual única.
  ******************************************************************************/
 
 var FOREST_BASE =
   'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST';
 var GRASS_BASE =
   'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_GRASSLAND';
+
+exports.YEAR = 2023;
 
 /** vis padrão de AGBD (t/ha). */
 exports.AGBD_VIS = { min: 0, max: 75,
@@ -19,29 +24,24 @@ exports.AGBD_VIS = { min: 0, max: 75,
 exports.STD_VIS = { min: 0, max: 40,
   palette: ['#ffffb2', '#fd8d3c', '#d73027', '#7f0000'] };
 
-exports.YEAR = 2023;
+/** Forest — ImageCollection COL por versão (mosaico do ano). */
+function forest(id, label, root) {
+  return { id: id, label: label, col: root + '/PREDICTIONS/COL',
+    band: 'prediction_2023', stdBand: 'agbd_std_2023', year: 2023,
+    vis: exports.AGBD_VIS };
+}
 
-/** Forest — mosaico anual por versão (merge) + banda de predição/incerteza. */
 exports.FOREST = [
-  { id: 'v03', label: 'v03', asset: FOREST_BASE + '/V03/PREDICTIONS/agc_pred_v03_merged_2023',
-    band: 'prediction_2023', stdBand: null, vis: exports.AGBD_VIS },
-  { id: 'v04', label: 'v04', asset: FOREST_BASE + '/V04/PREDICTIONS/agc_pred_v04_merged_2023',
-    band: 'prediction_2023', stdBand: null, vis: exports.AGBD_VIS },
-  { id: 'v05', label: 'v05', asset: FOREST_BASE + '/V05/PREDICTIONS/agc_pred_v05_merged_2023',
-    band: 'prediction_2023', stdBand: null, vis: exports.AGBD_VIS },
-  { id: 'v06', label: 'v06', asset: FOREST_BASE + '/V06/PREDICTIONS/agc_pred_v06_merged_2023',
-    band: 'prediction_2023', stdBand: null, vis: exports.AGBD_VIS },
-  { id: 'v07', label: 'v07', asset: FOREST_BASE + '/V07/PREDICTIONS/agc_pred_v07_merged_2023',
-    band: 'prediction_2023', stdBand: 'agbd_std_2023', vis: exports.AGBD_VIS },
-  { id: 'v08_gedi', label: 'v08 (GEDI)',
-    asset: FOREST_BASE + '/V08_GEDI/PREDICTIONS/agb_pred_v08_merged_2023',
-    band: 'prediction_2023', stdBand: 'agbd_std_2023', vis: exports.AGBD_VIS },
-  { id: 'v08_ifn', label: 'v08 (IFN)',
-    asset: FOREST_BASE + '/V08_IFN/PREDICTIONS/agb_pred_v08_merged_2023',
-    band: 'prediction_2023', stdBand: 'agbd_std_2023', vis: exports.AGBD_VIS }
+  forest('v03', 'v03', FOREST_BASE + '/V03'),
+  forest('v04', 'v04', FOREST_BASE + '/V04'),
+  forest('v05', 'v05', FOREST_BASE + '/V05'),
+  forest('v06', 'v06', FOREST_BASE + '/V06'),
+  forest('v07', 'v07', FOREST_BASE + '/V07'),
+  forest('v08_gedi', 'v08 (GEDI)', FOREST_BASE + '/V08_GEDI'),
+  forest('v08_ifn', 'v08 (IFN)', FOREST_BASE + '/V08_IFN')
 ];
 
-/** Grassland — produtos anuais por versão. */
+/** Grassland — produtos anuais por versão (imagem única). */
 exports.GRASSLAND = [
   { id: 'v01_biomass', label: 'v01 biomassa',
     asset: GRASS_BASE + '/V01/BIOMASS/grassland_biomass_annual_v01_2023',
