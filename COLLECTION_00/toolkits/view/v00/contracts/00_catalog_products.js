@@ -14,6 +14,8 @@ var FOREST_BASE =
   'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST';
 var GRASS_BASE =
   'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_GRASSLAND';
+var CERRADO_BASE =
+  'projects/mapbiomas-brazil/assets/CARBON/MAPPING/Cerrado/mapa_biomassa_vbeta1';
 
 exports.YEAR = 2023;
 
@@ -23,6 +25,9 @@ exports.AGBD_VIS = { min: 0, max: 75,
 /** vis de incerteza (t/ha). */
 exports.STD_VIS = { min: 0, max: 40,
   palette: ['#ffffb2', '#fd8d3c', '#d73027', '#7f0000'] };
+/** vis de AGBD do Cerrado (t/ha) — máximos maiores que o Pantanal. */
+exports.CERRADO_VIS = { min: 0, max: 140,
+  palette: ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'] };
 
 /** Forest — ImageCollection COL por versão (mosaico do ano). */
 function forest(id, label, root) {
@@ -54,4 +59,17 @@ exports.GRASSLAND = [
     band: 'carbon_stock_MgC_ha', unit: 't C/ha',
     vis: { min: 0, max: 8,
       palette: ['#fff7fb', '#d0d1e6', '#74a9cf', '#0570b0', '#034e7b'] } }
+];
+
+/** Cerrado Florestal — AGB 2020 (vbeta1). Imagem única, banda `b1`.
+ *  `mosaico_final_agb_2020_vbeta1_1`     → AGB (b2 = constante, ignorada);
+ *  `mosaico_final_agb_2020_mask_vbeta1_1`→ AGB mascarada às classes nativas.
+ *  Ver `COLLECTION_00/docs/Resultado - Cerrado Florestal (assets).md`. */
+exports.CERRADO = [
+  { id: 'vbeta1', label: 'vbeta1 (2020)', unit: 't/ha', year: 2020,
+    asset: CERRADO_BASE + '/mosaico_final_agb_2020_vbeta1_1', band: 'b1',
+    vis: exports.CERRADO_VIS },
+  { id: 'vbeta1_nativo', label: 'vbeta1 nativo (2020)', unit: 't/ha', year: 2020,
+    asset: CERRADO_BASE + '/mosaico_final_agb_2020_mask_vbeta1_1', band: 'b1',
+    vis: exports.CERRADO_VIS }
 ];

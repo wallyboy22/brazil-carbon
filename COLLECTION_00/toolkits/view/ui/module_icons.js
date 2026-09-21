@@ -1,9 +1,10 @@
 /******************************************************************************
  * MAPBIOMAS-CARBONO — toolkit view/ui · module_icons
  * ---------------------------------------------------------------------------
- * Acesso AGNÓSTICO aos ícones do pacote MapBiomas (GEE), com fallback.
- * Tenta os caminhos conhecidos de `packages`; se nenhum resolver, devolve um
- * fallback textual (setas). Sem logo.
+ * Acesso AGNÓSTICO aos ícones do pacote MapBiomas (GEE) — MESMA FONTE das
+ * referências (`toolkit_mapbiomas_fogo.js`): `.../packages:mapbiomas-toolkit/
+ * utils/b64` → `b64.get(key)`. Aceita também objeto { key: dataURL }.
+ * Sem logo. Se nada resolver, devolve fallback textual (setas).
  ******************************************************************************/
 var PATHS = [
   'users/workspaceipam/packages:mapbiomas-toolkit/utils/b64',
@@ -16,7 +17,9 @@ var _path = null;
 for (var i = 0; i < PATHS.length; i++) {
   try {
     var mod = require(PATHS[i]);
-    if (mod && typeof mod.get === 'function') { _b64 = mod; _path = PATHS[i]; break; }
+    if (mod && (typeof mod.get === 'function' || typeof mod === 'object')) {
+      _b64 = mod; _path = PATHS[i]; break;
+    }
   } catch (e) { /* tenta o próximo */ }
 }
 
@@ -25,7 +28,14 @@ var FALLBACK = { 'arraw_v': '▼', 'arraw_>': '▶', 'load_gif': '' };
 /** Ícone por chave (data URL) ou fallback textual. */
 exports.get = function (key) {
   if (_b64) {
-    try { var v = _b64.get(key); if (v) return v; } catch (e) { /* ignora */ }
+    try {
+      if (typeof _b64.get === 'function') {
+        var v = _b64.get(key);
+        if (v) return v;
+      } else if (_b64[key]) {
+        return _b64[key];
+      }
+    } catch (e) { /* ignora */ }
   }
   return FALLBACK[key] !== undefined ? FALLBACK[key] : '';
 };

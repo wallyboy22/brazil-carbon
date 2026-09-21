@@ -30,8 +30,7 @@ function ref(o) {
 }
 exports.ref = ref;
 
-exports.REFERENCES = [
-  // Saatchi 2011 (Américas ~1 km)
+exports.REFERENCES = [  // Saatchi 2011 (Américas ~1 km)
   ref({ id: 'saatchi_agb', grupo: 'saatchi', fonte: 'Saatchi 2011 · AGB',
     magnitude: 'biomassa', unit: 't/ha',
     asset: REF_ROOT + '/Saatchi_2011_america_agb_1km', band: 'b1' }),
@@ -82,3 +81,15 @@ exports.REFERENCES = [
   ref({ id: 'qcnr_agb', grupo: 'qcnr', fonte: 'QCN-r (1985) · AGB', magnitude: 'carbono',
     unit: 't C/ha', asset: QCN_ROOT + '/qcn_brazil_historical_biomass_carbon_qcn_rect_v1', band: 'AGB' })
 ];
+
+/** Rótulos das fontes (grupos) de referência — ordem de exibição. */
+exports.FONTES = {
+  saatchi: 'Saatchi 2011 (Américas)',
+  baccini: 'Baccini 2012 (tropical)',
+  zimbres: 'Zimbres 2021 (Cerrado)',
+  avitabile: 'Avitabile 2016 (pan-tropical)',
+  xu: 'Xu & Saatchi 2021 (tropical)',
+  tcn: 'TCN (3ª CN)',
+  qcn: 'QCN (4ª CN)',
+  qcnr: 'QCN-r (1985)'
+};

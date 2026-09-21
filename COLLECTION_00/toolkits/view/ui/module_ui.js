@@ -183,7 +183,7 @@ exports.styleToggleButton = function (btn, active) {
   btn.style().set('backgroundColor', active ? '#e8f0fe' : '#ffffff');
   btn.style().set('border', active ? '1px solid #1a73e8'
     : '1px solid rgba(0,0,0,0)');
-  btn.style().set('color', active ? '#1a73e8' : '#333');
+  btn.style().set('color', '#000000');
 };
 
 // ---------------------------------------------------------------------------
@@ -290,7 +290,7 @@ exports.applyToggleStyle = function (btn, on) {
   btn.style().set({
     backgroundColor: on ? '#2e7d32' : '#c62828',
     border: on ? '1px solid #1b5e20' : '1px solid #b71c1c',
-    color: '#ffffff'
+    color: '#000000'
   });
 };
 

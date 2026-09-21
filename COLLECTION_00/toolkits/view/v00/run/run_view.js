@@ -32,7 +32,6 @@ var available = LAY.LAYERS.filter(function (l) {
   print('[AVISO] camada ausente (ignorada):', l.nome, '\u2192', target);
   return false;
 });
-var availableGroups = LAY.grouped(available);
 
 Map.setOptions('SATELLITE');
 Map.setCenter(-52.0, -14.0, 4);   // visão Brasil (sem zoom por território)
@@ -62,10 +61,35 @@ var drawerRegions = UI.createLayerDrawer({ title: 'Regiões (vazio = todas)',
 cabTerr.content.add(drawerRegions.panel);
 
 // ---------------------------------------------------------------------------
-// CAMADAS
+// CAMADAS — gavetas aninhadas (MapBiomas Carbono · Referência · Auxiliares)
 // ---------------------------------------------------------------------------
-var cabLayers = UI.createCabinet({ title: 'CAMADAS', isOpen: true });
-shell.body.add(cabLayers.panel);
+/** Mantém só os grupos com camadas disponíveis (assets existentes). */
+function availGroups(groups) {
+  return groups.map(function (g) {
+    return { id: g.id, label: g.label,
+      camadas: g.camadas.filter(function (l) {
+        return available.indexOf(l) >= 0;
+      }) };
+  }).filter(function (g) { return g.camadas.length > 0; });
+}
+
+function addLayerDrawer(parent, layers) {
+  var drawer = UI.createLayerDrawer({
+    title: 'camadas',
+    options: layers.map(function (l) {
+      return { id: l.id, label: l.nome, value: false,
+        onChange: function (v) { state.layers[l.id] = v; refreshMap(); } };
+    })
+  });
+  parent.content.add(drawer.panel);
+}
+
+function addSubCabinet(parent, label, layers) {
+  var sub = UI.createCabinet({ title: label, isOpen: false,
+    indent: '2px 2px 2px 10px' });
+  addLayerDrawer(sub, layers);
+  parent.content.add(sub.panel);
+}
 
 // --- Toggles: MAP ON/OFF · THUMBNAILS ON/OFF ---------------------------------
 var mapVisible = true;
@@ -96,20 +120,27 @@ UI.applyToggleStyle(thumbToggleBtn, false);
 var toggleRow = ui.Panel({ layout: ui.Panel.Layout.flow('horizontal'),
   style: { margin: '0px', padding: '0px' } });
 toggleRow.add(mapToggleBtn).add(thumbToggleBtn);
-cabLayers.content.add(toggleRow);
 
-availableGroups.forEach(function (g) {
-  var sub = UI.createCabinet({ title: g.grupo, isOpen: false,
-    indent: '2px 2px 2px 10px' });
-  var drawer = UI.createLayerDrawer({
-    title: 'camadas',
-    options: g.camadas.map(function (l) {
-      return { id: l.id, label: l.nome, value: false,
-        onChange: function (v) { state.layers[l.id] = v; refreshMap(); } };
-    })
-  });
-  sub.content.add(drawer.panel);
-  cabLayers.content.add(sub.panel);
+// --- MapBiomas Carbono (Cerrado Florestal · Pantanal Florestal · Campestre) --
+var cabCarbono = UI.createCabinet({ title: 'MapBiomas Carbono', isOpen: true });
+shell.body.add(cabCarbono.panel);
+cabCarbono.content.add(toggleRow);
+availGroups(LAY.PRODUTOS).forEach(function (p) {
+  addSubCabinet(cabCarbono, p.label, p.camadas);
+});
+
+// --- Referência (uma gaveta por FONTE) ---------------------------------------
+var cabRef = UI.createCabinet({ title: 'Referência', isOpen: false });
+shell.body.add(cabRef.panel);
+availGroups(LAY.REF_FONTES).forEach(function (f) {
+  addSubCabinet(cabRef, f.label, f.camadas);
+});
+
+// --- Auxiliares (Uso e Cobertura C11) ----------------------------------------
+var cabAux = UI.createCabinet({ title: 'Auxiliares', isOpen: false });
+shell.body.add(cabAux.panel);
+availGroups(LAY.AUXILIARES).forEach(function (a) {
+  addSubCabinet(cabAux, a.label, a.camadas);
 });
 
 // ---------------------------------------------------------------------------
@@ -269,7 +300,8 @@ function refreshRamps() {
 
 print('MAPBIOMAS-CARBONO · toolkit view/v00 · run_view');
 print('[CAMADAS]', available.length, 'disponíveis de', LAY.LAYERS.length,
-  '·', availableGroups.length, 'grupos');
+  '· produtos:', availGroups(LAY.PRODUTOS).length,
+  '· fontes:', availGroups(LAY.REF_FONTES).length);
 print('[TERRITÓRIOS]', REG.order.join(', '));
 print('[ÍCONES] pacote:', ICONS.source() || 'fallback textual');
 

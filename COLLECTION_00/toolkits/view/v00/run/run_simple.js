@@ -34,15 +34,23 @@ var LULC_VIS = { min: 0, max: 91, palette: (function () {
 // ---- Bases ----
 var PF = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST';
 var PG = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_GRASSLAND';
+var CER = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/Cerrado/mapa_biomassa_vbeta1';
 var REF = 'projects/ee-ipam/assets/CCAL/DATASETS/Biomass_ref_maps';
 var QCN = 'projects/ee-ipam/assets/CCAL/public/qcn';
 var LULC = 'projects/mapbiomas-public/assets/brazil/lulc/collection11/' +
   'mapbiomas_brazil_collection11_coverage_v3';
 
+// vis de AGBD do Cerrado (t/ha) — máximos maiores que o Pantanal.
+var CERR_VIS = { min: 0, max: 140,
+  palette: ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'] };
+
 // ---- Camadas ----
 // col = ImageCollection COL (mosaico do ano) · img = imagem · mask_lt = nodata.
 var LAYERS = [
-  // Forest (v03–v08)
+  // Cerrado Florestal (AGB 2020, vbeta1)
+  { n: 'Cerrado Florestal vbeta1 (2020)', img: CER + '/mosaico_final_agb_2020_vbeta1_1', band: 'b1', vis: CERR_VIS },
+  { n: 'Cerrado Florestal vbeta1 nativo (2020)', img: CER + '/mosaico_final_agb_2020_mask_vbeta1_1', band: 'b1', vis: CERR_VIS },
+  // Pantanal Forest (v03–v08)
   { n: 'Pantanal Forest v03', col: PF + '/V03/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
   { n: 'Pantanal Forest v04', col: PF + '/V04/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
   { n: 'Pantanal Forest v05', col: PF + '/V05/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
@@ -50,9 +58,9 @@ var LAYERS = [
   { n: 'Pantanal Forest v07', col: PF + '/V07/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
   { n: 'Pantanal Forest v08 GEDI', col: PF + '/V08_GEDI/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
   { n: 'Pantanal Forest v08 IFN', col: PF + '/V08_IFN/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
-  // Grassland (v01)
-  { n: 'Grass v01 biomassa', img: PG + '/V01/BIOMASS/grassland_biomass_annual_v01_2023', band: 'biomass_annual', vis: AGBD_VIS },
-  { n: 'Grass v01 carbono', img: PG + '/V01/CARBON/grassland_carbon_stock_v01_2023', band: 'carbon_stock_MgC_ha', vis: AGBD_VIS },
+  // Pantanal Campestre (v01)
+  { n: 'Pantanal Campestre v01 biomassa', img: PG + '/V01/BIOMASS/grassland_biomass_annual_v01_2023', band: 'biomass_annual', vis: AGBD_VIS },
+  { n: 'Pantanal Campestre v01 carbono', img: PG + '/V01/CARBON/grassland_carbon_stock_v01_2023', band: 'carbon_stock_MgC_ha', vis: AGBD_VIS },
   // Referências
   { n: 'Saatchi 2011 AGB', img: REF + '/Saatchi_2011_america_agb_1km', band: 'b1', vis: REF_VIS },
   { n: 'Saatchi 2011 AGC', img: REF + '/Saatchi_2011_america_carbon_1km', band: 'b1', vis: REF_VIS },

@@ -16,10 +16,11 @@ var INFRA = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/v00/engine/module_infra.js');
 
 print('MAPBIOMAS-CARBONO · toolkit view/v00 · 09_catalog_check');
-print('[CAMADAS]', LAY.LAYERS.length, '·', LAY.GROUPS.length, 'grupos');
+print('[CAMADAS]', LAY.LAYERS.length, '·',
+  LAY.grouped(LAY.LAYERS).length, 'grupos');
 
 var ok = 0, miss = 0;
-LAY.GROUPS.forEach(function (g) {
+LAY.grouped(LAY.LAYERS).forEach(function (g) {
   print('--- ' + g.grupo + ' (' + g.camadas.length + ') ---');
   g.camadas.forEach(function (l) {
     var target = l.col || l.asset;
