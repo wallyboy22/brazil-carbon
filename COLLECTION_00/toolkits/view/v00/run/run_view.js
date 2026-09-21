@@ -136,10 +136,10 @@ function refreshRegions() {
 
 function refreshMap() {
   mlayers.clear();
-  var geom = REG.geometryFor(state.level, state.regions);
+  var fc = REG.featuresFor(state.level, state.regions);
   LAY.LAYERS.forEach(function (l) {
     if (!state.layers[l.id]) return;
-    mlayers.update(l.id, LYR.masked(l, geom), l.vis, l.nome, state.opacity);
+    mlayers.update(l.id, LYR.masked(l, fc), l.vis, l.nome, state.opacity);
   });
 }
 

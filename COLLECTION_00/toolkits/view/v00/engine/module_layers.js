@@ -26,7 +26,7 @@ exports.build = function (layer) {
   return img;
 };
 
-/** Recorta a camada ao território selecionado. */
-exports.masked = function (layer, geom) {
-  return exports.build(layer).clip(geom);
+/** Mascara a camada ao território (FC): dentro=1, fora=masked. SEM clip. */
+exports.masked = function (layer, fc) {
+  return exports.build(layer).updateMask(ee.Image().paint(fc).eq(0));
 };
