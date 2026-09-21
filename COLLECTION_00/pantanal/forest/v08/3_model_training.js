@@ -62,13 +62,9 @@ function trainMember(i) {
     classProperty: target,
     inputProperties: bands
   });
-  // Proveniência de covariáveis anexada ao modelo exportado (asset properties)
-  model = model.set({
-    covariates_registry: JSON.stringify(src.COVARIATES_REGISTRY),
-    covariate_version: src.COVARIATES_VERSION,
-    model_version: 'v08',
-    ensemble_member: i
-  });
+  // NOTA: `ee.Classifier` NÃO é `ee.Element` → não suporta `.set()`. A
+  // proveniência das covariáveis é gravada no asset do modelo pelo passo
+  // `3_1_model_metadata.js`, executado APÓS as tasks deste script.
   var modelAsset = root + '/MODELS/rf_agb_v08_m' + i;
   deleteModelAsset(modelAsset);
   print('[TASK]', modelAsset, '· bandas', bands.length, '· seed',

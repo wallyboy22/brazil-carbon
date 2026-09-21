@@ -9,8 +9,10 @@
  * Mudanças subsequentes entram como itens novos na lista (ex.: PALSAR
  * 'since_v01' → 'v08').
  *
- * Consumo: o orquestrador da versão expõe COVARIATES_REGISTRY; 3_model_training
- * anexa ao modelo como propriedade (model.set('covariates_registry', ...)).
+ * Consumo: o orquestrador da versão expõe COVARIATES_REGISTRY; `3_model_training`
+ * treina o ensemble e o passo `3_1_model_metadata` (após as tasks) grava a
+ * proveniência nas propriedades do asset do modelo (ee.data.setAssetProperties;
+ * `ee.Classifier` não é `ee.Element` e não aceita `.set()`).
  ******************************************************************************/
 
 exports.COVARIATES_VERSION = 'since_v03';

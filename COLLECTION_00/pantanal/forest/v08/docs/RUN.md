@@ -26,6 +26,7 @@ No IFN **não existe** este passo.
   2_2_toDrive_matrix.js             # agb_matrix_gedi_v08_<cell>_2023
   2_3_gcn/*                         # gate offline (validação; champion)
   3_model_training.js               # MODELS/rf_agb_v08_m1..m5
+  3_1_model_metadata.js             # proveniência (após as tasks do 3)
   4_spatial_prediction.js           # PREDICTIONS/COL (GLOBAL, grade comum)
   5_merge.js                        # agb_pred_v08_merged_2023
   6_qualidade.js                    # QA visual
@@ -39,6 +40,7 @@ No IFN **não existe** este passo.
   2_2_toDrive_matrix.js             # agb_matrix_ifn_v08_<cell>_2023
   2_3_gcn/*                         # gate offline (validação; champion)
   3_model_training.js               # MODELS/rf_agb_v08_m1..m5
+  3_1_model_metadata.js             # proveniência (após as tasks do 3)
   4_spatial_prediction.js           # PREDICTIONS/COL (GLOBAL, grade comum)
   5_merge.js                        # agb_pred_v08_merged_2023
   6_qualidade.js                    # QA visual
@@ -61,5 +63,9 @@ herdado da v07, atualize `0_contract.js` (Bloco 7/8).
 
 ## 6. Ordem resumida
 `1_check` → (GEDI: `2_0_gedi_export_footprint`) → `2_1` → `2_2` → `2_3_gcn`
-→ `3` → `4` → `5` → `6`. Estatísticas fora do GEE: `toolkits/statistics/v00`
-(`run/run_pantanal.js`).
+→ `3` → (`3_1`, após as tasks do `3`) → `4` → `5` → `6`. Estatísticas fora do
+GEE: `toolkits/statistics/v00` (`run/run_pantanal.js`).
+
+> `3_1_model_metadata.js` grava a proveniência das covariáveis nos assets
+> `MODELS/rf_agb_v08_m<i>` (o `ee.Classifier` não é `ee.Element` e não aceita
+> `.set()`); deve rodar **depois** que as tasks de `3_model_training` concluírem.
