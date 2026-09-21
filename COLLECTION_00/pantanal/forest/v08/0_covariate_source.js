@@ -86,8 +86,8 @@ exports.getSampleProps = function () {
 /**
  * Footprints/parcelas da fonte ativa, normalizados para o schema do pipeline:
  *   · gedi — merge dos footprints BAP (`gedi_footprint_bap_<ano>`), alvo já `agbd`;
- *   · ifn  — parcelas IFN na BAP, floresta filtrada adiante pela máscara,
- *            geometria reduzida ao CENTROIDE e `AGB_Mg_ha` → `agbd`.
+ *   · ifn  — parcelas IFN normalizadas e PERSISTIDAS pelo `2_0_ifn_export_footprint`
+ *            (`ifn_footprint_<ano>`: centroide + `AGB_Mg_ha` → `agbd`).
  * O alvo final é sempre `agbd` (t/ha).
  */
 exports.getFootprints = function () {
@@ -113,17 +113,23 @@ exports.getFootprints = function () {
       return ee.FeatureCollection(a);
     })).flatten();
   }
-  // ifn
-  var fc = ee.FeatureCollection(S.footprintAsset)
-    .filterBounds(exports.getDomain().geometry())
-    .filter(ee.Filter.gt(S.targetProp, 0));
-  return fc.map(function (f) {
-    var centroid = f.geometry().centroid(30);
-    var y = f.get(S.targetProp);
-    return ee.Feature(centroid)
-      .copyProperties(f, S.sampleProps)
-      .set('agbd', y);
+  // ifn — parcelas já normalizadas (centroide + agbd) pelo 2_0.
+  var existingIfn = [];
+  var missingIfn = [];
+  S.footprintAssets.forEach(function (a) {
+    try { ee.data.getAsset(a); existingIfn.push(a); }
+    catch (e) { missingIfn.push(a); }
   });
+  if (missingIfn.length) {
+    print('[AVISO] footprints IFN ausentes:', missingIfn.join(', '));
+  }
+  if (!existingIfn.length) {
+    throw new Error('Nenhum ifn_footprint_* encontrado — rode ' +
+      '2_0_ifn_export_footprint.js e aguarde a task.');
+  }
+  return ee.FeatureCollection(existingIfn.map(function (a) {
+    return ee.FeatureCollection(a);
+  })).flatten();
 };
 
 // ---------------------------------------------------------------------------

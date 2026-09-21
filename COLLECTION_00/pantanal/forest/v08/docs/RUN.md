@@ -12,10 +12,12 @@ Em `0_contract.js`, `exports.SOURCE`:
 Covariáveis, grade, filtro e hiperparâmetros são **idênticos** entre as fontes —
 só muda a amostra e a raiz de assets. Troque `SOURCE` e re-rode.
 
-## 1. Pré-requisito (só GEDI, uma vez)
-`2_0_gedi_export_footprint.js` → gera `V08_GEDI/SAMPLES/gedi_footprint_bap_2019..2024`
-(dispara todos os anos em paralelo; **aguarde as tasks** antes do `2_1`).
-No IFN **não existe** este passo.
+## 1. Pré-requisito (uma vez, por fonte)
+- **GEDI**: `2_0_gedi_export_footprint.js` → `V08_GEDI/SAMPLES/gedi_footprint_bap_2019..2024`
+  (dispara todos os anos em paralelo; **aguarde as tasks** antes do `2_1`).
+- **IFN**: `2_0_ifn_export_footprint.js` → `V08_IFN/SAMPLES/ifn_footprint_2023`
+  (normaliza as parcelas — centroide + `agbd = AGB_Mg_ha`; **aguarde a task**
+  antes do `2_1`).
 
 ## 2. Fluxo GEDI
 ```
@@ -32,10 +34,11 @@ No IFN **não existe** este passo.
   6_qualidade.js                    # QA visual
 ```
 
-## 3. Fluxo IFN (mais simples — sem footprint)
+## 3. Fluxo IFN (sem footprint GEDI — usa o export próprio do IFN)
 ```
 0_contract.js  (SOURCE='ifn')
   1_check.js
+  2_0_ifn_export_footprint.js       # V08_IFN/SAMPLES/ifn_footprint_2023
   2_1_toAsset_samples_treino.js     # forest_footprint_ifn_2023_<cell>
   2_2_toDrive_matrix.js             # agb_matrix_ifn_v08_<cell>_2023
   2_3_gcn/*                         # gate offline (validação; champion)
@@ -45,8 +48,8 @@ No IFN **não existe** este passo.
   5_merge.js                        # agb_pred_v08_merged_2023
   6_qualidade.js                    # QA visual
 ```
-> O IFN é a **mesma** cadeia, apenas sem o passo de footprint. A matriz IFN tem
-> poucas centenas de parcelas (na BAP: ~759 válidas, ~560 florestais).
+> O IFN usa o mesmo fluxo, com o `2_0_ifn_export_footprint` no lugar do `2_0`
+> do GEDI. A matriz IFN tem poucas centenas de parcelas (na BAP: ~759 válidas).
 
 ## 4. Gate offline (`2_3_gcn`, Colab)
 Células `00`→`06` (ver `2_3_gcn/README.md`). O `SOURCE` é **derivado dos CSVs**
@@ -62,9 +65,9 @@ herdado da v07, atualize `0_contract.js` (Bloco 7/8).
   **não existe mais**; re-rodar v03–v07 exigiria regerar esse footprint (v00/v01).
 
 ## 6. Ordem resumida
-`1_check` → (GEDI: `2_0_gedi_export_footprint`) → `2_1` → `2_2` → `2_3_gcn`
-→ `3` → (`3_1`, após as tasks do `3`) → `4` → `5` → `6`. Estatísticas fora do
-GEE: `toolkits/statistics/v00` (`run/run_pantanal.js`).
+`1_check` → `2_0` (GEDI: `2_0_gedi_export_footprint` · IFN: `2_0_ifn_export_footprint`)
+→ `2_1` → `2_2` → `2_3_gcn` → `3` → (`3_1`, após as tasks do `3`) → `4` → `5`
+→ `6`. Estatísticas fora do GEE: `toolkits/statistics/v00` (`run/run_pantanal.js`).
 
 > `3_1_model_metadata.js` grava a proveniência das covariáveis nos assets
 > `MODELS/rf_agb_v08_m<i>` (o `ee.Classifier` não é `ee.Element` e não aceita

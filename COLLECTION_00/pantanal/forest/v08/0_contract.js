@@ -157,6 +157,7 @@ exports.CRS_TRANSFORM = [
 var PANTANAL_FOREST = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/' +
   'COLLECTION_00/PANTANAL_FOREST';
 var BAP_FOOTPRINT_YEARS = [2019, 2020, 2021, 2022, 2023, 2024];
+var IFN_FOOTPRINT_YEAR = 2023;   // IFN = retrato único (2_0_ifn_export_footprint)
 
 exports.SOURCE = 'gedi';   // 'gedi' | 'ifn'
 
@@ -178,7 +179,11 @@ exports.SOURCES = {
   ifn: {
     label: 'IFN (IFN_2026_BR_PLOTS-v13)',
     assetRoot: PANTANAL_FOREST + '/V08_IFN',
-    footprintAsset: 'projects/ee-ipam/assets/IFN/IFN_2026_BR_PLOTS-v13',
+    // Fonte CRUA (parcelas IFN) — consumida só pelo 2_0_ifn_export_footprint.
+    footprintSource: 'projects/ee-ipam/assets/IFN/IFN_2026_BR_PLOTS-v13',
+    // Parcelas normalizadas persistidas pelo 2_0 (centroide + agbd).
+    footprintAssets: [PANTANAL_FOREST + '/V08_IFN/SAMPLES/ifn_footprint_' +
+      IFN_FOOTPRINT_YEAR],
     trainYears: [2023],
     target: 'agbd',
     targetProp: 'AGB_Mg_ha',
