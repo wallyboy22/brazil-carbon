@@ -9,17 +9,17 @@
  ******************************************************************************/
 var REF_ROOT = 'projects/ee-ipam/assets/CCAL/DATASETS/Biomass_ref_maps';
 var QCN_ROOT = 'projects/ee-ipam/assets/CCAL/public/qcn';
+var VIS = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/v00/contracts/00_catalog_vis.js');
 
 exports.REF_ROOT = REF_ROOT;
 exports.QCN_ROOT = QCN_ROOT;
 exports.CARBON_FRACTION = 0.47;
 
-/** vis de biomassa/carbono (t/ha). */
-exports.AGB_VIS = { min: 0, max: 300,
-  palette: ['#ffffe5', '#d9f0a3', '#78c679', '#238443', '#004529'] };
+/** vis de biomassa/carbono (t/ha) — MESMA rampa p/ toda quantidade por área. */
+exports.AGB_VIS = VIS.AREA;
 /** vis de incerteza (t C/ha). */
-exports.ERR_VIS = { min: 0, max: 60,
-  palette: ['#fff7bc', '#fec44f', '#d95f0e', '#993404'] };
+exports.ERR_VIS = VIS.ERR;
 
 function ref(o) {
   if (o.nodata_le === undefined) o.nodata_le = null;
@@ -105,12 +105,9 @@ exports.IFN_ASSET =
 
 /** Colunas de interesse do IFN (id, prop, label, unit, vis). */
 exports.IFN_COLUNAS = [
-  { id: 'agb', prop: 'AGB_Mg_ha', label: 'AGB', unit: 'Mg/ha',
-    vis: { min: 0, max: 300,
-      palette: ['#ffffe5', '#d9f0a3', '#78c679', '#238443', '#004529'] } },
+  { id: 'agb', prop: 'AGB_Mg_ha', label: 'AGB', unit: 'Mg/ha', vis: VIS.AREA },
   { id: 'carbono', prop: 'C_Mg_ha', label: 'Carbono', unit: 'Mg C/ha',
-    vis: { min: 0, max: 150,
-      palette: ['#fff7fb', '#d0d1e6', '#74a9cf', '#0570b0', '#034e7b'] } },
+    vis: VIS.AREA },
   { id: 'co2e', prop: 'CO2e_Mg_ha', label: 'CO2e', unit: 'Mg CO2e/ha',
     vis: { min: 0, max: 550,
       palette: ['#ffffcc', '#c2e699', '#78c679', '#31a354', '#006837'] } },

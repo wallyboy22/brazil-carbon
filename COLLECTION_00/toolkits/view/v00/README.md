@@ -64,6 +64,11 @@ docs/                        # (em COLLECTION_00/docs) ex.: Resultado - Cerrado 
 ## Notas
 - Catálogos **reescritos** a partir do `statistics/v00` (política "cada toolkit
   escreve os seus"); mesmos assets do projeto.
+- **Quantidade por área**: todas as camadas de **densidade** (t/ha, Mg/ha,
+  t C/ha, Mg C/ha — resultados, referências e auxiliares) usam a **MESMA rampa**
+  (`contracts/00_catalog_vis.js` → `AREA`: **0–300**, amarelo→verde) para
+  comparação direta. Incerteza usa `ERR` (0–60). O **Mín/Máx global** (LEGENDAS)
+  sobrescreve todos.
 - **Botões**: os cabinets usam botão de seta com **label de texto** (▼/▶),
   no esquema do toolkit de **Material Combustível** (sem `imageUrl`/b64).
 - **Genérico**: adicionar camadas = incluir no catálogo correspondente; a UI é

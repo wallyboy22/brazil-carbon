@@ -11,9 +11,8 @@ Map.setOptions('SATELLITE');
 Map.setCenter(-52.0, -14.0, 4);   // visão Brasil
 
 // ---- Vis ----
-var AGBD_VIS = { min: 0, max: 75,
-  palette: ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'] };
-var REF_VIS = { min: 0, max: 300,
+// Quantidade por área (densidade: t/ha, Mg/ha, t C/ha, Mg C/ha) — rampa ÚNICA.
+var AREA_VIS = { min: 0, max: 300,
   palette: ['#ffffe5', '#d9f0a3', '#78c679', '#238443', '#004529'] };
 var ERR_VIS = { min: 0, max: 60,
   palette: ['#fff7bc', '#fec44f', '#d95f0e', '#993404'] };
@@ -45,65 +44,56 @@ var MBP = 'projects/mapbiomas-public/assets/brazil/lulc/collection11/' +
 var MBS = 'projects/mapbiomas-public/assets/brazil/soil/collection3/' +
   'mapbiomas_brazil_collection3_soil_carbon_v1';
 
-// vis de AGBD do Cerrado (t/ha) — máximos maiores que o Pantanal.
-var CERR_VIS = { min: 0, max: 140,
-  palette: ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'] };
-// MapBiomas Pastagem (Mg/ha) e Solo (Mg C/ha), 2023.
-var PAST_VIS = { min: 0, max: 30,
-  palette: ['#ffffe5', '#d9f0a3', '#78c679', '#31a354', '#006837'] };
-var SOIL_VIS = { min: 0, max: 100,
-  palette: ['#f7f4e9', '#e6d3a3', '#c9a86a', '#9c6b3f', '#5c3b1e'] };
-
 // ---- Camadas ----
 // col = ImageCollection COL (mosaico do ano) · img = imagem · mask_lt = nodata.
 var LAYERS = [
   // Cerrado Florestal (AGB 2020, vbeta1)
-  { n: 'Cerrado Florestal vbeta1 (2020)', img: CER + '/mosaico_final_agb_2020_vbeta1_1', band: 'b1', vis: CERR_VIS },
-  { n: 'Cerrado Florestal vbeta1 nativo (2020)', img: CER + '/mosaico_final_agb_2020_mask_vbeta1_1', band: 'b1', vis: CERR_VIS },
+  { n: 'Cerrado Florestal vbeta1 (2020)', img: CER + '/mosaico_final_agb_2020_vbeta1_1', band: 'b1', vis: AREA_VIS },
+  { n: 'Cerrado Florestal vbeta1 nativo (2020)', img: CER + '/mosaico_final_agb_2020_mask_vbeta1_1', band: 'b1', vis: AREA_VIS },
   // Pantanal Forest (v03–v08)
-  { n: 'Pantanal Forest v03', col: PF + '/V03/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
-  { n: 'Pantanal Forest v04', col: PF + '/V04/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
-  { n: 'Pantanal Forest v05', col: PF + '/V05/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
-  { n: 'Pantanal Forest v06', col: PF + '/V06/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
-  { n: 'Pantanal Forest v07', col: PF + '/V07/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
-  { n: 'Pantanal Forest v08 GEDI', col: PF + '/V08_GEDI/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
-  { n: 'Pantanal Forest v08 IFN', col: PF + '/V08_IFN/PREDICTIONS/COL', band: 'prediction_2023', vis: AGBD_VIS },
+  { n: 'Pantanal Forest v03', col: PF + '/V03/PREDICTIONS/COL', band: 'prediction_2023', vis: AREA_VIS },
+  { n: 'Pantanal Forest v04', col: PF + '/V04/PREDICTIONS/COL', band: 'prediction_2023', vis: AREA_VIS },
+  { n: 'Pantanal Forest v05', col: PF + '/V05/PREDICTIONS/COL', band: 'prediction_2023', vis: AREA_VIS },
+  { n: 'Pantanal Forest v06', col: PF + '/V06/PREDICTIONS/COL', band: 'prediction_2023', vis: AREA_VIS },
+  { n: 'Pantanal Forest v07', col: PF + '/V07/PREDICTIONS/COL', band: 'prediction_2023', vis: AREA_VIS },
+  { n: 'Pantanal Forest v08 GEDI', col: PF + '/V08_GEDI/PREDICTIONS/COL', band: 'prediction_2023', vis: AREA_VIS },
+  { n: 'Pantanal Forest v08 IFN', col: PF + '/V08_IFN/PREDICTIONS/COL', band: 'prediction_2023', vis: AREA_VIS },
   // Pantanal Campestre (v01)
-  { n: 'Pantanal Campestre v01 biomassa', img: PG + '/V01/BIOMASS/grassland_biomass_annual_v01_2023', band: 'biomass_annual', vis: AGBD_VIS },
-  { n: 'Pantanal Campestre v01 carbono', img: PG + '/V01/CARBON/grassland_carbon_stock_v01_2023', band: 'carbon_stock_MgC_ha', vis: AGBD_VIS },
+  { n: 'Pantanal Campestre v01 biomassa', img: PG + '/V01/BIOMASS/grassland_biomass_annual_v01_2023', band: 'biomass_annual', vis: AREA_VIS },
+  { n: 'Pantanal Campestre v01 carbono', img: PG + '/V01/CARBON/grassland_carbon_stock_v01_2023', band: 'carbon_stock_MgC_ha', vis: AREA_VIS },
   // Referências
-  { n: 'Saatchi 2011 AGB', img: REF + '/Saatchi_2011_america_agb_1km', band: 'b1', vis: REF_VIS },
-  { n: 'Saatchi 2011 AGC', img: REF + '/Saatchi_2011_america_carbon_1km', band: 'b1', vis: REF_VIS },
-  { n: 'Saatchi 2011 BGB', img: REF + '/Saatchi_2011_america_bgb_1km', band: 'b1', vis: REF_VIS },
+  { n: 'Saatchi 2011 AGB', img: REF + '/Saatchi_2011_america_agb_1km', band: 'b1', vis: AREA_VIS },
+  { n: 'Saatchi 2011 AGC', img: REF + '/Saatchi_2011_america_carbon_1km', band: 'b1', vis: AREA_VIS },
+  { n: 'Saatchi 2011 BGB', img: REF + '/Saatchi_2011_america_bgb_1km', band: 'b1', vis: AREA_VIS },
   { n: 'Saatchi 2011 erro', img: REF + '/Saatchi_2011_america_carbon_error_1km', band: 'b1', vis: ERR_VIS },
-  { n: 'Baccini 2012 AGB', img: REF + '/Z_baccini_30_agb', band: 'b1', vis: REF_VIS },
-  { n: 'Zimbres 2021 AGB Cerrado', img: REF + '/Zimbres_2021_AGB_NVmasked_RF_cog-v1', band: 'b1', vis: REF_VIS },
-  { n: 'Avitabile 2016 AGB', img: REF + '/Avitabile_AGB_Map', band: 'b1', vis: REF_VIS, mask_lt: -1e30 },
-  { n: 'Xu & Saatchi 2021', img: REF + '/Saatchi_Xu2021_t10a_cd_ab_pred_corr_2000_2019_v2', band: 'b20', vis: REF_VIS },
-  { n: 'TCN AGC', img: REF + '/TCN_AGC_comAgua_wgs84', band: 'b1', vis: REF_VIS, mask_lt: -1e30 },
-  { n: 'TCN total', img: REF + '/TCN_TOTALC_comAgua_wgs84', band: 'b1', vis: REF_VIS, mask_lt: -1e30 },
-  { n: 'TCN BGC', img: REF + '/TCN_BGC_comAgua_wgs84', band: 'b1', vis: REF_VIS, mask_lt: -1e30 },
-  { n: 'TCN madeira morta', img: REF + '/TCN_DWC_comAgua_wgs84', band: 'b1', vis: REF_VIS, mask_lt: -1e30 },
-  { n: 'TCN serrapilheira', img: REF + '/TCN_LITTERC_comAgua_wgs84', band: 'b1', vis: REF_VIS, mask_lt: -1e30 },
-  { n: 'QCN total', img: QCN + '/qcn_brazil_historical_biomass_carbon_v1', band: 'TOTAL', vis: REF_VIS },
-  { n: 'QCN AGB', img: QCN + '/qcn_brazil_historical_biomass_carbon_v1', band: 'AGB', vis: REF_VIS },
-  { n: 'QCN-r total (1985)', img: QCN + '/qcn_brazil_historical_biomass_carbon_qcn_rect_v1', band: 'TOTAL', vis: REF_VIS },
-  { n: 'QCN-r AGB (1985)', img: QCN + '/qcn_brazil_historical_biomass_carbon_qcn_rect_v1', band: 'AGB', vis: REF_VIS },
+  { n: 'Baccini 2012 AGB', img: REF + '/Z_baccini_30_agb', band: 'b1', vis: AREA_VIS },
+  { n: 'Zimbres 2021 AGB Cerrado', img: REF + '/Zimbres_2021_AGB_NVmasked_RF_cog-v1', band: 'b1', vis: AREA_VIS },
+  { n: 'Avitabile 2016 AGB', img: REF + '/Avitabile_AGB_Map', band: 'b1', vis: AREA_VIS, mask_lt: -1e30 },
+  { n: 'Xu & Saatchi 2021', img: REF + '/Saatchi_Xu2021_t10a_cd_ab_pred_corr_2000_2019_v2', band: 'b20', vis: AREA_VIS },
+  { n: 'TCN AGC', img: REF + '/TCN_AGC_comAgua_wgs84', band: 'b1', vis: AREA_VIS, mask_lt: -1e30 },
+  { n: 'TCN total', img: REF + '/TCN_TOTALC_comAgua_wgs84', band: 'b1', vis: AREA_VIS, mask_lt: -1e30 },
+  { n: 'TCN BGC', img: REF + '/TCN_BGC_comAgua_wgs84', band: 'b1', vis: AREA_VIS, mask_lt: -1e30 },
+  { n: 'TCN madeira morta', img: REF + '/TCN_DWC_comAgua_wgs84', band: 'b1', vis: AREA_VIS, mask_lt: -1e30 },
+  { n: 'TCN serrapilheira', img: REF + '/TCN_LITTERC_comAgua_wgs84', band: 'b1', vis: AREA_VIS, mask_lt: -1e30 },
+  { n: 'QCN total', img: QCN + '/qcn_brazil_historical_biomass_carbon_v1', band: 'TOTAL', vis: AREA_VIS },
+  { n: 'QCN AGB', img: QCN + '/qcn_brazil_historical_biomass_carbon_v1', band: 'AGB', vis: AREA_VIS },
+  { n: 'QCN-r total (1985)', img: QCN + '/qcn_brazil_historical_biomass_carbon_qcn_rect_v1', band: 'TOTAL', vis: AREA_VIS },
+  { n: 'QCN-r AGB (1985)', img: QCN + '/qcn_brazil_historical_biomass_carbon_qcn_rect_v1', band: 'AGB', vis: AREA_VIS },
   // IFN (inventário de campo) — rasterizado via paint (banda `constant`)
-  { n: 'IFN AGB (Mg/ha)', paint: { fc: IFN, prop: 'AGB_Mg_ha' }, vis: REF_VIS },
-  { n: 'IFN Carbono (Mg C/ha)', paint: { fc: IFN, prop: 'C_Mg_ha' }, vis: REF_VIS },
-  { n: 'IFN CO2e (Mg CO2e/ha)', paint: { fc: IFN, prop: 'CO2e_Mg_ha' }, vis: REF_VIS },
-  { n: 'IFN Area basal (m2/ha)', paint: { fc: IFN, prop: 'G_m2_ha' }, vis: REF_VIS },
-  { n: 'IFN No individuos', paint: { fc: IFN, prop: 'n_ind' }, vis: REF_VIS },
-  { n: 'IFN AGB total (Mg)', paint: { fc: IFN, prop: 'AGB_Mg' }, vis: REF_VIS },
+  { n: 'IFN AGB (Mg/ha)', paint: { fc: IFN, prop: 'AGB_Mg_ha' }, vis: AREA_VIS },
+  { n: 'IFN Carbono (Mg C/ha)', paint: { fc: IFN, prop: 'C_Mg_ha' }, vis: AREA_VIS },
+  { n: 'IFN CO2e (Mg CO2e/ha)', paint: { fc: IFN, prop: 'CO2e_Mg_ha' }, vis: AREA_VIS },
+  { n: 'IFN Area basal (m2/ha)', paint: { fc: IFN, prop: 'G_m2_ha' }, vis: AREA_VIS },
+  { n: 'IFN No individuos', paint: { fc: IFN, prop: 'n_ind' }, vis: AREA_VIS },
+  { n: 'IFN AGB total (Mg)', paint: { fc: IFN, prop: 'AGB_Mg' }, vis: AREA_VIS },
   // Uso e Cobertura (C11)
   { n: 'LULC C11 1985', img: LULC, band: 'classification_1985', vis: LULC_VIS },
   { n: 'LULC C11 2000', img: LULC, band: 'classification_2000', vis: LULC_VIS },
   { n: 'LULC C11 2010', img: LULC, band: 'classification_2010', vis: LULC_VIS },
   { n: 'LULC C11 2023', img: LULC, band: 'classification_2023', vis: LULC_VIS },
   // MapBiomas Pastagem / Solo (2023)
-  { n: 'MapBiomas Pastagem biomassa 2023 (Mg/ha)', img: MBP, band: 'biomass_2023', vis: PAST_VIS },
-  { n: 'MapBiomas Solo carbono organico 2023 (Mg C/ha)', img: MBS, band: 'carbon_2023', vis: SOIL_VIS }
+  { n: 'MapBiomas Pastagem biomassa 2023 (Mg/ha)', img: MBP, band: 'biomass_2023', vis: AREA_VIS },
+  { n: 'MapBiomas Solo carbono organico 2023 (Mg C/ha)', img: MBS, band: 'carbon_2023', vis: AREA_VIS }
 ];
 
 /** true se o asset existe (getAsset direto; não depende de listar a pasta). */

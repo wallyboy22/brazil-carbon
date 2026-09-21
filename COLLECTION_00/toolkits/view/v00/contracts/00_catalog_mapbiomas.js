@@ -13,21 +13,21 @@ var PASTURE_ROOT =
 var SOIL_ROOT =
   'projects/mapbiomas-public/assets/brazil/soil/collection3/' +
   'mapbiomas_brazil_collection3_soil_carbon_v1';
+var VIS = require(
+  'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/toolkits/view/v00/contracts/00_catalog_vis.js');
 
-/** Pastagem — biomassa (Mg/ha); banda `biomass_<ano>`. */
+/** Pastagem — biomassa (Mg/ha); banda `biomass_<ano>`. Rampa compartilhada. */
 exports.PASTURE = {
   asset: PASTURE_ROOT,
   band: function (y) { return 'biomass_' + y; },
   unit: 'Mg/ha',
-  vis: { min: 0, max: 30,
-    palette: ['#ffffe5', '#d9f0a3', '#78c679', '#31a354', '#006837'] }
+  vis: VIS.AREA
 };
 
-/** Solo — carbono orgânico (Mg C/ha); banda `carbon_<ano>`. */
+/** Solo — carbono orgânico (Mg C/ha); banda `carbon_<ano>`. Rampa compartilhada. */
 exports.SOIL = {
   asset: SOIL_ROOT,
   band: function (y) { return 'carbon_' + y; },
   unit: 'Mg C/ha',
-  vis: { min: 0, max: 100,
-    palette: ['#f7f4e9', '#e6d3a3', '#c9a86a', '#9c6b3f', '#5c3b1e'] }
+  vis: VIS.AREA
 };
