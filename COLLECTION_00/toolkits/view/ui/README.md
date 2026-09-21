@@ -7,8 +7,8 @@ para qualquer app do `toolkits/view`. Genérico e sem conhecimento de domínio.
 | Módulo | Papel |
 |---|---|
 | `module_icons.js` | Ícones do pacote MapBiomas (`users/workspaceipam/packages:mapbiomas-toolkit/utils/b64`) de forma **agnóstica**, com fallback textual |
-| `module_ui.js` | `styles`, `createAppShell`, `createActivity`, `createCabinet`, `createLayerDrawer`, `createButtonDrawer`, `styleCheck`, `syncCheckBorder`, `styleToggleButton`, `legendPanel` |
-| `module_map_layers.js` | Gestão de camadas no `Map` sem duplicação: `manager()` → `update/remove/clear/debounced` |
+| `module_ui.js` | `styles`, `createAppShell`, `createActivity`, `createCabinet`, `createLayerDrawer`, `createButtonDrawer`, `styleCheck`, `syncCheckBorder`, `styleToggleButton`, `applyToggleStyle`, `legendPanel`, `createSplitLayout`, `createThumbnailGrid` |
+| `module_map_layers.js` | Gestão de camadas no `Map` sem duplicação: `manager()` → `update/remove/clear/setAllShown/getIds/debounced` |
 
 ## Uso (num app)
 ```js
@@ -28,6 +28,27 @@ var drawer = UI.createLayerDrawer({ title: 'camadas', options: [
 cab.content.add(drawer.panel);
 
 mlayers.update('a', ee.Image(...), { min: 0, max: 1 }, 'Camada A', 0.85);
+```
+
+## Split + grade de miniaturas
+```js
+// Painel direito com miniaturas cruzando eixos (do mais externo ao mais interno).
+var values = { camada: [], territorio: [] };
+var grid = UI.createThumbnailGrid({
+  axes: ['camada', 'territorio'],
+  axisLabels: { camada: 'Camada', territorio: 'Território' },
+  values: values,
+  cellFor: function (vals) {                 // vals = { camada:{id,label}, ... }
+    return { image: ee.Image(...), vis: {...}, bounds: geom, label: '...' };
+  }
+});
+var split = UI.createSplitLayout({ mapWidget: shell.mapWidget, right: grid.panel });
+split.showRight(true);                        // mostrar/esconder o painel
+values.camada = [{ id: 'x', label: 'X' }];    // eixos são mutáveis
+grid.update();                                // redesenha a grade
+
+UI.applyToggleStyle(btn, true);               // verde ON / vermelho OFF
+mlayers.setAllShown(true);                    // MAP ON/OFF
 ```
 
 ## Convenções

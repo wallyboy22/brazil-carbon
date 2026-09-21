@@ -45,6 +45,14 @@ exports.manager = function (map) {
         delete managed[id];
       });
     },
+    /** Mostra/esconde todas as camadas gerenciadas (MAP ON/OFF). */
+    setAllShown: function (on) {
+      Object.keys(managed).forEach(function (id) {
+        managed[id].setShown(!!on);
+      });
+    },
+    /** Ids das camadas gerenciadas. */
+    getIds: function () { return Object.keys(managed); },
     /** Agenda `fn` (debounce). */
     debounced: function (fn, ms) {
       if (timer) ui.util.clearTimeout(timer);
