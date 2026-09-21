@@ -17,8 +17,8 @@
 - Sintoma: tiles com carbono alto, região ao redor normal; `agbd_std` alto do
   mesmo lado (os 5 membros discordam → combinação de covariáveis fora do
   domínio de treino).
-- Causa raiz (hipótese principal, confirmada na fase 0 via
-  `0_diagnose_tiles.js`):
+- Causa raiz (hipótese principal, confirmada no diagnóstico `1_check.js` e nos
+  assets v07):
 
 ```js
 // v01–v07 — escolhe UMA strip do SAR_EPOCH por AOI da célula:
@@ -123,8 +123,18 @@ na lista. A registry completa é impressa no modelo como `covariates_registry` e
 
 ## 7. State
 
-- v08 **em desenvolvimento**: código pronto para executar no GEE; nenhuma task
-  de export rodada ainda.
+- v08 **em desenvolvimento**: código pronto para executar no GEE; os assets
+  órfãos da pasta `V08/` foram removidos (rename `agc`→`agb` + multi-fonte).
 - v07 **concluída e inalterada**; o QA (`v07/6_qualidade.js`) e o
   `statistics/stats_engine.js` foram corrigidos para as versões novas (fallback
   de mosaico e plots multi-versão) sem alterar o produto v07.
+
+## 8. Documentação (`docs/`)
+
+| Arquivo | Conteúdo |
+|---|---|
+| `docs/RUN.md` | guia operacional: fluxos **GEDI** e **IFN**, ordem e toggles |
+| `docs/ATBD_v08.md` | ATBD — base teórica, dados, algoritmo, incerteza, limitações |
+| `docs/proposta_predicao_sem_costura.md` | proposta de costura de borda (D1/D2/D3) |
+
+> Este `README.md` é o índice da versão; `2_3_gcn/README.md` descreve o gate offline.

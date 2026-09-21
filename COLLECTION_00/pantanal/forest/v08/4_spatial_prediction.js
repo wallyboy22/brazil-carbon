@@ -8,7 +8,7 @@
  * D3: GLOBAL_PREDICTION=true → a pilha é classificada UMA vez no domínio e o
  *     export é fatiado na grade fixa (cortes da MESMA imagem) → sem costura
  *     entre células. false = predição por célula (modo antigo).
- * (Costura/blending: ver proposta_predicao_sem_costura.md.)
+ * (Costura/blending: ver docs/proposta_predicao_sem_costura.md.)
  ******************************************************************************/
 var c = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_contract.js');
