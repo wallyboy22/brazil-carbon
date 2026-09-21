@@ -24,7 +24,7 @@ print("v08 · cell06 · relatório de recomendações")
 print("=" * 68)
 
 # --- entradas ----------------------------------------------------------------
-fig_path = Path(CONF["DRIVE_ROOT"]) / CONF["FIG_DIR"]
+fig_path = fig_dir()
 state_path = fig_path / "gate_state.json"
 champ_path = fig_path / "champion.json"
 diag_path = fig_path / "diagnostico.json"

@@ -33,11 +33,11 @@ CONF = {
     # Raiz do "balde" no Drive: pasta única do 2_2_toDrive_matrix.js (folder=).
     # O GEE não cria subpastas; os CSVs caem direto aqui.
     "DRIVE_ROOT": "/content/drive/MyDrive/mapbiomas_carbono",
-    # Fonte de amostra: 'gedi' | 'ifn' — deve casar com SOURCE do 0_contract.js.
-    # Os artefatos levam o prefixo da fonte (evita colisão GEDI × IFN).
-    "SOURCE": "gedi",
+    # Fonte de amostra: DERIVADA dos CSVs (agb_matrix_<SOURCE>_v08_*.csv) por
+    # load_matrix(). Deixe None; defina só para forçar/validar.
+    "SOURCE": None,
     "MATRIX_DIR": "",           # CSVs da matriz na própria raiz do balde
-    "FIG_DIR": "figures",       # pasta de figuras (prefixada com a fonte abaixo)
+    "FIG_DIR": "figures",       # base; fig_dir() prefixa com a fonte
     # --- dados ---
     "TARGET": "agbd",
     "WEIGHT_COL": "w",
@@ -60,8 +60,6 @@ CONF = {
     "CV_FOLDS": 5,
     "RANDOM_STATE": 2021,
 }
-# Prefixo da fonte no nome das pastas/artefatos (evita colisão entre variantes).
-CONF["FIG_DIR"] = f"{CONF['FIG_DIR']}_{CONF['SOURCE']}"
 _MANIFEST: list[str] = []  # registro de artefatos gerados nesta rodada
 
 
@@ -69,7 +67,10 @@ _MANIFEST: list[str] = []  # registro de artefatos gerados nesta rodada
 # Paths / figures
 # ---------------------------------------------------------------------------
 def fig_dir() -> Path:
-    d = Path(CONF["DRIVE_ROOT"]) / CONF["FIG_DIR"]
+    """Pasta de figuras; prefixada com a fonte (figures_<SOURCE>) quando conhecida."""
+    src = CONF.get("SOURCE")
+    name = f"{CONF['FIG_DIR']}_{src}" if src else CONF["FIG_DIR"]
+    d = Path(CONF["DRIVE_ROOT"]) / name
     d.mkdir(parents=True, exist_ok=True)
     return d
 
@@ -108,14 +109,30 @@ def manifest() -> list[str]:
 # Dados: leitura / limpeza da matriz (CSVs do Drive)
 # ---------------------------------------------------------------------------
 def load_matrix() -> pd.DataFrame:
-    """Concatena todos os agb_matrix_<SOURCE>_v08_*.csv da pasta MATRIX_DIR."""
-    files = sorted(matrix_dir().glob(
-        f"agb_matrix_{CONF['SOURCE']}_v08_*.csv"))
+    """Concatena os agb_matrix_<SOURCE>_v08_*.csv da pasta MATRIX_DIR.
+
+    O SOURCE é DERIVADO dos nomes dos arquivos (fonte única de verdade = o
+    contrato que os nomeia). Aborta se houver fontes mistas.
+    """
+    files = sorted(matrix_dir().glob("agb_matrix_*_v08_*.csv"))
     if not files:
         raise FileNotFoundError(
             f"Nenhum CSV de matriz em {matrix_dir()}. Rode 2_2_toDrive_matrix.js "
             "no GEE e baixe/exporte o CSV para o Drive."
         )
+    sources = sorted({f.name.split("_")[2] for f in files})
+    if len(sources) > 1:
+        raise ValueError(
+            f"CSVs de fontes MISTAS em {matrix_dir()}: {sources}. "
+            "Deixe apenas uma fonte (gedi OU ifn) na pasta."
+        )
+    forced = CONF.get("SOURCE")
+    if forced and forced != sources[0]:
+        raise ValueError(
+            f"CONF['SOURCE']={forced} != CSVs ({sources[0]}). Ajuste ou deixe None."
+        )
+    CONF["SOURCE"] = sources[0]
+    print(f"[FONTE] derivada dos CSVs: {sources[0]} · FIG_DIR=figures_{sources[0]}")
     frames = []
     for f in files:
         df = pd.read_csv(f)

@@ -74,6 +74,7 @@ function exportCell(image, id, geom) {
 }
 
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 4_spatial_prediction');
+print('[FONTE]', c.SOURCE, '·', c.SOURCE_CFG.label, '· raiz', root);
 print('[DOMÍNIO]', c.BAP_ASSET, '— saída NÃO mascarada por LULC');
 print('[ENSEMBLE] N =', N, '· mediana + stdDev');
 print('[GRADE DE SAÍDA]', c.CRS, '· crsTransform comum (D1)');

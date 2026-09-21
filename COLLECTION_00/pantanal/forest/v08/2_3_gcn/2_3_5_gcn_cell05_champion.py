@@ -27,7 +27,7 @@ print("=" * 68)
 print("v08 · cell05 · champion")
 print("=" * 68)
 
-state_path = Path(CONF["DRIVE_ROOT"]) / CONF["FIG_DIR"] / "gate_state.json"
+state_path = fig_dir() / "gate_state.json"
 if not state_path.exists():
     raise FileNotFoundError(
         "gate_state.json não encontrado. Rode 2_3_3 (cell03) antes.")
@@ -86,7 +86,7 @@ ax.set(xlabel="importância de permutação (ΔRMSE)",
 save_fig(fig, "f11_importancia_permutacao.png")
 
 # --- persiste champion.json (mesma pasta das figuras/output) -----------------
-out_json = Path(CONF["DRIVE_ROOT"]) / CONF["FIG_DIR"] / "champion.json"
+out_json = fig_dir() / "champion.json"
 write_artifact(out_json, champion)
 
 print()

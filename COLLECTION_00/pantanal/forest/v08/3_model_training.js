@@ -79,6 +79,7 @@ function trainMember(i) {
 }
 
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 3_model_training');
+print('[FONTE]', c.SOURCE, '·', c.SOURCE_CFG.label, '· raiz', root);
 print('[CHAMPION (v07 herdado)] minLeafPopulation =', c.MIN_LEAF_POP,
   '· variablesPerSplit =', c.VARIABLES_PER_SPLIT);
 print('[ENSEMBLE] N =', N, '· seed_base =', c.ENSEMBLE.SEED_BASE,

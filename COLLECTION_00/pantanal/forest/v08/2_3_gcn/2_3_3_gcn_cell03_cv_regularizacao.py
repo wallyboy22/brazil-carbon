@@ -160,7 +160,7 @@ state = {
     "n_rows": n,
     "n_blocks": int(df["_block"].nunique()),
 }
-out = Path(CONF["DRIVE_ROOT"]) / CONF["FIG_DIR"] / "gate_state.json"
+out = fig_dir() / "gate_state.json"
 write_artifact(out, state)
 print()
 print("[FIGURAS GERADAS]")

@@ -73,7 +73,7 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 |---|---|---|
 | 0 | `0_contract.js` · `0_covariate_source.js` | contrato (domínio BAP, fonte, champion) + PALSAR global |
 | 1 | `1_check.js` | diagnóstico único: fonte/domínio, footprints, floresta+stack (célula-amostra) |
-| 2 | `2_0_export_footprint_bap.js` | (só `gedi`) footprints GEDI L4A sobre a BAP → SAMPLES/footprint_bap_<ANO> |
+| 2 | `2_0_gedi_export_footprint.js` | (só `gedi`) footprints GEDI L4A sobre a BAP → SAMPLES/footprint_bap_<ANO> |
 | 2 | `2_1_toAsset_samples_treino.js` | amostras normalizadas (1 task por recorte) → SAMPLES/ |
 | 2 | `2_2_toDrive_matrix.js` | matriz por célula/ano (filtro floresta + notNull) → ASSET + Drive (CSV) |
 | 2 | `2_3_gcn/*` | gate offline (Colab) — figuras, thinning (validação), champion |
@@ -87,7 +87,7 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 0. Definir `SOURCE` em `0_contract.js` (`gedi` | `ifn`) — decide a raiz
    (`V08_GEDI`/`V08_IFN`) e a fonte de amostra.
 1. `1_check.js` — diagnóstico (fonte, contagem de footprints, floresta+stack).
-2. (só `gedi`) `2_0_export_footprint_bap.js` — footprints GEDI L4A sobre a BAP.
+2. (só `gedi`) `2_0_gedi_export_footprint.js` — footprints GEDI L4A sobre a BAP.
 3. `2_1_toAsset_samples_treino.js` → `2_2_toDrive_matrix.js` (tasks de matriz).
 4. `2_3_gcn` (Colab) — gate offline de **validação** (o thinning é offline e NÃO
    alimenta o treino; se o campeão divergir do herdado da v07, atualizar

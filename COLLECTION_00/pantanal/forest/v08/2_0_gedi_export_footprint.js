@@ -91,7 +91,7 @@ function exportYear(year, ids) {
 // ---------------------------------------------------------------------------
 // Execução — dispara TODOS os anos em paralelo (1 evaluate por ano, só p/ ids)
 // ---------------------------------------------------------------------------
-print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 2_0_export_footprint_bap');
+print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 2_0_gedi_export_footprint');
 print('[DOMÍNIO]', c.BAP_ASSET, '· anos', YEARS);
 print('[SAÍDA]', SAMPLES_ROOT + '/footprint_bap_<ANO>');
 src.ensureFolder(SAMPLES_ROOT);

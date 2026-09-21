@@ -29,6 +29,9 @@ var DRIVE_ROOT = 'mapbiomas_carbono';
 var EXPORT_TO_ASSET = true;
 var EXPORT_TO_DRIVE = true;
 
+print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 2_2_toDrive_matrix');
+print('[FONTE]', c.SOURCE, '·', c.SOURCE_CFG.label, '· raiz', c.ASSET_ROOT);
+
 var points = {};
 c.TRAIN_YEARS.forEach(function (y) {
   // Amostras de treino do 2_1: um asset por recorte (forest_footprint_<SRC>_<ANO>_<cell>)

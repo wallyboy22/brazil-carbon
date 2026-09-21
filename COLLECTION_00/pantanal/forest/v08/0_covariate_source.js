@@ -107,7 +107,7 @@ exports.getFootprints = function () {
     }
     if (!existing.length) {
       throw new Error('Nenhum footprint_bap_* encontrado — rode ' +
-        '2_0_export_footprint_bap.js no GEE e aguarde as tasks.');
+        '2_0_gedi_export_footprint.js no GEE e aguarde as tasks.');
     }
     return ee.FeatureCollection(existing.map(function (a) {
       return ee.FeatureCollection(a);
