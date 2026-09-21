@@ -134,6 +134,15 @@ exports.LULC_ASSET =
   'mapbiomas_brazil_collection11_coverage_v3';
 exports.SCALE = 30;
 
+// Grade de SAÍDA comum (D1): todos os exports de célula usam o MESMO crs e
+// crsTransform → pixels alinhados entre células (sem emenda de grade).
+// Origem = canto superior esquerdo do DOMAIN_BBOX; passo ~30 m em graus.
+exports.CRS = 'EPSG:4326';
+exports.CRS_TRANSFORM = [
+  0.00026949458523585647, 0, -60.678789762675464,
+  0, -0.00026949458523585647, -12.958681301038263
+];
+
 // ===========================================================================
 // Bloco 6 — FONTE DE AMOSTRA [multi-fonte: gedi | ifn]
 //   O pipeline é ÚNICO e parametrizado por `SOURCE`. Cada fonte tem raiz de

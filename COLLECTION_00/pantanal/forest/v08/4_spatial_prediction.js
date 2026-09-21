@@ -1,24 +1,29 @@
 /******************************************************************************
  * MAPBIOMAS-CARBONO — Pantanal Forest v08 · Predição espacial
  * ---------------------------------------------------------------------------
- *   - ensemble de N modelos globais (rf_agb_v08_m1..mN): cada membro usa só
- *     o seu subconjunto de bandas; resultado = MEDIANA + stdDev (incerteza);
- *   - stack com PALSAR GLOBAL determinístico (mediana no domínio);
- *   - alvo linear (sem log-target): classify já devolve AGBD (t/ha);
- *   - SEM máscara LULC na saída: a predição cobre todo o domínio (BAP).
- * (Costura entre células: ver proposta_predicao_sem_costura.md.)
+ * Ensemble de N modelos globais (rf_agb_v08_m1..mN). Cada membro classifica no
+ * seu subconjunto de bandas; combinação = MEDIANA + stdDev (incerteza).
+ *
+ * D1: grade de saída COMUM (crs + crsTransform do contrato) → pixels alinhados.
+ * D3: GLOBAL_PREDICTION=true → a pilha é classificada UMA vez no domínio e o
+ *     export é fatiado na grade fixa (cortes da MESMA imagem) → sem costura
+ *     entre células. false = predição por célula (modo antigo).
+ * (Costura/blending: ver proposta_predicao_sem_costura.md.)
  ******************************************************************************/
 var c = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_contract.js');
 var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_covariate_source.js');
 var CELL_SPLIT = 4;
-var YEARS = c.YEARS;
+var YEAR = c.YEAR;
 var ADD_LAYER = false;
 var palette = ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'];
 var root = c.ASSET_ROOT;
 var IC = root + '/PREDICTIONS/COL';
 var N = c.ENSEMBLE.NUM_MEMBERS;
+// D3: predição GLOBAL única (1× no domínio) + export fatiado na grade fixa.
+// false = predição por célula (cada célula monta a pilha e classifica).
+var GLOBAL_PREDICTION = true;
 
 var models = {};
 for (var i = 1; i <= N; i++) {
@@ -34,52 +39,58 @@ var cells = c.makeCellFeatures(CELL_SPLIT).map(function (cell) {
   return cell.set({ valid_area: geom.area(30) });
 }).filter(ee.Filter.gt('valid_area', 0));
 
-function predictCell(id, year) {
+function cellGeom(id) {
   var def = byId[id];
-  var geom = ee.Geometry.BBox(def.bbox[0], def.bbox[1], def.bbox[2], def.bbox[3])
+  return ee.Geometry.BBox(def.bbox[0], def.bbox[1], def.bbox[2], def.bbox[3])
     .intersection(domain, ee.ErrorMargin(30));
-  var stack = src.buildTypedCovariatesStack(geom, year);
+}
 
+/** Ensemble sobre uma pilha: mediana (predição) + stdDev (incerteza). */
+function ensembleImage(stack) {
   var members = [];
   for (var i = 1; i <= N; i++) {
-    var bands = src.getMemberBands(i);
-    var cls = models['m' + i];
-    // classifica no subconjunto de bandas do membro (saída já em t/ha)
-    var p = stack.select(bands).classify(cls).toFloat();
-    members.push(p.rename('m' + i));
+    members.push(stack.select(src.getMemberBands(i))
+      .classify(models['m' + i]).toFloat().rename('m' + i));
   }
   var MC = ee.Image.cat(members);
-  var median = MC.reduce(ee.Reducer.median()).rename('prediction_' + year);
-  var std = MC.reduce(ee.Reducer.stdDev()).rename('agbd_std_' + year);
-  var image = median.addBands(std).toFloat().clip(geom)
-    .set('year', year).set('cell_id', id)
-    .set('system:time_start', ee.Date.fromYMD(year, 1, 1).millis());
+  var median = MC.reduce(ee.Reducer.median()).rename('prediction_' + YEAR);
+  var std = MC.reduce(ee.Reducer.stdDev()).rename('agbd_std_' + YEAR);
+  return median.addBands(std).toFloat();
+}
 
-  var name = 'agb_pred_v08_' + id + '_' + year;
-  if (ADD_LAYER) Map.addLayer(image.select('prediction_' + year),
+function exportCell(image, id, geom) {
+  var out = image.clip(geom)
+    .set('year', YEAR).set('cell_id', id)
+    .set('system:time_start', ee.Date.fromYMD(YEAR, 1, 1).millis());
+  var name = 'agb_pred_v08_' + id + '_' + YEAR;
+  if (ADD_LAYER) Map.addLayer(out.select('prediction_' + YEAR),
     { min: 0, max: 75, palette: palette }, name, false);
-  Export.image.toAsset({ image: image,
+  Export.image.toAsset({ image: out,
     description: 'WS_CARBONO_toAsset-' + name,
     assetId: IC + '/' + name,
     overwrite: false,
-    region: geom, scale: c.SCALE, maxPixels: 1e13,
+    region: geom, crs: c.CRS, crsTransform: c.CRS_TRANSFORM, maxPixels: 1e13,
     pyramidingPolicy: { '.default': 'mean' } });
-}
-
-function createExports(ids) {
-  ids.forEach(function (id) {
-    YEARS.forEach(function (year) { predictCell(id, year); });
-  });
 }
 
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 4_spatial_prediction');
 print('[DOMÍNIO]', c.BAP_ASSET, '— saída NÃO mascarada por LULC');
-print('[FIX] stack com PALSAR global (determinístico)');
-print('[ENSEMBLE] N =', N, '· combinação mediana + stdDev');
+print('[ENSEMBLE] N =', N, '· mediana + stdDev');
+print('[GRADE DE SAÍDA]', c.CRS, '· crsTransform comum (D1)');
+print('[MODO]', GLOBAL_PREDICTION ? 'GLOBAL (D3, sem costura)' : 'por célula');
 print('[MODELOS]', Object.keys(models).join(', '));
-print('[IMPORTANTE] As predições por célula entram na ImageCollection ' + IC);
 src.ensureFolder(root + '/PREDICTIONS');
 src.ensureImageCollection(IC);
+
 cells.aggregate_array('cell_id').evaluate(function (ids) {
-  print('[CÉLULAS]', ids.length); createExports(ids);
+  print('[CÉLULAS]', ids.length);
+  if (GLOBAL_PREDICTION) {
+    var image = ensembleImage(src.buildTypedCovariatesStack(domain, YEAR));
+    ids.forEach(function (id) { exportCell(image, id, cellGeom(id)); });
+  } else {
+    ids.forEach(function (id) {
+      var g = cellGeom(id);
+      exportCell(ensembleImage(src.buildTypedCovariatesStack(g, YEAR)), id, g);
+    });
+  }
 });

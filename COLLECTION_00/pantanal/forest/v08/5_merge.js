@@ -25,6 +25,6 @@ c.YEARS.forEach(function (year) {
   Export.image.toAsset({ image: image,
     description: 'WS_CARBONO_toAsset-' + name,
     assetId: root + '/' + name,
-    region: region, scale: c.SCALE, maxPixels: 1e13,
+    region: region, crs: c.CRS, crsTransform: c.CRS_TRANSFORM, maxPixels: 1e13,
     pyramidingPolicy: { '.default': 'mean' } });
 });
