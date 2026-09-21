@@ -27,8 +27,21 @@ var DRIVE_ROOT = 'mapbiomas_carbono';
 
 var points = {};
 c.TRAIN_YEARS.forEach(function (y) {
-  points[y] = ee.FeatureCollection(
-    c.ASSET_ROOT + '/SAMPLES/forest_footprint_' + c.SOURCE + '_' + c.YEAR);
+  // Amostras de treino do 2_1: um asset por recorte (forest_footprint_<SRC>_<ANO>_<cell>)
+  // → mescla todos os recortes por prefixo.
+  var prefix = 'forest_footprint_' + c.SOURCE + '_' + c.YEAR + '_';
+  var resp = ee.data.listAssets(c.ASSET_ROOT + '/SAMPLES');
+  var assets = (resp.assets || []).filter(function (a) {
+    return a.type === 'TABLE' && a.id.indexOf('/' + prefix) > -1;
+  });
+  if (!assets.length) {
+    throw new Error('Sem amostras de treino (' + prefix + '*) em ' +
+      c.ASSET_ROOT + '/SAMPLES — rode o 2_1_toAsset_samples_treino.js.');
+  }
+  print('[AMOSTRAS]', assets.length, 'recorte(s) de treino');
+  points[y] = ee.FeatureCollection(assets.map(function (a) {
+    return ee.FeatureCollection(a.id);
+  })).flatten();
 });
 
 var cells = c.makeCellFeatures(CELL_SPLIT).map(function (cell) {
