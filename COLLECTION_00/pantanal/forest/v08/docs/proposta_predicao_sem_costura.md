@@ -51,7 +51,7 @@ codificada na v08; as camadas 2 e 3 permanecem no código.
 ## 3. O que já é global (não é a causa)
 
 - **Pontos**: a máscara de treino é aplicada 1× no footprint inteiro
-  (`v08/2_1_toAsset_samples_treino.js`); a extração por célula é apenas partição
+  (`v08/2_1_<fonte>_toAsset_samples_treino.js`); a extração por célula é apenas partição
   espacial determinística.
 - **Covariáveis**: PALSAR global na v08; HAND/ERA5/LULC são imagens de fonte
   determinísticas (recortadas por AOI). HLS é, por pixel, AOI-independente.

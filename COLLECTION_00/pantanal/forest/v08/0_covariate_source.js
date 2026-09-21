@@ -79,55 +79,36 @@ exports.getDomain = function () {
 // ---------------------------------------------------------------------------
 // Amostras por fonte (multi-fonte: gedi | ifn)
 // ---------------------------------------------------------------------------
-exports.getSampleProps = function () {
-  return c.SOURCE_CFG.sampleProps;
+/** Props da amostra da fonte (`source` default = c.SOURCE). */
+exports.getSampleProps = function (source) {
+  return c.SOURCES[source || c.SOURCE].sampleProps;
 };
 
 /**
- * Footprints/parcelas da fonte ativa, normalizados para o schema do pipeline:
- *   · gedi — merge dos footprints BAP (`gedi_footprint_bap_<ano>`), alvo já `agbd`;
- *   · ifn  — parcelas IFN normalizadas e PERSISTIDAS pelo `2_0_ifn_export_footprint`
- *            (`ifn_footprint_<ano>`: centroide + `AGB_Mg_ha` → `agbd`).
+ * Footprints/parcelas de uma fonte (`source` default = c.SOURCE), já
+ * normalizados e PERSISTIDOS pelos passos 2_0:
+ *   · gedi — `gedi_footprint_bap_<ano>` (alvo `agbd`);
+ *   · ifn  — `ifn_footprint_<ano>` (centroide + `AGB_Mg_ha` → `agbd`).
  * O alvo final é sempre `agbd` (t/ha).
  */
-exports.getFootprints = function () {
-  var S = c.SOURCE_CFG;
-  if (c.SOURCE === 'gedi') {
-    // Tolera anos sem asset (o exportador pula anos sem pegadas) e falha com
-    // mensagem clara se NENHUM gedi_footprint_bap_* existir.
-    var existing = [];
-    var missing = [];
-    S.footprintAssets.forEach(function (a) {
-      try { ee.data.getAsset(a); existing.push(a); }
-      catch (e) { missing.push(a); }
-    });
-    if (missing.length) {
-      print('[AVISO] footprints ausentes (ok se o ano não tinha GEDI):',
-        missing.join(', '));
-    }
-    if (!existing.length) {
-      throw new Error('Nenhum gedi_footprint_bap_* encontrado — rode ' +
-        '2_0_gedi_export_footprint.js no GEE e aguarde as tasks.');
-    }
-    return ee.FeatureCollection(existing.map(function (a) {
-      return ee.FeatureCollection(a);
-    })).flatten();
-  }
-  // ifn — parcelas já normalizadas (centroide + agbd) pelo 2_0.
-  var existingIfn = [];
-  var missingIfn = [];
+exports.getFootprints = function (source) {
+  var key = source || c.SOURCE;
+  var S = c.SOURCES[key];
+  var existing = [];
+  var missing = [];
   S.footprintAssets.forEach(function (a) {
-    try { ee.data.getAsset(a); existingIfn.push(a); }
-    catch (e) { missingIfn.push(a); }
+    try { ee.data.getAsset(a); existing.push(a); }
+    catch (e) { missing.push(a); }
   });
-  if (missingIfn.length) {
-    print('[AVISO] footprints IFN ausentes:', missingIfn.join(', '));
+  if (missing.length) {
+    print('[AVISO] footprints ausentes (' + key + '):', missing.join(', '));
   }
-  if (!existingIfn.length) {
-    throw new Error('Nenhum ifn_footprint_* encontrado — rode ' +
-      '2_0_ifn_export_footprint.js e aguarde a task.');
+  if (!existing.length) {
+    throw new Error('Nenhum footprint ' + key + ' encontrado — rode o 2_0 ' +
+      'da fonte (' + (key === 'gedi' ? '2_0_gedi_export_footprint.js'
+        : '2_0_ifn_export_footprint.js') + ') e aguarde a task.');
   }
-  return ee.FeatureCollection(existingIfn.map(function (a) {
+  return ee.FeatureCollection(existing.map(function (a) {
     return ee.FeatureCollection(a);
   })).flatten();
 };

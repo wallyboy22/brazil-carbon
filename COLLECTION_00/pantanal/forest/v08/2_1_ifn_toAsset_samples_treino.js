@@ -1,33 +1,36 @@
 /******************************************************************************
- * MAPBIOMAS-CARBONO — Pantanal Forest v08 · 2_1_TOASSET_SAMPLES_TREINO
+ * MAPBIOMAS-CARBONO — Pantanal Forest v08 · 2_1_IFN_TOASSET_SAMPLES_TREINO
  * ---------------------------------------------------------------------------
- * Exporta os FOOTPRINTS de treino NORMALIZADOS (GEDI: merge dos anos; IFN:
- * centroide + AGB_Mg_ha→agbd) como UMA TASK POR RECORTE da grade (`TILE_SPLIT`).
+ * Exporta as PARCELAS de treino NORMALIZADAS da fonte **IFN** (centroide +
+ * `AGB_Mg_ha` → `agbd`, já persistidas pelo 2_0) como UMA TASK POR RECORTE da
+ * grade (`TILE_SPLIT`).
  *
+ * Fonte FIXA em IFN (não depende de `c.SOURCE`). Para a variante GEDI use
+ * `2_1_gedi_toAsset_samples_treino.js`. Pré-requisito: `2_0_ifn_export_footprint.js`.
  * SEM mascaramento aqui: o filtro florestal (mapbiomas_lulc ∈ FOREST_CLASSES)
- * e o descarte de nodata (notNull) são aplicados no 2_2, por célula. Isso
- * elimina a máscara `palsar_nodata` (redundante e cara) e deixa o 2_1 leve.
- *
- * GEDI: preserva agbd_se (peso 1/agbd_se²); IFN: sem agbd_se (w = 1).
+ * e o descarte de nodata (notNull) são aplicados no 2_2, por célula.
+ * IFN: sem agbd_se (w = 1).
  ******************************************************************************/
 var c = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_contract.js');
 var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_covariate_source.js');
 
-var N = c.YEAR;   // ano do lote atual (ex.: 2023)
+var SOURCE = 'ifn';    // script fixo nesta fonte
+var S = c.SOURCES[SOURCE];
+var N = c.YEAR;        // ano do lote atual (ex.: 2023)
 
 // Subdivisão da grade: 1 → 16 tiles · 2 → 64 · 4 → 256 recortes (1 task cada).
 var TILE_SPLIT = 2;
 
-var raw = src.getFootprints();
-var props = c.SOURCE_CFG.sampleProps;   // só o que o 2_2 precisa (enxuga o export)
-var baseName = 'forest_footprint_' + c.SOURCE + '_' + N;
-var root = c.ASSET_ROOT + '/SAMPLES';
+var raw = src.getFootprints(SOURCE);
+var props = src.getSampleProps(SOURCE);   // só o que o 2_2 precisa
+var baseName = 'forest_footprint_' + SOURCE + '_' + N;
+var root = S.assetRoot + '/SAMPLES';
 var cells = c.makeCellDefinitions(TILE_SPLIT);
 
-print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 2_1_toAsset_samples_treino');
-print('[FONTE]', c.SOURCE, '·', c.SOURCE_CFG.label);
+print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 2_1_ifn_toAsset_samples_treino');
+print('[FONTE]', SOURCE, '·', S.label, '· raiz', S.assetRoot);
 print('[FILTRO] floresta (mapbiomas_lulc ∈ ' + c.FOREST_CLASSES +
   ') e notNull → aplicados no 2_2');
 print('[TILE_SPLIT]', TILE_SPLIT, '→', cells.length, 'recortes (tasks)');

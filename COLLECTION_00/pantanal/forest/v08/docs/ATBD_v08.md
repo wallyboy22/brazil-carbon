@@ -106,8 +106,8 @@ Fonte: `v08/0_contract.js`.
 | 1 | `1_check.js` | Diagnóstico único: fonte/domínio, contagem de footprints, floresta C11 + stack (célula-amostra) |
 | 2 | `2_0_gedi_export_footprint.js` | (só `gedi`) footprints GEDI L4A sobre a BAP → `V08_GEDI/SAMPLES/gedi_footprint_bap_<ANO>` |
 | 2 | `2_0_ifn_export_footprint.js` | (só `ifn`) parcelas IFN normalizadas (centroide + `agbd`) → `V08_IFN/SAMPLES/ifn_footprint_<ANO>` |
-| 2 | `2_1_toAsset_samples_treino.js` | Amostras normalizadas (1 task por recorte) → `SAMPLES/forest_footprint_<SOURCE>_<ANO>_<cell>` |
-| 2 | `2_2_toDrive_matrix.js` | Matriz por célula × ano (filtro floresta + notNull) → ASSET + Drive CSV (`lon`, `lat`, `w`) |
+| 2 | `2_1_gedi_toAsset_samples_treino.js` · `2_1_ifn_toAsset_samples_treino.js` | Amostras normalizadas por fonte (1 task por recorte) → `SAMPLES/forest_footprint_<SOURCE>_<ANO>_<cell>` |
+| 2 | `2_2_gedi_toDrive_matrix.js` · `2_2_ifn_toDrive_matrix.js` | Matriz por fonte/célula × ano (filtro floresta + notNull) → ASSET + Drive CSV (`lon`, `lat`, `w`) |
 | 2 | `2_3_gcn/*` | Gate offline (Colab): diagnóstico, CV espacial, thinning (validação), champion |
 | 3 | `3_model_training.js` | Ensemble RF global → `MODELS/rf_agb_v08_m1..m5` |
 | 4 | `4_spatial_prediction.js` | Ensemble global (grade de saída comum, sem costura) → `PREDICTIONS/COL` (mediana + std) |

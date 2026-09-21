@@ -75,8 +75,8 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 | 1 | `1_check.js` | diagnóstico único: fonte/domínio, footprints, floresta+stack (célula-amostra) |
 | 2 | `2_0_gedi_export_footprint.js` | (só `gedi`) footprints GEDI L4A sobre a BAP → V08_GEDI/SAMPLES/gedi_footprint_bap_<ANO> |
 | 2 | `2_0_ifn_export_footprint.js` | (só `ifn`) parcelas IFN normalizadas (centroide + `agbd`) → V08_IFN/SAMPLES/ifn_footprint_<ANO> |
-| 2 | `2_1_toAsset_samples_treino.js` | amostras normalizadas (1 task por recorte) → SAMPLES/ |
-| 2 | `2_2_toDrive_matrix.js` | matriz por célula/ano (filtro floresta + notNull) → ASSET + Drive (CSV) |
+| 2 | `2_1_gedi_toAsset_samples_treino.js` · `2_1_ifn_toAsset_samples_treino.js` | amostras normalizadas por fonte (1 task por recorte) → SAMPLES/ |
+| 2 | `2_2_gedi_toDrive_matrix.js` · `2_2_ifn_toDrive_matrix.js` | matriz por fonte/célula/ano (filtro floresta + notNull) → ASSET + Drive (CSV) |
 | 2 | `2_3_gcn/*` | gate offline (Colab) — figuras, thinning (validação), champion |
 | 3 | `3_model_training.js` | ensemble RF global → MODELS/rf_agb_v08_m1..m5 |
 | 4 | `4_spatial_prediction.js` | ensemble (GLOBAL, grade de saída comum) → PREDICTIONS/COL (mediana+std) |
@@ -91,7 +91,9 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 2. `2_0` — footprint/parcelas da fonte: (GEDI) `2_0_gedi_export_footprint.js`
    (footprints GEDI L4A sobre a BAP) ou (IFN) `2_0_ifn_export_footprint.js`
    (parcelas IFN normalizadas: centroide + `agbd`).
-3. `2_1_toAsset_samples_treino.js` → `2_2_toDrive_matrix.js` (tasks de matriz).
+3. `2_1_<fonte>_toAsset_samples_treino.js` → `2_2_<fonte>_toDrive_matrix.js`
+   (tasks de matriz) — **1 script por fonte** (`gedi`/`ifn`): rode os dois (padrão)
+   ou só o da fonte desejada.
 4. `2_3_gcn` (Colab) — gate offline de **validação** (o thinning é offline e NÃO
    alimenta o treino; se o campeão divergir do herdado da v07, atualizar
    `0_contract.js` — seção CHAMPION/ENSEMBLE).

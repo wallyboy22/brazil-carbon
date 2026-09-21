@@ -1,49 +1,51 @@
 /******************************************************************************
- * MAPBIOMAS-CARBONO — Pantanal Forest v08 · 2_2_TODRIVE_MATRIX
+ * MAPBIOMAS-CARBONO — Pantanal Forest v08 · 2_2_GEDI_TODRIVE_MATRIX
  * ---------------------------------------------------------------------------
- * Matriz de covariáveis por CÉLULA × ANO (TRAIN_YEARS), com dupla saída:
+ * Matriz de covariáveis por CÉLULA × ANO (TRAIN_YEARS) da fonte **GEDI**, com
+ * dupla saída:
  *   - DRIVE (CSV): para o gate offline no Google Colab (2_3_gcn) — leitura
  *     direta com pandas, geração de figuras, thinning espacial, champion.json
  *   - ASSET (tabela): FeatureCollection server-side usada no treino (3_)
  * Colunas extras: lon, lat (para thinning/diagnóstico espacial) e w =
  * 1/agbd_se² (peso do rótulo, recomendação A4 da consulta v07).
  *
- * As covariáveis da v08 usam o PALSAR GLOBAL (fix) — o stack é o mesmo de
- * texto para todas as células; apenas o AOI muda.
+ * Fonte FIXA em GEDI (não depende de `c.SOURCE`). Para a variante IFN use
+ * `2_2_ifn_toDrive_matrix.js`. Pré-requisito: `2_1_gedi_toAsset_samples_treino.js`.
  ******************************************************************************/
 var c = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_contract.js');
 var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_covariate_source.js');
+
+var SOURCE = 'gedi';   // script fixo nesta fonte
+var S = c.SOURCES[SOURCE];
 var CELL_SPLIT = 4;
 var TILE_SCALE = 16;
-var matrixRoot = c.ASSET_ROOT + '/MATRIX';
+var matrixRoot = S.assetRoot + '/MATRIX';
 var biome = src.getDomain().geometry();
 // Pasta raiz no Google Drive destino do CSV (Export.table.toDrive).
 // NOTA: o GEE NÃO cria subpastas — o caminho vira um nome único de pasta.
-// Usamos um folder SIMPLES de um nível; a raiz do "balde" (MyDrive/mapbiomas_carbono)
-// é o mesmo DRIVE_ROOT usado pelas células do 2_3_gcn (CONF["DRIVE_ROOT"]).
 var DRIVE_ROOT = 'mapbiomas_carbono';
 
 // Toggles de destino: ASSET (treino) e/ou DRIVE CSV (gate offline/figures).
 var EXPORT_TO_ASSET = true;
 var EXPORT_TO_DRIVE = true;
 
-print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 2_2_toDrive_matrix');
-print('[FONTE]', c.SOURCE, '·', c.SOURCE_CFG.label, '· raiz', c.ASSET_ROOT);
+print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 2_2_gedi_toDrive_matrix');
+print('[FONTE]', SOURCE, '·', S.label, '· raiz', S.assetRoot);
 
 var points = {};
 c.TRAIN_YEARS.forEach(function (y) {
   // Amostras de treino do 2_1: um asset por recorte (forest_footprint_<SRC>_<ANO>_<cell>)
   // → mescla todos os recortes por prefixo.
-  var prefix = 'forest_footprint_' + c.SOURCE + '_' + c.YEAR + '_';
-  var resp = ee.data.listAssets(c.ASSET_ROOT + '/SAMPLES');
+  var prefix = 'forest_footprint_' + SOURCE + '_' + c.YEAR + '_';
+  var resp = ee.data.listAssets(S.assetRoot + '/SAMPLES');
   var assets = (resp.assets || []).filter(function (a) {
     return a.type === 'TABLE' && a.id.indexOf('/' + prefix) > -1;
   });
   if (!assets.length) {
     throw new Error('Sem amostras de treino (' + prefix + '*) em ' +
-      c.ASSET_ROOT + '/SAMPLES — rode o 2_1_toAsset_samples_treino.js.');
+      S.assetRoot + '/SAMPLES — rode o 2_1 da fonte (' + SOURCE + ').');
   }
   print('[AMOSTRAS]', assets.length, 'recorte(s) de treino');
   points[y] = ee.FeatureCollection(assets.map(function (a) {
@@ -71,12 +73,12 @@ function exportCell(id) {
   var geom = ee.Geometry.BBox(def.bbox[0], def.bbox[1], def.bbox[2], def.bbox[3])
     .intersection(biome, ee.ErrorMargin(30));
   c.TRAIN_YEARS.forEach(function (year) {
-    var wprop = c.SOURCE_CFG.weightProp;   // 'agbd_se' (gedi) ou null (ifn)
+    var wprop = S.weightProp;   // 'agbd_se' (gedi) ou null (ifn)
     var required = c.FEATURE_BANDS.concat([c.TARGET]);
     if (wprop) required = required.concat([wprop]);
     var sampled = src.buildTypedCovariatesStack(geom, year)
       .sampleRegions({ collection: points[year].filterBounds(geom),
-        properties: src.getSampleProps(), scale: c.SCALE,
+        properties: src.getSampleProps(SOURCE), scale: c.SCALE,
         geometries: true, tileScale: TILE_SCALE })
       .filter(ee.Filter.and(
         ee.Filter.notNull(required),
@@ -91,7 +93,7 @@ function exportCell(id) {
           : ee.Number(1);
         return f.set('lon', lon).set('lat', lat).set('w', w);
       });
-    var name = 'agb_matrix_' + c.SOURCE + '_v08_' + id + '_' + year;
+    var name = 'agb_matrix_' + SOURCE + '_v08_' + id + '_' + year;
     print('[TASK]', name);
     // ASSET (server-side, para o treino)
     if (EXPORT_TO_ASSET) {
@@ -109,7 +111,7 @@ function exportCell(id) {
   });
 }
 
-print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 2_2_toDrive_matrix');
+print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 2_2_gedi_toDrive_matrix');
 print('[DRIVE ROOT]', DRIVE_ROOT,
   '(pasta única — o GEE não cria subpastas; CSVs caem na raiz do balde)');
 print('[ASSET ROOT]', matrixRoot);
