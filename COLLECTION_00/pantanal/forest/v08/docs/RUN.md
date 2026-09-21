@@ -13,7 +13,7 @@ Covariáveis, grade, filtro e hiperparâmetros são **idênticos** entre as font
 só muda a amostra e a raiz de assets. Troque `SOURCE` e re-rode.
 
 ## 1. Pré-requisito (só GEDI, uma vez)
-`2_0_gedi_export_footprint.js` → gera `SAMPLES/footprint_bap_2019..2024`
+`2_0_gedi_export_footprint.js` → gera `V08_GEDI/SAMPLES/gedi_footprint_bap_2019..2024`
 (dispara todos os anos em paralelo; **aguarde as tasks** antes do `2_1`).
 No IFN **não existe** este passo.
 
@@ -53,10 +53,11 @@ Células `00`→`06` (ver `2_3_gcn/README.md`). O `SOURCE` é **derivado dos CSV
 herdado da v07, atualize `0_contract.js` (Bloco 7/8).
 
 ## 5. Limpeza de assets
-Após o rename `agc_*`→`agb_*` e a separação `V08_GEDI`/`V08_IFN`, ficaram órfãos
-na pasta **`V08/`** (matrizes `agc_matrix_v08_*` + `SAMPLES/forest_footprint_v08_2023`).
-Esses órfãos foram **removidos**. **Mantidos**:
-`SAMPLES/footprint_bap_2019..2024` (GEDI) e `SAMPLES/footprint_pantanal_2023` (v03–v07).
+- Pasta **`V08/`** (matrizes `agc_matrix_v08_*` + `forest_footprint_v08_2023`): **removida** (órfãos).
+- Footprints GEDI da BAP agora em **`V08_GEDI/SAMPLES/gedi_footprint_bap_<ano>`** (escopados à
+  variante) — recriados ao rodar `2_0_gedi_export_footprint.js`.
+- A antiga pasta compartilhada `SAMPLES/` (e o `footprint_pantanal_2023` de v03–v07)
+  **não existe mais**; re-rodar v03–v07 exigiria regerar esse footprint (v00/v01).
 
 ## 6. Ordem resumida
 `1_check` → (GEDI: `2_0_gedi_export_footprint`) → `2_1` → `2_2` → `2_3_gcn`

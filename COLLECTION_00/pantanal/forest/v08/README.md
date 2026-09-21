@@ -73,7 +73,7 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 |---|---|---|
 | 0 | `0_contract.js` · `0_covariate_source.js` | contrato (domínio BAP, fonte, champion) + PALSAR global |
 | 1 | `1_check.js` | diagnóstico único: fonte/domínio, footprints, floresta+stack (célula-amostra) |
-| 2 | `2_0_gedi_export_footprint.js` | (só `gedi`) footprints GEDI L4A sobre a BAP → SAMPLES/footprint_bap_<ANO> |
+| 2 | `2_0_gedi_export_footprint.js` | (só `gedi`) footprints GEDI L4A sobre a BAP → V08_GEDI/SAMPLES/gedi_footprint_bap_<ANO> |
 | 2 | `2_1_toAsset_samples_treino.js` | amostras normalizadas (1 task por recorte) → SAMPLES/ |
 | 2 | `2_2_toDrive_matrix.js` | matriz por célula/ano (filtro floresta + notNull) → ASSET + Drive (CSV) |
 | 2 | `2_3_gcn/*` | gate offline (Colab) — figuras, thinning (validação), champion |

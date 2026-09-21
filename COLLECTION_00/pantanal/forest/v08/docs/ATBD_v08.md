@@ -89,7 +89,7 @@ Fonte: `v08/0_contract.js`.
 ## 4. Dados de entrada
 
 - **Amostras**: dependem de `SOURCE` (ver `0_contract.js` → `SOURCES`):
-  - `gedi` — footprints GEDI L4A v2.1 sobre a BAP (`SAMPLES/footprint_bap_<ano>`,
+  - `gedi` — footprints GEDI L4A v2.1 sobre a BAP (`V08_GEDI/SAMPLES/gedi_footprint_bap_<ano>`,
     gerados por `2_0_gedi_export_footprint.js`, multi-ano 2019–2024);
   - `ifn` — parcelas `IFN_2026_BR_PLOTS-v13` na BAP (floresta, centroide).
 - **Filtro de treino**, aplicado no `2_2` por célula:
@@ -104,7 +104,7 @@ Fonte: `v08/0_contract.js`.
 |---|---|---|
 | 0 | `0_contract.js` · `0_covariate_source.js` | Contrato (bandas, grade, domínio BAP, fonte, champion) + PALSAR global (`buildPalsarGlobal`) |
 | 1 | `1_check.js` | Diagnóstico único: fonte/domínio, contagem de footprints, floresta C11 + stack (célula-amostra) |
-| 2 | `2_0_gedi_export_footprint.js` | (só `gedi`) footprints GEDI L4A sobre a BAP → `SAMPLES/footprint_bap_<ANO>` |
+| 2 | `2_0_gedi_export_footprint.js` | (só `gedi`) footprints GEDI L4A sobre a BAP → `V08_GEDI/SAMPLES/gedi_footprint_bap_<ANO>` |
 | 2 | `2_1_toAsset_samples_treino.js` | Amostras normalizadas (1 task por recorte) → `SAMPLES/forest_footprint_<SOURCE>_<ANO>_<cell>` |
 | 2 | `2_2_toDrive_matrix.js` | Matriz por célula × ano (filtro floresta + notNull) → ASSET + Drive CSV (`lon`, `lat`, `w`) |
 | 2 | `2_3_gcn/*` | Gate offline (Colab): diagnóstico, CV espacial, thinning (validação), champion |

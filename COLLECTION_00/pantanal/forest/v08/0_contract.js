@@ -148,7 +148,7 @@ exports.CRS_TRANSFORM = [
 //   O pipeline é ÚNICO e parametrizado por `SOURCE`. Cada fonte tem raiz de
 //   assets própria (sub-versão) e schema de amostra próprio; covariáveis e
 //   hiperparâmetros são idênticos entre as variantes (comparação direta).
-//     · gedi — footprints GEDI L4A v2.1 na BAP (footprint_bap_<ano>),
+//     · gedi — footprints GEDI L4A v2.1 na BAP (gedi_footprint_bap_<ano>),
 //              alvo `agbd` (t/ha), peso w = 1/agbd_se²;
 //     · ifn  — parcelas IFN_2026_BR_PLOTS-v13 na BAP (floresta, centroide),
 //              alvo AGB_Mg_ha (t/ha) normalizado para `agbd`, sem agbd_se.
@@ -165,7 +165,7 @@ exports.SOURCES = {
     label: 'GEDI L4A v2.1 (footprints BAP)',
     assetRoot: PANTANAL_FOREST + '/V08_GEDI',
     footprintAssets: BAP_FOOTPRINT_YEARS.map(function (y) {
-      return PANTANAL_FOREST + '/SAMPLES/footprint_bap_' + y;
+      return PANTANAL_FOREST + '/V08_GEDI/SAMPLES/gedi_footprint_bap_' + y;
     }),
     trainYears: [2023],
     target: 'agbd',

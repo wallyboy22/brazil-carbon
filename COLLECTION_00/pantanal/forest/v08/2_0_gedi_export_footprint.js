@@ -3,7 +3,7 @@
  * ---------------------------------------------------------------------------
  * Pré-requisito da variante GEDI sobre a Bacia do Alto Paraguai (BAP):
  * extrai os footprints GEDI L4A v2.1 FILTRADOS sobre a BAP e exporta um asset
- * por ano (`SAMPLES/footprint_bap_<ANO>`).
+ * por ano (`V08_GEDI/SAMPLES/gedi_footprint_bap_<ANO>`).
  *
  * DIRETO: os anos são disparados em PARALELO (um evaluate por ano só para
  * descobrir os `table_id` — o carregamento das tabelas GEDI exige os ids no
@@ -30,9 +30,9 @@ var EXPORT_TO_ASSET = true;
 var EXPORT_TO_DRIVE = false;                       // CSV (opcional)
 var EXPORT_FOLDER = 'GEE_Exports_AGC-v3';
 
-// Pasta de samples compartilhada (irmã do footprint_pantanal_2023)
-var SAMPLES_ROOT = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/' +
-  'COLLECTION_00/PANTANAL_FOREST/SAMPLES';
+// Samples da variante GEDI (V08_GEDI/SAMPLES) — escopado à fonte, não à pasta
+// compartilhada SAMPLES/ (que fica com o legado footprint_pantanal_2023).
+var SAMPLES_ROOT = c.ASSET_ROOT + '/SAMPLES';
 
 var GEDI_SELECTORS = [
   'lon_lowestmode', 'lat_lowestmode', 'agbd', 'agbd_se',
@@ -69,10 +69,10 @@ function exportYear(year, ids) {
     return filterGedi(ee.FeatureCollection(tid), DOMAIN);
   })).flatten();
   if (EXPORT_TO_ASSET) {
-    var assetId = SAMPLES_ROOT + '/footprint_bap_' + year;
+    var assetId = SAMPLES_ROOT + '/gedi_footprint_bap_' + year;
     Export.table.toAsset({
       collection: fc,
-      description: 'WS_CARBONO_toAsset-footprint_bap_' + year,
+      description: 'WS_CARBONO_toAsset-gedi_footprint_bap_' + year,
       assetId: assetId
     });
     print('[TASK] Asset:', assetId);
@@ -93,7 +93,7 @@ function exportYear(year, ids) {
 // ---------------------------------------------------------------------------
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 2_0_gedi_export_footprint');
 print('[DOMÍNIO]', c.BAP_ASSET, '· anos', YEARS);
-print('[SAÍDA]', SAMPLES_ROOT + '/footprint_bap_<ANO>');
+print('[SAÍDA]', SAMPLES_ROOT + '/gedi_footprint_bap_<ANO>');
 src.ensureFolder(SAMPLES_ROOT);
 
 YEARS.forEach(function (year) {

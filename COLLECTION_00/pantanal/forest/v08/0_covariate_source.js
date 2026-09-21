@@ -85,7 +85,7 @@ exports.getSampleProps = function () {
 
 /**
  * Footprints/parcelas da fonte ativa, normalizados para o schema do pipeline:
- *   · gedi — merge dos footprints BAP (`footprint_bap_<ano>`), alvo já `agbd`;
+ *   · gedi — merge dos footprints BAP (`gedi_footprint_bap_<ano>`), alvo já `agbd`;
  *   · ifn  — parcelas IFN na BAP, floresta filtrada adiante pela máscara,
  *            geometria reduzida ao CENTROIDE e `AGB_Mg_ha` → `agbd`.
  * O alvo final é sempre `agbd` (t/ha).
@@ -94,7 +94,7 @@ exports.getFootprints = function () {
   var S = c.SOURCE_CFG;
   if (c.SOURCE === 'gedi') {
     // Tolera anos sem asset (o exportador pula anos sem pegadas) e falha com
-    // mensagem clara se NENHUM footprint_bap_* existir.
+    // mensagem clara se NENHUM gedi_footprint_bap_* existir.
     var existing = [];
     var missing = [];
     S.footprintAssets.forEach(function (a) {
@@ -106,7 +106,7 @@ exports.getFootprints = function () {
         missing.join(', '));
     }
     if (!existing.length) {
-      throw new Error('Nenhum footprint_bap_* encontrado — rode ' +
+      throw new Error('Nenhum gedi_footprint_bap_* encontrado — rode ' +
         '2_0_gedi_export_footprint.js no GEE e aguarde as tasks.');
     }
     return ee.FeatureCollection(existing.map(function (a) {
