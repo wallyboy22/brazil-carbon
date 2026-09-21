@@ -13,6 +13,7 @@ conteúdo** do `*.py` do fluxo, na ordem abaixo.
 | Ordem | Arquivo | O que faz | Artefatos gerados |
 |-------|---------|-----------|-------------------|
 | 00 | `2_3_0_gcn_cell00_util.py` | carrega `CONF` + funções compartilhadas no namespace | nada (configura o runtime) |
+| 00b | `2_3_0b_gcn_cell00b_reorganize.py` | (opcional, 1×) reorganiza a raiz **flat** em subpastas de **contexto** `<VERSION>_<SOURCE>` (ex.: `v08_gedi/`, `v08_ifn/`) | — |
 | 01 | `2_3_1_gcn_cell01_autentication_drive.py` | autentica Earth Engine e monta o Google Drive | — |
 | 02 | `2_3_2_gcn_cell02_diagnostico.py` | diagnóstico da matriz: distribuição do alvo, correlação das bandas, resíduo×agbd_se, Moran's I + variograma | `f1..f4_*.png` |
 | 03 | `2_3_3_gcn_cell03_cv_regularizacao.py` | CV **espacial em blocos**, RF×GBM×SVR, curva de aprendizado, varredura `minLeafPopulation`, avaliação log(1+agbd) com fator de Duan | `f5..f8_*.png` + `gate_state.json` |
@@ -29,23 +30,35 @@ conteúdo** do `*.py` do fluxo, na ordem abaixo.
 
 ## Estrutura de pastas no Drive
 
-O `2_2_<fonte>_toDrive_matrix.js` (`gedi`/`ifn`) exporta os CSVs para **uma pasta única** `MyDrive/mapbiomas_carbono/`
-(no GEE, `folder:` não cria subpastas). As células do `2_3_gcn` tratam essa pasta como a
-**raiz do balde**: `CONF["DRIVE_ROOT"]` aponta para ela, os CSVs são lidos direto
-(`MATRIX_DIR = ""`) e as figuras/artefatos vão para a pasta `figures_<SOURCE>/` criada pelo
-próprio Python. Para usar outra pasta, ajuste `CONF["DRIVE_ROOT"]` na célula 00 e o
-`DRIVE_ROOT` do `2_2_<fonte>_toDrive_matrix.js`.
+O `2_2_<fonte>_toDrive_matrix.js` (`gedi`/`ifn`) exporta os CSVs para **uma pasta única**
+`MyDrive/mapbiomas_carbono/` (no GEE, `folder:` **não** cria subpastas). A subetapa **00b**
+(`reorganize_root`) move os arquivos da raiz **flat** para subpastas de **contexto**
+`<VERSION>_<SOURCE>`:
+
+```
+MyDrive/mapbiomas_carbono/
+  v08_gedi/
+    agb_matrix_gedi_v08_<cell>_<ano>.csv
+    samples_thinned_gedi_v08.csv (+ .note.txt)
+    figures/   # f1..f11_*.png, diagnostico.json, gate_state.json, champion.json, relatorio_*.md
+  v08_ifn/
+    ...
+```
+
+As células do `2_3_gcn` resolvem o **contexto** (`<VERSION>_<SOURCE>`) a partir de
+`CONF["VERSION"]` + `CONF["SOURCE"]`: `matrix_dir()` = `<contexto>/` e `fig_dir()` =
+`<contexto>/figures/`. **Retrocompatível**: sem a reorg (raiz flat), lê a raiz e
+seleciona a fonte por `CONF["SOURCE"]`.
 
 > **Fonte de amostra (`CONF["SOURCE"]`)**: `'gedi'` | `'ifn'` — deve casar com o
-> `SOURCE` do `0_contract.js`. Ela entra como **prefixo** nos artefatos para não
-> colidir entre variantes: CSVs `agb_matrix_<SOURCE>_v08_*.csv`,
-> `samples_thinned_<SOURCE>_v08.csv` e pasta `figures_<SOURCE>/`.
+> `SOURCE` do `0_contract.js`. Com fontes **mistas** na raiz e sem `SOURCE`, o
+> `load_matrix()` aborta pedindo a escolha (ou rode a reorg 00b).
 
 ## Biblioteca de figuras
 
-Todas as figuras são salvas na pasta `figures_<SOURCE>/` da pasta de output no Drive
-(`CONF["DRIVE_ROOT"]/figures_<SOURCE>/`), espelhando a pasta `figures/` deste repositório.
-Após a execução, baixe/exporte as figuras para cá:
+Todas as figuras são salvas na pasta `figures/` do **contexto** no Drive
+(`CONF["DRIVE_ROOT"]/<VERSION>_<SOURCE>/figures/`), espelhando a pasta `figures/` deste
+repositório. Após a execução, baixe/exporte as figuras para cá:
 
 ```
 v08/2_3_gcn/figures_<SOURCE>/f1_alvo_distribuicao.png
@@ -64,6 +77,8 @@ v08/2_3_gcn/figures_<SOURCE>/f2_correlacao_bandas.png
 
 | Chave | Padrão | O quê |
 |-------|--------|-------|
+| `VERSION` | `v08` | versão (prefixo do contexto `<VERSION>_<SOURCE>`) |
+| `SOURCE` | `None` | `'gedi'` \| `'ifn'`; `None` deriva dos CSVs (obrigatório se houver fontes mistas) |
 | `BLOCK_M` | 3000 m | blocos espaciais da CV (teste 1–5 km) |
 | `THIN_M` | 75 m | grade do thinning (teste 60–90 m) |
 | `MIN_LEAF_CANDIDATES` | `[5,10,20,30]` | varredura `minLeafPopulation` |

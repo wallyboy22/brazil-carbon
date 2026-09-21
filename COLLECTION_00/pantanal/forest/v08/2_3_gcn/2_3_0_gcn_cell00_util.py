@@ -30,14 +30,18 @@ import matplotlib.pyplot as plt  # noqa: E402
 # CONFIG (ajustável a cada execução — ajuste DRIVE_ROOT se necessário)
 # ---------------------------------------------------------------------------
 CONF = {
-    # Raiz do "balde" no Drive: pasta única do 2_2_toDrive_matrix.js (folder=).
-    # O GEE não cria subpastas; os CSVs caem direto aqui.
+    # Raiz do "balde" no Drive: pasta única do 2_2_<fonte>_toDrive_matrix.js
+    # (folder=). O GEE não cria subpastas; os CSVs caem direto aqui (flat).
+    # A subetapa 2_3_0b (reorganize_root) move para subpastas de contexto
+    # <VERSION>_<SOURCE> (ex.: v08_gedi / v08_ifn).
     "DRIVE_ROOT": "/content/drive/MyDrive/mapbiomas_carbono",
-    # Fonte de amostra: DERIVADA dos CSVs (agb_matrix_<SOURCE>_v08_*.csv) por
-    # load_matrix(). Deixe None; defina só para forçar/validar.
+    # Versão do produto (prefixo do contexto): <VERSION>_<SOURCE>.
+    "VERSION": "v08",
+    # Fonte de amostra: 'gedi' | 'ifn'. Se None, é DERIVADA dos CSVs; com fontes
+    # mistas na raiz, load_matrix() exige que você defina ('gedi' ou 'ifn').
     "SOURCE": None,
-    "MATRIX_DIR": "",           # CSVs da matriz na própria raiz do balde
-    "FIG_DIR": "figures",       # base; fig_dir() prefixa com a fonte
+    "MATRIX_DIR": "",           # (legado) CSVs da matriz na própria raiz do balde
+    "FIG_DIR": "figures",       # (legado) base; fig_dir() prefixa com a fonte
     # --- dados ---
     "TARGET": "agbd",
     "WEIGHT_COL": "w",
@@ -64,19 +68,64 @@ _MANIFEST: list[str] = []  # registro de artefatos gerados nesta rodada
 
 
 # ---------------------------------------------------------------------------
-# Paths / figures
+# Contexto (<VERSION>_<SOURCE>) e descoberta de arquivos
 # ---------------------------------------------------------------------------
+def _scan_matrix_files() -> list[Path]:
+    """CSVs de matriz (agb_matrix_*_v*.csv) na raiz flat e nas subpastas."""
+    root = Path(CONF["DRIVE_ROOT"])
+    files = set(root.glob("agb_matrix_*_v*.csv"))
+    files.update(root.glob("*/agb_matrix_*_v*.csv"))
+    return sorted(files)
+
+
+def _file_source(f: Path) -> str:
+    """Fonte a partir do nome `agb_matrix_<SRC>_<VER>_...`."""
+    return f.name.split("_")[2]
+
+
+def detect_sources() -> list[str]:
+    """Fontes presentes (dos nomes dos CSVs de matriz)."""
+    return sorted({_file_source(f) for f in _scan_matrix_files()})
+
+
+def resolve_source():
+    """Fonte alvo: CONF['SOURCE'] ou derivada (única); None se ambíguo/ausente."""
+    if CONF.get("SOURCE"):
+        return CONF["SOURCE"]
+    srcs = detect_sources()
+    return srcs[0] if len(srcs) == 1 else None
+
+
+def context_name():
+    """Nome do contexto ativo: `<VERSION>_<SOURCE>` (ou None)."""
+    src = resolve_source()
+    return f"{CONF.get('VERSION', 'v08')}_{src}" if src else None
+
+
+def context_dir():
+    """Pasta do contexto ativo (`DRIVE_ROOT/<CONTEXT>`); None se não resolvível."""
+    ctx = context_name()
+    return Path(CONF["DRIVE_ROOT"]) / ctx if ctx else None
+
+
 def fig_dir() -> Path:
-    """Pasta de figuras; prefixada com a fonte (figures_<SOURCE>) quando conhecida."""
-    src = CONF.get("SOURCE")
-    name = f"{CONF['FIG_DIR']}_{src}" if src else CONF["FIG_DIR"]
-    d = Path(CONF["DRIVE_ROOT"]) / name
+    """Figuras: `<CONTEXT>/figures` (contexto) ou `figures_<SOURCE>` (flat/legado)."""
+    d = context_dir()
+    if d is not None:
+        d = d / "figures"
+    else:
+        src = CONF.get("SOURCE")
+        d = Path(CONF["DRIVE_ROOT"]) / (
+            f"{CONF['FIG_DIR']}_{src}" if src else CONF["FIG_DIR"])
     d.mkdir(parents=True, exist_ok=True)
     return d
 
 
 def matrix_dir() -> Path:
-    d = Path(CONF["DRIVE_ROOT"]) / CONF["MATRIX_DIR"]
+    """Matriz: `<CONTEXT>` (contexto) ou a raiz flat (legado)."""
+    d = context_dir()
+    if d is None:
+        d = Path(CONF["DRIVE_ROOT"]) / CONF["MATRIX_DIR"]
     d.mkdir(parents=True, exist_ok=True)
     return d
 
@@ -109,38 +158,47 @@ def manifest() -> list[str]:
 # Dados: leitura / limpeza da matriz (CSVs do Drive)
 # ---------------------------------------------------------------------------
 def load_matrix() -> pd.DataFrame:
-    """Concatena os agb_matrix_<SOURCE>_v08_*.csv da pasta MATRIX_DIR.
+    """Concatena os CSVs `agb_matrix_<SOURCE>_v*.csv` da fonte alvo.
 
-    O SOURCE é DERIVADO dos nomes dos arquivos (fonte única de verdade = o
-    contrato que os nomeia). Aborta se houver fontes mistas.
+    Lê a raiz flat E as subpastas de contexto; seleciona a fonte por
+    `CONF['SOURCE']` (ou a única disponível). Com fontes MISTAS e sem
+    `CONF['SOURCE']`, aborta pedindo a escolha (ou rode a subetapa 2_3_0b).
     """
-    files = sorted(matrix_dir().glob("agb_matrix_*_v08_*.csv"))
+    files = _scan_matrix_files()
     if not files:
         raise FileNotFoundError(
-            f"Nenhum CSV de matriz em {matrix_dir()}. Rode 2_2_toDrive_matrix.js "
-            "no GEE e baixe/exporte o CSV para o Drive."
+            f"Nenhum CSV de matriz em {CONF['DRIVE_ROOT']} (raiz ou subpastas). "
+            "Rode 2_2_<fonte>_toDrive_matrix.js no GEE e exporte o CSV ao Drive."
         )
-    sources = sorted({f.name.split("_")[2] for f in files})
-    if len(sources) > 1:
-        raise ValueError(
-            f"CSVs de fontes MISTAS em {matrix_dir()}: {sources}. "
-            "Deixe apenas uma fonte (gedi OU ifn) na pasta."
-        )
+    by_src: dict[str, list[Path]] = {}
+    for f in files:
+        by_src.setdefault(_file_source(f), []).append(f)
+    srcs = sorted(by_src)
     forced = CONF.get("SOURCE")
-    if forced and forced != sources[0]:
+    if forced:
+        if forced not in by_src:
+            raise ValueError(
+                f"CONF['SOURCE']={forced}, mas não há CSVs dessa fonte. "
+                f"Disponíveis: {srcs}."
+            )
+        chosen = forced
+    elif len(srcs) == 1:
+        chosen = srcs[0]
+    else:
         raise ValueError(
-            f"CONF['SOURCE']={forced} != CSVs ({sources[0]}). Ajuste ou deixe None."
+            f"CSVs de fontes MISTAS: {srcs}. Defina CONF['SOURCE']='gedi'|'ifn' "
+            "ou rode a subetapa 2_3_0b (reorganize_root) para separar em subpastas."
         )
-    CONF["SOURCE"] = sources[0]
-    print(f"[FONTE] derivada dos CSVs: {sources[0]} · FIG_DIR=figures_{sources[0]}")
+    CONF["SOURCE"] = chosen
+    files = sorted(by_src[chosen])
+    print(f"[FONTE] {chosen} · {len(files)} CSV(s) · contexto {context_name()}")
     frames = []
     for f in files:
         df = pd.read_csv(f)
         df["_file"] = f.name
         frames.append(df)
-    df = pd.concat(frames, ignore_index=True)
-    df = df.drop(columns=["_file"])
-    print(f"[DADOS] {len(df)} linhas · {files[0].parent} ({len(files)} CSVs)")
+    df = pd.concat(frames, ignore_index=True).drop(columns=["_file"])
+    print(f"[DADOS] {len(df)} linhas · {len(files)} CSVs")
     return df
 
 
@@ -256,6 +314,118 @@ def variogram(resids: np.ndarray, coords_m: np.ndarray, max_dist_m: float = 1500
 # ---------------------------------------------------------------------------
 def weights_1_se2(agbd_se: np.ndarray) -> np.ndarray:
     return 1.0 / np.maximum(agbd_se, 1.0) ** 2
+
+
+# ---------------------------------------------------------------------------
+# Reorganização da raiz (subetapa 2_3_0b) — separa por contexto <VERSION>_<SOURCE>
+# ---------------------------------------------------------------------------
+def _contexts_on_disk() -> list[Path]:
+    ver = CONF.get("VERSION", "v08")
+    return sorted(d for d in Path(CONF["DRIVE_ROOT"]).glob(f"{ver}_*") if d.is_dir())
+
+
+def _active_context_dir():
+    d = context_dir()
+    if d is not None:
+        return d
+    ctxs = _contexts_on_disk()
+    return ctxs[0] if len(ctxs) == 1 else None
+
+
+def reorganize_root(dry_run: bool = False) -> dict:
+    """Move os arquivos da raiz FLAT para subpastas de contexto <VERSION>_<SOURCE>.
+
+    - `agb_matrix_<SRC>_<VER>_*.csv` → `<VER>_<SRC>/`
+    - `samples_thinned_<SRC>_<VER>(.csv|.note.txt)` → `<VER>_<SRC>/`
+    - `figures_<SRC>/` → `<VER>_<SRC>/figures/`
+    - artefatos do gate (`diagnostico.json`, `gate_state.json`, `champion.json`,
+      `relatorio_recomendacoes.md`, `f*.png`) → contexto ativo
+    - desconhecidos: deixados como estão
+    Idempotente (não sobrescreve) e com `dry_run` (só imprime o que faria).
+    """
+    root = Path(CONF["DRIVE_ROOT"])
+    ver = CONF.get("VERSION", "v08")
+    stats = {"matrix": 0, "thinned": 0, "figures": 0, "artifacts": 0,
+             "skipped": 0, "dedup": 0, "left": 0}
+
+    def move(src: Path, dst_dir: Path, key: str):
+        dst_dir.mkdir(parents=True, exist_ok=True)
+        dst = dst_dir / src.name
+        if dst.exists():
+            try:
+                same = src.read_bytes() == dst.read_bytes()
+            except OSError:
+                same = False
+            if same:   # já está no contexto (duplicado na raiz) → remove a cópia
+                print(f"[{'DRY ' if dry_run else 'DEDUP'}] {src.relative_to(root)} " +
+                      f"(idêntico a {dst.relative_to(root)})")
+                if not dry_run:
+                    src.unlink()
+                stats["dedup"] += 1
+                return
+            dst = dst.with_name(f"{dst.stem}_dup{dst.suffix}")
+        print(f"[{'DRY ' if dry_run else 'MOVE'}] {src.relative_to(root)} → " +
+              f"{dst_dir.relative_to(root)}/")
+        if not dry_run:
+            src.rename(dst)
+        stats[key] += 1
+
+    # 1) matrizes: agb_matrix_<SRC>_<VER>_*.csv
+    for f in sorted(root.glob("agb_matrix_*_v*.csv")):
+        parts = f.name.split("_")
+        if len(parts) < 4:
+            stats["left"] += 1
+            continue
+        move(f, root / f"{parts[3]}_{parts[2]}", "matrix")
+
+    # 2) thinned: samples_thinned_<SRC>_<VER>(.csv|.note.txt)
+    for f in sorted(root.glob("samples_thinned_*")):
+        if f.is_dir():
+            continue
+        parts = f.name.split("_")
+        if len(parts) < 4:
+            stats["left"] += 1
+            continue
+        src, v = parts[2], parts[3].split(".")[0]
+        move(f, root / f"{v}_{src}", "thinned")
+
+    # 3) figuras: figures_<SRC>/ → <VER>_<SRC>/figures/
+    for d in sorted(root.glob("figures_*")):
+        if not d.is_dir():
+            continue
+        src = d.name[len("figures_"):]
+        ctx_fig = root / f"{ver}_{src}" / "figures"
+        for f in sorted(d.iterdir()):
+            if f.is_file():
+                move(f, ctx_fig, "figures")
+        if not dry_run:
+            try:
+                d.rmdir()  # só remove se ficou vazia
+            except OSError:
+                pass
+
+    # 4) artefatos do gate na raiz → contexto ativo
+    ctx = _active_context_dir()
+    art_names = ["diagnostico.json", "gate_state.json", "champion.json",
+                 "relatorio_recomendacoes.md"]
+    if ctx is None:
+        stats["left"] += sum((root / n).exists() for n in art_names)
+        stats["left"] += len(list(root.glob("f*.png")))
+    else:
+        for n in art_names:
+            f = root / n
+            if f.exists():
+                move(f, ctx, "artifacts")
+        for f in sorted(root.glob("f*.png")):
+            move(f, ctx / "figures", "artifacts")
+
+    print(f"[REORG] matrizes={stats['matrix']} · thinned={stats['thinned']} · " +
+          f"figuras={stats['figures']} · artefatos={stats['artifacts']} · " +
+          f"duplicados(removidos)={stats['dedup']} · deixados={stats['left']}")
+    if ctx is None and stats["artifacts"] == 0:
+        print("[REORG] contexto não resolvido — defina CONF['SOURCE'] ('gedi'|'ifn') " +
+              "e rode de novo para mover os artefatos do gate.")
+    return stats
 
 
 print("=" * 68)
