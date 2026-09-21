@@ -10,15 +10,17 @@
  * `2_0_gedi_export_footprint`; o IFN é um retrato único → 1 asset).
  *
  * Uso (SOURCE='ifn'): rodar uma vez; aguarde a task antes do 2_1.
+ * NOTA: este script é fixo no IFN (`c.SOURCES.ifn`) — independe de `SOURCE`;
+ * os passos seguintes (2_1+) exigem `SOURCE='ifn'` no 0_contract.js.
  ******************************************************************************/
 var c = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_contract.js');
 var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_covariate_source.js');
 
-var S = c.SOURCE_CFG;
+var S = c.SOURCES.ifn;          // IFN fixo (não usa c.SOURCE_CFG)
 var YEAR = c.YEAR;
-var SAMPLES_ROOT = c.ASSET_ROOT + '/SAMPLES';
+var SAMPLES_ROOT = S.assetRoot + '/SAMPLES';
 var DOMAIN = src.getDomain().geometry();
 
 var EXPORT_TO_ASSET = true;
@@ -42,6 +44,10 @@ print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 2_0_ifn_export_footprint');
 print('[FONTE]', S.label, '· fonte crua', S.footprintSource);
 print('[DOMÍNIO]', c.BAP_ASSET);
 print('[SAÍDA]', SAMPLES_ROOT + '/ifn_footprint_' + YEAR);
+if (c.SOURCE !== 'ifn') {
+  print('[AVISO] c.SOURCE =', c.SOURCE, '— defina SOURCE="ifn" no 0_contract.js' +
+    ' antes de rodar 2_1/2_2/3/... (este export é IFN fixo).');
+}
 src.ensureFolder(SAMPLES_ROOT);
 
 var fc = ifnFootprints();

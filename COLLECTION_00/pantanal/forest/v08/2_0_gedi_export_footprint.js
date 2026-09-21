@@ -32,7 +32,9 @@ var EXPORT_FOLDER = 'GEE_Exports_AGC-v3';
 
 // Samples da variante GEDI (V08_GEDI/SAMPLES) — escopado à fonte, não à pasta
 // compartilhada SAMPLES/ (que fica com o legado footprint_pantanal_2023).
-var SAMPLES_ROOT = c.ASSET_ROOT + '/SAMPLES';
+// GEDI fixo (não usa c.SOURCE_CFG): este script é GEDI-específico.
+var S = c.SOURCES.gedi;
+var SAMPLES_ROOT = S.assetRoot + '/SAMPLES';
 
 var GEDI_SELECTORS = [
   'lon_lowestmode', 'lat_lowestmode', 'agbd', 'agbd_se',
@@ -94,6 +96,10 @@ function exportYear(year, ids) {
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 2_0_gedi_export_footprint');
 print('[DOMÍNIO]', c.BAP_ASSET, '· anos', YEARS);
 print('[SAÍDA]', SAMPLES_ROOT + '/gedi_footprint_bap_<ANO>');
+if (c.SOURCE !== 'gedi') {
+  print('[AVISO] c.SOURCE =', c.SOURCE, '— defina SOURCE="gedi" no 0_contract.js' +
+    ' antes de rodar 2_1/2_2/3/... (este export é GEDI fixo).');
+}
 src.ensureFolder(SAMPLES_ROOT);
 
 YEARS.forEach(function (year) {
