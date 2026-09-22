@@ -72,8 +72,9 @@ v08/2_3_gcn/figures_<SOURCE>/f2_correlacao_bandas.png
 ## Do champion para o modelo
 
 1. Abra `champion.json` (gerado pela célula 05).
-2. Copie os valores para o topo de `v08/0_contract.js`
-   (`MIN_LEAF_POP`, `VARIABLES_PER_SPLIT`, `ENSEMBLE`).
+2. Copie os valores para o `v08/0_contract.js`:
+   `minLeafPop` **por fonte** (em `SOURCES.gedi` / `SOURCES.ifn`),
+   `VARIABLES_PER_SPLIT` e `ENSEMBLE`. (`MIN_LEAF_POP` deriva do `SOURCE_CFG`.)
 3. Rode no GEE: `3_model_training.js` → `4_spatial_prediction.js`.
 
 ## Configuração rápida (célula `2_3_0_gcn_cell00_util.py`)

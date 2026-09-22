@@ -174,7 +174,8 @@ exports.SOURCES = {
     weightProp: 'agbd_se',
     sampleProps: ['agbd', 'agbd_se', 'pft_class', 'shot_number',
       'lon_lowestmode', 'lat_lowestmode'],
-    pointGeometry: false
+    pointGeometry: false,
+    minLeafPop: 5                 // champion do gate v08 (GEDI)
   },
   ifn: {
     label: 'IFN (IFN_2026_BR_PLOTS-v13)',
@@ -190,7 +191,8 @@ exports.SOURCES = {
     weightProp: null,
     sampleProps: ['agbd', 'C_Mg_ha', 'n_ind', 'area_ha', 'bioma', 'fid',
       'UA', 'Subunidade', 'orientacao', 'mun'],
-    pointGeometry: true
+    pointGeometry: true,
+    minLeafPop: 10                // champion do gate v08 (IFN)
   }
 };
 
@@ -199,10 +201,13 @@ exports.TRAIN_YEARS = exports.SOURCE_CFG.trainYears;
 exports.ASSET_ROOT = exports.SOURCE_CFG.assetRoot;
 
 // ===========================================================================
-// Bloco 7 — CHAMPION [gate v07, 10/09/2026; SEM log-target]
-//   Regularização direta do RF. RMSE ~52.2 t/ha (sweep offline).
+// Bloco 7 — CHAMPION [gate v08, 21–22/09/2026; SEM log-target]
+//   minLeafPopulation POR FONTE (do gate offline 2_3_gcn):
+//     · gedi → 5 (sweep 5→69.27 · 10→69.30 · 20→69.41 · 30→69.51)
+//     · ifn  → 10 (sweep 5→36.12 · 10→36.05 · 20→36.07 · 30→36.45)
+//   `MIN_LEAF_POP` reflete a fonte ativa (SOURCE_CFG.minLeafPop).
 // ===========================================================================
-exports.MIN_LEAF_POP = 10;        // minLeafPopulation (regularização)
+exports.MIN_LEAF_POP = exports.SOURCE_CFG.minLeafPop || 10;
 exports.VARIABLES_PER_SPLIT = 6;  // ~sqrt(36) bandas por split
 
 // ===========================================================================

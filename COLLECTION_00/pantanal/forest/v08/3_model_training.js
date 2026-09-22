@@ -4,7 +4,8 @@
  * v08 (fix pós-v07):
  *   - covariáveis com PALSAR GLOBAL (0_covariate_source.js) + máscara de
  *     treino palsar_nodata — enfrentar o artefato de excesso;
- *   - parametrização herdada da v07 (champion: minLeaf 10, linear, N=5).
+ *   - parametrização do champion do gate v08 (minLeafPopulation POR FONTE:
+ *     gedi=5, ifn=10; linear, N=5).
  *
  * MODELO GLOBAL ÚNICO (não por célula): a matriz agrega TODAS as células.
  * Um classificador por membro do ensemble é exportado para
@@ -76,7 +77,7 @@ function trainMember(i) {
 
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 3_model_training');
 print('[FONTE]', c.SOURCE, '·', c.SOURCE_CFG.label, '· raiz', root);
-print('[CHAMPION (v07 herdado)] minLeafPopulation =', c.MIN_LEAF_POP,
+print('[CHAMPION (gate v08)] minLeafPopulation =', c.MIN_LEAF_POP,
   '· variablesPerSplit =', c.VARIABLES_PER_SPLIT);
 print('[ENSEMBLE] N =', N, '· seed_base =', c.ENSEMBLE.SEED_BASE,
   '· band_fraction =', c.ENSEMBLE.BAND_FRACTION,

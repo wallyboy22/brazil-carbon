@@ -16,7 +16,7 @@
 | Versão | v08 — sub-versões por fonte: `V08_GEDI` e `V08_IFN` |
 | Raiz de assets | `.../PANTANAL_FOREST/V08_GEDI` · `.../PANTANAL_FOREST/V08_IFN` |
 | Fontes de amostra | `SOURCE ∈ {gedi, ifn}` — GEDI L4A v2.1 (footprints BAP) · IFN `IFN_2026_BR_PLOTS-v13` |
-| Delta vs v07 | Domínio BAP (substitui o bioma Pantanal) + multi-fonte (GEDI/IFN); PALSAR global por mediana; filtro de treino (floresta + notNull) no `2_2`; parametrização do modelo idêntica à v07 |
+| Delta vs v07 | Domínio BAP (substitui o bioma Pantanal) + multi-fonte (GEDI/IFN); PALSAR global por mediana; filtro de treino (floresta + notNull) no `2_2`; champion re-avaliado no gate v08 (`minLeafPopulation` por fonte) |
 
 Fonte: `v08/0_contract.js`.
 
@@ -61,8 +61,8 @@ Fonte: `v08/0_contract.js`.
 ### 3.2 Modelo — Random Forest
 
 - `ee.Classifier.smileRandomForest`, modo `REGRESSION`, `numberOfTrees = 300`.
-- Regularização: `minLeafPopulation = 10` (champion herdado da v07),
-  `variablesPerSplit = 6` (~sqrt(36)).
+- Regularização: `minLeafPopulation` **por fonte** (champion do gate v08):
+  GEDI 5 · IFN 10, `variablesPerSplit = 6` (~sqrt(36)).
 - Alvo **linear** (sem log-target): `classify` devolve AGBD (t/ha) direto.
 - `bagFraction = 0.8` (~80% das linhas por árvore, via bootstrap).
 

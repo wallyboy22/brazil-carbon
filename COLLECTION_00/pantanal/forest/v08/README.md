@@ -62,7 +62,7 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 | Fonte de amostra | GEDI L4A (footprint Pantanal) | `SOURCE`: GEDI (footprint BAP) ou IFN (`PLOTS-v13`) |
 | PALSAR | `.first()` por célula (platôs) | mediana global no bioma |
 | Filtro de treino | máscara LULC (imagem) | `mapbiomas_lulc ∈ FOREST_CLASSES` + `notNull` no `2_2` |
-| Champion/ensemble | minLeaf 10 · 6 vars · linear · N=5 | idênticos à v07 (valores inlineados no contrato v08) |
+| Champion/ensemble | minLeaf **por fonte** (GEDI 5 · IFN 10) · 6 vars · linear · N=5 | gate v08 (`2_3_gcn`) |
 | Predição | não mascarada | não mascarada |
 | Stats comparativo | V03–V07 | V03–V08 (`0_contract_stats.js`) |
 | QA visual | todas as versões (v07 fix) | V03–V08 com fallback COL |

@@ -59,6 +59,16 @@ CONF = {
         "C_Mg_ha", "n_ind", "area_ha", "bioma", "fid", "UA", "Subunidade",
         "orientacao", "mun",
     ],
+    # Covariáveis do modelo (Bloco 1 do 0_contract.js) — 36 bandas.
+    "FEATURE_BANDS": [
+        "NDVI_p10", "EVI_p10", "NDMI_p10", "BAI_p10", "SAVI_p10", "BSI_p10",
+        "NDVI_p50", "EVI_p50", "NDMI_p50", "BAI_p50", "SAVI_p50", "BSI_p50",
+        "NDVI_p90", "EVI_p90", "NDMI_p90", "BAI_p90", "SAVI_p90", "BSI_p90",
+        "NDVI_amp", "EVI_amp", "NDMI_amp", "BAI_amp", "SAVI_amp", "BSI_amp",
+        "HH_db", "HV_db", "HV_HH_ratio", "RVI", "HAND_m",
+        "CWD_current", "CWD_clim", "CWD_3yr", "Tmean_C", "Prec_mm",
+        "geomorph_class", "mapbiomas_lulc",
+    ],
     "MIN_FEAT_NULL_RATE": 0.05,   # descarta banda com >5% de ausente
     # --- escala do gate offline (a matriz GEDI tem ~1,6M linhas) ---
     "SAMPLE_N": 150_000,          # máx. de linhas usadas no gate (None = todas)
@@ -281,10 +291,24 @@ def subsample(df: pd.DataFrame, n=None, seed=None) -> pd.DataFrame:
 
 
 def feature_columns(df: pd.DataFrame) -> list:
-    """Colunas de covariáveis: numéricas fora de `CONF['META_COLS']`."""
+    """Covariáveis: interseção com `CONF['FEATURE_BANDS']` (ordem do contrato).
+
+    Garante que só as 36 bandas do contrato entrem em FEATS (sem metadata/stray).
+    """
+    bands = CONF.get("FEATURE_BANDS")
+    if bands:
+        return [b for b in bands if b in df.columns]
     meta = set(CONF["META_COLS"])
     return [c for c in df.select_dtypes(include=[np.number]).columns
             if c not in meta]
+
+
+def unexpected_columns(df: pd.DataFrame) -> list:
+    """Colunas numéricas que não são covariáveis nem META_COLS (diagnóstico)."""
+    bands = set(CONF.get("FEATURE_BANDS") or [])
+    meta = set(CONF["META_COLS"])
+    return [c for c in df.select_dtypes(include=[np.number]).columns
+            if c not in bands and c not in meta]
 
 
 def clean_features(df: pd.DataFrame) -> pd.DataFrame:

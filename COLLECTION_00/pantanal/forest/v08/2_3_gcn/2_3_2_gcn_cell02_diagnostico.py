@@ -42,6 +42,10 @@ for _src in sources_to_run():
     df["_block"] = spatial_blocks(df)
 
     FEATS = feature_columns(df)
+    extra = unexpected_columns(df)
+    if extra:
+        print(f"[AVISO] colunas numéricas fora das covariáveis (ignoradas): {extra}")
+    print(f"[FEATS] {len(FEATS)} covariáveis")
     X = df[FEATS].fillna(df[FEATS].median())
     y = df[CONF["TARGET"]].values
 
