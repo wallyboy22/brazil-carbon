@@ -63,7 +63,7 @@ c.sourcesToRun().forEach(function (source) {
     covariate_version: src.COVARIATES_VERSION,
     covariates_registry: registry,
     num_members: N,
-    members: members,
+    members_json: JSON.stringify(members),
     model_prefix: root + '/MODELS/rf_agb_v08_m'
   });
   var metaAsset = root + '/MODELS/metadata_v08_' + source;
