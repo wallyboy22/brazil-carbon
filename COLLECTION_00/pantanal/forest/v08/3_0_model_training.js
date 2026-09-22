@@ -94,8 +94,8 @@ c.sourcesToRun().forEach(function (source) {
       classProperty: target,
       inputProperties: bands
     });
-    // NOTA: `ee.Classifier` NÃO é `ee.Element` → não suporta `.set()`. A
-    // proveniência é gravada no asset pelo passo `3_1_model_metadata.js`.
+    // NOTA: `ee.Classifier` NÃO é `ee.Element` (nem aceita propriedades de asset).
+    // A proveniência vai num ASSET COMPANHEIRO pelo passo `3_1_model_metadata.js`.
     var modelAsset = root + '/MODELS/rf_agb_v08_m' + i;
     deleteModelAsset(modelAsset);
     print('[TASK]', modelAsset, '· bandas', bands.length, '· seed',

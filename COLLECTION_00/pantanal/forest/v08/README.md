@@ -123,8 +123,9 @@ Todas as formulações de covariáveis estão em uma biblioteca compartilhada em
 
 **Política de proveniência**: cada tema em `_metadata.js` tem uma lista `versions`
 com tags `since_vNN` (em vez de listar v03–v08). Mudanças entram como novos itens
-na lista. A registry completa é impressa no modelo como `covariates_registry` e
-`covariate_version` (asset properties) — ver `3_0_model_training.js`.
+na lista. A registry completa (`covariates_registry`, `covariate_version`) é
+gravada no **asset companheiro** `MODELS/metadata_v08_<source>` pelo
+`3_1_model_metadata.js` (o asset CLASSIFIER do modelo não aceita propriedades).
 
 ## 7. State
 

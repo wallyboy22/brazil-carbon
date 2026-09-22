@@ -79,6 +79,6 @@ Estatísticas fora do GEE: `toolkits/statistics/v00` (`run/run_pantanal.js`).
 > ou só o da fonte desejada para isolar. Cada um lê/escreve na raiz da sua fonte
 > (`V08_GEDI` / `V08_IFN`) — **não** dependem de `c.SOURCE`.
 
-> `3_1_model_metadata.js` grava a proveniência das covariáveis nos assets
-> `MODELS/rf_agb_v08_m<i>` (o `ee.Classifier` não é `ee.Element` e não aceita
-> `.set()`); deve rodar **depois** que as tasks de `3_0_model_training` concluírem.
+> `3_1_model_metadata.js` grava a proveniência num **asset companheiro** por fonte
+> — `MODELS/metadata_v08_<source>` (o asset CLASSIFIER do modelo não aceita
+> propriedades). Deve rodar **depois** das tasks de `3_0_model_training`.
