@@ -18,43 +18,45 @@ exports.maskHlsClouds = function (img) {
   var clear = qa.bitwiseAnd(1 << 1).eq(0)   // bit 1 = cloud
     .and(qa.bitwiseAnd(1 << 2).eq(0))       // bit 2 = shadow
     .and(qa.bitwiseAnd(1 << 0).eq(0));      // bit 0 = cirrus
-  return img.updateMask(clear).divide(10000).copyProperties(img, ['system:time_start']);
+  return img.updateMask(clear).toFloat().divide(10000)
+    .copyProperties(img, ['system:time_start']);
 };
 
-/** Índices espectrais (NDVI, EVI, NDMI, BAI, SAVI, BSI) sobre reflectância 0-1. */
+/** Índices espectrais (NDVI, EVI, NDMI, BAI, SAVI, BSI) sobre reflectância 0-1.
+ *  Tudo em Float32 (o `expression` retorna double → `.toFloat()`). */
 exports.addSpectralIndices = function (img) {
-  var ndvi = img.normalizedDifference(['NIR', 'Red']).rename('NDVI');
+  var ndvi = img.normalizedDifference(['NIR', 'Red']).rename('NDVI').toFloat();
   var evi = img.expression(
     '2.5 * ((NIR - Red) / (NIR + 6 * Red - 7.5 * Blue + 1))',
     { NIR: img.select('NIR'), Red: img.select('Red'), Blue: img.select('Blue') }
-  ).rename('EVI');
-  var ndmi = img.normalizedDifference(['NIR', 'SWIR1']).rename('NDMI');
+  ).rename('EVI').toFloat();
+  var ndmi = img.normalizedDifference(['NIR', 'SWIR1']).rename('NDMI').toFloat();
   var bai = img.expression(
     '1.0 / ((0.1 - Red) ** 2 + (0.06 - NIR) ** 2)',
     { Red: img.select('Red'), NIR: img.select('NIR') }
-  ).rename('BAI');
+  ).rename('BAI').toFloat();
   var savi = img.expression(
     '1.5 * (NIR - Red) / (NIR + Red + 0.5)',
     { Red: img.select('Red'), NIR: img.select('NIR') }
-  ).rename('SAVI');
+  ).rename('SAVI').toFloat();
   var bsi = img.expression(
     '(SWIR1 + Red - NIR - Blue) / (SWIR1 + Red + NIR + Blue)',
     { SWIR1: img.select('SWIR1'), Red: img.select('Red'),
       NIR: img.select('NIR'), Blue: img.select('Blue') }
-  ).rename('BSI');
+  ).rename('BSI').toFloat();
   return img.addBands([ndvi, evi, ndmi, bai, savi, bsi]);
 };
 
-/** Composição anual P10/P50/P90/AMP sobre os índices do ano. */
+/** Composição anual P10/P50/P90/AMP sobre os índices do ano (Float32). */
 exports.percentileComposite = function (col, idxBands) {
-  var colSel = col.select(idxBands);
+  var colSel = col.select(idxBands).toFloat();
   var p10 = colSel.reduce(ee.Reducer.percentile([10]))
-    .rename(idxBands.map(function (b) { return b + '_p10'; }));
+    .rename(idxBands.map(function (b) { return b + '_p10'; })).toFloat();
   var p50 = colSel.reduce(ee.Reducer.percentile([50]))
-    .rename(idxBands.map(function (b) { return b + '_p50'; }));
+    .rename(idxBands.map(function (b) { return b + '_p50'; })).toFloat();
   var p90 = colSel.reduce(ee.Reducer.percentile([90]))
-    .rename(idxBands.map(function (b) { return b + '_p90'; }));
+    .rename(idxBands.map(function (b) { return b + '_p90'; })).toFloat();
   var amp = p90.subtract(p10)
-    .rename(idxBands.map(function (b) { return b + '_amp'; }));
-  return ee.Image.cat([p10, p50, p90, amp]);
+    .rename(idxBands.map(function (b) { return b + '_amp'; })).toFloat();
+  return ee.Image.cat([p10, p50, p90, amp]).toFloat();
 };

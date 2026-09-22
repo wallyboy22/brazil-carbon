@@ -47,8 +47,8 @@ function ensembleImage(stack, models) {
       .classify(models['m' + i]).toFloat().rename('m' + i));
   }
   var MC = ee.Image.cat(members);
-  var median = MC.reduce(ee.Reducer.median()).rename('prediction_' + YEAR);
-  var std = MC.reduce(ee.Reducer.stdDev()).rename('agbd_std_' + YEAR);
+  var median = MC.reduce(ee.Reducer.median()).rename('prediction_' + YEAR).toFloat();
+  var std = MC.reduce(ee.Reducer.stdDev()).rename('agbd_std_' + YEAR).toFloat();  // stdDev -> double
   return median.addBands(std).toFloat();
 }
 

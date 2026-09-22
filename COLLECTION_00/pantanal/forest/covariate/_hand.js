@@ -9,7 +9,7 @@
 /** HAND contínuo (m) + 4 classes geomorfológicas (1-4) sobre o AOI. */
 exports.buildHand = function (aoi) {
   var handCont = ee.ImageCollection('users/gena/global-hand/hand-100')
-    .mosaic().rename('HAND_m');
+    .mosaic().rename('HAND_m').toFloat();
   var handClass = ee.Image(0)
     .where(handCont.lt(5), 1)
     .where(handCont.gte(5).and(handCont.lt(15)), 2)

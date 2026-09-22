@@ -16,9 +16,9 @@ function computeAnnualCWD(era5, year) {
       .filter(ee.Filter.calendarRange(mm, mm, 'month')).first();
     var prec = img.select('total_precipitation_sum').multiply(1000);   // m -> mm
     var etp = img.select('potential_evaporation_sum').abs().multiply(1000);
-    return etp.subtract(prec).max(ee.Image(0)).rename('CWD_m');
+    return etp.subtract(prec).max(ee.Image(0)).rename('CWD_m').toFloat();
   }
-  return ee.ImageCollection(months.map(monthly)).sum();
+  return ee.ImageCollection(months.map(monthly)).sum().toFloat();  // sum -> double
 }
 
 var ERA5 = 'ECMWF/ERA5_LAND/MONTHLY_AGGR';
@@ -26,22 +26,23 @@ var ERA5 = 'ECMWF/ERA5_LAND/MONTHLY_AGGR';
 /** Stack climático anual: CWD_current, CWD_clim, CWD_3yr, Tmean_C, Prec_mm. */
 exports.buildClimateStack = function (aoi, yearUsed) {
   var era5 = ee.ImageCollection(ERA5).filterBounds(aoi);
-  var cwdCurr = computeAnnualCWD(era5, yearUsed).rename('CWD_current');
+  var cwdCurr = computeAnnualCWD(era5, yearUsed).rename('CWD_current').toFloat();
   var cwdClim = ee.ImageCollection(
     ee.List.sequence(2010, 2020).map(function (y) {
       return computeAnnualCWD(era5, ee.Number(y));
     })
-  ).mean().rename('CWD_clim');
+  ).mean().rename('CWD_clim').toFloat();
   var cwd3yr = ee.ImageCollection(
     ee.List.sequence(yearUsed - 3, yearUsed - 1).map(function (y) {
       return computeAnnualCWD(era5, ee.Number(y));
     })
-  ).sum().rename('CWD_3yr');
+  ).sum().rename('CWD_3yr').toFloat();   // sum -> double
   var tMean = era5
     .filter(ee.Filter.calendarRange(yearUsed, yearUsed, 'year'))
-    .select('temperature_2m').mean().subtract(273.15).rename('Tmean_C');
+    .select('temperature_2m').mean().subtract(273.15).rename('Tmean_C').toFloat();
   var precAnn = era5
     .filter(ee.Filter.calendarRange(yearUsed, yearUsed, 'year'))
-    .select('total_precipitation_sum').sum().multiply(1000).rename('Prec_mm');
-  return cwdCurr.addBands([cwdClim, cwd3yr, tMean, precAnn]);
+    .select('total_precipitation_sum').sum().multiply(1000)
+    .rename('Prec_mm').toFloat();        // sum -> double
+  return cwdCurr.addBands([cwdClim, cwd3yr, tMean, precAnn]).toFloat();
 };

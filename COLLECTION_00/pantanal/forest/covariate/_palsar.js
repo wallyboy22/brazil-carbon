@@ -12,14 +12,17 @@ var PALSAR_COLLECTION = 'JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH';
 exports.PALSAR_BANDS = ['HH_db', 'HV_db', 'HV_HH_ratio', 'RVI'];
 
 function deriveBands(sel) {
-  var hhDb = sel.select('HH').pow(2).log10().multiply(10).subtract(83.0).rename('HH_db');
-  var hvDb = sel.select('HV').pow(2).log10().multiply(10).subtract(83.0).rename('HV_db');
+  // Tudo em Float32 (pow/log10 retornam double → `.toFloat()`).
+  var hh = sel.select('HH').toFloat();
+  var hv = sel.select('HV').toFloat();
+  var hhDb = hh.pow(2).log10().multiply(10).subtract(83.0).rename('HH_db').toFloat();
+  var hvDb = hv.pow(2).log10().multiply(10).subtract(83.0).rename('HV_db').toFloat();
   var hhLin = hhDb.multiply(0.1).pow(ee.Image(10));
   var hvLin = hvDb.multiply(0.1).pow(ee.Image(10));
-  var ratio = hvLin.divide(hhLin).log10().multiply(10).rename('HV_HH_ratio');
-  var rvi = hvLin.multiply(4).divide(hhLin.add(hvLin)).rename('RVI');
+  var ratio = hvLin.divide(hhLin).log10().multiply(10).rename('HV_HH_ratio').toFloat();
+  var rvi = hvLin.multiply(4).divide(hhLin.add(hvLin)).rename('RVI').toFloat();
   return ee.Image.cat([hhDb, hvDb, ratio, rvi])
-    .focal_mean(3, 'square', 'pixels');   // filtro de speckle (paridade da cadeia)
+    .focal_mean(3, 'square', 'pixels').toFloat();   // filtro de speckle
 }
 
 /**
