@@ -57,7 +57,7 @@ c.sourcesToRun().forEach(function (source) {
     }
   }
 
-  var meta = ee.Feature(null, {
+  var meta = ee.Feature(src.getDomain().geometry().centroid(1000), {
     source: source,
     model_version: 'v08',
     covariate_version: src.COVARIATES_VERSION,
