@@ -16,7 +16,7 @@ var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_covariate_source.js');
 var CELL_SPLIT = 4;
 var YEAR = c.YEAR;
-var ADD_LAYER = false;
+var ADD_LAYER = true;
 var palette = ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'];
 var N = c.ENSEMBLE.NUM_MEMBERS;
 
@@ -39,12 +39,17 @@ function cellGeom(id) {
     .intersection(domain, ee.ErrorMargin(30));
 }
 
+/** Imagem de UM membro do ensemble (1 classificador sobre o subconjunto de bandas). */
+function memberImage(stack, models, i) {
+  return stack.select(src.getMemberBands(i))
+    .classify(models['m' + i]).toFloat().rename('m' + i);
+}
+
 /** Ensemble sobre uma pilha: mediana (predição) + stdDev (incerteza). */
 function ensembleImage(stack, models) {
   var members = [];
   for (var i = 1; i <= N; i++) {
-    members.push(stack.select(src.getMemberBands(i))
-      .classify(models['m' + i]).toFloat().rename('m' + i));
+    members.push(memberImage(stack, models, i));
   }
   var MC = ee.Image.cat(members);
   var median = MC.reduce(ee.Reducer.median()).rename('prediction_' + YEAR).toFloat();
@@ -72,16 +77,25 @@ c.sourcesToRun().forEach(function (source) {
     models['m' + i] = ee.Classifier.load(root + '/MODELS/rf_agb_v08_m' + i);
   }
 
-  // UMA predição global; restrição espacial por máscara.
-  var pred = ensembleImage(src.buildTypedCovariatesStack(domain, YEAR), models);
+  // UMA predição global (mediana + std) para EXPORT; restrição por máscara.
+  var stack = src.buildTypedCovariatesStack(domain, YEAR);
+  var pred = ensembleImage(stack, models);
   var mask = ee.Image().paint(ee.FeatureCollection(PREDICT_FC)).eq(0);
   var image = pred.updateMask(mask);
 
-  // UMA layer por fonte (plot) — não 256.
+  // PLOT: cada MEMBRO do ensemble (1 classificador → mais leve que a mediana)
+  // + a MEDIANA de UMA célula (QA local leve). A mediana global estoura.
   if (ADD_LAYER) {
-    Map.addLayer(image.select('prediction_' + YEAR),
+    for (var i = 1; i <= N; i++) {
+      Map.addLayer(memberImage(stack, models, i).updateMask(mask),
+        { min: 0, max: 75, palette: palette },
+        'v08 ' + source + ' m' + i, false);
+    }
+    var qaId = defs[0].id;
+    var qaStack = src.buildTypedCovariatesStack(cellGeom(qaId), YEAR);
+    Map.addLayer(ensembleImage(qaStack, models).select('prediction_' + YEAR),
       { min: 0, max: 75, palette: palette },
-      'v08 ' + source + ' prediction', false);
+      'v08 ' + source + ' median ' + qaId, false);
   }
 
   print('[MODELOS]', Object.keys(models).join(', '));
