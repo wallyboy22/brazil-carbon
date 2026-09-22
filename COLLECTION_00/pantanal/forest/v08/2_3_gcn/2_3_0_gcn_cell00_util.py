@@ -296,6 +296,15 @@ def clean_features(df: pd.DataFrame) -> pd.DataFrame:
     for col in ("system:index", "geometry", ".geo", "decimal", "_file"):
         if col in df.columns:
             df = df.drop(columns=col)
+    # Remove os metadados que NÃO são usados pelo gate (texto/ids de amostra),
+    # mantendo alvo/peso/geo. Assim o df fica só com covariáveis + alvo/peso/geo.
+    keep_meta = {CONF["TARGET"], CONF["LON"], CONF["LAT"],
+                 CONF["WEIGHT_COL"], CONF["AGBD_SE"]}
+    drop_meta = [c for c in CONF["META_COLS"]
+                 if c in df.columns and c not in keep_meta]
+    if drop_meta:
+        print(f"[LIMPEZA] metadados removidos ({len(drop_meta)}): {drop_meta}")
+    df = df.drop(columns=drop_meta, errors="ignore")
     feat_cols = feature_columns(df)
     null_rate = df[feat_cols].isna().mean()
     drop_feats = list(null_rate[null_rate > CONF["MIN_FEAT_NULL_RATE"]].index)
