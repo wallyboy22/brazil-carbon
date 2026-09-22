@@ -2,10 +2,10 @@
  * MAPBIOMAS-CARBONO — Pantanal Forest v08 · Proveniência do modelo
  * ---------------------------------------------------------------------------
  * `ee.Classifier` NÃO é `ee.Element` → não tem `.set()`, então a proveniência
- * das covariáveis NÃO pode ser anexada durante o treino (`3_model_training`).
+ * das covariáveis NÃO pode ser anexada durante o treino (`3_0_model_training`).
  * Este passo grava as propriedades nos assets de modelo JÁ EXPORTADOS.
  *
- * Uso: rodar APÓS as tasks de `3_model_training.js` concluírem.
+ * Uso: rodar APÓS as tasks de `3_0_model_training.js` concluírem.
  *   · para cada MODELS/rf_agb_v08_m<i> grava:
  *       covariates_registry, covariate_version, model_version, ensemble_member
  ******************************************************************************/
@@ -47,7 +47,7 @@ var ok = 0, falta = 0, erro = 0;
 for (var i = 1; i <= N; i++) {
   var assetId = root + '/MODELS/rf_agb_v08_m' + i;
   if (!exists(assetId)) {
-    print('[FALTA]', assetId, '— rode 3_model_training e aguarde as tasks.');
+    print('[FALTA]', assetId, '— rode 3_0_model_training e aguarde as tasks.');
     falta++;
     continue;
   }

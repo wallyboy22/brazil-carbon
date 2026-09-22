@@ -88,7 +88,7 @@ function trainMember(i) {
     assetId: modelAsset });
 }
 
-print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 3_model_training');
+print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 3_0_model_training');
 print('[FONTE]', c.SOURCE, '·', c.SOURCE_CFG.label, '· raiz', root);
 print('[CHAMPION (gate v08)] minLeafPopulation =', champ.minLeafPopulation,
   '· variablesPerSplit =', champ.variablesPerSplit,

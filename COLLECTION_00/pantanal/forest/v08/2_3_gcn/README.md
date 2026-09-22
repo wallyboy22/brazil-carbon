@@ -24,7 +24,7 @@ conteúdo** do `*.py` do fluxo, na ordem abaixo.
 > **Escopo do gate (validação).** O gate é um passo **offline de validação/decisão**:
 > o thinning (célula 04) existe para dar **CV espacial honesta** (quebra autocorrelação)
 > e para decidir o champion — **não** alimenta o treino de produção. O
-> `3_model_training.js` treina na **matriz completa** (`MATRIX/`), aplicando os
+> `3_0_model_training.js` treina na **matriz completa** (`MATRIX/`), aplicando os
 > hiperparâmetros decididos aqui. A coluna `w = 1/agbd_se²` também é **reservada**
 > (o GEE não aceita pesos no treino hoje) — fica no CSV para uso offline futuro.
 
@@ -75,7 +75,7 @@ v08/2_3_gcn/figures_<SOURCE>/f2_correlacao_bandas.png
 2. Copie os valores para o `v08/0_contract.js`:
    `minLeafPop` **por fonte** (em `SOURCES.gedi` / `SOURCES.ifn`),
    `VARIABLES_PER_SPLIT` e `ENSEMBLE`. (`MIN_LEAF_POP` deriva do `SOURCE_CFG`.)
-3. Rode no GEE: `3_model_training.js` → `4_spatial_prediction.js`.
+3. Rode no GEE: `3_0_model_training.js` → `4_0_spatial_prediction.js`.
 
 ## Configuração rápida (célula `2_3_0_gcn_cell00_util.py`)
 
@@ -94,7 +94,7 @@ v08/2_3_gcn/figures_<SOURCE>/f2_correlacao_bandas.png
 
 > **Escala:** o gate é validação/decisão — roda sobre uma **subamostra** (`SAMPLE_N`)
 > para não travar com a matriz GEDI (~1,6M linhas). O treino de produção
-> (`3_model_training`) usa a matriz **completa** no GEE. `moran_i` e `variogram`
+> (`3_0_model_training`) usa a matriz **completa** no GEE. `moran_i` e `variogram`
 > foram reescritos sem matriz densa (O(n_pares)).
 
 ## Próximos passos

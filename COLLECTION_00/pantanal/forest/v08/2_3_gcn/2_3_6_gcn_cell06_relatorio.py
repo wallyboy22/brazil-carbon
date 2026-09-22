@@ -141,9 +141,9 @@ for _src in sources_to_run():
     A("\n## 7. Atenções / próximos passos")
     n_feat_str = "—" if (isinstance(n_feat, float) and math.isnan(n_feat)) else str(n_feat)
     A("- Colinearidade alta: se o GEE favorecer claramente 1 banda de um par no "
-      "`3_model_training.js`, avaliar VIF/remoção de bandas.")
+      "`3_0_model_training.js`, avaliar VIF/remoção de bandas.")
     A("- Após copiar os campos 5/6 para o `0_contract.js`, rodar "
-      "`3_model_training.js` e `4_spatial_prediction.js`.")
+      "`3_0_model_training.js` e `4_0_spatial_prediction.js`.")
 
     report = "\n".join(L) + "\n"
     report += (f"\n*Nota: fonte={_src}, n_features={n_feat_str}, n_rows_raw={n_raw}, "

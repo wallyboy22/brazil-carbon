@@ -78,10 +78,10 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 | 2 | `2_1_gedi_toAsset_samples_treino.js` · `2_1_ifn_toAsset_samples_treino.js` | amostras normalizadas por fonte (1 task por recorte) → SAMPLES/ |
 | 2 | `2_2_gedi_toDrive_matrix.js` · `2_2_ifn_toDrive_matrix.js` | matriz por fonte/célula/ano (filtro floresta + notNull) → ASSET + Drive (CSV) |
 | 2 | `2_3_gcn/*` | gate offline (Colab) — figuras, thinning (validação), champion |
-| 3 | `3_model_training.js` | ensemble RF global → MODELS/rf_agb_v08_m1..m5 |
-| 4 | `4_spatial_prediction.js` | ensemble (GLOBAL, grade de saída comum) → PREDICTIONS/COL (mediana+std) |
-| 5 | `5_merge.js` | mosaico anual → `agb_pred_v08_merged_<ano>` |
-| 6 | `6_qualidade.js` | QA visual V03–V08 |
+| 3 | `3_0_model_training.js` | ensemble RF global (champion por fonte: minLeaf GEDI 5 · IFN 10) → MODELS/rf_agb_v08_m1..m5 |
+| 4 | `4_0_spatial_prediction.js` | ensemble (GLOBAL, grade de saída comum) → PREDICTIONS/COL (mediana+std) |
+| 5 | `5_0_merge.js` | **(opcional)** mosaico anual → `agb_pred_v08_merged_<ano>` |
+| 6 | `6_0_quality.js` | QA visual V03–V08 |
 
 ## 5. Ordem de execução
 
@@ -95,10 +95,11 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
    (tasks de matriz) — **1 script por fonte** (`gedi`/`ifn`): rode os dois (padrão)
    ou só o da fonte desejada.
 4. `2_3_gcn` (Colab) — gate offline de **validação** (o thinning é offline e NÃO
-   alimenta o treino; se o campeão divergir do herdado da v07, atualizar
-   `0_contract.js` — seção CHAMPION/ENSEMBLE).
-5. `3_model_training.js` → `4_spatial_prediction.js` (tasks) → `5_merge.js`.
-6. `6_qualidade.js` (QA visual). As estatísticas saem do toolkit
+   alimenta o treino). Com `SOURCE=None` roda gedi/ifn em sequência. O champion
+   por fonte fica em `SOURCES.<fonte>.minLeafPop` e no bloco `CHAMPION` do `3_0`.
+5. `3_0_model_training.js` → `4_0_spatial_prediction.js` (tasks) → `5_0_merge.js`
+   (opcional: a `PREDICTIONS/COL` do `4_0` já é mosaico sem costura).
+6. `6_0_quality.js` (QA visual). As estatísticas saem do toolkit
    `toolkits/statistics/v00` (`run/run_pantanal.js`).
 
 ## 6. Biblioteca de covariáveis (`covariate/`)
@@ -124,13 +125,13 @@ Todas as formulações de covariáveis estão em uma biblioteca compartilhada em
 **Política de proveniência**: cada tema em `_metadata.js` tem uma lista `versions`
 com tags `since_vNN` (em vez de listar v03–v08). Mudanças entram como novos itens
 na lista. A registry completa é impressa no modelo como `covariates_registry` e
-`covariate_version` (asset properties) — ver `3_model_training.js`.
+`covariate_version` (asset properties) — ver `3_0_model_training.js`.
 
 ## 7. State
 
 - v08 **em desenvolvimento**: código pronto para executar no GEE; os assets
   órfãos da pasta `V08/` foram removidos (rename `agc`→`agb` + multi-fonte).
-- v07 **concluída e inalterada**; o QA (`v07/6_qualidade.js`) e o
+- v07 **concluída e inalterada**; o QA (`v07/6_0_quality.js`) e o
   `statistics/stats_engine.js` foram corrigidos para as versões novas (fallback
   de mosaico e plots multi-versão) sem alterar o produto v07.
 

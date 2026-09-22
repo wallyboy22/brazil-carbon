@@ -73,7 +73,7 @@ function exportCell(image, id, geom) {
     pyramidingPolicy: { '.default': 'mean' } });
 }
 
-print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 4_spatial_prediction');
+print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 4_0_spatial_prediction');
 print('[FONTE]', c.SOURCE, '·', c.SOURCE_CFG.label, '· raiz', root);
 print('[DOMÍNIO]', c.BAP_ASSET, '— saída NÃO mascarada por LULC');
 print('[ENSEMBLE] N =', N, '· mediana + stdDev');

@@ -1,6 +1,11 @@
 /******************************************************************************
- * MAPBIOMAS-CARBONO — Pantanal Forest v08 · Merge
+ * MAPBIOMAS-CARBONO — Pantanal Forest v08 · Merge (OPCIONAL)
  * ---------------------------------------------------------------------------
+ * [OPCIONAL no momento] A predição D3 (4_0_spatial_prediction) já é GLOBAL e
+ * fatiada na grade comum → a `PREDICTIONS/COL` já é um mosaico sem costura.
+ * Este passo só consolida a COL num asset único (`agb_pred_v08_merged_<ano>`);
+ * pode ser PULADO (o QA 6_0_quality usa a COL como fallback).
+ *
  * O mosaico anual consolida as imagens da ImageCollection PREDICTIONS/COL
  * (filtrada pela propriedade 'year') e é exportado como irmão da COL, com
  * nome simples, dentro de PREDICTIONS/. Preserva as duas bandas: predição
@@ -14,7 +19,7 @@ var root = c.ASSET_ROOT + '/PREDICTIONS';
 var col = ee.ImageCollection(root + '/COL');
 var region = src.getDomain().geometry();
 
-print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 5_merge');
+print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 5_0_merge (opcional)');
 c.YEARS.forEach(function (year) {
   var image = col.filter(ee.Filter.eq('year', year))
     .mosaic()

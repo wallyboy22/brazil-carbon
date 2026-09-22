@@ -109,10 +109,10 @@ Fonte: `v08/0_contract.js`.
 | 2 | `2_1_gedi_toAsset_samples_treino.js` · `2_1_ifn_toAsset_samples_treino.js` | Amostras normalizadas por fonte (1 task por recorte) → `SAMPLES/forest_footprint_<SOURCE>_<ANO>_<cell>` |
 | 2 | `2_2_gedi_toDrive_matrix.js` · `2_2_ifn_toDrive_matrix.js` | Matriz por fonte/célula × ano (filtro floresta + notNull) → ASSET + Drive CSV (`lon`, `lat`, `w`) |
 | 2 | `2_3_gcn/*` | Gate offline (Colab): diagnóstico, CV espacial, thinning (validação), champion |
-| 3 | `3_model_training.js` | Ensemble RF global → `MODELS/rf_agb_v08_m1..m5` |
-| 4 | `4_spatial_prediction.js` | Ensemble global (grade de saída comum, sem costura) → `PREDICTIONS/COL` (mediana + std) |
-| 5 | `5_merge.js` | Mosaico anual → `agb_pred_v08_merged_<ano>` |
-| 6 | `6_qualidade.js` | QA visual v03–v08 |
+| 3 | `3_0_model_training.js` | Ensemble RF global (champion por fonte: minLeaf GEDI 5 · IFN 10) → `MODELS/rf_agb_v08_m1..m5` |
+| 4 | `4_0_spatial_prediction.js` | Ensemble global (grade de saída comum, sem costura) → `PREDICTIONS/COL` (mediana + std) |
+| 5 | `5_0_merge.js` | **(opcional)** Mosaico anual → `agb_pred_v08_merged_<ano>` |
+| 6 | `6_0_quality.js` | QA visual v03–v08 |
 
 **Notas de arquitetura**
 - A grade é `CELL_SPLIT = 4` (até ~256 células por `makeCellDefinitions`).
@@ -120,8 +120,10 @@ Fonte: `v08/0_contract.js`.
   determinística** do mesmo conjunto global de pontos — não há sorteio por chunk.
 - O PALSAR global (`buildPalsarGlobal`) é injetado em todas as células; as demais
   covariáveis (HLS, HAND, ERA5, LULC) são recortadas pelo AOI da célula.
-- `4_spatial_prediction.js` exporta cada célula separadamente e `5_merge.js` faz
-  `mosaic()` — ver `proposta_predicao_sem_costura.md` para as limitações de borda.
+- `4_0_spatial_prediction.js` (D3 GLOBAL) prediz 1× no domínio e fatia na grade
+  comum (sem costura) → a `PREDICTIONS/COL` já é um mosaico utilizável. O
+  `5_0_merge.js` (**opcional**) só consolida num asset único — ver
+  `proposta_predicao_sem_costura.md`.
 - **Multi-fonte**: o pipeline é único e parametrizado por `SOURCE` (`0_contract.js`).
   Rodar com `SOURCE='gedi'` e `SOURCE='ifn'` gera duas sub-versões
   (`V08_GEDI`, `V08_IFN`) com as **mesmas covariáveis e hiperparâmetros**, permitindo

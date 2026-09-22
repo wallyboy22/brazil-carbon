@@ -34,7 +34,7 @@ codificada na v08; as camadas 2 e 3 permanecem no código.
 
 ### Camada 2 — Mosaico de corte seco (secundária)
 
-- `v08/5_merge.js:20`: `col.filter(year).mosaic()` — composição por corte abrupto
+- `v08/5_0_merge.js:20`: `col.filter(year).mosaic()` — composição por corte abrupto
   célula a célula, **sem sobreposição nem blending**.
 - A consulta v07 (`mapbiomas-carbono-v07-consulta-estrategica.md`, D18/E22)
   previu esse risco e recomendou *buffer de treino* ou *média ponderada por
@@ -42,7 +42,7 @@ codificada na v08; as camadas 2 e 3 permanecem no código.
 
 ### Camada 3 — Grade de exportação por célula (terciária)
 
-- `v08/4_spatial_prediction.js:79`: cada `Export.image.toAsset` usa `region: geom` e
+- `v08/4_0_spatial_prediction.js:79`: cada `Export.image.toAsset` usa `region: geom` e
   `scale`, **sem `crs`/`crsTransform` comum** → a origem da grade de 30 m é alinhada ao
   bbox de cada célula, gerando reamostragem/desalinhamento nas emendas.
 - Agravante: o `classify()` herda a projeção da primeira banda do stack; como o HLS é
@@ -57,7 +57,7 @@ codificada na v08; as camadas 2 e 3 permanecem no código.
   determinísticas (recortadas por AOI). HLS é, por pixel, AOI-independente.
 - **Thinning**: global (`2_3_gcn/2_3_0_..._util.py`, `load_matrix` concatena todos os
   CSVs antes de `grid_thin`).
-- **Treino**: modelo RF global único (`v08/3_model_training.js:25`, `flatten()`);
+- **Treino**: modelo RF global único (`v08/3_0_model_training.js:25`, `flatten()`);
   o ensemble é determinístico por hash de banda (`covariate/_ensemble.js:18`).
 
 ## 4. Opções de arquitetura
@@ -99,7 +99,7 @@ codificada na v08; as camadas 2 e 3 permanecem no código.
 1. **Fase 1 — Opção C (patch na v08).** Aplicar grade comum + projeção fixa do stack.
    Rodar a v08 e medir a descontinuidade de borda (seção 7).
 2. **Fase 2 — Opção B, se necessário.** Se a métrica de borda ainda indicar degrau,
-   implementar overlap + blending ponderado no `5_merge.js`.
+   implementar overlap + blending ponderado no `5_0_merge.js`.
 3. **Fase 3 — Opção A como produto final.** Consolidar a predição em grade única para o
    produto oficial, mantendo a predição por célula apenas para QA/auditoria.
 
@@ -147,7 +147,7 @@ codificada na v08; as camadas 2 e 3 permanecem no código.
   expandir (consulta v07, F25).
 - **Risco**: blending excessivo borrar detalhe real; calibrar a largura da margem.
 - **Aceite**: sem marcas visíveis na grade `CELL_SPLIT=4`; métrica de borda dentro do
-  interior; QA v03–v08 consistente (`6_qualidade.js`).
+  interior; QA v03–v08 consistente (`6_0_quality.js`).
 
 ## 9. Referências
 
@@ -155,5 +155,5 @@ codificada na v08; as camadas 2 e 3 permanecem no código.
   blending/buffer) e E22 (QA de mosaico simulado).
 - `v08/0_diagnose_tiles.js` — confirmação da hipótese PALSAR.
 - `v08/README.md` — delta v07→v08.
-- `covariate/_palsar.js`, `covariate/build_stack.js`, `v08/4_spatial_prediction.js`,
-  `v08/5_merge.js`.
+- `covariate/_palsar.js`, `covariate/build_stack.js`, `v08/4_0_spatial_prediction.js`,
+  `v08/5_0_merge.js`.
