@@ -18,6 +18,19 @@ var src = require(
 var root = c.ASSET_ROOT;
 var N = c.ENSEMBLE.NUM_MEMBERS;
 
+// CHAMPION (gate v08, POR FONTE) — valores do 2_3_gcn (`champion.json`).
+// Sweep de minLeafPopulation (t/ha RMSE CV espacial):
+//   gedi: 5→69.27 · 10→69.30 · 20→69.41 · 30→69.51
+//   ifn : 5→36.12 · 10→36.05 · 20→36.07 · 30→36.45
+var CHAMPION = {
+  gedi: { minLeafPopulation: 5,  variablesPerSplit: 6, numberOfTrees: 300 },
+  ifn:  { minLeafPopulation: 10, variablesPerSplit: 6, numberOfTrees: 300 }
+};
+var champ = CHAMPION[c.SOURCE];
+if (!champ) {
+  throw new Error('Sem champion para SOURCE=' + c.SOURCE + ' (use gedi|ifn).');
+}
+
 var response = ee.data.listAssets(root + '/MATRIX');
 var assets = (response.assets || []).filter(function (a) {
   return a.type === 'TABLE' && a.id.indexOf('/agb_matrix_' + c.SOURCE + '_v08_') > -1;
@@ -53,10 +66,10 @@ function deleteModelAsset(assetId) {
 function trainMember(i) {
   var bands = src.getMemberBands(i);
   var model = ee.Classifier.smileRandomForest({
-    numberOfTrees: 300,
-    bagFraction: c.ENSEMBLE.TRAIN_FRACTION,   // ~80% das linhas (bootstrap)
-    minLeafPopulation: c.MIN_LEAF_POP,        // regularização (champion v07)
-    variablesPerSplit: c.VARIABLES_PER_SPLIT, // ~sqrt(#bandas)
+    numberOfTrees: champ.numberOfTrees,        // champion (gate v08)
+    bagFraction: c.ENSEMBLE.TRAIN_FRACTION,    // ~80% das linhas (bootstrap)
+    minLeafPopulation: champ.minLeafPopulation, // champion POR FONTE (5/10)
+    variablesPerSplit: champ.variablesPerSplit, // ~sqrt(#bandas)
     seed: c.ENSEMBLE.SEED_BASE + i
   }).setOutputMode('REGRESSION').train({
     features: matrix.select(bands.concat([target])),
@@ -77,8 +90,9 @@ function trainMember(i) {
 
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 3_model_training');
 print('[FONTE]', c.SOURCE, '·', c.SOURCE_CFG.label, '· raiz', root);
-print('[CHAMPION (gate v08)] minLeafPopulation =', c.MIN_LEAF_POP,
-  '· variablesPerSplit =', c.VARIABLES_PER_SPLIT);
+print('[CHAMPION (gate v08)] minLeafPopulation =', champ.minLeafPopulation,
+  '· variablesPerSplit =', champ.variablesPerSplit,
+  '· numberOfTrees =', champ.numberOfTrees);
 print('[ENSEMBLE] N =', N, '· seed_base =', c.ENSEMBLE.SEED_BASE,
   '· band_fraction =', c.ENSEMBLE.BAND_FRACTION,
   '· train_fraction =', c.ENSEMBLE.TRAIN_FRACTION);
