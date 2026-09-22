@@ -30,8 +30,7 @@ só muda a amostra e a raiz de assets. Troque `SOURCE` e re-rode.
   3_0_model_training.js               # MODELS/rf_agb_v08_m1..m5
   3_1_model_metadata.js               # proveniência (após as tasks do 3)
   4_0_spatial_prediction.js           # PREDICTIONS/COL (GLOBAL, grade comum)
-  5_0_merge.js                        # (OPCIONAL) agb_pred_v08_merged_2023
-  6_0_quality.js                      # QA visual
+  5_0_quality.js                      # QA visual
 ```
 
 ## 3. Fluxo IFN (sem footprint GEDI — usa o export próprio do IFN)
@@ -45,8 +44,7 @@ só muda a amostra e a raiz de assets. Troque `SOURCE` e re-rode.
   3_0_model_training.js               # MODELS/rf_agb_v08_m1..m5
   3_1_model_metadata.js               # proveniência (após as tasks do 3)
   4_0_spatial_prediction.js           # PREDICTIONS/COL (GLOBAL, grade comum)
-  5_0_merge.js                        # (OPCIONAL) agb_pred_v08_merged_2023
-  6_0_quality.js                      # QA visual
+  5_0_quality.js                      # QA visual
 ```
 > O IFN usa o mesmo fluxo, com o `2_0_ifn_export_footprint` no lugar do `2_0`
 > do GEDI. A matriz IFN tem poucas centenas de parcelas (na BAP: ~759 válidas).
@@ -68,12 +66,11 @@ do `3_0_model_training.js`.
 ## 6. Ordem resumida
 `1_check` → `2_0` (GEDI: `2_0_gedi_export_footprint` · IFN: `2_0_ifn_export_footprint`)
 → `2_1` (`2_1_gedi_*` / `2_1_ifn_*`) → `2_2` (`2_2_gedi_*` / `2_2_ifn_*`)
-→ `2_3_gcn` → `3_0` → (`3_1`, após as tasks do `3_0`) → `4_0` → (`5_0`, opcional)
-→ `6_0`. Estatísticas fora do GEE: `toolkits/statistics/v00` (`run/run_pantanal.js`).
+→ `2_3_gcn` → `3_0` → (`3_1`, após as tasks do `3_0`) → `4_0` → `5_0`.
+Estatísticas fora do GEE: `toolkits/statistics/v00` (`run/run_pantanal.js`).
 
-> **`5_0_merge` é OPCIONAL**: a predição D3 (`4_0`) já é global e fatiada na grade
-> comum, então a `PREDICTIONS/COL` já é um mosaico sem costura. O merge só cria um
-> asset único; pode ser pulado (o `6_0_quality` usa a COL como fallback).
+> **Sem merge**: a predição D3 (`4_0`) já é global e fatiada na grade comum, então
+> a `PREDICTIONS/COL` já é um mosaico sem costura (o `5_0_quality` lê a COL).
 
 > **2_1/2_2 são 1 script por fonte** (prefixo `gedi`/`ifn`): rode os dois (padrão)
 > ou só o da fonte desejada para isolar. Cada um lê/escreve na raiz da sua fonte

@@ -1,5 +1,5 @@
 /******************************************************************************
- * MAPBIOMAS-CARBONO — Pantanal Forest v08 · 6_0_QUALITY
+ * MAPBIOMAS-CARBONO — Pantanal Forest v08 · 5_0_QUALITY
  * ---------------------------------------------------------------------------
  * QA visual. Plota TODAS as versões (V03–V08) ao mesmo tempo, lado a lado,
  * para comparação de consistência espacial/temporal das predições.
@@ -22,9 +22,8 @@ var root = c.ASSET_ROOT;
 var col = ee.ImageCollection(root + '/PREDICTIONS/COL');
 var STD_VIS = { min: 0, max: 40, palette: ['#ffffb2', '#fd8d3c', '#d73027', '#7f0000'] };
 
-// Todas as versões (merge anual exportado pelo 5_0_merge + COL de fallback).
-// v08 tem sub-versões por fonte (V08_GEDI / V08_IFN), com prefixo de merge
-// próprio (agb_pred_v08_merged_).
+// Todas as versões. v08 NÃO tem merge: lê a `PREDICTIONS/COL` (D3 global, sem
+// costura). Versões antigas (v03–v07) usam o merge se existir (fallback COL).
 var VERSIONS = [
   { v: 'v03', root: BASE + '/V03', prefix: 'agc_pred_v03_merged_' },
   { v: 'v04', root: BASE + '/V04', prefix: 'agc_pred_v04_merged_' },
@@ -61,7 +60,7 @@ function yearImage(p, year) {
     .filter(ee.Filter.eq('year', year)).mosaic();
 }
 
-print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 6_0_quality');
+print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 5_0_quality');
 print('[CLASSES TREINO]', c.FOREST_CLASSES, '(a predição não é mascarada)');
 print('[FIX] v08 usa PALSAR global — comparar com v07');
 

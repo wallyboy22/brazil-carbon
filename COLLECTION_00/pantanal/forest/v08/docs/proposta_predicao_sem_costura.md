@@ -34,8 +34,9 @@ codificada na v08; as camadas 2 e 3 permanecem no código.
 
 ### Camada 2 — Mosaico de corte seco (secundária)
 
-- `v08/5_0_merge.js:20`: `col.filter(year).mosaic()` — composição por corte abrupto
-  célula a célula, **sem sobreposição nem blending**.
+- `v08/5_0_merge.js` (**removido** na v08): `col.filter(year).mosaic()` — composição
+  por corte abrupto célula a célula, **sem sobreposição nem blending** (a D3 já
+  entrega a COL como mosaico sem costura).
 - A consulta v07 (`mapbiomas-carbono-v07-consulta-estrategica.md`, D18/E22)
   previu esse risco e recomendou *buffer de treino* ou *média ponderada por
   distância à borda*; nenhum dos dois foi implementado.
@@ -99,7 +100,7 @@ codificada na v08; as camadas 2 e 3 permanecem no código.
 1. **Fase 1 — Opção C (patch na v08).** Aplicar grade comum + projeção fixa do stack.
    Rodar a v08 e medir a descontinuidade de borda (seção 7).
 2. **Fase 2 — Opção B, se necessário.** Se a métrica de borda ainda indicar degrau,
-   implementar overlap + blending ponderado no `5_0_merge.js`.
+   implementar overlap + blending ponderado no mosaico final (COL).
 3. **Fase 3 — Opção A como produto final.** Consolidar a predição em grade única para o
    produto oficial, mantendo a predição por célula apenas para QA/auditoria.
 
@@ -147,7 +148,7 @@ codificada na v08; as camadas 2 e 3 permanecem no código.
   expandir (consulta v07, F25).
 - **Risco**: blending excessivo borrar detalhe real; calibrar a largura da margem.
 - **Aceite**: sem marcas visíveis na grade `CELL_SPLIT=4`; métrica de borda dentro do
-  interior; QA v03–v08 consistente (`6_0_quality.js`).
+  interior; QA v03–v08 consistente (`5_0_quality.js`).
 
 ## 9. Referências
 
@@ -156,4 +157,4 @@ codificada na v08; as camadas 2 e 3 permanecem no código.
 - `v08/0_diagnose_tiles.js` — confirmação da hipótese PALSAR.
 - `v08/README.md` — delta v07→v08.
 - `covariate/_palsar.js`, `covariate/build_stack.js`, `v08/4_0_spatial_prediction.js`,
-  `v08/5_0_merge.js`.
+  `v08/5_0_quality.js`.

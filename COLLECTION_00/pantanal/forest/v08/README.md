@@ -80,8 +80,7 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 | 2 | `2_3_gcn/*` | gate offline (Colab) — figuras, thinning (validação), champion |
 | 3 | `3_0_model_training.js` | ensemble RF global (champion por fonte: minLeaf GEDI 5 · IFN 10) → MODELS/rf_agb_v08_m1..m5 |
 | 4 | `4_0_spatial_prediction.js` | ensemble (GLOBAL, grade de saída comum) → PREDICTIONS/COL (mediana+std) |
-| 5 | `5_0_merge.js` | **(opcional)** mosaico anual → `agb_pred_v08_merged_<ano>` |
-| 6 | `6_0_quality.js` | QA visual V03–V08 |
+| 5 | `5_0_quality.js` | QA visual V03–V08 |
 
 ## 5. Ordem de execução
 
@@ -97,9 +96,9 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 4. `2_3_gcn` (Colab) — gate offline de **validação** (o thinning é offline e NÃO
    alimenta o treino). Com `SOURCE=None` roda gedi/ifn em sequência. O champion
    por fonte fica em `SOURCES.<fonte>.minLeafPop` e no bloco `CHAMPION` do `3_0`.
-5. `3_0_model_training.js` → `4_0_spatial_prediction.js` (tasks) → `5_0_merge.js`
-   (opcional: a `PREDICTIONS/COL` do `4_0` já é mosaico sem costura).
-6. `6_0_quality.js` (QA visual). As estatísticas saem do toolkit
+5. `3_0_model_training.js` → `4_0_spatial_prediction.js` (tasks). Sem merge: a
+   `PREDICTIONS/COL` do `4_0` (D3 global, grade comum) já é mosaico sem costura.
+5. `5_0_quality.js` (QA visual). As estatísticas saem do toolkit
    `toolkits/statistics/v00` (`run/run_pantanal.js`).
 
 ## 6. Biblioteca de covariáveis (`covariate/`)
@@ -131,7 +130,7 @@ na lista. A registry completa é impressa no modelo como `covariates_registry` e
 
 - v08 **em desenvolvimento**: código pronto para executar no GEE; os assets
   órfãos da pasta `V08/` foram removidos (rename `agc`→`agb` + multi-fonte).
-- v07 **concluída e inalterada**; o QA (`v07/6_0_quality.js`) e o
+- v07 **concluída e inalterada**; o QA (`v07/6_qualidade.js`) e o
   `statistics/stats_engine.js` foram corrigidos para as versões novas (fallback
   de mosaico e plots multi-versão) sem alterar o produto v07.
 
