@@ -49,7 +49,7 @@ exports.addSpectralIndices = function (img) {
 
 /** Composição anual P10/P50/P90/AMP sobre os índices do ano (Float32). */
 exports.percentileComposite = function (col, idxBands) {
-  var colSel = col.select(idxBands).toFloat();
+  var colSel = col.select(idxBands).map(function (img) { return img.toFloat(); });
   var p10 = colSel.reduce(ee.Reducer.percentile([10]))
     .rename(idxBands.map(function (b) { return b + '_p10'; })).toFloat();
   var p50 = colSel.reduce(ee.Reducer.percentile([50]))
