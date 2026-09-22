@@ -72,8 +72,10 @@ do `3_0_model_training.js`.
 → `2_3_gcn` → `3_0` → (`3_1`, após as tasks do `3_0`) → `4_0` → `5_0`.
 Estatísticas fora do GEE: `toolkits/statistics/v00` (`run/run_pantanal.js`).
 
-> **Sem merge**: a predição D3 (`4_0`) já é global e fatiada na grade comum, então
-> a `PREDICTIONS/COL` já é um mosaico sem costura (o `5_0_quality` lê a COL).
+> **Sem merge**: a predição D3 (`4_0`) é **uma por fonte** (global) e o export é
+> fatiado por `region` (grade comum), **sem `clip`** — a restrição espacial é por
+> **máscara** (`updateMask(paint(PREDICT_FC).eq(0))`; regra `AGENTS.md`). A
+> `PREDICTIONS/COL` já é o mosaico sem costura (o `5_0_quality` lê a COL).
 
 > **2_1/2_2 são 1 script por fonte** (prefixo `gedi`/`ifn`): rode os dois (padrão)
 > ou só o da fonte desejada para isolar. Cada um lê/escreve na raiz da sua fonte

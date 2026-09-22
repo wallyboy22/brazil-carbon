@@ -5,8 +5,10 @@
  * seu subconjunto de bandas; combinação = MEDIANA + stdDev (incerteza).
  *
  * D1: grade de saída COMUM (crs + crsTransform do contrato) → pixels alinhados.
- * D3: GLOBAL_PREDICTION=true → a pilha é classificada UMA vez no domínio e o
- *     export é fatiado na grade fixa (cortes da MESMA imagem) → sem costura.
+ * D3: UMA predição GLOBAL por fonte; o export é fatiado por `region` (grade
+ *     comum), SEM `clip`. A restrição espacial é feita por MÁSCARA no raster.
+ *
+ * REGRA (AGENTS.md): nunca usar `.clip`; restringir = `updateMask(paint(aoi).eq(0))`.
  *
  * FONTE: com `SOURCE=null` (ambíguo) dispara as DUAS fontes em sequência.
  ******************************************************************************/
@@ -19,10 +21,12 @@ var YEAR = c.YEAR;
 var ADD_LAYER = false;
 var palette = ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'];
 var N = c.ENSEMBLE.NUM_MEMBERS;
-// D3: predição GLOBAL única (1× no domínio) + export fatiado na grade fixa.
-var GLOBAL_PREDICTION = true;
 
-var domain = src.getDomain().geometry();
+// Área a PREDIZER (máscara). Default = domínio do contrato; troque para
+// predizer outra área (fora da máscara do contrato).
+var PREDICT_FC = src.getDomain();
+
+var domain = PREDICT_FC.geometry();
 var defs = c.makeCellDefinitions(CELL_SPLIT);
 var byId = {};
 defs.forEach(function (cell) { byId[cell.id] = cell; });
@@ -51,10 +55,10 @@ function ensembleImage(stack, models) {
 }
 
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 4_0_spatial_prediction');
-print('[DOMÍNIO]', c.BAP_ASSET, '— saída NÃO mascarada por LULC');
+print('[PREDICT_FC]', c.BAP_ASSET, '— saída NÃO mascarada por LULC');
 print('[ENSEMBLE] N =', N, '· mediana + stdDev');
 print('[GRADE DE SAÍDA]', c.CRS, '· crsTransform comum (D1)');
-print('[MODO]', GLOBAL_PREDICTION ? 'GLOBAL (D3, sem costura)' : 'por célula');
+print('[MÁSCARA] updateMask(paint(PREDICT_FC).eq(0)) — SEM clip');
 print('[FONTES]', c.sourcesToRun().join(', '), '(SOURCE=' + c.SOURCE + ')');
 
 c.sourcesToRun().forEach(function (source) {
@@ -70,19 +74,16 @@ c.sourcesToRun().forEach(function (source) {
     models['m' + i] = ee.Classifier.load(root + '/MODELS/rf_agb_v08_m' + i);
   }
 
-  function exportCell(image, id, geom) {
-    var out = image.clip(geom)
-      .set('year', YEAR).set('cell_id', id).set('source', source)
-      .set('system:time_start', ee.Date.fromYMD(YEAR, 1, 1).millis());
-    var name = 'agb_pred_v08_' + id + '_' + YEAR;
-    if (ADD_LAYER) Map.addLayer(out.select('prediction_' + YEAR),
-      { min: 0, max: 75, palette: palette }, name, false);
-    Export.image.toAsset({ image: out,
-      description: 'WS_CARBONO_toAsset-' + source + '-' + name,
-      assetId: IC + '/' + name,
-      overwrite: false,
-      region: geom, crs: c.CRS, crsTransform: c.CRS_TRANSFORM, maxPixels: 1e13,
-      pyramidingPolicy: { '.default': 'mean' } });
+  // UMA predição global; restrição espacial por MÁSCARA (sem clip).
+  var pred = ensembleImage(src.buildTypedCovariatesStack(domain, YEAR), models);
+  var mask = ee.Image().paint(ee.FeatureCollection(PREDICT_FC)).eq(0);
+  var image = pred.updateMask(mask);
+
+  // UMA layer por fonte (plot) — não 256.
+  if (ADD_LAYER) {
+    Map.addLayer(image.select('prediction_' + YEAR),
+      { min: 0, max: 75, palette: palette },
+      'v08 ' + source + ' prediction', false);
   }
 
   print('[MODELOS]', Object.keys(models).join(', '));
@@ -91,14 +92,17 @@ c.sourcesToRun().forEach(function (source) {
 
   cells.aggregate_array('cell_id').evaluate(function (ids) {
     print('[CÉLULAS]', ids.length);
-    if (GLOBAL_PREDICTION) {
-      var image = ensembleImage(src.buildTypedCovariatesStack(domain, YEAR), models);
-      ids.forEach(function (id) { exportCell(image, id, cellGeom(id)); });
-    } else {
-      ids.forEach(function (id) {
-        var g = cellGeom(id);
-        exportCell(ensembleImage(src.buildTypedCovariatesStack(g, YEAR), models), id, g);
-      });
-    }
+    ids.forEach(function (id) {
+      var geom = cellGeom(id);
+      var name = 'agb_pred_v08_' + id + '_' + YEAR;
+      var out = image.set('year', YEAR).set('cell_id', id).set('source', source)
+        .set('system:time_start', ee.Date.fromYMD(YEAR, 1, 1).millis());
+      Export.image.toAsset({ image: out,
+        description: 'WS_CARBONO_toAsset-' + source + '-' + name,
+        assetId: IC + '/' + name,
+        overwrite: false,
+        region: geom, crs: c.CRS, crsTransform: c.CRS_TRANSFORM, maxPixels: 1e13,
+        pyramidingPolicy: { '.default': 'mean' } });
+    });
   });
 });

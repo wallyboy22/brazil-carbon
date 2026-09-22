@@ -146,11 +146,12 @@ exports.buildTypedCovariatesStack = function (aoi, year) {
   });
   var typed = raw.select(contNoPalsar).toFloat()
     .addBands(raw.select(c.CATEGORICAL_BANDS).toUint8())
-    .select(contNoPalsar.concat(c.CATEGORICAL_BANDS)).clip(aoi);
-  // Injeta o mosaico global de PALSAR do ano (determinístico)
+    .select(contNoPalsar.concat(c.CATEGORICAL_BANDS));
+  // Injeta o mosaico global de PALSAR do ano (determinístico) — SEM clip
+  // (regra AGENTS.md: restrição espacial = máscara, feita na predição).
   var palsarGlobal = exports.buildPalsarGlobal(year)
-    .select(PALSAR_BANDS).toFloat().clip(aoi);
-  return typed.addBands(palsarGlobal).select(c.FEATURE_BANDS).clip(aoi);
+    .select(PALSAR_BANDS).toFloat();
+  return typed.addBands(palsarGlobal).select(c.FEATURE_BANDS);
 };
 
 // ---------------------------------------------------------------------------

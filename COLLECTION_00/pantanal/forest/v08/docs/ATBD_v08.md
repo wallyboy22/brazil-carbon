@@ -119,9 +119,11 @@ Fonte: `v08/0_contract.js`.
   determinística** do mesmo conjunto global de pontos — não há sorteio por chunk.
 - O PALSAR global (`buildPalsarGlobal`) é injetado em todas as células; as demais
   covariáveis (HLS, HAND, ERA5, LULC) são recortadas pelo AOI da célula.
-- `4_0_spatial_prediction.js` (D3 GLOBAL) prediz 1× no domínio e fatia na grade
-  comum (sem costura) → a `PREDICTIONS/COL` já é o mosaico final (**sem** passo de
-  merge) — ver `proposta_predicao_sem_costura.md`.
+- `4_0_spatial_prediction.js` (D3 GLOBAL) prediz **1× por fonte** no domínio e
+  fatia na grade comum por `region` (**sem** `clip`); a restrição espacial é por
+  **máscara** (`updateMask(ee.Image().paint(PREDICT_FC).eq(0))`, regra `AGENTS.md`).
+  A `PREDICTIONS/COL` já é o mosaico final (**sem** merge) — ver
+  `proposta_predicao_sem_costura.md`.
 - **Multi-fonte**: o pipeline é único e parametrizado por `SOURCE` (`0_contract.js`).
   Com `SOURCE=null` (**ambíguo**) os passos `1_check`/`3_0`/`3_1`/`4_0` disparam as
   **duas** fontes em sequência, gerando as sub-versões (`V08_GEDI`, `V08_IFN`) com as

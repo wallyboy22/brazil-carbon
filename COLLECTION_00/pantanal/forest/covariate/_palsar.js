@@ -45,10 +45,10 @@ function buildPalsarComposite(biome, year) {
     .median();
 }
 
-/** Stack PALSAR global (v08) — mediana, dB, speckle, clip no bioma. */
+/** Stack PALSAR global (v08) — mediana, dB, speckle; MÁSCARA no bioma (sem clip). */
 exports.buildPalsarGlobal = function (biome, year) {
   return deriveBands(buildPalsarComposite(biome, year).select(['HH', 'HV']))
-    .clip(biome);
+    .updateMask(ee.Image().paint(ee.FeatureCollection(biome)).eq(0));
 };
 
 /** Máscara de validade do PALSAR global (1 onde há dado; masked onde nodata). */

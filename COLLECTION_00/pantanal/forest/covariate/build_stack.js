@@ -33,14 +33,15 @@ exports.buildHlsPart = function (aoi, yearUsed) {
   return hls.percentileComposite(hlsL.merge(hlsS), hls.IDX_BANDS);
 };
 
-/** Stack cru (sem tipagem) — formulação since_v01, PALSAR per-célula. */
+/** Stack cru (sem tipagem) — formulação since_v01, PALSAR per-célula.
+ *  Restrição espacial por MÁSCARA (sem clip — regra AGENTS.md). */
 exports.buildCovariatesStack = function (aoi, yearUsed) {
   return exports.buildHlsPart(aoi, yearUsed)
     .addBands(palsar.buildPalsarPerCell(aoi, yearUsed))
     .addBands(hand.buildHand(aoi))
     .addBands(era5.buildClimateStack(aoi, yearUsed))
     .addBands(lulc.buildLulc(aoi, yearUsed))
-    .clip(aoi);
+    .updateMask(ee.Image().paint(ee.FeatureCollection(aoi)).eq(0));
 };
 
 /**
@@ -52,5 +53,6 @@ exports.buildTypedCovariatesStack = function (aoi, year, bands) {
   var continuous = raw.select(bands.continuous).toFloat();
   var categorical = raw.select(bands.categorical).toUint8();
   return continuous.addBands(categorical)
-    .select(bands.feature).clip(aoi);
+    .select(bands.feature)
+    .updateMask(ee.Image().paint(ee.FeatureCollection(aoi)).eq(0));
 };

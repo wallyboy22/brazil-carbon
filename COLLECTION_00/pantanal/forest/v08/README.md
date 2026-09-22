@@ -79,7 +79,7 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 | 2 | `2_2_gedi_toDrive_matrix.js` · `2_2_ifn_toDrive_matrix.js` | matriz por fonte/célula/ano (filtro floresta + notNull) → ASSET + Drive (CSV) |
 | 2 | `2_3_gcn/*` | gate offline (Colab) — figuras, thinning (validação), champion |
 | 3 | `3_0_model_training.js` | ensemble RF global (champion por fonte: minLeaf GEDI 5 · IFN 10) → MODELS/rf_agb_v08_m1..m5 |
-| 4 | `4_0_spatial_prediction.js` | ensemble (GLOBAL, grade de saída comum) → PREDICTIONS/COL (mediana+std) |
+| 4 | `4_0_spatial_prediction.js` | ensemble (1 predição/fonte, grade comum; restrição por **máscara**, sem clip) → PREDICTIONS/COL (mediana+std) |
 | 5 | `5_0_quality.js` | QA visual V03–V08 |
 
 ## 5. Ordem de execução
@@ -120,6 +120,11 @@ Todas as formulações de covariáveis estão em uma biblioteca compartilhada em
 | `_ensemble.js` | hashString, getMemberBands (BAND_FRACTION) | since_v07 |
 | `_metadata.js` | COVARIATES_REGISTRY (proveniência por tema, tag since_vNN) | set/2026 |
 | `build_stack.js` | buildCovariatesStack, buildTypedCovariatesStack | since_v01/v03 |
+
+> **Regra de ouro (`AGENTS.md`)**: **nunca `.clip`** — restrição espacial por
+> **máscara** (`updateMask(ee.Image().paint(aoi).eq(0))`; dentro=1, fora=masked) e,
+> quando precisar de geometria (export/`reduce`), `aoi.geometry().bounds()`.
+> Aplicada em `build_stack.js`, `_palsar.js`, `0_covariate_source.js` e `4_0`.
 
 **Política de proveniência**: cada tema em `_metadata.js` tem uma lista `versions`
 com tags `since_vNN` (em vez de listar v03–v08). Mudanças entram como novos itens
