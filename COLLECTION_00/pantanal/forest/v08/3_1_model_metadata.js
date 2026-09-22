@@ -64,7 +64,11 @@ c.sourcesToRun().forEach(function (source) {
     covariates_registry: registry,
     num_members: N,
     members_json: JSON.stringify(members),
-    model_prefix: root + '/MODELS/rf_agb_v08_m'
+    model_prefix: root + '/MODELS/rf_agb_v08_m',
+    min_leaf_pop: S.minLeafPop,
+    variables_per_split: c.VARIABLES_PER_SPLIT,
+    num_trees: 300,
+    max_nodes: S.maxNodes
   });
   var metaAsset = root + '/MODELS/metadata_v08_' + source;
   if (exists(metaAsset)) deleteAsset(metaAsset);

@@ -63,6 +63,9 @@ Fonte: `v08/0_contract.js`.
 - `ee.Classifier.smileRandomForest`, modo `REGRESSION`, `numberOfTrees = 300`.
 - Regularização: `minLeafPopulation` **por fonte** (champion do gate v08):
   GEDI 5 · IFN 10, `variablesPerSplit = 6` (~sqrt(36)).
+- `maxNodes = 40` (teto de nós por árvore). Sem esse teto as árvores crescem demais
+  (~1,65 M amostras) e o classificador exportado passa de ~896 MB — o que estoura o
+  limite de memória do `classify`/`Map.addLayer`. Mesmo teto do Solo.
 - Alvo **linear** (sem log-target): `classify` devolve AGBD (t/ha) direto.
 - `bagFraction = 0.8` (~80% das linhas por árvore, via bootstrap).
 

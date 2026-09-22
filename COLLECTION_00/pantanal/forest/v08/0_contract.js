@@ -184,7 +184,8 @@ exports.SOURCES = {
     sampleProps: ['agbd', 'agbd_se', 'pft_class', 'shot_number',
       'lon_lowestmode', 'lat_lowestmode'],
     pointGeometry: false,
-    minLeafPop: 5                 // champion do gate v08 (GEDI)
+    minLeafPop: 5,                // champion do gate v08 (GEDI)
+    maxNodes: 40                  // teto de nós/árvore (modelo pequeno; evita OOM)
   },
   ifn: {
     label: 'IFN (IFN_2026_BR_PLOTS-v13)',
@@ -201,7 +202,8 @@ exports.SOURCES = {
     sampleProps: ['agbd', 'C_Mg_ha', 'n_ind', 'area_ha', 'bioma', 'fid',
       'UA', 'Subunidade', 'orientacao', 'mun'],
     pointGeometry: true,
-    minLeafPop: 10                // champion do gate v08 (IFN)
+    minLeafPop: 10,               // champion do gate v08 (IFN)
+    maxNodes: 40                  // teto de nós/árvore (modelo pequeno; evita OOM)
   }
 };
 
@@ -224,6 +226,7 @@ exports.sourcesToRun = function () {
 // ===========================================================================
 exports.MIN_LEAF_POP = (exports.SOURCE_CFG && exports.SOURCE_CFG.minLeafPop) || 10;
 exports.VARIABLES_PER_SPLIT = 6;  // ~sqrt(36) bandas por split
+exports.MAX_NODES = (exports.SOURCE_CFG && exports.SOURCE_CFG.maxNodes) || 40;
 
 // ===========================================================================
 // Bloco 8 — ENSEMBLE [resposta D15-17]

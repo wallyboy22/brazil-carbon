@@ -3,7 +3,9 @@
  * ---------------------------------------------------------------------------
  * v08 (fix pós-v07):
  *   - covariáveis com PALSAR GLOBAL (0_covariate_source.js);
- *   - champion do gate v08 (minLeafPopulation POR FONTE: gedi=5, ifn=10; linear, N=5).
+ *   - champion do gate v08 (minLeafPopulation POR FONTE: gedi=5, ifn=10; linear, N=5);
+ *   - `maxNodes: 40` (teto de nós/árvore) para o modelo ficar pequeno — sem ele
+ *     o RF exportado passa de ~896 MB e o `classify` estoura a memória.
  *
  * MODELO GLOBAL ÚNICO (não por célula): a matriz agrega TODAS as células.
  * Um classificador por membro do ensemble é exportado para
@@ -21,9 +23,13 @@ var N = c.ENSEMBLE.NUM_MEMBERS;
 // Sweep de minLeafPopulation (RMSE CV espacial, t/ha):
 //   gedi: 5→69.27 · 10→69.30 · 20→69.41 · 30→69.51
 //   ifn : 5→36.12 · 10→36.05 · 20→36.07 · 30→36.45
+// `maxNodes`: teto de nós por árvore. SEM ele as árvores crescem demais
+// (matriz de ~1,65 M amostras) e o classificador exportado passa de ~896 MB,
+// o que estoura o limite de memória do `classify`/`Map.addLayer`. O Solo usa
+// `maxNodes: 40`; aqui adotamos o mesmo teto para manter o modelo pequeno.
 var CHAMPION = {
-  gedi: { minLeafPopulation: 5,  variablesPerSplit: 6, numberOfTrees: 300 },
-  ifn:  { minLeafPopulation: 10, variablesPerSplit: 6, numberOfTrees: 300 }
+  gedi: { minLeafPopulation: c.SOURCES.gedi.minLeafPop, variablesPerSplit: c.VARIABLES_PER_SPLIT, numberOfTrees: 300, maxNodes: c.MAX_NODES },
+  ifn:  { minLeafPopulation: c.SOURCES.ifn.minLeafPop,  variablesPerSplit: c.VARIABLES_PER_SPLIT, numberOfTrees: 300, maxNodes: c.MAX_NODES }
 };
 
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 3_0_model_training');
@@ -88,6 +94,7 @@ c.sourcesToRun().forEach(function (source) {
       bagFraction: c.ENSEMBLE.TRAIN_FRACTION,     // ~80% das linhas (bootstrap)
       minLeafPopulation: champ.minLeafPopulation, // champion POR FONTE (5/10)
       variablesPerSplit: champ.variablesPerSplit, // ~sqrt(#bandas)
+      maxNodes: champ.maxNodes,                   // teto de nós/árvore (modelo pequeno)
       seed: c.ENSEMBLE.SEED_BASE + i
     }).setOutputMode('REGRESSION').train({
       features: matrix.select(bands.concat([target])),
@@ -107,7 +114,8 @@ c.sourcesToRun().forEach(function (source) {
 
   print('[CHAMPION] minLeafPopulation =', champ.minLeafPopulation,
     '· variablesPerSplit =', champ.variablesPerSplit,
-    '· numberOfTrees =', champ.numberOfTrees);
+    '· numberOfTrees =', champ.numberOfTrees,
+    '· maxNodes =', champ.maxNodes);
   print('[MATRIZES]', assets.length, '· [TARGET]', target);
   matrix.size().evaluate(function (n) { print('[AMOSTRAS]', source, n); });
   src.ensureFolder(root + '/MODELS');

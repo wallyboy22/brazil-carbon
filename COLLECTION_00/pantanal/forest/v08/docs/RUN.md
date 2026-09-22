@@ -57,7 +57,9 @@ Células `00`→`06` (ver `2_3_gcn/README.md`). Com `SOURCE=None` o gate roda
 **todas as fontes disponíveis** (gedi/ifn), em sequência; fixe `SOURCE` para uma.
 O gate é **validação** (o thinning é offline e não alimenta o treino). O champion
 por fonte (minLeaf) fica em `SOURCES.<fonte>.minLeafPop` **e** no bloco `CHAMPION`
-do `3_0_model_training.js`.
+do `3_0_model_training.js`. O `maxNodes` (teto de nós/árvore, default 40) fica em
+`SOURCES.<fonte>.maxNodes` / `MAX_NODES` — mantém o modelo pequeno o bastante para
+o `classify`/`Map.addLayer` da etapa 4 (sem ele o RF passa de ~896 MB).
 
 ## 5. Limpeza de assets
 - Pasta **`V08/`** (matrizes `agc_matrix_v08_*` + `forest_footprint_v08_2023`): **removida** (órfãos).
