@@ -159,7 +159,9 @@ var PANTANAL_FOREST = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/' +
 var BAP_FOOTPRINT_YEARS = [2019, 2020, 2021, 2022, 2023, 2024];
 var IFN_FOOTPRINT_YEAR = 2023;   // IFN = retrato único (2_0_ifn_export_footprint)
 
-exports.SOURCE = 'gedi';   // 'gedi' | 'ifn'
+// SOURCE: `null` = AMBÍGUO → os passos 3_0/3_1/4_0 disparam as DUAS fontes
+// (gedi e ifn) em sequência; ou fixe 'gedi' | 'ifn' para uma só.
+exports.SOURCE = null;   // null | 'gedi' | 'ifn'
 
 exports.SOURCES = {
   gedi: {
@@ -196,9 +198,15 @@ exports.SOURCES = {
   }
 };
 
-exports.SOURCE_CFG = exports.SOURCES[exports.SOURCE];
-exports.TRAIN_YEARS = exports.SOURCE_CFG.trainYears;
-exports.ASSET_ROOT = exports.SOURCE_CFG.assetRoot;
+exports.SOURCE_CFG = exports.SOURCES[exports.SOURCE] || null;
+exports.TRAIN_YEARS = exports.SOURCE_CFG
+  ? exports.SOURCE_CFG.trainYears : exports.SOURCES.gedi.trainYears;
+exports.ASSET_ROOT = exports.SOURCE_CFG ? exports.SOURCE_CFG.assetRoot : null;
+
+/** Fontes a processar: a fixada em `SOURCE` ou TODAS (SOURCE=null → ambas). */
+exports.sourcesToRun = function () {
+  return exports.SOURCE ? [exports.SOURCE] : Object.keys(exports.SOURCES);
+};
 
 // ===========================================================================
 // Bloco 7 — CHAMPION [gate v08, 21–22/09/2026; SEM log-target]
@@ -207,7 +215,7 @@ exports.ASSET_ROOT = exports.SOURCE_CFG.assetRoot;
 //     · ifn  → 10 (sweep 5→36.12 · 10→36.05 · 20→36.07 · 30→36.45)
 //   `MIN_LEAF_POP` reflete a fonte ativa (SOURCE_CFG.minLeafPop).
 // ===========================================================================
-exports.MIN_LEAF_POP = exports.SOURCE_CFG.minLeafPop || 10;
+exports.MIN_LEAF_POP = (exports.SOURCE_CFG && exports.SOURCE_CFG.minLeafPop) || 10;
 exports.VARIABLES_PER_SPLIT = 6;  // ~sqrt(36) bandas por split
 
 // ===========================================================================

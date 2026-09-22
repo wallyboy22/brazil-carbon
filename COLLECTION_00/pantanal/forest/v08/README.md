@@ -84,8 +84,8 @@ ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR_EPOCH')
 
 ## 5. Ordem de execução
 
-0. Definir `SOURCE` em `0_contract.js` (`gedi` | `ifn`) — decide a raiz
-   (`V08_GEDI`/`V08_IFN`) e a fonte de amostra.
+0. Definir `SOURCE` em `0_contract.js`: **`null` (ambíguo) = as duas fontes** nos
+   passos `1_check`/`3_0`/`3_1`/`4_0`; ou `'gedi'` | `'ifn'` para uma só.
 1. `1_check.js` — diagnóstico (fonte, contagem de footprints, floresta+stack).
 2. `2_0` — footprint/parcelas da fonte: (GEDI) `2_0_gedi_export_footprint.js`
    (footprints GEDI L4A sobre a BAP) ou (IFN) `2_0_ifn_export_footprint.js`

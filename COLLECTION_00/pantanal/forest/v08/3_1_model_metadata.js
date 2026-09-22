@@ -6,17 +6,15 @@
  * Este passo grava as propriedades nos assets de modelo JÁ EXPORTADOS.
  *
  * Uso: rodar APÓS as tasks de `3_0_model_training.js` concluírem.
- *   · para cada MODELS/rf_agb_v08_m<i> grava:
- *       covariates_registry, covariate_version, model_version, ensemble_member
+ * FONTE: com `SOURCE=null` (ambíguo) processa as DUAS fontes em sequência.
  ******************************************************************************/
 var c = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_contract.js');
 var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_covariate_source.js');
-var root = c.ASSET_ROOT;
 var N = c.ENSEMBLE.NUM_MEMBERS;
 
-/** Aplica propriedades num asset existente (tenta setAssetProperties; fallback updateAsset). */
+/** Aplica propriedades num asset existente (setAssetProperties; fallback updateAsset). */
 function setProps(assetId, props) {
   try {
     ee.data.setAssetProperties(assetId, props);
@@ -37,33 +35,40 @@ function exists(assetId) {
 }
 
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 3_1_model_metadata');
-print('[FONTE]', c.SOURCE, '·', c.SOURCE_CFG.label, '· raiz', root);
 print('[COVARIATES] versão', src.COVARIATES_VERSION, '· n temas =',
   src.COVARIATES_REGISTRY.length);
+print('[FONTES]', c.sourcesToRun().join(', '), '(SOURCE=' + c.SOURCE + ')');
 
 var registry = JSON.stringify(src.COVARIATES_REGISTRY);
-var ok = 0, falta = 0, erro = 0;
 
-for (var i = 1; i <= N; i++) {
-  var assetId = root + '/MODELS/rf_agb_v08_m' + i;
-  if (!exists(assetId)) {
-    print('[FALTA]', assetId, '— rode 3_0_model_training e aguarde as tasks.');
-    falta++;
-    continue;
+c.sourcesToRun().forEach(function (source) {
+  var S = c.SOURCES[source];
+  var root = S.assetRoot;
+  print('\n' + '#'.repeat(68));
+  print('# FONTE:', source, '·', S.label, '· raiz', root);
+  print('#'.repeat(68));
+  var ok = 0, falta = 0, erro = 0;
+  for (var i = 1; i <= N; i++) {
+    var assetId = root + '/MODELS/rf_agb_v08_m' + i;
+    if (!exists(assetId)) {
+      print('[FALTA]', assetId, '— rode 3_0_model_training e aguarde as tasks.');
+      falta++;
+      continue;
+    }
+    try {
+      var via = setProps(assetId, {
+        covariates_registry: registry,
+        covariate_version: src.COVARIATES_VERSION,
+        model_version: 'v08',
+        source: source,
+        ensemble_member: i
+      });
+      print('[OK]', assetId, '· via', via);
+      ok++;
+    } catch (e) {
+      print('[ERRO]', assetId, '—', e.message || e);
+      erro++;
+    }
   }
-  try {
-    var via = setProps(assetId, {
-      covariates_registry: registry,
-      covariate_version: src.COVARIATES_VERSION,
-      model_version: 'v08',
-      ensemble_member: i
-    });
-    print('[OK]', assetId, '· via', via);
-    ok++;
-  } catch (e) {
-    print('[ERRO]', assetId, '—', e.message || e);
-    erro++;
-  }
-}
-
-print('[FIM] ok:', ok, '· faltando:', falta, '· erro:', erro);
+  print('[FIM ' + source + '] ok:', ok, '· faltando:', falta, '· erro:', erro);
+});

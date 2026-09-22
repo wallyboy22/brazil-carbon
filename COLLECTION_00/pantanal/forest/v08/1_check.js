@@ -3,38 +3,50 @@
  * ---------------------------------------------------------------------------
  * Substitui `1_preflight.js` + `2_0_check_footprint.js`: num só Run imprime
  *   · fonte/domínio e bandas do contrato;
- *   · contagem dos footprints crus (getFootprints) e PFT (GEDI);
+ *   · contagem dos footprints crus (getFootprints) e PFT (GEDI) — por fonte;
  *   · floresta (C11) + stack tipado numa CÉLULA-AMOSTRA (recorte pequeno).
  * NÃO exporta nada — é só diagnóstico. A célula-amostra evita o limite de
- * memória interativo (a BAP inteira estoura); a produção (2_1/2_2/3/4/5) é
- * por célula.
+ * memória interativo (a BAP inteira estoura); a produção (2_1/2_2/3_0/4_0) é
+ * por célula/fonte.
+ *
+ * FONTE: com `SOURCE=null` (ambíguo) inspeciona as DUAS fontes.
  ******************************************************************************/
 var c = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_contract.js');
 var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_covariate_source.js');
 
+var CHAMPION = {
+  gedi: { minLeafPopulation: 5 },
+  ifn: { minLeafPopulation: 10 }
+};
+
 print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 1_check');
-print('[FONTE]', c.SOURCE, '·', c.SOURCE_CFG.label);
 print('[DOMÍNIO]', c.BAP_ASSET);
-print('[MODELO]', 'v08 · ensemble RF N=' + c.ENSEMBLE.NUM_MEMBERS +
-  ', minLeaf=' + c.MIN_LEAF_POP);
+print('[MODELO]', 'v08 · ensemble RF N=' + c.ENSEMBLE.NUM_MEMBERS + ' (linear)');
 print('[FOREST_CLASSES]', c.FOREST_CLASSES);
 print('[FILTRO] floresta (mapbiomas_lulc ∈ FOREST_CLASSES) + notNull(FEATURE_BANDS) → no 2_2');
 print('[FEATURE_BANDS]', c.FEATURE_BANDS);
 print('[CONTINUOUS_BANDS]', c.CONTINUOUS_BANDS);
 print('[CATEGORICAL_BANDS]', c.CATEGORICAL_BANDS);
+print('[FONTES]', c.sourcesToRun().join(', '), '(SOURCE=' + c.SOURCE + ')');
 
-// --- footprints crus (contagem) ---------------------------------------------
-var raw = src.getFootprints();
-raw.size().evaluate(
-  function (n) { print('[FOOTPRINTS]', n); },
-  function (e) { print('[ERRO FOOTPRINTS]', e); });
-if (c.SOURCE === 'gedi') {
-  raw.distinct('pft_class').aggregate_array('pft_class').evaluate(
-    function (p) { print('[PFT]', p); },
-    function (e) { print('[ERRO PFT]', e); });
-}
+// --- footprints crus (contagem) por fonte -----------------------------------
+c.sourcesToRun().forEach(function (source) {
+  var S = c.SOURCES[source];
+  var champ = CHAMPION[source] || {};
+  print('\n#### FONTE:', source, '·', S.label,
+    '· minLeaf', champ.minLeafPopulation, '· raiz', S.assetRoot, '####');
+  var raw = src.getFootprints(source);
+  raw.size().evaluate(
+    function (n) { print('[FOOTPRINTS ' + source + ']', n); },
+    function (e) { print('[ERRO FOOTPRINTS ' + source + ']', e); });
+  if (source === 'gedi') {
+    raw.distinct('pft_class').aggregate_array('pft_class').evaluate(
+      function (p) { print('[PFT]', p); },
+      function (e) { print('[ERRO PFT]', e); });
+  }
+});
 
 // --- floresta + stack numa célula-amostra (recorte pequeno) -----------------
 var cell = c.makeCellDefinitions(4)[0];

@@ -18,8 +18,8 @@ var c = require(
 var src = require(
   'users/workspaceipam/mapbiomas-carbono:COLLECTION_00/pantanal/forest/v08/0_covariate_source.js');
 var BASE = 'projects/mapbiomas-brazil/assets/CARBON/MAPPING/COLLECTION_00/PANTANAL_FOREST';
-var root = c.ASSET_ROOT;
-var col = ee.ImageCollection(root + '/PREDICTIONS/COL');
+// v08 não tem merge; cada fonte tem a sua COL (V08_GEDI / V08_IFN), listadas em VERSIONS.
+var col = ee.ImageCollection(BASE + '/V08_GEDI/PREDICTIONS/COL');
 var STD_VIS = { min: 0, max: 40, palette: ['#ffffb2', '#fd8d3c', '#d73027', '#7f0000'] };
 
 // Todas as versões. v08 NÃO tem merge: lê a `PREDICTIONS/COL` (D3 global, sem

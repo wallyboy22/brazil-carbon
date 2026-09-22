@@ -6,11 +6,14 @@ a **ordem** e as **diferenças por fonte**.
 
 ## 0. Fonte de amostra (`SOURCE`)
 Em `0_contract.js`, `exports.SOURCE`:
-- `'gedi'` → raiz `.../PANTANAL_FOREST/V08_GEDI` · footprints GEDI L4A da BAP;
-- `'ifn'`  → raiz `.../PANTANAL_FOREST/V08_IFN`  · parcelas IFN (`IFN_2026_BR_PLOTS-v13`).
+- **`null` (ambíguo)** → os passos `1_check`/`3_0`/`3_1`/`4_0` disparam as **DUAS**
+  fontes em sequência (gedi e ifn);
+- `'gedi'` → só `.../PANTANAL_FOREST/V08_GEDI` · footprints GEDI L4A da BAP;
+- `'ifn'`  → só `.../PANTANAL_FOREST/V08_IFN`  · parcelas IFN (`IFN_2026_BR_PLOTS-v13`).
 
 Covariáveis, grade, filtro e hiperparâmetros são **idênticos** entre as fontes —
-só muda a amostra e a raiz de assets. Troque `SOURCE` e re-rode.
+só muda a amostra e a raiz de assets. Os `2_0`/`2_1`/`2_2` são **1 script por fonte**
+(rode os dois ou só o desejado).
 
 ## 1. Pré-requisito (uma vez, por fonte)
 - **GEDI**: `2_0_gedi_export_footprint.js` → `V08_GEDI/SAMPLES/gedi_footprint_bap_2019..2024`

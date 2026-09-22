@@ -123,9 +123,10 @@ Fonte: `v08/0_contract.js`.
   comum (sem costura) → a `PREDICTIONS/COL` já é o mosaico final (**sem** passo de
   merge) — ver `proposta_predicao_sem_costura.md`.
 - **Multi-fonte**: o pipeline é único e parametrizado por `SOURCE` (`0_contract.js`).
-  Rodar com `SOURCE='gedi'` e `SOURCE='ifn'` gera duas sub-versões
-  (`V08_GEDI`, `V08_IFN`) com as **mesmas covariáveis e hiperparâmetros**, permitindo
-  comparação direta (treino GEDI × treino IFN) e validação cruzada entre fontes.
+  Com `SOURCE=null` (**ambíguo**) os passos `1_check`/`3_0`/`3_1`/`4_0` disparam as
+  **duas** fontes em sequência, gerando as sub-versões (`V08_GEDI`, `V08_IFN`) com as
+  **mesmas covariáveis** (champion por fonte), permitindo comparação direta
+  (treino GEDI × treino IFN) e validação cruzada entre fontes.
 
 ## 6. Incerteza
 
