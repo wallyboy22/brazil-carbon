@@ -118,7 +118,9 @@ for _src in sources_to_run():
                     "collinear_pairs_gt085": int(red_m),
                     "moran_i": float(I), "moran_p": float(p),
                     "moran_pairs_90m": int(n_pairs),
-                    "resid_x_col": xcol, "resid_x_pearson_r": float(corr_r)})
+                    "resid_x_col": xcol, "resid_x_pearson_r": float(corr_r),
+                    "n_skipped_csvs": len(CONF.get("_SKIPPED_CSVS", [])),
+                    "skipped_csvs": CONF.get("_SKIPPED_CSVS", [])})
 
     print()
     print("[FIGURAS GERADAS]")

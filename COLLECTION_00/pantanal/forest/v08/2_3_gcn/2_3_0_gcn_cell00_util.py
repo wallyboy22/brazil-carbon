@@ -226,12 +226,29 @@ def load_matrix(source=None) -> pd.DataFrame:
         )
     print(f"[FONTE] {chosen} · {len(files)} CSV(s) · contexto {context_name()}")
     frames = []
+    skipped = []
     for f in files:
-        df = pd.read_csv(f)
+        try:
+            df = pd.read_csv(f)
+        except (pd.errors.EmptyDataError, pd.errors.ParserError) as e:
+            print(f"[SKIP] {f.name}: {type(e).__name__} (vazio/corrompido)")
+            skipped.append(f.name)
+            continue
+        if df.empty:
+            print(f"[SKIP] {f.name}: 0 linhas")
+            skipped.append(f.name)
+            continue
         df["_file"] = f.name
         frames.append(df)
+    if not frames:
+        raise FileNotFoundError(
+            f"Todos os CSVs da fonte '{chosen}' estão vazios/corrompidos " +
+            f"({len(skipped)} arquivos). Reexporte o 2_2_<fonte>_toDrive_matrix.js."
+        )
     df = pd.concat(frames, ignore_index=True).drop(columns=["_file"])
-    print(f"[DADOS] {len(df)} linhas · {len(files)} CSVs")
+    CONF["_SKIPPED_CSVS"] = skipped
+    print(f"[DADOS] {len(df)} linhas · {len(frames)} CSVs " +
+          f"({len(skipped)} vazios ignorados)")
     return df
 
 

@@ -68,6 +68,11 @@ for _src in sources_to_run():
     A("## 1. Matriz de covariáveis")
     A(f"- Linhas brutas: **{n_raw}** (CSVs do Drive) → thinned: **{n_thin}** "
       f"(grade {CONF['THIN_M']} m, **−{red_pct:.0f}%**)")
+    n_skip = diag.get("n_skipped_csvs", 0)
+    if n_skip:
+        names = ", ".join(diag.get("skipped_csvs", [])[:6])
+        A(f"- CSVs **vazios/corrompidos ignorados**: **{n_skip}** ({names}"
+          + ("…" if n_skip > 6 else "") + ")")
     A(f"- Features finais: **{n_feat}** · Blocos espaciais: "
       f"**{state['n_blocks'] if 'n_blocks' in state else '—'}** (CV ~{CONF['BLOCK_M']/1000:.0f} km)")
 
