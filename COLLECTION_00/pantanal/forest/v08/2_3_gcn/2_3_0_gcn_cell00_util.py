@@ -48,6 +48,17 @@ CONF = {
     "LON": "lon",
     "LAT": "lat",
     "AGBD_SE": "agbd_se",
+    # Colunas NÃO-covariáveis (alvo, peso, geo, ids e metadata de amostra das
+    # fontes GEDI/IFN). FEATS = numéricas fora desta lista.
+    "META_COLS": [
+        "agbd", "agbd_se", "agbd_log", "w", "lon", "lat",
+        "cell_id", "year", "geometry", "decimal", "system:index", ".geo", "_block",
+        # metadata de amostra — GEDI
+        "pft_class", "shot_number", "lon_lowestmode", "lat_lowestmode",
+        # metadata de amostra — IFN
+        "C_Mg_ha", "n_ind", "area_ha", "bioma", "fid", "UA", "Subunidade",
+        "orientacao", "mun",
+    ],
     "MIN_FEAT_NULL_RATE": 0.05,   # descarta banda com >5% de ausente
     # --- escala do gate offline (a matriz GEDI tem ~1,6M linhas) ---
     "SAMPLE_N": 150_000,          # máx. de linhas usadas no gate (None = todas)
@@ -269,17 +280,23 @@ def subsample(df: pd.DataFrame, n=None, seed=None) -> pd.DataFrame:
     return out
 
 
+def feature_columns(df: pd.DataFrame) -> list:
+    """Colunas de covariáveis: numéricas fora de `CONF['META_COLS']`."""
+    meta = set(CONF["META_COLS"])
+    return [c for c in df.select_dtypes(include=[np.number]).columns
+            if c not in meta]
+
+
 def clean_features(df: pd.DataFrame) -> pd.DataFrame:
     """Remove colunas de metadados, bandas quase vazias e linhas com alvo/geo ausentes.
 
+    `feat_cols` = só covariáveis (numéricas fora de META_COLS) — ignora texto.
     Ao final aplica `subsample()` (SAMPLE_N) para escalar o gate.
     """
     for col in ("system:index", "geometry", ".geo", "decimal", "_file"):
         if col in df.columns:
             df = df.drop(columns=col)
-    feat_cols = [x for x in df.columns if x not in
-                 (CONF["TARGET"], CONF["WEIGHT_COL"], CONF["LON"], CONF["LAT"],
-                  CONF["AGBD_SE"], "cell_id", "year")]
+    feat_cols = feature_columns(df)
     null_rate = df[feat_cols].isna().mean()
     drop_feats = list(null_rate[null_rate > CONF["MIN_FEAT_NULL_RATE"]].index)
     df = df.drop(columns=drop_feats, errors="ignore")

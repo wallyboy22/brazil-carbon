@@ -78,7 +78,7 @@ function exportCell(id) {
     if (wprop) required = required.concat([wprop]);
     var sampled = src.buildTypedCovariatesStack(geom, year)
       .sampleRegions({ collection: points[year].filterBounds(geom),
-        properties: src.getSampleProps(SOURCE), scale: c.SCALE,
+        properties: [c.TARGET].concat(wprop ? [wprop] : []), scale: c.SCALE,
         geometries: true, tileScale: TILE_SCALE })
       .filter(ee.Filter.and(
         ee.Filter.notNull(required),

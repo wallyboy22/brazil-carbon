@@ -41,9 +41,7 @@ for _src in sources_to_run():
     coords_m = coordinates_meters(df)
     df["_block"] = spatial_blocks(df)
 
-    FEATS = [c for c in df.columns if c not in
-             (CONF["TARGET"], CONF["WEIGHT_COL"], CONF["LON"], CONF["LAT"],
-              CONF["AGBD_SE"], "_block", "geometry", "cell_id", "year", "decimal")]
+    FEATS = feature_columns(df)
     X = df[FEATS].fillna(df[FEATS].median())
     y = df[CONF["TARGET"]].values
 

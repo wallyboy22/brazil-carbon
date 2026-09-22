@@ -41,9 +41,7 @@ for _src in sources_to_run():
     df = load_matrix(_src)
     df, dropped = clean_features(df)
     df["_block"] = spatial_blocks(df)
-    FEATS = [c for c in df.columns if c not in
-             (CONF["TARGET"], CONF["WEIGHT_COL"], CONF["LON"], CONF["LAT"],
-              CONF["AGBD_SE"], "_block", "geometry", "cell_id", "year")]
+    FEATS = feature_columns(df)
     X = df[FEATS].fillna(df[FEATS].median())
     y = df[CONF["TARGET"]].values
     cv = GroupKFold(n_splits=CONF["CV_FOLDS"])
