@@ -16,7 +16,7 @@
  *   - Filtro de treino no 2_2 (floresta + notNull): a máscara de imagem
  *     `palsar_nodata` era redundante com o notNull e cara — foi removida.
  *   - Grade em bbox (não CIM): mantém compatibilidade com v03–v07.
- *   - Unidade: sempre TONELADA (t/ha); nunca megagrama.
+ *   - Unidade: sempre em tonelada (t/ha); megagrama (Mg) = tonelada.
  *
  * DELTA vs v07
  *   + PALSAR global por mediana; + domínio BAP; + multi-fonte (GEDI/IFN);

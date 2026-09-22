@@ -34,7 +34,7 @@ exports.buildHlsPart = function (aoi, yearUsed) {
 };
 
 /** Stack cru (sem tipagem) — formulação since_v01, PALSAR per-célula.
- *  Restrição espacial por MÁSCARA (sem clip — regra AGENTS.md). */
+ *  Restrição espacial por máscara. */
 exports.buildCovariatesStack = function (aoi, yearUsed) {
   return exports.buildHlsPart(aoi, yearUsed)
     .addBands(palsar.buildPalsarPerCell(aoi, yearUsed))

@@ -6,9 +6,7 @@
  *
  * D1: grade de saída COMUM (crs + crsTransform do contrato) → pixels alinhados.
  * D3: UMA predição GLOBAL por fonte; o export é fatiado por `region` (grade
- *     comum), SEM `clip`. A restrição espacial é feita por MÁSCARA no raster.
- *
- * REGRA (AGENTS.md): nunca usar `.clip`; restringir = `updateMask(paint(aoi).eq(0))`.
+ *     comum) e a restrição espacial é feita por máscara no raster.
  *
  * FONTE: com `SOURCE=null` (ambíguo) dispara as DUAS fontes em sequência.
  ******************************************************************************/
@@ -58,7 +56,7 @@ print('MAPBIOMAS-CARBONO · Pantanal Forest v08 · 4_0_spatial_prediction');
 print('[PREDICT_FC]', c.BAP_ASSET, '— saída NÃO mascarada por LULC');
 print('[ENSEMBLE] N =', N, '· mediana + stdDev');
 print('[GRADE DE SAÍDA]', c.CRS, '· crsTransform comum (D1)');
-print('[MÁSCARA] updateMask(paint(PREDICT_FC).eq(0)) — SEM clip');
+print('[MÁSCARA] updateMask(paint(PREDICT_FC).eq(0))');
 print('[FONTES]', c.sourcesToRun().join(', '), '(SOURCE=' + c.SOURCE + ')');
 
 c.sourcesToRun().forEach(function (source) {
@@ -74,7 +72,7 @@ c.sourcesToRun().forEach(function (source) {
     models['m' + i] = ee.Classifier.load(root + '/MODELS/rf_agb_v08_m' + i);
   }
 
-  // UMA predição global; restrição espacial por MÁSCARA (sem clip).
+  // UMA predição global; restrição espacial por máscara.
   var pred = ensembleImage(src.buildTypedCovariatesStack(domain, YEAR), models);
   var mask = ee.Image().paint(ee.FeatureCollection(PREDICT_FC)).eq(0);
   var image = pred.updateMask(mask);
