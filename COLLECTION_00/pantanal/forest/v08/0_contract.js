@@ -30,6 +30,13 @@
 
 exports.VERSION = 'v08';
 
+// Util: separador de log (ES5-safe — o JS do GEE não tem String.repeat).
+exports.RULE = (function () {
+  var s = '';
+  for (var i = 0; i < 68; i++) s += '#';
+  return s;
+})();
+
 // ===========================================================================
 // Bloco 1 — SCHEMA de covariáveis [ref: v03/0_contract.js]
 //   36 bandas = 24 HLS (6 índices × P10/P50/P90/AMP) + 4 PALSAR + 2 HAND

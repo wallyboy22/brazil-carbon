@@ -44,9 +44,9 @@ var registry = JSON.stringify(src.COVARIATES_REGISTRY);
 c.sourcesToRun().forEach(function (source) {
   var S = c.SOURCES[source];
   var root = S.assetRoot;
-  print('\n' + '#'.repeat(68));
+  print('\n' + c.RULE);
   print('# FONTE:', source, '·', S.label, '· raiz', root);
-  print('#'.repeat(68));
+  print(c.RULE);
   var ok = 0, falta = 0, erro = 0;
   for (var i = 1; i <= N; i++) {
     var assetId = root + '/MODELS/rf_agb_v08_m' + i;

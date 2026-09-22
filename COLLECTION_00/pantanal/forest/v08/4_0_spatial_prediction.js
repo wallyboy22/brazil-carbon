@@ -61,9 +61,9 @@ c.sourcesToRun().forEach(function (source) {
   var S = c.SOURCES[source];
   var root = S.assetRoot;
   var IC = root + '/PREDICTIONS/COL';
-  print('\n' + '#'.repeat(68));
+  print('\n' + c.RULE);
   print('# FONTE:', source, '·', S.label, '· raiz', root);
-  print('#'.repeat(68));
+  print(c.RULE);
 
   var models = {};
   for (var i = 1; i <= N; i++) {

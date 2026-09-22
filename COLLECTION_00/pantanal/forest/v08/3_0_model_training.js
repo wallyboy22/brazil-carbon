@@ -39,9 +39,9 @@ c.sourcesToRun().forEach(function (source) {
   var S = c.SOURCES[source];
   var root = S.assetRoot;
   var champ = CHAMPION[source];
-  print('\n' + '#'.repeat(68));
+  print('\n' + c.RULE);
   print('# FONTE:', source, '·', S.label, '· raiz', root);
-  print('#'.repeat(68));
+  print(c.RULE);
   if (!champ) {
     print('[AVISO] sem champion para', source, '— pulando.');
     return;
